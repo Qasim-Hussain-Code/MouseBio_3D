@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.tools/
+.venv/
+.npm-cache/
+data/raw/
+research-data/
+test-results/
+playwright-report/
+.publication/
+*.local
+.env*
+!.env.example
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

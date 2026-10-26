@@ -1,0 +1,13 @@
+1--> inside skin (muscle)
+2 --> brain
+3 --> heart
+4 --> bladder
+5 --> stomach
+6 --> spleen
+7,8 -->  kidneys
+9,10 --> lungs
+11 --> pancreas
+12 --> liver
+13 --> skeleton
+14,15 --> muscle
+16,17 --> testis 

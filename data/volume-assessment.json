@@ -1,0 +1,909 @@
+{
+  "schemaVersion": "mousebio.volume-assessment.v1",
+  "assessedAt": "2026-10-25T15:31:32+00:00",
+  "sourceUrl": "https://neuroimage.usc.edu/mouse_atlas/atlas.zip",
+  "sourceLicense": "CC-BY-SA-4.0",
+  "licenseEvidenceUrl": "https://neuroimage.usc.edu/neuro/Digimouse_license",
+  "archiveSha256": "6f7cbd8a7236a78c47a14c3259d387439c0dc0284b2a83fa955f8c49efe11761",
+  "preflight": {
+    "compressedBytes": 907411,
+    "lastModified": "Sat, 16 Nov 2024 02:41:27 GMT",
+    "members": [
+      {
+        "name": "atlas/",
+        "compressedBytes": 0,
+        "uncompressedBytes": 0
+      },
+      {
+        "name": "atlas/atlas_380x992x208.hdr",
+        "compressedBytes": 51,
+        "uncompressedBytes": 348
+      },
+      {
+        "name": "atlas/atlas_380x992x208.img",
+        "compressedBytes": 899836,
+        "uncompressedBytes": 78407680
+      },
+      {
+        "name": "atlas/atlas_380x992x208.txt",
+        "compressedBytes": 240,
+        "uncompressedBytes": 420
+      },
+      {
+        "name": "atlas/LICENSE.txt",
+        "compressedBytes": 6290,
+        "uncompressedBytes": 20774
+      }
+    ]
+  },
+  "generatedAnatomicalGeometry": false,
+  "bundledLicense": {
+    "archiveMember": "atlas/LICENSE.txt",
+    "bytes": 20774,
+    "sha256": "59794e20b4f461cb3fc5fb0f559ec99b92f9365264a48668e0b1151b06e35d63",
+    "preservedAt": "data/provenance/digimouse-volume-license.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  "headers": {
+    "atlas/atlas_380x992x208.hdr": {
+      "headerBytes": 348,
+      "byteOrder": "little-endian",
+      "dim": [
+        4,
+        380,
+        992,
+        208,
+        1,
+        0,
+        0,
+        0
+      ],
+      "datatypeCode": 2,
+      "bitsPerVoxel": 8,
+      "pixdim": [
+        0.0,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxelOffset": 0.0,
+      "voxelUnitsField": "",
+      "calibrationUnitsField": "",
+      "description": "reorient",
+      "auxiliaryFile": "",
+      "orientationCode": 0,
+      "originatorRawHex": "00000000000000000000",
+      "originatorAsFiveInt16": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "finalFourBytesHex": "00000000"
+    }
+  },
+  "sourceTextFiles": {
+    "atlas/atlas_380x992x208.txt": "0 --> background\r\n1 --> skin\r\n2 --> skeleton\r\n3 --> eye\r\n4 --> medulla\r\n5 --> cerebellum\r\n6 --> olfactory bulbs\r\n7 --> external cerebrum\r\n8 --> striatum\r\n9 --> heart\r\n10 --> rest of the brain\r\n4+5+6+7+8+10 --> whole brain \r\n11 --> masseter muscles\r\n12 --> lachrymal glands\r\n13 --> bladder\r\n14 --> testis\r\n15 --> stomach\r\n16 --> spleen\r\n17 --> pancreas\r\n18 --> liver\r\n19 --> kidneys\r\n20 --> adrenal glands\r\n21 --> lungs\r\n"
+  },
+  "labelHistograms": {
+    "atlas/atlas_380x992x208.img": {
+      "bytes": 78407680,
+      "sha256": "0169aa60143b9dfab042270bf10ec45579cf1dd62b9d72437c99b1703cc0b298",
+      "countsByNumericLabel": {
+        "0": 56025828,
+        "1": 16743236,
+        "2": 1182504,
+        "3": 5610,
+        "4": 45765,
+        "5": 30596,
+        "6": 18466,
+        "7": 136852,
+        "8": 26027,
+        "9": 222956,
+        "10": 158599,
+        "11": 107340,
+        "12": 30414,
+        "13": 189696,
+        "14": 149498,
+        "15": 225574,
+        "16": 138872,
+        "17": 44725,
+        "18": 2007078,
+        "19": 495102,
+        "20": 5709,
+        "21": 417233
+      },
+      "boundsVoxelInclusive": {
+        "1": [
+          [
+            18,
+            41,
+            9
+          ],
+          [
+            345,
+            928,
+            205
+          ]
+        ],
+        "2": [
+          [
+            22,
+            75,
+            16
+          ],
+          [
+            339,
+            927,
+            202
+          ]
+        ],
+        "14": [
+          [
+            126,
+            725,
+            17
+          ],
+          [
+            242,
+            841,
+            72
+          ]
+        ],
+        "18": [
+          [
+            54,
+            442,
+            25
+          ],
+          [
+            293,
+            624,
+            181
+          ]
+        ],
+        "13": [
+          [
+            130,
+            658,
+            29
+          ],
+          [
+            198,
+            737,
+            96
+          ]
+        ],
+        "11": [
+          [
+            122,
+            121,
+            38
+          ],
+          [
+            248,
+            231,
+            85
+          ]
+        ],
+        "21": [
+          [
+            109,
+            343,
+            45
+          ],
+          [
+            247,
+            474,
+            156
+          ]
+        ],
+        "9": [
+          [
+            144,
+            355,
+            50
+          ],
+          [
+            232,
+            454,
+            110
+          ]
+        ],
+        "16": [
+          [
+            180,
+            520,
+            63
+          ],
+          [
+            308,
+            603,
+            186
+          ]
+        ],
+        "15": [
+          [
+            176,
+            495,
+            73
+          ],
+          [
+            291,
+            570,
+            173
+          ]
+        ],
+        "12": [
+          [
+            141,
+            130,
+            75
+          ],
+          [
+            238,
+            175,
+            100
+          ]
+        ],
+        "10": [
+          [
+            144,
+            137,
+            88
+          ],
+          [
+            234,
+            282,
+            161
+          ]
+        ],
+        "7": [
+          [
+            141,
+            157,
+            89
+          ],
+          [
+            237,
+            235,
+            156
+          ]
+        ],
+        "3": [
+          [
+            146,
+            142,
+            90
+          ],
+          [
+            238,
+            164,
+            115
+          ]
+        ],
+        "6": [
+          [
+            176,
+            132,
+            95
+          ],
+          [
+            210,
+            169,
+            122
+          ]
+        ],
+        "4": [
+          [
+            161,
+            230,
+            102
+          ],
+          [
+            220,
+            304,
+            133
+          ]
+        ],
+        "19": [
+          [
+            79,
+            543,
+            116
+          ],
+          [
+            267,
+            660,
+            184
+          ]
+        ],
+        "17": [
+          [
+            172,
+            543,
+            119
+          ],
+          [
+            291,
+            638,
+            154
+          ]
+        ],
+        "8": [
+          [
+            154,
+            189,
+            126
+          ],
+          [
+            222,
+            234,
+            147
+          ]
+        ],
+        "5": [
+          [
+            151,
+            234,
+            129
+          ],
+          [
+            228,
+            270,
+            157
+          ]
+        ],
+        "20": [
+          [
+            134,
+            536,
+            140
+          ],
+          [
+            197,
+            560,
+            167
+          ]
+        ]
+      },
+      "centroidVoxelIndices": {
+        "1": [
+          181.9094958704518,
+          561.7880252658447,
+          92.56179074343812
+        ],
+        "2": [
+          180.79097745123906,
+          479.98826050482705,
+          98.59882080737148
+        ],
+        "3": [
+          196.07219251336898,
+          152.3367201426025,
+          102.10909090909091
+        ],
+        "4": [
+          187.90145307549437,
+          260.92310717797443,
+          117.70516770457773
+        ],
+        "5": [
+          188.94509086155054,
+          250.6163550790953,
+          141.8913910315074
+        ],
+        "6": [
+          193.5637929167118,
+          151.19912271201127,
+          107.35421856384707
+        ],
+        "7": [
+          190.79640779820537,
+          194.29155584134685,
+          122.88634437202234
+        ],
+        "8": [
+          188.51892265724055,
+          210.0370384600607,
+          135.60387290121795
+        ],
+        "9": [
+          187.77404061787976,
+          411.8833671217639,
+          78.1514514074526
+        ],
+        "10": [
+          189.20246659815004,
+          214.6887243929659,
+          120.46943549454915
+        ],
+        "11": [
+          185.99173653810323,
+          179.1490683808459,
+          61.046105831935904
+        ],
+        "12": [
+          188.48984020516866,
+          156.03294535411322,
+          87.89744854343394
+        ],
+        "13": [
+          164.793980895749,
+          697.9758192054655,
+          59.80850940452092
+        ],
+        "14": [
+          181.98139774445144,
+          784.5100536462027,
+          43.58547940440675
+        ],
+        "15": [
+          244.53376275634602,
+          535.9303997801165,
+          121.93487724649117
+        ],
+        "16": [
+          264.6624013480039,
+          566.2784218560977,
+          130.90065671985712
+        ],
+        "17": [
+          247.88196757965343,
+          588.3345108999441,
+          133.7079038569033
+        ],
+        "18": [
+          168.24886676053447,
+          517.1317108752127,
+          100.29474190838621
+        ],
+        "19": [
+          171.6473312569935,
+          600.3932603786694,
+          147.95753602288013
+        ],
+        "20": [
+          163.46943422665967,
+          548.8465580662113,
+          156.3697670345069
+        ],
+        "21": [
+          170.430833610956,
+          424.50051170449126,
+          113.14245996841093
+        ]
+      }
+    }
+  },
+  "labels": [
+    {
+      "value": 0,
+      "sourceName": "background",
+      "voxelCount": 56025828
+    },
+    {
+      "value": 1,
+      "sourceName": "skin",
+      "voxelCount": 16743236
+    },
+    {
+      "value": 2,
+      "sourceName": "skeleton",
+      "voxelCount": 1182504
+    },
+    {
+      "value": 3,
+      "sourceName": "eye",
+      "voxelCount": 5610
+    },
+    {
+      "value": 4,
+      "sourceName": "medulla",
+      "voxelCount": 45765
+    },
+    {
+      "value": 5,
+      "sourceName": "cerebellum",
+      "voxelCount": 30596
+    },
+    {
+      "value": 6,
+      "sourceName": "olfactory bulbs",
+      "voxelCount": 18466
+    },
+    {
+      "value": 7,
+      "sourceName": "external cerebrum",
+      "voxelCount": 136852
+    },
+    {
+      "value": 8,
+      "sourceName": "striatum",
+      "voxelCount": 26027
+    },
+    {
+      "value": 9,
+      "sourceName": "heart",
+      "voxelCount": 222956
+    },
+    {
+      "value": 10,
+      "sourceName": "rest of the brain",
+      "voxelCount": 158599
+    },
+    {
+      "value": 11,
+      "sourceName": "masseter muscles",
+      "voxelCount": 107340
+    },
+    {
+      "value": 12,
+      "sourceName": "lachrymal glands",
+      "voxelCount": 30414
+    },
+    {
+      "value": 13,
+      "sourceName": "bladder",
+      "voxelCount": 189696
+    },
+    {
+      "value": 14,
+      "sourceName": "testis",
+      "voxelCount": 149498
+    },
+    {
+      "value": 15,
+      "sourceName": "stomach",
+      "voxelCount": 225574
+    },
+    {
+      "value": 16,
+      "sourceName": "spleen",
+      "voxelCount": 138872
+    },
+    {
+      "value": 17,
+      "sourceName": "pancreas",
+      "voxelCount": 44725
+    },
+    {
+      "value": 18,
+      "sourceName": "liver",
+      "voxelCount": 2007078
+    },
+    {
+      "value": 19,
+      "sourceName": "kidneys",
+      "voxelCount": 495102
+    },
+    {
+      "value": 20,
+      "sourceName": "adrenal glands",
+      "voxelCount": 5709
+    },
+    {
+      "value": 21,
+      "sourceName": "lungs",
+      "voxelCount": 417233
+    }
+  ],
+  "aggregateLabels": [
+    {
+      "name": "whole brain",
+      "sourceLabels": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        10
+      ]
+    }
+  ],
+  "coordinateAssessment": {
+    "storageOrder": "x index fastest, then y, then z, as conventional Analyze array storage; indices are zero-based",
+    "anatomicalOrientationVerified": false,
+    "voxelToTetrahedralAffine": null,
+    "unitsEvidence": "Header voxel unit field is empty; the official Digimouse download page identifies voxel spacing as 0.1 mm isotropic.",
+    "originEvidence": "Analyze originator field contains ten zero bytes; no verified anatomical origin or full affine is supplied.",
+    "orientationEvidence": "Header description is reorient and orientation byte is zero. These do not independently establish a spatial transform to the tessellated mesh or named anatomical directions.",
+    "unregisteredBoundsExamples": [
+      {
+        "tetrahedralStructureId": "digimouse:3",
+        "volumeLabel": 9,
+        "volumeBoundsIndexTimesNominalSpacingMm": [
+          [
+            14.4,
+            35.5,
+            5.0
+          ],
+          [
+            23.200000000000003,
+            45.400000000000006,
+            11.0
+          ]
+        ],
+        "tetrahedralBoundsInterpretedMm": [
+          [
+            15.2,
+            33.2,
+            5.200000000000001
+          ],
+          [
+            23.2,
+            42.4,
+            10.8
+          ]
+        ]
+      },
+      {
+        "tetrahedralStructureId": "digimouse:4",
+        "volumeLabel": 13,
+        "volumeBoundsIndexTimesNominalSpacingMm": [
+          [
+            13.0,
+            65.8,
+            2.9000000000000004
+          ],
+          [
+            19.8,
+            73.7,
+            9.600000000000001
+          ]
+        ],
+        "tetrahedralBoundsInterpretedMm": [
+          [
+            13.6,
+            63.2,
+            3.2
+          ],
+          [
+            20.0,
+            70.8,
+            9.6
+          ]
+        ]
+      },
+      {
+        "tetrahedralStructureId": "digimouse:5",
+        "volumeLabel": 15,
+        "volumeBoundsIndexTimesNominalSpacingMm": [
+          [
+            17.6,
+            49.5,
+            7.300000000000001
+          ],
+          [
+            29.1,
+            57.0,
+            17.3
+          ]
+        ],
+        "tetrahedralBoundsInterpretedMm": [
+          [
+            18.8,
+            47.2,
+            7.6
+          ],
+          [
+            29.2,
+            54.0,
+            17.2
+          ]
+        ]
+      },
+      {
+        "tetrahedralStructureId": "digimouse:12",
+        "volumeLabel": 18,
+        "volumeBoundsIndexTimesNominalSpacingMm": [
+          [
+            5.4,
+            44.2,
+            2.5
+          ],
+          [
+            29.3,
+            62.400000000000006,
+            18.1
+          ]
+        ],
+        "tetrahedralBoundsInterpretedMm": [
+          [
+            7.200000000000001,
+            42.4,
+            3.2
+          ],
+          [
+            28.4,
+            52.8,
+            16.8
+          ]
+        ]
+      },
+      {
+        "tetrahedralStructureId": "digimouse:13",
+        "volumeLabel": 2,
+        "volumeBoundsIndexTimesNominalSpacingMm": [
+          [
+            2.2,
+            7.5,
+            1.6
+          ],
+          [
+            33.9,
+            92.7,
+            20.200000000000003
+          ]
+        ],
+        "tetrahedralBoundsInterpretedMm": [
+          [
+            12.8,
+            9.6,
+            8.4
+          ],
+          [
+            24.800000000000004,
+            88.0,
+            19.6
+          ]
+        ]
+      }
+    ],
+    "boundsConclusion": "Corresponding named regions disagree under a simple index * 0.1 mm identity mapping. Downsampling, boundary processing and/or coordinate shifts require explicit assessment; no fitted transformation has been accepted."
+  },
+  "resourceAssessment": {
+    "fullUint8ArrayBytes": 78407680,
+    "singleBooleanMaskBytes": 78407680,
+    "singleFloat32VolumeBytes": 313630720,
+    "singleFloat64VolumeBytes": 627261440,
+    "twoPlaneChunkBytes": 753920,
+    "pipelineOptions": [
+      "Streaming label scans need no full-volume array; this scan retains one plane and small per-label accumulators.",
+      "A standard-library exposed-voxel-face or marching-tetrahedra converter is possible, but produces a different surface representation and needs independent geometric and resolution validation.",
+      "A mature marching-cubes implementation could be justified later by topology handling and performance; no numpy, scipy, scikit-image or nibabel packages were installed for this assessment.",
+      "Process one selected label and overlapping slabs, stream indexed mesh output, and avoid simultaneous full-volume float copies. Mesh and deduplication memory must be measured separately."
+    ],
+    "scanPeakResidentKiB": 29864,
+    "expandedImageWrittenToDisk": false
+  },
+  "coverageAssessment": {
+    "currentlyModeledSource": "17 labelled tetrahedral regions in public/atlas/atlas.json",
+    "voxelNonbackgroundLabels": 21,
+    "potentialAdditionalDetail": [
+      "eye",
+      "medulla",
+      "cerebellum",
+      "olfactory bulbs",
+      "external cerebrum",
+      "striatum",
+      "rest of the brain",
+      "lachrymal glands",
+      "adrenal glands"
+    ],
+    "limits": [
+      "Label numbers in the voxel atlas and tetrahedral mesh refer to different structures and cannot be used interchangeably.",
+      "The skin-labelled volume occupies most residual body voxels; it must not be described as a separately resolved histological skin layer without further examination.",
+      "The voxel atlas gives a named masseter label; it does not by itself prove which unspecified tetrahedral muscle region corresponds to it.",
+      "Paired eyes, glands, kidneys, testes and lungs share source labels; laterality is not identified by these labels.",
+      "No new browser geometry, anatomical coordinate registration, tissue layer, cellular detail or physiological validity is established by this inspection."
+    ]
+  },
+  "nominalSourceLabelCrosswalk": [
+    {
+      "tetrahedralStructureId": "digimouse:1",
+      "volumeLabels": [
+        1
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:2",
+      "volumeLabels": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        10
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:3",
+      "volumeLabels": [
+        9
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:4",
+      "volumeLabels": [
+        13
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:5",
+      "volumeLabels": [
+        15
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:6",
+      "volumeLabels": [
+        16
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:7",
+      "volumeLabels": [
+        19
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:8",
+      "volumeLabels": [
+        19
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:9",
+      "volumeLabels": [
+        21
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:10",
+      "volumeLabels": [
+        21
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:11",
+      "volumeLabels": [
+        17
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:12",
+      "volumeLabels": [
+        18
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:13",
+      "volumeLabels": [
+        2
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:16",
+      "volumeLabels": [
+        14
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    },
+    {
+      "tetrahedralStructureId": "digimouse:17",
+      "volumeLabels": [
+        14
+      ],
+      "interpretation": "Source-label name association only; not a verified spatial registration or equivalence of boundaries"
+    }
+  ]
+}

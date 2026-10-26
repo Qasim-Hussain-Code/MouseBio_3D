@@ -1,0 +1,183 @@
+{
+  "schemaVersion": "mousebio.ontology-candidates.v1",
+  "atlasId": "digimouse-tessellated-v1",
+  "status": "proposed-label-based-associations",
+  "expertReviewed": false,
+  "retrievedOn": "2026-10-25",
+  "license": "CC-BY-SA-4.0",
+  "licenseNote": "The combined candidate table retains Digimouse source-label attribution and ShareAlike obligations. The MA term identifiers and labels retain their CC-BY-4.0 source license. Original documentation is licensed separately.",
+  "sourceAtlas": {
+    "manifest": "public/atlas/atlas.json",
+    "labelFile": "labels_4_tetrahedrons.txt",
+    "url": "https://neuroimage.usc.edu/neuro/Digimouse_Download",
+    "archiveUrl": "https://neuroimage.usc.edu/mouse_atlas/tesselated_atlas.zip",
+    "archiveSha256": "78c09b567497d80586a5403206494f9dea620940d61b87806f5b34f46cd6415d",
+    "attribution": "Digimouse, Belma Dogdas, David Stout, Arion F. Chatziioannou and Richard M. Leahy, USC/UCLA, 2007.",
+    "license": "CC-BY-SA-4.0",
+    "licenseEvidenceUrl": "https://neuroimage.usc.edu/neuro/Digimouse_license"
+  },
+  "ontology": {
+    "id": "MA",
+    "title": "Mouse adult gross anatomy",
+    "maintainer": "Mouse Genome Informatics, The Jackson Laboratory",
+    "version": "2026-02-24",
+    "versionIri": "http://purl.obolibrary.org/obo/ma/releases/2026-02-24/ma.owl",
+    "versionEvidenceUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma",
+    "homePage": "https://github.com/obophenotype/adult-mouse-anatomy-ontology",
+    "license": "CC-BY-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "licenseEvidenceUrl": "https://www.informatics.jax.org/mgihome/other/copyright.shtml",
+    "citationInstructionsUrl": "https://informatics.jax.org/mgihome/other/citation.shtml"
+  },
+  "method": {
+    "id": "normalized-source-label-to-exact-ma-label-v1",
+    "classification": "computational-inference",
+    "description": "Read the imported source label, apply the explicitly recorded lexical normalization, query only MA in EBI OLS, require exact equality with the normalized term label, and verify the resulting ID in the defining MA term endpoint. This proposes a related association; it does not establish an exact anatomical mapping.",
+    "limitations": [
+      "Term identity, label and nonobsolete status were verified; segmentation correspondence was not independently reviewed.",
+      "Lexical correspondence does not establish equality of anatomical extent, organ completeness or boundary accuracy.",
+      "Generic organ terms do not determine left or right identity of paired source regions.",
+      "Bladder to urinary bladder is an explicit interpretive expansion, not a literal exact string match.",
+      "No ontology graph edges, innervation, blood supply, molecular pathways or cell-type associations were imported.",
+      "No new geometry, anatomical resolution, registration or physiological validation is supplied."
+    ]
+  },
+  "candidates": [
+    {
+      "structureId": "digimouse:2", "sourceLabel": "brain", "normalizedLabel": "brain", "normalization": "identity",
+      "ontology": "MA", "termId": "MA:0000168", "termLabel": "brain", "termIri": "http://purl.obolibrary.org/obo/MA_0000168",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000168",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000168",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["The source's aggregate brain label is relevant to the generic MA brain concept; exact boundaries have not been checked."], "limitations": ["No brain subdivisions or exact geometric correspondence are established."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:3", "sourceLabel": "heart", "normalizedLabel": "heart", "normalization": "identity",
+      "ontology": "MA", "termId": "MA:0000072", "termLabel": "heart", "termIri": "http://purl.obolibrary.org/obo/MA_0000072",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000072",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000072",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["The source's aggregate heart label is relevant to the generic MA heart concept."], "limitations": ["No chamber, valve, vessel or exact boundary mapping is established."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:4", "sourceLabel": "bladder", "normalizedLabel": "urinary bladder", "normalization": "interpretive expansion of bladder to urinary bladder; requires review",
+      "ontology": "MA", "termId": "MA:0000380", "termLabel": "urinary bladder", "termIri": "http://purl.obolibrary.org/obo/MA_0000380",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000380",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000380",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["The source label bladder refers to urinary bladder in this whole-body mouse atlas."], "limitations": ["This source label is not literally identical to the MA label and the interpretive expansion has not received anatomical review.", "No bladder-wall or urethral boundary mapping is established."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:5", "sourceLabel": "stomach", "normalizedLabel": "stomach", "normalization": "identity",
+      "ontology": "MA", "termId": "MA:0000353", "termLabel": "stomach", "termIri": "http://purl.obolibrary.org/obo/MA_0000353",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000353",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000353",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["The source stomach label is relevant to the generic MA stomach concept."], "limitations": ["No compartments, wall layers or exact extent mapping are established."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:6", "sourceLabel": "spleen", "normalizedLabel": "spleen", "normalization": "identity",
+      "ontology": "MA", "termId": "MA:0000141", "termLabel": "spleen", "termIri": "http://purl.obolibrary.org/obo/MA_0000141",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000141",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000141",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["The source spleen label is relevant to the generic MA spleen concept."], "limitations": ["No splenic tissue compartments, immune functions or exact extent mapping are established."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:7", "sourceLabel": "kidneys", "normalizedLabel": "kidney", "normalization": "singularize the shared plural source label; preserve this region separately",
+      "ontology": "MA", "termId": "MA:0000368", "termLabel": "kidney", "termIri": "http://purl.obolibrary.org/obo/MA_0000368",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000368",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000368",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["Source region 7 with the label kidneys is relevant to the generic MA kidney concept."], "limitations": ["Laterality and exact extent are unresolved; the generic term does not merge regions 7 and 8."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:8", "sourceLabel": "kidneys", "normalizedLabel": "kidney", "normalization": "singularize the shared plural source label; preserve this region separately",
+      "ontology": "MA", "termId": "MA:0000368", "termLabel": "kidney", "termIri": "http://purl.obolibrary.org/obo/MA_0000368",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000368",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000368",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["Source region 8 with the label kidneys is relevant to the generic MA kidney concept."], "limitations": ["Laterality and exact extent are unresolved; the generic term does not merge regions 7 and 8."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:9", "sourceLabel": "lungs", "normalizedLabel": "lung", "normalization": "singularize the shared plural source label; preserve this region separately",
+      "ontology": "MA", "termId": "MA:0000415", "termLabel": "lung", "termIri": "http://purl.obolibrary.org/obo/MA_0000415",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000415",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000415",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["Source region 9 with the label lungs is relevant to the generic MA lung concept."], "limitations": ["Laterality, lobar identity and exact extent are unresolved; no airway or alveolar mapping is supplied."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:10", "sourceLabel": "lungs", "normalizedLabel": "lung", "normalization": "singularize the shared plural source label; preserve this region separately",
+      "ontology": "MA", "termId": "MA:0000415", "termLabel": "lung", "termIri": "http://purl.obolibrary.org/obo/MA_0000415",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000415",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000415",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["Source region 10 with the label lungs is relevant to the generic MA lung concept."], "limitations": ["Laterality, lobar identity and exact extent are unresolved; no airway or alveolar mapping is supplied."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:11", "sourceLabel": "pancreas", "normalizedLabel": "pancreas", "normalization": "identity",
+      "ontology": "MA", "termId": "MA:0000120", "termLabel": "pancreas", "termIri": "http://purl.obolibrary.org/obo/MA_0000120",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000120",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000120",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["The source pancreas label is relevant to the generic MA pancreas concept."], "limitations": ["No endocrine, exocrine, ductal or exact boundary mapping is established."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:12", "sourceLabel": "liver", "normalizedLabel": "liver", "normalization": "identity",
+      "ontology": "MA", "termId": "MA:0000358", "termLabel": "liver", "termIri": "http://purl.obolibrary.org/obo/MA_0000358",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000358",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000358",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["The source liver label is relevant to the generic MA liver concept."], "limitations": ["No lobar, biliary, vascular or exact boundary mapping is established."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:16", "sourceLabel": "testis", "normalizedLabel": "testis", "normalization": "identity",
+      "ontology": "MA", "termId": "MA:0000411", "termLabel": "testis", "termIri": "http://purl.obolibrary.org/obo/MA_0000411",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000411",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000411",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["Source region 16 with the label testis is relevant to the generic MA testis concept."], "limitations": ["Laterality and exact extent are unresolved; no reproductive tract, cell or endocrine mapping is supplied."]},
+      "laterality": null
+    },
+    {
+      "structureId": "digimouse:17", "sourceLabel": "testis", "normalizedLabel": "testis", "normalization": "identity",
+      "ontology": "MA", "termId": "MA:0000411", "termLabel": "testis", "termIri": "http://purl.obolibrary.org/obo/MA_0000411",
+      "termUrl": "https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000411",
+      "verificationUrl": "https://www.ebi.ac.uk/ols4/api/ontologies/ma/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMA_0000411",
+      "ontologyVersion": "2026-02-24", "retrievedOn": "2026-10-25", "sourceLicense": "CC-BY-4.0", "isObsolete": false, "isDefiningOntology": true, "definition": null,
+      "relation": "related", "status": "proposed", "expertReviewed": false,
+      "evidence": {"classification": "computational-inference", "methodId": "normalized-source-label-to-exact-ma-label-v1", "assumptions": ["Source region 17 with the label testis is relevant to the generic MA testis concept."], "limitations": ["Laterality and exact extent are unresolved; no reproductive tract, cell or endocrine mapping is supplied."]},
+      "laterality": null
+    }
+  ],
+  "unmapped": [
+    {"structureId": "digimouse:1", "sourceLabel": "inside skin (muscle)", "termId": null, "relation": null, "reason": "Residual body tissue is heterogeneous; neither a skin nor a named muscle ontology identity is established."},
+    {"structureId": "digimouse:13", "sourceLabel": "skeleton", "termId": null, "relation": null, "reason": "Aggregate skeletal geometry was deliberately excluded from this bounded organ-label review; individual bones are not identified."},
+    {"structureId": "digimouse:14", "sourceLabel": "muscle", "termId": null, "relation": null, "reason": "The source does not specify a named muscle or laterality; no candidate was inferred."},
+    {"structureId": "digimouse:15", "sourceLabel": "muscle", "termId": null, "relation": null, "reason": "The source does not specify a named muscle or laterality; no candidate was inferred."}
+  ]
+}

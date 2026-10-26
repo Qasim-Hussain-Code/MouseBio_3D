@@ -1,0 +1,306 @@
+import { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { evaluateIllustrativePhysiology, PHYSIOLOGY_PROCESSES, type Atlas, type ViewBackground } from '../domain';
+import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, isPointRetainedByClipPlane, recenterMeshGeometry, type CameraPose } from './scene-utils';
+
+export type { CameraPose } from './scene-utils';
+export type ViewerSettings = {
+  selected: string | null;
+  hidden: string[];
+  opacity: Record<string, number>;
+  clipAxis: 'off' | 'x' | 'y' | 'z';
+  clipPosition: number;
+  living: boolean;
+  playing: boolean;
+  speed: number;
+  cardiac: boolean;
+  respiratory: boolean;
+  colors: Record<string, string>;
+  labels: boolean;
+  background: ViewBackground;
+};
+export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void };
+type Props = {
+  atlas: Atlas;
+  settings: ViewerSettings;
+  onSelect: (id: string) => void;
+  onReady?: (details: { meshes: number; triangles: number }) => void;
+  onStatus?: (status: 'loading' | 'ready' | 'failed') => void;
+  handle: React.RefObject<ViewerHandle | null>;
+  cameraPose?: CameraPose;
+  onCameraChange?: (pose: CameraPose) => void;
+  title?: string;
+};
+
+const palette: Record<string, string> = {
+  skeletal: '#e9dfc7', muscular: '#a36f6b', nervous: '#d2ac62', cardiovascular: '#c35e65',
+  respiratory: '#b9bbd0', digestive: '#b98156', urinary: '#b97f73', reproductive: '#d4ad83',
+  immune: '#937f9d', endocrine: '#bfaa6d', integumentary: '#8f9d9a',
+};
+
+export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title }: Props) {
+  const host = useRef<HTMLDivElement>(null);
+  const latest = useRef({ settings, onSelect, onCameraChange, cameraPose });
+  latest.current = { settings, onSelect, onCameraChange, cameraPose };
+  const engine = useRef<{ apply: () => void; setPose: (pose: CameraPose) => void } | null>(null);
+  const [status, setStatus] = useState('Loading licensed anatomical mesh');
+  const [failure, setFailure] = useState(false);
+  const [label, setLabel] = useState<{ x: number; y: number; name: string } | null>(null);
+
+  useEffect(() => {
+    if (!host.current) return;
+    onStatus?.('loading');
+    const element = host.current;
+    let disposed = false;
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
+    } catch {
+      setFailure(true);
+      onStatus?.('failed');
+      setStatus('WebGL could not start. Enable browser hardware acceleration or use a WebGL 2 compatible browser. The anatomical inventory and data tools remain available.');
+      return;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.localClippingEnabled = true;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(latest.current.settings.background === 'white' ? '#ffffff' : '#111d23', 1);
+    renderer.domElement.setAttribute('aria-label', title ?? 'Interactive Digimouse anatomical model');
+    renderer.domElement.setAttribute('role', 'img');
+    renderer.domElement.setAttribute('tabindex', '0');
+    element.appendChild(renderer.domElement);
+    const scene = new THREE.Scene();
+    scene.add(new THREE.HemisphereLight('#e3f5f4', '#343e46', 2.7));
+    const key = new THREE.DirectionalLight('#fff1da', 3.0);
+    key.position.set(-2, 4, 6);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight('#92c6ce', 1.5);
+    fill.position.set(3, -2, -4);
+    scene.add(fill);
+    const camera = new THREE.PerspectiveCamera(36, 1, 0.00001, 100);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = false;
+    controls.enablePan = true;
+    const display = new THREE.Group();
+    display.rotation.z = DISPLAY_ROTATION_Z;
+    scene.add(display);
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const meshes = new Map<string, THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>();
+    const cardiacRegions = new Set(PHYSIOLOGY_PROCESSES.find((process) => process.id === 'cardiac-contraction' && process.atlasId === atlas.id)?.requiredStructures ?? []);
+    const respiratoryRegions = new Set(PHYSIOLOGY_PROCESSES.find((process) => process.id === 'respiratory-movement' && process.atlasId === atlas.id)?.requiredStructures ?? []);
+    const bounds = new THREE.Box3();
+    let radius = 0.1;
+    let frame = 0;
+    let dirty = true;
+    let lastFrame = 0;
+    let elapsed = 0;
+    let syncing = false;
+    let loaded = false;
+    let lastLabel = '';
+    const clip = new THREE.Plane();
+    const defaultOpacity = (id: string) => id === 'digimouse:1' ? 0.1 : 1;
+    const apply = () => {
+      const current = latest.current.settings;
+      renderer.setClearColor(current.background === 'white' ? '#ffffff' : '#111d23', 1);
+      for (const [id, mesh] of meshes) {
+        const structure = atlas.structures.find((item) => item.id === id)!;
+        const opacity = current.opacity[id] ?? defaultOpacity(id);
+        mesh.visible = !current.hidden.includes(id) && opacity > 0;
+        mesh.material.opacity = opacity;
+        mesh.material.transparent = opacity < 1;
+        mesh.material.depthWrite = opacity >= 0.95;
+        mesh.renderOrder = opacity < 1 ? 2 : 0;
+        mesh.material.color.set(current.colors[id] ?? palette[structure.systems[0]] ?? '#9ba5a1');
+        mesh.material.emissive.set(id === current.selected ? '#315b54' : '#000000');
+        mesh.material.emissiveIntensity = id === current.selected ? 0.65 : 0;
+        mesh.material.clippingPlanes = current.clipAxis === 'off' ? [] : [clip];
+      }
+      if (current.clipAxis !== 'off') clip.copy(createDisplayClipPlane(current.clipAxis, current.clipPosition, radius));
+      dirty = true;
+    };
+    const announcePose = () => {
+      dirty = true;
+      if (!syncing && loaded) latest.current.onCameraChange?.(captureCameraPose(camera, controls.target));
+    };
+    controls.addEventListener('change', announcePose);
+    const setPose = (pose: CameraPose) => {
+      syncing = true;
+      applyCameraPose(camera, controls.target, pose);
+      controls.update();
+      syncing = false;
+      dirty = true;
+    };
+    engine.current = { apply, setPose };
+    const reset = () => {
+      controls.target.set(0, 0, 0);
+      camera.up.set(0, 1, 0);
+      camera.position.set(radius * 0.25, radius * 0.7, radius * 3.1);
+      controls.update();
+      dirty = true;
+    };
+    handle.current = {
+      reset,
+      view(axis) {
+        controls.target.set(0, 0, 0);
+        camera.position.set(axis === 'x' ? radius * 3.3 : 0, axis === 'y' ? radius * 3.3 : 0, axis === 'z' ? radius * 3.3 : 0);
+        camera.up.set(0, axis === 'y' ? 0 : 1, axis === 'y' ? -1 : 0);
+        controls.update();
+        dirty = true;
+      },
+      focus() {
+        const mesh = meshes.get(latest.current.settings.selected ?? '');
+        if (!mesh) return;
+        const box = new THREE.Box3().setFromObject(mesh);
+        const center = box.getCenter(new THREE.Vector3());
+        const distance = Math.max(box.getSize(new THREE.Vector3()).length() * 2.0, radius * 0.15);
+        const direction = camera.position.clone().sub(controls.target).normalize();
+        controls.target.copy(center);
+        camera.position.copy(center).addScaledVector(direction, distance);
+        controls.update();
+        dirty = true;
+      },
+    };
+    new GLTFLoader().load(atlas.assetUrl, (gltf) => {
+      if (disposed) {
+        gltf.scene.traverse((object) => {
+          if (object instanceof THREE.Mesh) { object.geometry.dispose(); for (const material of [object.material].flat()) material.dispose(); }
+        });
+        return;
+      }
+      try {
+      const sourceBounds = new THREE.Box3().setFromObject(gltf.scene);
+      gltf.scene.position.sub(sourceBounds.getCenter(new THREE.Vector3()));
+      display.add(gltf.scene);
+      let triangles = 0;
+      let sourceMeshCount = 0;
+      gltf.scene.traverse((object) => {
+        if (!(object instanceof THREE.Mesh)) return;
+        sourceMeshCount++;
+        const structure = atlas.structures.find((entry) => entry.meshNode === object.name || entry.id === object.userData.structureId);
+        if (!structure) return;
+        const { previousGeometry } = recenterMeshGeometry(object);
+        previousGeometry.dispose();
+        for (const material of [object.material].flat()) material.dispose();
+        object.material = new THREE.MeshStandardMaterial({ roughness: 0.68, metalness: 0.02, side: THREE.DoubleSide });
+        object.userData.structureId = structure.id;
+        meshes.set(structure.id, object as THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>);
+        triangles += (object.geometry.index?.count ?? object.geometry.attributes.position.count) / 3;
+      });
+      if (meshes.size !== atlas.structures.length || sourceMeshCount !== atlas.structures.length) throw new Error(`Model metadata mismatch: ${meshes.size} mapped regions from ${sourceMeshCount} meshes; expected ${atlas.structures.length}.`);
+      bounds.setFromObject(display);
+      radius = bounds.getSize(new THREE.Vector3()).length() / 2;
+      camera.near = radius / 2000;
+      camera.far = radius * 100;
+      camera.updateProjectionMatrix();
+      controls.minDistance = radius * 0.07;
+      controls.maxDistance = radius * 12;
+      loaded = true;
+      if (latest.current.cameraPose) setPose(latest.current.cameraPose);
+      else reset();
+      apply();
+      setStatus('');
+      onStatus?.('ready');
+      onReady?.({ meshes: meshes.size, triangles });
+      } catch (error) {
+        console.error('Anatomical geometry rejected', error);
+        display.visible = false;
+        setFailure(true);
+        onStatus?.('failed');
+        setStatus('The anatomical geometry could not be verified against its manifest. Check the local asset and provenance files.');
+      }
+    }, undefined, (error) => {
+      if (disposed) return;
+      console.error('Anatomical asset failed to load', error);
+      setFailure(true);
+      onStatus?.('failed');
+      setStatus('The anatomical asset could not be loaded. Check the local server and public/atlas files.');
+    });
+    let pointerDown: { x: number; y: number } | null = null;
+    const down = (event: PointerEvent) => { pointerDown = { x: event.clientX, y: event.clientY }; };
+    const up = (event: PointerEvent) => {
+      if (!pointerDown || Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y) > 5 || event.button !== 0) return;
+      pointerDown = null;
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
+      raycaster.setFromCamera(pointer, camera);
+      const candidates = [...meshes.values()].filter((mesh) => mesh.visible && mesh.material.opacity > 0.15);
+      const hits = raycaster.intersectObjects(candidates, false).filter((hit) => latest.current.settings.clipAxis === 'off' || isPointRetainedByClipPlane(hit.point, clip));
+      const hit = hits[0];
+      if (hit) latest.current.onSelect(hit.object.userData.structureId);
+    };
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === 'Home') { event.preventDefault(); reset(); }
+      if (event.key.toLowerCase() === 'f') handle.current?.focus();
+      const offset = event.key === 'ArrowLeft' ? -0.1 : event.key === 'ArrowRight' ? 0.1 : 0;
+      if (offset) {
+        event.preventDefault();
+        const delta = camera.position.clone().sub(controls.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), offset);
+        camera.position.copy(controls.target).add(delta);
+        controls.update();
+      }
+    };
+    renderer.domElement.addEventListener('pointerdown', down);
+    renderer.domElement.addEventListener('pointerup', up);
+    renderer.domElement.addEventListener('keydown', keydown);
+    const observer = new ResizeObserver(() => {
+      const width = Math.max(element.clientWidth, 1);
+      const height = Math.max(element.clientHeight, 1);
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      dirty = true;
+    });
+    observer.observe(element);
+    const loop = (timestamp: number) => {
+      frame = requestAnimationFrame(loop);
+      const delta = Math.min(Math.max((timestamp - lastFrame) / 1000, 0), 0.1);
+      lastFrame = timestamp;
+      const current = latest.current.settings;
+      if (current.living && current.playing && !document.hidden) elapsed += delta * current.speed;
+      const physiology = evaluateIllustrativePhysiology(elapsed, { cardiac: current.cardiac, respiratory: current.respiratory });
+      for (const [id, mesh] of meshes) {
+        const scale = !current.living ? 1 : cardiacRegions.has(id) ? physiology.cardiacScale : respiratoryRegions.has(id) ? physiology.respiratoryScale : 1;
+        if (mesh.scale.x !== scale) { mesh.scale.setScalar(scale); dirty = true; }
+      }
+      if (dirty && !document.hidden) {
+        renderer.render(scene, camera);
+        dirty = false;
+        const selected = meshes.get(current.selected ?? '');
+        if (selected?.visible && current.labels) {
+          const point = selected.getWorldPosition(new THREE.Vector3()).project(camera);
+          const projected = { x: (point.x + 1) / 2 * element.clientWidth, y: (-point.y + 1) / 2 * element.clientHeight, name: atlas.structures.find((item) => item.id === current.selected)!.name };
+          const signature = `${Math.round(projected.x)},${Math.round(projected.y)},${projected.name}`;
+          if (signature !== lastLabel) { setLabel(point.z < 1 ? projected : null); lastLabel = signature; }
+        } else if (lastLabel) { setLabel(null); lastLabel = ''; }
+      }
+    };
+    frame = requestAnimationFrame(loop);
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      controls.dispose();
+      renderer.domElement.removeEventListener('pointerdown', down);
+      renderer.domElement.removeEventListener('pointerup', up);
+      renderer.domElement.removeEventListener('keydown', keydown);
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) { object.geometry.dispose(); for (const material of [object.material].flat()) material.dispose(); }
+      });
+      renderer.dispose();
+      renderer.forceContextLoss();
+      renderer.domElement.remove();
+      engine.current = null;
+      handle.current = null;
+    };
+  }, [atlas]);
+
+  useEffect(() => { engine.current?.apply(); }, [settings]);
+  useEffect(() => { if (cameraPose) engine.current?.setPose(cameraPose); }, [cameraPose]);
+  return <div className="viewer-canvas" ref={host} data-background={settings.background}>
+    {status && <div className={`viewer-status ${failure ? 'error' : ''}`} role="status">{!failure && <span className="loading-ring" />}{status}</div>}
+    {label && !status && <div className="model-label" style={{ left: label.x, top: label.y }}>{label.name}</div>}
+  </div>;
+}

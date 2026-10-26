@@ -1,0 +1,733 @@
+{
+  "id": "digimouse-tessellated-v1",
+  "title": "Digimouse tessellated atlas",
+  "assetUrl": "/atlas/digimouse.glb",
+  "coordinateFrame": {
+    "id": "digimouse-tessellated-native-v1",
+    "handedness": "right-handed numerical Cartesian frame",
+    "sourceUnits": "interpreted millimetres",
+    "assetUnits": "metres",
+    "sourceToAssetScale": 0.001,
+    "sourceToAssetMatrix": [
+      0.001,
+      0,
+      0,
+      0,
+      0,
+      0.001,
+      0,
+      0,
+      0,
+      0,
+      0.001,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "origin": "Upstream mesh origin, unchanged apart from uniform scale",
+    "axes": {
+      "x": "native x; anatomical direction unverified",
+      "y": "native y; anatomical direction unverified",
+      "z": "native z; anatomical direction unverified"
+    },
+    "unitEvidence": "Native coordinate extents correspond to the millimetre extent of the registered 0.1 mm atlas. The distributed MAT file contains no explicit unit or orientation tags. Physical measurements and anatomical direction labels remain disabled pending independent verification.",
+    "anatomicalOrientationVerified": false,
+    "physicalCalibrationVerified": false
+  },
+  "source": {
+    "id": "digimouse-2007",
+    "title": "Digimouse: a 3D whole body mouse atlas from CT and cryosection data",
+    "authors": [
+      "Belma Dogdas",
+      "David Stout",
+      "Arion F. Chatziioannou",
+      "Richard M. Leahy"
+    ],
+    "institution": "USC Biomedical Imaging Group and UCLA collaborators",
+    "publicationYear": 2007,
+    "doi": "10.1088/0031-9155/52/3/003",
+    "url": "https://neuroimage.usc.edu/neuro/Digimouse",
+    "downloadUrl": "https://neuroimage.usc.edu/mouse_atlas/tesselated_atlas.zip",
+    "license": "CC-BY-SA-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "licenseEvidenceUrl": "https://neuroimage.usc.edu/neuro/Digimouse_license",
+    "verifiedOn": "2026-10-25",
+    "attribution": "Digimouse, Belma Dogdas, David Stout, Arion F. Chatziioannou and Richard M. Leahy, USC/UCLA, 2007. Mesh adapted by Qasim Hussain for MouseBio_3D under CC BY-SA 4.0.",
+    "methodology": "Coregistered postmortem CT and colour cryosections; labelled anatomy and constrained Delaunay tetrahedral mesh.",
+    "registeredVoxelSizeMm": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "meshSourceVoxelSizeMm": [
+      0.4,
+      0.4,
+      0.4
+    ],
+    "archiveSha256": "78c09b567497d80586a5403206494f9dea620940d61b87806f5b34f46cd6415d",
+    "matSha256": "d4c8c4f17615586bccf7e9691cb17855e965927adf299dcc27c9e8f8d2d1658b",
+    "modifications": [
+      "Extracted each region's tetrahedral boundary",
+      "Oriented triangle normals outward",
+      "Uniform native-coordinate scale of 0.001 for metre-valued glTF positions",
+      "Area-weighted vertex normals",
+      "One indexed mesh per source region",
+      "Assigned nonquantitative display colours"
+    ]
+  },
+  "structures": [
+    {
+      "id": "digimouse:1",
+      "name": "Body envelope / residual tissue",
+      "systems": [
+        "muscular",
+        "integumentary"
+      ],
+      "sourceLabel": "inside skin (muscle)",
+      "sourceRegion": 1,
+      "meshNode": "digimouse:1",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed. This is a residual tissue volume bounded by the outer body and organ cavities, not a separately segmented skin or a complete muscle inventory.",
+      "color": "#b3b4bc",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 38641,
+        "triangles": 77218,
+        "tetrahedra": 203690,
+        "boundsMeters": [
+          [
+            0.0024,
+            0.0016,
+            0.0012
+          ],
+          [
+            0.0348,
+            0.0888,
+            0.020399999999999998
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:2",
+      "name": "Brain",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "brain",
+      "sourceRegion": 2,
+      "meshNode": "digimouse:2",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed.",
+      "color": "#c5a9df",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 1420,
+        "triangles": 2836,
+        "tetrahedra": 6166,
+        "boundsMeters": [
+          [
+            0.0148,
+            0.0108,
+            0.0092
+          ],
+          [
+            0.024,
+            0.027600000000000003,
+            0.016
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:3",
+      "name": "Heart",
+      "systems": [
+        "cardiovascular"
+      ],
+      "sourceLabel": "heart",
+      "sourceRegion": 3,
+      "meshNode": "digimouse:3",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed.",
+      "color": "#d56e76",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 668,
+        "triangles": 1332,
+        "tetrahedra": 2593,
+        "boundsMeters": [
+          [
+            0.0152,
+            0.0332,
+            0.005200000000000001
+          ],
+          [
+            0.0232,
+            0.0424,
+            0.0108
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:4",
+      "name": "Bladder",
+      "systems": [
+        "urinary"
+      ],
+      "sourceLabel": "bladder",
+      "sourceRegion": 4,
+      "meshNode": "digimouse:4",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed.",
+      "color": "#d5b06d",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 379,
+        "triangles": 754,
+        "tetrahedra": 1485,
+        "boundsMeters": [
+          [
+            0.0136,
+            0.0632,
+            0.0032
+          ],
+          [
+            0.02,
+            0.0708,
+            0.0096
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:5",
+      "name": "Stomach",
+      "systems": [
+        "digestive"
+      ],
+      "sourceLabel": "stomach",
+      "sourceRegion": 5,
+      "meshNode": "digimouse:5",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed.",
+      "color": "#dfac8e",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 1017,
+        "triangles": 2030,
+        "tetrahedra": 4139,
+        "boundsMeters": [
+          [
+            0.0188,
+            0.047200000000000006,
+            0.0076
+          ],
+          [
+            0.0292,
+            0.054,
+            0.0172
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:6",
+      "name": "Spleen",
+      "systems": [
+        "lymphatic",
+        "immune"
+      ],
+      "sourceLabel": "spleen",
+      "sourceRegion": 6,
+      "meshNode": "digimouse:6",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed.",
+      "color": "#aa6b9c",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 3575,
+        "triangles": 7146,
+        "tetrahedra": 14683,
+        "boundsMeters": [
+          [
+            0.0184,
+            0.0492,
+            0.0064
+          ],
+          [
+            0.0312,
+            0.0572,
+            0.0184
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:7",
+      "name": "Kidney, region 7",
+      "systems": [
+        "urinary"
+      ],
+      "sourceLabel": "kidneys",
+      "sourceRegion": 7,
+      "meshNode": "digimouse:7",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed. Source labels do not establish anatomical laterality.",
+      "color": "#b8797a",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 676,
+        "triangles": 1348,
+        "tetrahedra": 2833,
+        "boundsMeters": [
+          [
+            0.0192,
+            0.053200000000000004,
+            0.012400000000000001
+          ],
+          [
+            0.0268,
+            0.0628,
+            0.0184
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:8",
+      "name": "Kidney, region 8",
+      "systems": [
+        "urinary"
+      ],
+      "sourceLabel": "kidneys",
+      "sourceRegion": 8,
+      "meshNode": "digimouse:8",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed. Source labels do not establish anatomical laterality.",
+      "color": "#c88b80",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 482,
+        "triangles": 960,
+        "tetrahedra": 1977,
+        "boundsMeters": [
+          [
+            0.008400000000000001,
+            0.0516,
+            0.012
+          ],
+          [
+            0.0152,
+            0.0616,
+            0.018000000000000002
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:9",
+      "name": "Lung, region 9",
+      "systems": [
+        "respiratory"
+      ],
+      "sourceLabel": "lungs",
+      "sourceRegion": 9,
+      "meshNode": "digimouse:9",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed. Source labels do not establish anatomical laterality.",
+      "color": "#80b8c4",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 722,
+        "triangles": 1440,
+        "tetrahedra": 2579,
+        "boundsMeters": [
+          [
+            0.0184,
+            0.0316,
+            0.0088
+          ],
+          [
+            0.024800000000000003,
+            0.0432,
+            0.0156
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:10",
+      "name": "Lung, region 10",
+      "systems": [
+        "respiratory"
+      ],
+      "sourceLabel": "lungs",
+      "sourceRegion": 10,
+      "meshNode": "digimouse:10",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed. Source labels do not establish anatomical laterality.",
+      "color": "#94c9cf",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 6643,
+        "triangles": 13282,
+        "tetrahedra": 29526,
+        "boundsMeters": [
+          [
+            0.0116,
+            0.033600000000000005,
+            0.0048
+          ],
+          [
+            0.0184,
+            0.0444,
+            0.0156
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:11",
+      "name": "Pancreas",
+      "systems": [
+        "digestive",
+        "endocrine"
+      ],
+      "sourceLabel": "pancreas",
+      "sourceRegion": 11,
+      "meshNode": "digimouse:11",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed.",
+      "color": "#d4b870",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 278,
+        "triangles": 552,
+        "tetrahedra": 849,
+        "boundsMeters": [
+          [
+            0.023600000000000003,
+            0.054,
+            0.012400000000000001
+          ],
+          [
+            0.0292,
+            0.0596,
+            0.0152
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:12",
+      "name": "Liver",
+      "systems": [
+        "digestive"
+      ],
+      "sourceLabel": "liver",
+      "sourceRegion": 12,
+      "meshNode": "digimouse:12",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed.",
+      "color": "#a6645f",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 3057,
+        "triangles": 6110,
+        "tetrahedra": 13944,
+        "boundsMeters": [
+          [
+            0.007200000000000001,
+            0.0424,
+            0.0032
+          ],
+          [
+            0.028399999999999998,
+            0.0528,
+            0.016800000000000002
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:13",
+      "name": "Skeleton, aggregate",
+      "systems": [
+        "skeletal"
+      ],
+      "sourceLabel": "skeleton",
+      "sourceRegion": 13,
+      "meshNode": "digimouse:13",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed.",
+      "color": "#e2d9c5",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 5304,
+        "triangles": 10600,
+        "tetrahedra": 18590,
+        "boundsMeters": [
+          [
+            0.0128,
+            0.0096,
+            0.008400000000000001
+          ],
+          [
+            0.024800000000000003,
+            0.088,
+            0.019600000000000003
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:14",
+      "name": "Muscle, region 14",
+      "systems": [
+        "muscular"
+      ],
+      "sourceLabel": "muscle",
+      "sourceRegion": 14,
+      "meshNode": "digimouse:14",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed. Source labels do not establish anatomical laterality.",
+      "color": "#c7808e",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 368,
+        "triangles": 732,
+        "tetrahedra": 1190,
+        "boundsMeters": [
+          [
+            0.0216,
+            0.01,
+            0.004
+          ],
+          [
+            0.0252,
+            0.02,
+            0.0076
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:15",
+      "name": "Muscle, region 15",
+      "systems": [
+        "muscular"
+      ],
+      "sourceLabel": "muscle",
+      "sourceRegion": 15,
+      "meshNode": "digimouse:15",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed. Source labels do not establish anatomical laterality.",
+      "color": "#d58a98",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 196,
+        "triangles": 388,
+        "tetrahedra": 580,
+        "boundsMeters": [
+          [
+            0.0132,
+            0.0112,
+            0.005200000000000001
+          ],
+          [
+            0.016,
+            0.018000000000000002,
+            0.008
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:16",
+      "name": "Testis, region 16",
+      "systems": [
+        "reproductive"
+      ],
+      "sourceLabel": "testis",
+      "sourceRegion": 16,
+      "meshNode": "digimouse:16",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed. Source labels do not establish anatomical laterality.",
+      "color": "#ba9ed0",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 291,
+        "triangles": 578,
+        "tetrahedra": 1076,
+        "boundsMeters": [
+          [
+            0.020399999999999998,
+            0.07,
+            0.0032
+          ],
+          [
+            0.024399999999999998,
+            0.076,
+            0.007200000000000001
+          ]
+        ]
+      }
+    },
+    {
+      "id": "digimouse:17",
+      "name": "Testis, region 17",
+      "systems": [
+        "reproductive"
+      ],
+      "sourceLabel": "testis",
+      "sourceRegion": 17,
+      "meshNode": "digimouse:17",
+      "description": "Surface extracted from the source region's tetrahedra; internal same-region faces removed. Source labels do not establish anatomical laterality.",
+      "color": "#c8aed8",
+      "ontologyIds": [],
+      "classification": "source-segmented region",
+      "sourceId": "digimouse-2007",
+      "metadata": {
+        "sex": "male",
+        "species": "Mus musculus",
+        "specimen": "single 28 g normal nude male mouse"
+      },
+      "geometry": {
+        "vertices": 241,
+        "triangles": 478,
+        "tetrahedra": 873,
+        "boundsMeters": [
+          [
+            0.0132,
+            0.07440000000000001,
+            0.002
+          ],
+          [
+            0.0176,
+            0.08120000000000001,
+            0.0056
+          ]
+        ]
+      }
+    }
+  ],
+  "statistics": {
+    "structures": 17,
+    "sourceNodes": 58244,
+    "sourceTetrahedra": 306773,
+    "surfaceVerticesIncludingRegionBoundaries": 63958,
+    "triangles": 127784,
+    "glbBytes": 3083672,
+    "glbSha256": "28a1957d1c44512d648bc671008a7d17ef648e99338d516b9afb3f8ed806b685",
+    "archiveBytes": 4163774
+  },
+  "limitations": [
+    "One postmortem normal nude male mouse; not a population average or female anatomy.",
+    "The tetrahedral model was generated from a 0.4 mm downsampled atlas. The original registered image volume is 0.1 mm isotropic; neither value is a guarantee of surface accuracy.",
+    "Only 17 source-labelled regions are present. The full volumetric Digimouse atlas contains more labels than this mesh.",
+    "Skeleton and brain are aggregate regions; individual bones, brain subdivisions, nerves, vessels, tissue layers and cells are not resolved.",
+    "Source mesh labels do not specify laterality of paired organs or identify the two muscle regions more precisely.",
+    "Native anatomical axis directions and coordinate calibration have not been independently verified.",
+    "No anatomical geometry has been invented to fill missing coverage; extracted surfaces have not undergone independent anatomical expert review."
+  ]
+}

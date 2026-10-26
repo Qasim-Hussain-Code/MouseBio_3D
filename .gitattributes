@@ -1,0 +1,4 @@
+* text=auto eol=lf
+*.glb binary
+# Preserve upstream evidence byte for byte, including its original whitespace.
+data/provenance/* -text -whitespace
