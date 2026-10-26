@@ -145,6 +145,15 @@ class ReleaseTests(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(ReleaseError):
                 relative_name(name)
 
+    def test_internal_agent_instructions_are_never_packaged_even_if_force_tracked(self):
+        with fixture() as root:
+            (root / "AGENTS.md").write_text("Local instructions, not publication content.\n")
+            git(root, "add", "AGENTS.md")
+            git(root, "commit", "--quiet", "-m", "add_fixture")
+            with self.assertRaisesRegex(ReleaseError, "private_input_path"):
+                prepare_release(root, Path(".publication/release"))
+            self.assertFalse((root / ".publication").exists())
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

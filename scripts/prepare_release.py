@@ -29,7 +29,7 @@ MAX_FILES = 5000
 MIN_FREE_RESERVE = 32 * 1024 * 1024
 ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 VERSION = re.compile(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?\Z")
-ROOT_FILES = {".gitattributes", ".gitignore", ".npmrc", "AGENTS.md", "LICENSE", "LICENSES.md", "README.md",
+ROOT_FILES = {".gitattributes", ".gitignore", ".npmrc", "LICENSE", "LICENSES.md", "README.md",
               "index.html", "package.json", "package-lock.json", "tsconfig.json", "vite.config.ts"}
 SOURCE_TYPES = {
     "src": {".ts", ".tsx", ".js", ".jsx", ".css", ".json", ".html", ".svg"},
@@ -42,7 +42,7 @@ SOURCE_TYPES = {
 WEB_TYPES = {".html", ".js", ".css", ".json", ".txt", ".md", ".svg"}
 PRIVATE_PARTS = {".git", ".tools", ".venv", ".npm-cache", "node_modules", "dist", ".publication",
                  "research-data", "test-results", "playwright-report", "__pycache__", ".aws", ".ssh",
-                 ".codex", ".agents", "private", "secrets", "credentials", "confidential"}
+                 ".codex", ".agents", "agents.md", "private", "secrets", "credentials", "confidential"}
 PRIVATE_STEMS = {"secret", "secrets", "credentials", "confidential", "passwords", "id_rsa", "id_ed25519"}
 WINDOWS_RESERVED = {"con", "prn", "aux", "nul", *(f"com{number}" for number in range(1, 10)),
                     *(f"lpt{number}" for number in range(1, 10))}

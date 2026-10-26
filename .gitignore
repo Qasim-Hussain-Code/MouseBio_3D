@@ -8,6 +8,7 @@ research-data/
 test-results/
 playwright-report/
 .publication/
+AGENTS.md
 *.local
 .env*
 !.env.example
