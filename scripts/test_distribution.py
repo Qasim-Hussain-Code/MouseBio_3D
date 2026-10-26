@@ -9,6 +9,7 @@ from pathlib import Path
 import unittest
 from urllib.parse import urljoin, urlparse
 from urllib.request import urlopen
+from check_publication import anatomy_registry, inspect_registered_glb
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = "http://127.0.0.1:4173/"
@@ -79,6 +80,20 @@ class ProductionDistributionTests(unittest.TestCase):
         license_text, _ = get("/atlas/LICENSE.md")
         self.assertIn(b"Dogdas", license_text)
         self.assertIn(b"creativecommons.org/licenses/by-sa/4.0", license_text)
+
+    def test_volume_and_all_regional_assets_match_reviewed_source(self):
+        registry = anatomy_registry(lambda path, limit: (ROOT / path).read_bytes() if (ROOT / path).is_file() else None)
+        volume_assets = {path: binding for path, binding in registry.items() if path.startswith("public/atlas-volume/")}
+        self.assertEqual(len(volume_assets), 20)
+        for path, binding in volume_assets.items():
+            with self.subTest(path=path):
+                data, mime = get(path.removeprefix("public"))
+                self.assertNotEqual(mime, "text/html")
+                inspect_registered_glb(data, binding)
+                self.assertEqual(data, (ROOT / path).read_bytes())
+        for name in ["atlas.json", "detail-index.json", "LICENSE.md"]:
+            data, _ = get(f"/atlas-volume/{name}")
+            self.assertEqual(data, (ROOT / "public/atlas-volume" / name).read_bytes())
 
 
 if __name__ == "__main__":

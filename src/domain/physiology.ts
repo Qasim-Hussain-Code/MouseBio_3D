@@ -42,6 +42,15 @@ export const PHYSIOLOGY_PROCESSES: readonly PhysiologyProcess[] = [
   })),
 ];
 
+/** Explicit source-ID binding. This does not establish registration or model validity. */
+export function physiologyProcessesForAtlas(atlasId: string): readonly PhysiologyProcess[] {
+  if (atlasId === 'digimouse-volume-040-v1') return PHYSIOLOGY_PROCESSES
+    .filter((process) => process.implementation === 'illustrative-deformation')
+    .map((process) => ({ ...process, atlasId, requiredStructures: process.id === 'cardiac-contraction'
+      ? ['digimouse-volume:9'] : ['digimouse-volume:21'] }));
+  return PHYSIOLOGY_PROCESSES.filter((process) => process.atlasId === atlasId);
+}
+
 export interface IllustrativePhysiologyOptions {
   speed?: number;
   cardiac?: boolean;

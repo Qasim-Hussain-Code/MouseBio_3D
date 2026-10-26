@@ -1,6 +1,6 @@
 {
   "name": "mousebio-3d",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "node scripts/third_party_notices.mjs --check && tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "tsx --test tests/*.test.ts",
+    "test": "tsx --test --test-concurrency=2 tests/*.test.ts",
     "check": "tsc --noEmit",
     "validate:geometry": "python3 scripts/test_geometry.py",
     "resources": "python3 scripts/resource_usage.py",

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  SYSTEMS, PHYSIOLOGY_PROCESSES, MAX_VIEW_STATE_BYTES, compareConditions, exportExperimentalCsv, exportExperimentalJson, exportViewState, parseViewState, parseExperimentalCsv,
+  SYSTEMS, physiologyProcessesForAtlas, MAX_VIEW_STATE_BYTES, compareConditions, exportExperimentalCsv, exportExperimentalJson, exportViewState, parseViewState, parseExperimentalCsv,
   parseExperimentalJson, summarizeMeasurements, type Atlas, type DatasetMetadata,
   type ExperimentalMeasurement, type ExplorationMode, type ImportResult, type MeasurementSummary, type ViewBackground,
 } from './domain';
@@ -11,6 +11,13 @@ import { OntologyContext } from './components/OntologyContext';
 import { getOntologyCandidate, parseOntologyCandidates } from './domain/ontology';
 import ontologyCandidateData from '../data/ontology-candidates.json';
 import { version as appVersion } from '../package.json';
+import { buildReferenceCatalog, getReference, validateReferenceAtlas, createExperimentalBank, switchAtlasExperimentalData } from './domain/atlas-catalog';
+import { defaultStructureOpacity, initialReferenceSelection, referenceOpacity } from './domain/reference-display';
+import referenceCatalogData from '../data/anatomy-references.json';
+import detailIndexData from '../public/atlas-volume/detail-index.json';
+import { buildRegionDetailAssets, type RegionDetailStatus } from './viewer/region-detail-registry';
+
+const referenceCatalog = buildReferenceCatalog(referenceCatalogData);
 
 const ViewerCanvas = lazy(() => import('./viewer/ViewerCanvas').then((module) => ({ default: module.ViewerCanvas })));
 const viewerLoading = <div className="viewer-status" role="status">Loading the 3D renderer</div>;
@@ -53,6 +60,10 @@ const download = (name: string, text: string, type = 'application/json') => {
 export default function App() {
   const [atlas, setAtlas] = useState<Atlas | null>(null);
   const [loadError, setLoadError] = useState('');
+  const [referenceLoading, setReferenceLoading] = useState(false);
+  const [referenceError, setReferenceError] = useState('');
+  const [fineEnabled, setFineEnabled] = useState(false);
+  const [detailStatus, setDetailStatus] = useState<RegionDetailStatus>({ status: 'idle', structureId: null });
   const [mode, setMode] = useState<ExplorationMode>('anatomical');
   const [selected, setSelected] = useState<string | null>('digimouse:3');
   const [hidden, setHidden] = useState<string[]>([]);
@@ -80,6 +91,11 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [viewError, setViewError] = useState('');
   const isolation = useRef<string[] | null>(null);
+  const experimentalBank = useRef(createExperimentalBank());
+  const currentData = useRef({ atlas, rows, metadata });
+  currentData.current = { atlas, rows, metadata };
+  const referenceRequest = useRef<AbortController | null>(null);
+  const referenceSequence = useRef(0);
   const dataImportSequence = useRef(0);
   const viewImportSequence = useRef(0);
   const viewer = useRef<ViewerHandle | null>(null);
@@ -91,11 +107,16 @@ export default function App() {
   const inspector = useRef<HTMLElement>(null);
   useEffect(() => {
     const abort = new AbortController();
-    fetch('/atlas/atlas.json', { signal: abort.signal }).then((response) => {
+    const reference = referenceCatalog.catalog[0];
+    if (!referenceCatalog.ok || !reference) { setLoadError('The local reference catalog is invalid.'); return; }
+    fetch(reference.manifestUrl, { signal: abort.signal }).then((response) => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.json();
-    }).then(setAtlas).catch((error) => { if (error.name !== 'AbortError') setLoadError('The local anatomical manifest could not be loaded.'); });
-    return () => abort.abort();
+    }).then((loaded: Atlas) => {
+      if (!validateReferenceAtlas(reference, loaded).ok) throw new Error('Reference binding mismatch.');
+      setAtlas(loaded); setSelected(initialReferenceSelection(loaded)); setOpacity(referenceOpacity(loaded));
+    }).catch((error) => { if (error.name !== 'AbortError') setLoadError('The local anatomical manifest could not be loaded.'); });
+    return () => { abort.abort(); referenceRequest.current?.abort(); };
   }, []);
   useEffect(() => { if (methods) dialog.current?.showModal(); else dialog.current?.close(); }, [methods]);
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 5000); return () => clearTimeout(timer); }, [notice]);
@@ -108,6 +129,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', focusSearch);
   }, []);
   const summaries = useMemo(() => summarizeMeasurements(rows), [rows]);
+  const reference = atlas ? getReference(referenceCatalog.catalog, atlas.id) : undefined;
+  const detailAssets = useMemo(() => atlas ? buildRegionDetailAssets(detailIndexData, atlas) : null, [atlas]);
+  const availableDetail = detailAssets?.assets.find((asset) => asset.structureId === selected);
+  const fineActive = fineEnabled && mode !== 'comparative';
+  const detailAsset = fineActive ? availableDetail : undefined;
   const ontologyCandidates = useMemo(() => atlas ? parseOntologyCandidates(ontologyCandidateData, atlas) : null, [atlas]);
   const seriesOptions = [...new Map(summaries.map((group) => [seriesKey(group), group])).values()];
   const activeSeries = series || (seriesOptions[0] ? seriesKey(seriesOptions[0]) : '');
@@ -124,7 +150,7 @@ export default function App() {
   const colorB = measurementColors(groupB, min, max);
   const selectedStructure = atlas?.structures.find((structure) => structure.id === selected);
   const ontologyCandidate = getOntologyCandidate(ontologyCandidates?.candidates ?? [], selected ?? '');
-  const selectedMotion = PHYSIOLOGY_PROCESSES.find((process) => process.atlasId === atlas?.id && process.requiredStructures.includes(selected ?? ''));
+  const selectedMotion = physiologyProcessesForAtlas(atlas?.id ?? '').find((process) => process.requiredStructures.includes(selected ?? ''));
   const selectedSummaries = compatible.filter((group) => group.structureId === selected);
   const first = compatible[0];
   const comparison = mode === 'comparative' && selected && first && activeA && activeB ? compareConditions(rows, {
@@ -133,16 +159,49 @@ export default function App() {
   }) : null;
   const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, colors: colorA, labels, background };
   const toggleHidden = (id: string) => { isolation.current = null; setHidden((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); };
-  const select = (id: string) => { setSelected(id); };
+  const select = (id: string) => { setSelected(id); setFineEnabled(false); setDetailStatus({ status: 'idle', structureId: null }); };
+  const switchReference = async (id: string) => {
+    const next = getReference(referenceCatalog.catalog, id);
+    if (!next || id === atlas?.id) return;
+    const sequence = ++referenceSequence.current;
+    referenceRequest.current?.abort();
+    const abort = new AbortController(); referenceRequest.current = abort;
+    setReferenceLoading(true); setReferenceError('');
+    dataImportSequence.current++; viewImportSequence.current++;
+    try {
+      const response = await fetch(next.manifestUrl, { signal: abort.signal });
+      if (!response.ok) throw new Error('The selected reference could not be loaded.');
+      const loaded = await response.json() as Atlas;
+      if (sequence !== referenceSequence.current || abort.signal.aborted) return;
+      const checked = validateReferenceAtlas(next, loaded);
+      if (!checked.ok) throw new Error(checked.errors.join(' '));
+      const current = currentData.current;
+      if (!current.atlas) return;
+      const switched = switchAtlasExperimentalData(experimentalBank.current, current.atlas,
+        { rows: current.rows, metadata: current.metadata }, loaded);
+      if (!switched.ok || !switched.data) throw new Error(switched.errors.join(' '));
+      experimentalBank.current = switched.bank;
+      dataImportSequence.current++; viewImportSequence.current++;
+      setRows(switched.data.rows); setMetadata(switched.data.metadata); setAtlas(loaded);
+      setSelected(initialReferenceSelection(loaded)); setHidden([]); setOpacity(referenceOpacity(loaded));
+      setFineEnabled(false); setDetailStatus({ status: 'idle', structureId: null }); setCameraPose(undefined); setDiagnostics(null);
+      setClipAxis('off'); setClipPosition(50); setQuery(''); setSeries(''); setConditionA(''); setConditionB('');
+      setImportResult(null); setViewError(''); isolation.current = null;
+      setNotice(switched.restored ? 'Reference switched. Its local observations were restored.' : 'Reference switched. Previous observations remain in this browser session.');
+    } catch (error) {
+      if (sequence === referenceSequence.current && !abort.signal.aborted)
+        setReferenceError(error instanceof Error ? error.message : 'Reference switch failed.');
+    } finally { if (sequence === referenceSequence.current) setReferenceLoading(false); }
+  };
   const isolate = () => {
     if (!atlas || !selected) return;
     if (isolation.current) { setHidden(isolation.current); isolation.current = null; }
     else { isolation.current = hidden; setHidden(atlas.structures.filter((structure) => structure.id !== selected).map((structure) => structure.id)); }
   };
-  const showAll = () => { setHidden([]); isolation.current = null; setOpacity({ 'digimouse:1': 0.1 }); };
+  const showAll = () => { setHidden([]); isolation.current = null; if (atlas) setOpacity(referenceOpacity(atlas)); };
   const showOrgans = () => {
     setHidden([]); isolation.current = null;
-    setOpacity({ 'digimouse:1': 0.06, 'digimouse:13': 0.14 });
+    if (atlas) setOpacity(referenceOpacity(atlas, true));
     setNotice('Body envelope and skeleton made translucent.');
   };
   const importFile = async (file: File | undefined) => {
@@ -171,7 +230,7 @@ export default function App() {
   const exportView = () => {
     if (!atlas) return;
     try {
-      const effectiveOpacity = Object.fromEntries(atlas.structures.map((structure) => [structure.id, opacity[structure.id] ?? (structure.id === 'digimouse:1' ? 0.1 : 1)]));
+      const effectiveOpacity = Object.fromEntries(atlas.structures.map((structure) => [structure.id, opacity[structure.id] ?? defaultStructureOpacity(structure)]));
       download('mousebio-view.json', exportViewState({ mode, selected, hidden, opacity: effectiveOpacity, clipAxis, clipPosition, labels, background, ...(cameraPose ? { cameraPose } : {}), living: { playing, speed, cardiac, respiratory } }, atlas));
       setNotice('View state exported.');
     } catch (error) { setViewError(error instanceof Error ? error.message : 'The view could not be exported.'); }
@@ -187,6 +246,7 @@ export default function App() {
       const result = parseViewState(text, atlas);
       if (!result.ok || !result.state) throw new Error(result.errors.join(' '));
       const state = result.state;
+      setFineEnabled(false);
       setMode(state.mode); setSelected(state.selected); setHidden(state.hidden); setOpacity(state.opacity);
       setClipAxis(state.clipAxis); setClipPosition(state.clipPosition); setLabels(state.labels); setBackground(state.background);
       setPlaying(state.living.playing); setSpeed(state.living.speed); setCardiac(state.living.cardiac); setRespiratory(state.living.respiratory);
@@ -204,7 +264,7 @@ export default function App() {
   return <div className="app-shell">
     <header className="app-header">
       <a className="brand" href="/" aria-label="MouseBio_3D home"><span className="brand-mark"><Icon name="layers" size={25} /></span><span><strong>MouseBio<span className="brand-suffix">_3D</span></strong><small>DIGITAL MOUSE LABORATORY</small></span></a>
-      <nav className="mode-nav" aria-label="Exploration mode">{MODES.map((item) => <button key={item.id} className={mode === item.id ? 'active' : ''} aria-pressed={mode === item.id} onClick={() => setMode(item.id)}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
+      <nav className="mode-nav" aria-label="Exploration mode">{MODES.map((item) => <button key={item.id} className={mode === item.id ? 'active' : ''} aria-pressed={mode === item.id} onClick={() => { setMode(item.id); if (item.id === 'comparative') setFineEnabled(false); }}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
       <div className="header-actions"><span className="local-badge"><Icon name="lock" size={13} /> Local session</span><button className="icon-button" onClick={() => setMethods(true)} title="Methods, sources and limitations" aria-label="Methods, sources and limitations"><Icon name="info" /></button></div>
     </header>
 
@@ -212,12 +272,15 @@ export default function App() {
       <div className="panel-heading"><span className="eyebrow">REFERENCE ATLAS</span><span className="version-tag">v{appVersion}</span></div>
       <h1>Explore the mouse</h1><p className="muted compact">One specimen. Connected perspectives.</p>
       <div className="reference-card"><span className="reference-dot" /><div><strong>Digimouse</strong><small>Mus musculus · male · 28 g</small></div><span className="tiny-tag">CC BY-SA</span></div>
+      <label className="reference-selector">Anatomy reference<select aria-label="Anatomy reference" value={atlas.id} disabled={referenceLoading} onChange={(event) => void switchReference(event.target.value)}>{referenceCatalog.catalog.map((entry) => <option key={entry.id} value={entry.id}>{entry.title}</option>)}</select></label>
+      <p className="reference-description">{referenceLoading ? 'Loading reference. Current observations are retained.' : atlas.id === 'digimouse-volume-040-v1' ? '21 regions with brain subdivisions and glands. Larger surface model; separate coordinates.' : 'Compact whole-body mesh for lighter rendering.'}</p>
+      {referenceError && <p role="alert" className="view-import-error">Reference unchanged. {referenceError}</p>}
       <label className="search-field"><Icon name="search" size={16} /><input ref={searchInput} type="search" placeholder="Find a structure or ID" aria-label="Find a structure or ID" value={query} onChange={(event) => { setQuery(event.target.value); setNavigatorTab('structures'); }} /><kbd>/</kbd></label>
       <div className="segmented" role="group" aria-label="Atlas navigation"><button className={navigatorTab === 'structures' ? 'active' : ''} onClick={() => setNavigatorTab('structures')}>Structures <span>{atlas.structures.length}</span></button><button className={navigatorTab === 'systems' ? 'active' : ''} onClick={() => setNavigatorTab('systems')}>Systems <span>{SYSTEMS.length}</span></button></div>
       <div className="structure-toolbar"><span>{navigatorTab === 'structures' ? `${visibleCount} visible regions` : `${represented} categories represented`}</span><div className="visibility-presets"><button className="text-button" onClick={showOrgans} title="Make the body envelope and skeleton translucent" aria-label="Organs visibility preset">Organs</button><button className="text-button" onClick={showAll}>Show all</button></div></div>
       <div className="structure-list">
         {navigatorTab === 'structures' ? atlas.structures.filter((structure) => `${structure.name} ${structure.id} ${structure.sourceLabel}`.toLowerCase().includes(query.toLowerCase())).map((structure) => <div key={structure.id} className={`structure-row ${selected === structure.id ? 'selected' : ''} ${hidden.includes(structure.id) ? 'is-hidden' : ''}`}>
-          <button className="structure-name" onClick={() => select(structure.id)} aria-pressed={selected === structure.id}><span className={`structure-dot system-${structure.systems[0]}`} /><span>{structure.name}<small>{structure.id}</small></span></button>
+          <button className="structure-name" onClick={() => select(structure.id)} aria-pressed={selected === structure.id}><span className={`structure-dot system-${structure.systems[0]}`} style={structure.color ? { backgroundColor: structure.color } : undefined} /><span>{structure.name}<small>{structure.id}</small></span></button>
           <button className="visibility-button" aria-label={`${hidden.includes(structure.id) ? 'Show' : 'Hide'} ${structure.name}`} onClick={() => toggleHidden(structure.id)}><Icon name={hidden.includes(structure.id) ? 'hidden' : 'eye'} size={15} /></button>
         </div>) : SYSTEMS.map((system) => {
           const structures = atlas.structures.filter((structure) => structure.systems.includes(system.id));
@@ -243,8 +306,8 @@ export default function App() {
       <section className={`viewport ${mode === 'comparative' ? 'comparison-viewport' : ''}`} aria-label="Anatomical viewer" data-background={background}>
         <div className="viewport-top"><span className="viewport-breadcrumb">DIGIMOUSE <span>/</span> {mode === 'comparative' ? 'SYNCHRONIZED REFERENCE' : 'WHOLE ORGANISM'}</span><div className="viewport-top-actions"><span className="viewport-chip"><span /> {atlas.structures.length} source regions</span><div className="background-switch" role="group" aria-label="Viewer background"><button aria-label="Dark background" aria-pressed={background === 'dark'} onClick={() => setBackground('dark')}><span className="background-swatch swatch-dark" />Dark</button><button aria-label="White background" aria-pressed={background === 'white'} onClick={() => setBackground('white')}><span className="background-swatch swatch-white" />White</button></div></div></div>
         <div className="canvas-pair">
-          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} settings={settings} onSelect={select} handle={viewer} onReady={setDiagnostics} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>
-          {mode === 'comparative' && <div className="canvas-cell"><div className="condition-label"><span>B</span>{activeB || 'Reference anatomy'}</div><Suspense fallback={viewerLoading}><ViewerCanvas atlas={atlas} settings={{ ...settings, colors: colorB }} onSelect={select} handle={compareViewer} onStatus={(status) => setViewerState((previous) => ({ ...previous, secondary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>}
+          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} onSelect={select} handle={viewer} onReady={setDiagnostics} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>
+          {mode === 'comparative' && <div className="canvas-cell"><div className="condition-label"><span>B</span>{activeB || 'Reference anatomy'}</div><Suspense fallback={viewerLoading}><ViewerCanvas atlas={atlas} detailAsset={detailAsset} settings={{ ...settings, colors: colorB }} onSelect={select} handle={compareViewer} onStatus={(status) => setViewerState((previous) => ({ ...previous, secondary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>}
         </div>
         <div className="view-controls"><button className="viewer-button" aria-label="Reset camera" title="Reset camera (Home)" onClick={() => viewer.current?.reset()}><Icon name="reset" size={17} /></button><span className="control-divider" />{(['x', 'y', 'z'] as const).map((axis) => <button className="viewer-button axis-button" key={axis} aria-label={`View along display ${axis} axis`} title={`Display ${axis.toUpperCase()} axis; not an anatomical direction`} onClick={() => viewer.current?.view(axis)}>{axis.toUpperCase()}</button>)}<span className="control-divider" /><button className={`viewer-button ${labels ? 'active' : ''}`} aria-label="Toggle selected structure label" aria-pressed={labels} onClick={() => setLabels(!labels)}>Aa</button></div>
         {shownGroups.length > 0 && (mode === 'experimental' || mode === 'comparative') && <div className="quantitative-legend"><strong>Mean {first?.measurement}</strong><span>{first?.unit} · {first?.timePoint}</span><div className="color-ramp" /><div className="legend-numbers"><span>{format(min)}</span><span>{format(max)}</span></div><small>Unmapped regions retain atlas colors</small></div>}
@@ -256,7 +319,7 @@ export default function App() {
       {(mode === 'experimental' || mode === 'comparative') && <div className="data-panel"><div className="data-panel-heading"><div><strong>{rows.length ? metadata.title || 'Local experimental dataset' : 'Connect measurements to anatomy'}</strong><p>{rows.length ? `${rows.length} observations · ${new Set(rows.map((row) => row.replicate)).size} biological subject IDs · ${summaries.length} groups` : 'Import CSV or JSON with explicit structure IDs, units and biological replicates.'}</p></div>{rows.length > 0 && <button className="text-button" onClick={() => { dataImportSequence.current++; setRows([]); setImportResult(null); setMetadata({ origin: 'user-data' }); }}>Clear local data</button>}</div>
         <div className="import-actions"><input ref={fileInput} id="dataset-file" type="file" accept=".csv,.json,text/csv,application/json" aria-label="Import experimental dataset" onChange={(event) => void importFile(event.target.files?.[0])} /><button className="primary-button" onClick={() => fileInput.current?.click()}><Icon name="upload" size={15} /> Import dataset</button><button className="secondary-button" onClick={() => download('mousebio-template.csv', exportExperimentalCsv([]), 'text/csv')}>CSV template</button><button className="secondary-button" disabled={!rows.length} onClick={exportDataset}><Icon name="download" size={15} /> Export JSON</button><span className="privacy-note"><Icon name="lock" size={13} /> Files stay in this browser session</span></div>
         {importResult && <div className={`import-result ${importResult.ok ? 'success' : 'invalid'}`} role="status">{importResult.ok ? `Accepted ${importResult.rows.length} measurements. No data transmitted.` : <><strong>Import rejected. Existing observations are retained.</strong><ul>{importResult.errors.slice(0, 6).map((error, index) => <li key={index}>{error.row ? `Row ${error.row}: ` : ''}{error.message}</li>)}</ul>{importResult.errors.length > 6 && <span>{importResult.errors.length - 6} additional errors. Correct these rows and reimport.</span>}</>}{importResult.warnings.map((warning, index) => <p key={index}>{warning.message}</p>)}</div>}
-        {!rows.length && <p className="schema-hint"><code>structure_id, measurement, value, unit, replicate, condition, time_point</code><br />Use source IDs such as <code>digimouse:3</code> for the heart. One row per biological subject, structure, measurement, condition and time point. Maximum 5 MiB.</p>}
+        {!rows.length && <p className="schema-hint"><code>structure_id, measurement, value, unit, replicate, condition, time_point</code><br />Use IDs from this reference, such as <code>{initialReferenceSelection(atlas)}</code> for the heart. One row per biological subject, structure, measurement, condition and time point. Maximum 5 MiB. Observations stay attached to their original reference.</p>}
         {rows.length > 0 && <><p className="dataset-source">{metadata.sourceReference ? `Declared source: ${metadata.sourceReference}` : 'Source reference not supplied.'}</p><DatasetDetails metadata={metadata} onChange={setMetadata} /></>}
         {mode === 'comparative' && <p className="comparison-note">Both panels use the same male reference geometry. Only imported measurements change. Sex, developmental and disease anatomy are not available.</p>}
       </div>}
@@ -265,8 +328,9 @@ export default function App() {
 
     <aside className="inspector panel" id="structure-inspector" ref={inspector} tabIndex={-1}><div className="panel-heading"><span className="eyebrow">STRUCTURE INSPECTOR</span><Icon name="focus" size={16} /></div>{selectedStructure ? <>
       <div className="structure-type">{selectedStructure.systems.map((id) => SYSTEMS.find((system) => system.id === id)?.name).filter(Boolean).join(' / ')}</div><h2>{selectedStructure.name}</h2><code className="structure-id">{selectedStructure.id}</code>
+      <section className="surface-detail"><h3>Surface detail</h3><p>{reference?.processingResolution.processingVoxelSpacingMm?.[0]} mm processing grid. Source spacing and surface accuracy are different quantities.</p>{availableDetail ? <><label><input type="checkbox" aria-label="Finer selected surface" checked={fineActive} disabled={mode === 'comparative'} onChange={(event) => { setFineEnabled(event.target.checked); setDetailStatus({ status: 'idle', structureId: null }); }} /> Finer selected surface (0.2 mm)</label><small>{(availableDetail.glbBytes / 1_000_000).toFixed(2)} MB, loaded locally on demand. Other regions retain their base surface.</small><p role="status">{mode === 'comparative' ? 'Compare uses the same base surfaces in both panels.' : viewerFailed ? 'The 3D viewer is unavailable.' : fineActive ? detailStatus.status === 'ready' ? 'Finer surface loaded.' : detailStatus.status === 'failed' ? 'Finer surface unavailable. Base geometry retained.' : 'Preparing finer surface.' : 'Base surface active.'}</p></> : <p>No finer surface is bundled for this region.</p>}<small>View files restore the base surface. Selecting another region resets this control. Finer sampling adds no tissue or cellular anatomy.</small></section>
       <div className="inspector-actions"><button className="primary-button" onClick={() => viewer.current?.focus()}><Icon name="focus" size={15} /> Focus</button><button className="secondary-button" onClick={isolate}>{isolation.current ? 'Restore' : 'Isolate'}</button><button className="icon-button" aria-label={`${hidden.includes(selectedStructure.id) ? 'Show' : 'Hide'} selected structure`} onClick={() => toggleHidden(selectedStructure.id)}><Icon name={hidden.includes(selectedStructure.id) ? 'hidden' : 'eye'} size={17} /></button></div>
-      <div className="opacity-control"><label htmlFor="structure-opacity">Opacity <strong>{Math.round((opacity[selectedStructure.id] ?? 1) * 100)}%</strong></label><input id="structure-opacity" type="range" min="0" max="100" value={(opacity[selectedStructure.id] ?? 1) * 100} onChange={(event) => setOpacity({ ...opacity, [selectedStructure.id]: +event.target.value / 100 })} /></div>
+      <div className="opacity-control"><label htmlFor="structure-opacity">Opacity <strong>{Math.round((opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100)}%</strong></label><input id="structure-opacity" type="range" min="0" max="100" value={(opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100} onChange={(event) => setOpacity({ ...opacity, [selectedStructure.id]: +event.target.value / 100 })} /></div>
       <section className="inspector-section"><h3>Source annotation</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>Source segmented region</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
       {ontologyCandidate && <OntologyContext candidate={ontologyCandidate} onDownload={() => download('ontology-candidates.json', JSON.stringify(ontologyCandidateData, null, 2))} />}
       {mode === 'living' && <section className="inspector-section"><h3>Motion model</h3><p>{selectedMotion?.limitations[0] ?? 'No physiological animation is implemented for this region.'}</p>{selectedMotion && <span className="status-tag">Illustrative classification</span>}</section>}
@@ -275,6 +339,6 @@ export default function App() {
       <div className="scientific-note"><Icon name="info" size={17} /><p>A reference from one specimen. Geometry is incomplete, and anatomical orientation and physical calibration need independent verification.</p></div>
     </> : <p>Select a region in the viewer or anatomical inventory.</p>}</aside>
     {notice && <div className="toast" role="status">{notice}</div>}
-    <dialog ref={dialog} className="methods-dialog" onCancel={() => setMethods(false)} onClick={(event) => { if (event.target === event.currentTarget) setMethods(false); }}><div className="dialog-header"><span className="eyebrow">METHODS AND PROVENANCE</span><button className="icon-button" onClick={() => setMethods(false)} aria-label="Close methods"><Icon name="close" /></button></div><h2>A source-grounded starting point</h2><p>MouseBio_3D is an incremental digital laboratory mouse maintained by Qasim Hussain. This prototype contains the 17 regions in the Digimouse tetrahedral mesh, from one 28 g male nude mouse.</p><div className="method-stats"><div><strong>{atlas.structures.length}</strong><span>source regions</span></div><div><strong>{SYSTEMS.length}</strong><span>system categories</span></div><div><strong>1</strong><span>reference specimen</span></div></div><h3>What the data support</h3><ul>{atlas.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul><p>Magnification changes the view only. No tissue, cellular, vessel or peripheral nerve detail has been generated. Motion is illustrative surface deformation with arbitrary display periods. Experimental comparisons use your imported observations on identical reference geometry.</p><h3>Coordinates and transformations</h3><p>Native mesh coordinates are preserved in the asset, with a uniform 0.001 scale to metre-valued glTF coordinates. The viewer centers the object and rotates it 90 degrees about display Z for presentation. Anatomical axis labels, calibrated measurements and spatial registration remain disabled.</p><h3>Sources and licenses</h3><p>Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Physics in Medicine and Biology, 2007. <a href="https://doi.org/10.1088/0031-9155/52/3/003" target="_blank" rel="noreferrer">Publication</a>. <a href="https://neuroimage.usc.edu/neuro/Digimouse_license" target="_blank" rel="noreferrer">Official CC BY-SA 4.0 license</a>.</p><p>The adapted geometry retains CC BY-SA 4.0. Original source code is MIT; original documentation is CC BY 4.0. Automated geometry checks are not independent anatomical review.</p><p className="privacy-method"><Icon name="lock" size={16} /> Imported research files stay in memory on this device. Reloading clears them. No analytics, remote data service or automatic upload is used.</p><button className="primary-button" onClick={() => setMethods(false)}>Return to laboratory <Icon name="arrow" size={15} /></button></dialog>
+    <dialog ref={dialog} className="methods-dialog" onCancel={() => setMethods(false)} onClick={(event) => { if (event.target === event.currentTarget) setMethods(false); }}><div className="dialog-header"><span className="eyebrow">METHODS AND PROVENANCE</span><button className="icon-button" onClick={() => setMethods(false)} aria-label="Close methods"><Icon name="close" /></button></div><h2>A source-grounded starting point</h2><p>MouseBio_3D is an incremental digital laboratory mouse maintained by Qasim Hussain. The active reference contains {atlas.structures.length} source regions from one 28 g male nude mouse. The lightweight mesh and registered-volume surfaces are separate references with distinct coordinates and IDs.</p><div className="method-stats"><div><strong>{atlas.structures.length}</strong><span>source regions</span></div><div><strong>{SYSTEMS.length}</strong><span>system categories</span></div><div><strong>1</strong><span>reference specimen</span></div></div><h3>What the data support</h3><ul>{atlas.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul><p>Magnification changes the view only. No tissue, cellular, vessel or peripheral nerve detail has been generated. Motion is illustrative surface deformation with arbitrary display periods. Experimental comparisons use your imported observations on identical reference geometry.</p><h3>Coordinates and transformations</h3><p>Source coordinates are preserved in metre-valued assets. The lightweight reference uses an interpreted millimetre scale; the volume reference uses source voxel indices and the reported 0.1 mm spacing. The viewer centers the object and rotates it 90 degrees about display Z for presentation. Anatomical axis labels, calibrated measurements and spatial registration remain disabled.</p><h3>Sources and licenses</h3><p>Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Physics in Medicine and Biology, 2007. <a href="https://doi.org/10.1088/0031-9155/52/3/003" target="_blank" rel="noreferrer">Publication</a>. <a href="https://neuroimage.usc.edu/neuro/Digimouse_license" target="_blank" rel="noreferrer">Official CC BY-SA 4.0 license</a>.</p><p>The adapted geometry retains CC BY-SA 4.0. Original source code is MIT; original documentation is CC BY 4.0. Automated geometry checks are not independent anatomical review.</p><p className="privacy-method"><Icon name="lock" size={16} /> Imported research files stay in memory on this device. Reloading clears them. No analytics, remote data service or automatic upload is used.</p><button className="primary-button" onClick={() => setMethods(false)}>Return to laboratory <Icon name="arrow" size={15} /></button></dialog>
   </div>;
 }

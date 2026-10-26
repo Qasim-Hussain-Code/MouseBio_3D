@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { evaluateIllustrativePhysiology, PHYSIOLOGY_PROCESSES, type Atlas, type ViewBackground } from '../domain';
+import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas, type ViewBackground } from '../domain';
+import { defaultStructureOpacity } from '../domain/reference-display';
+import { fetchBoundGlb, RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
 import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, isPointRetainedByClipPlane, recenterMeshGeometry, type CameraPose } from './scene-utils';
 
 export type { CameraPose } from './scene-utils';
@@ -32,6 +34,8 @@ type Props = {
   cameraPose?: CameraPose;
   onCameraChange?: (pose: CameraPose) => void;
   title?: string;
+  detailAsset?: RegionDetailAsset | null;
+  onDetailStatus?: (status: RegionDetailStatus) => void;
 };
 
 const palette: Record<string, string> = {
@@ -40,17 +44,19 @@ const palette: Record<string, string> = {
   immune: '#937f9d', endocrine: '#bfaa6d', integumentary: '#8f9d9a',
 };
 
-export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title }: Props) {
+export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus }: Props) {
   const host = useRef<HTMLDivElement>(null);
-  const latest = useRef({ settings, onSelect, onCameraChange, cameraPose });
-  latest.current = { settings, onSelect, onCameraChange, cameraPose };
-  const engine = useRef<{ apply: () => void; setPose: (pose: CameraPose) => void } | null>(null);
+  const latest = useRef({ settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady });
+  latest.current = { settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady };
+  const engine = useRef<{ apply: () => void; setPose: (pose: CameraPose) => void; setDetail: () => void } | null>(null);
   const [status, setStatus] = useState('Loading licensed anatomical mesh');
   const [failure, setFailure] = useState(false);
   const [label, setLabel] = useState<{ x: number; y: number; name: string } | null>(null);
 
   useEffect(() => {
     if (!host.current) return;
+    setStatus('Loading licensed anatomical mesh'); setFailure(false); setLabel(null);
+    latest.current.onDetailStatus?.({ status: 'idle', structureId: null });
     onStatus?.('loading');
     const element = host.current;
     let disposed = false;
@@ -61,6 +67,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       setFailure(true);
       onStatus?.('failed');
       setStatus('WebGL could not start. Enable browser hardware acceleration or use a WebGL 2 compatible browser. The anatomical inventory and data tools remain available.');
+      if (latest.current.detailAsset) latest.current.onDetailStatus?.({ status: 'failed', structureId: latest.current.detailAsset.structureId, message: 'The 3D renderer is unavailable; regional detail was not loaded.' });
       return;
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -89,8 +96,10 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const meshes = new Map<string, THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>();
-    const cardiacRegions = new Set(PHYSIOLOGY_PROCESSES.find((process) => process.id === 'cardiac-contraction' && process.atlasId === atlas.id)?.requiredStructures ?? []);
-    const respiratoryRegions = new Set(PHYSIOLOGY_PROCESSES.find((process) => process.id === 'respiratory-movement' && process.atlasId === atlas.id)?.requiredStructures ?? []);
+    const detailTargets = new Map<string, { mesh: THREE.Mesh<THREE.BufferGeometry>; sourceToLocal: THREE.Matrix4 }>();
+    const processes = physiologyProcessesForAtlas(atlas.id);
+    const cardiacRegions = new Set(processes.find((process) => process.id === 'cardiac-contraction')?.requiredStructures ?? []);
+    const respiratoryRegions = new Set(processes.find((process) => process.id === 'respiratory-movement')?.requiredStructures ?? []);
     const bounds = new THREE.Box3();
     let radius = 0.1;
     let frame = 0;
@@ -101,7 +110,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let loaded = false;
     let lastLabel = '';
     const clip = new THREE.Plane();
-    const defaultOpacity = (id: string) => id === 'digimouse:1' ? 0.1 : 1;
+    const defaultOpacity = (id: string) => defaultStructureOpacity(atlas.structures.find((structure) => structure.id === id)!);
     const apply = () => {
       const current = latest.current.settings;
       renderer.setClearColor(current.background === 'white' ? '#ffffff' : '#111d23', 1);
@@ -113,7 +122,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         mesh.material.transparent = opacity < 1;
         mesh.material.depthWrite = opacity >= 0.95;
         mesh.renderOrder = opacity < 1 ? 2 : 0;
-        mesh.material.color.set(current.colors[id] ?? palette[structure.systems[0]] ?? '#9ba5a1');
+        mesh.material.color.set(current.colors[id] ?? structure.color ?? palette[structure.systems[0]] ?? '#9ba5a1');
         mesh.material.emissive.set(id === current.selected ? '#315b54' : '#000000');
         mesh.material.emissiveIntensity = id === current.selected ? 0.65 : 0;
         mesh.material.clippingPlanes = current.clipAxis === 'off' ? [] : [clip];
@@ -121,6 +130,11 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       if (current.clipAxis !== 'off') clip.copy(createDisplayClipPlane(current.clipAxis, current.clipPosition, radius));
       dirty = true;
     };
+    const detailController = new RegionDetailController(atlas, (id) => detailTargets.get(id), () => {
+      dirty = true;
+      if (!disposed && loaded) latest.current.onReady?.({ meshes: meshes.size,
+        triangles: [...meshes.values()].reduce((total, mesh) => total + (mesh.geometry.index?.count ?? mesh.geometry.getAttribute('position').count) / 3, 0) });
+    }, (state) => { if (!disposed) latest.current.onDetailStatus?.(state); });
     const announcePose = () => {
       dirty = true;
       if (!syncing && loaded) latest.current.onCameraChange?.(captureCameraPose(camera, controls.target));
@@ -133,7 +147,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       syncing = false;
       dirty = true;
     };
-    engine.current = { apply, setPose };
+    engine.current = { apply, setPose, setDetail: () => { if (loaded) void detailController.request(latest.current.detailAsset, latest.current.settings.selected); } };
     const reset = () => {
       controls.target.set(0, 0, 0);
       camera.up.set(0, 1, 0);
@@ -163,7 +177,9 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         dirty = true;
       },
     };
-    new GLTFLoader().load(atlas.assetUrl, (gltf) => {
+    const sourceAbort = new AbortController();
+    void fetchBoundGlb(atlas.assetUrl, atlas.statistics.glbBytes as number, atlas.statistics.glbSha256 as string, sourceAbort.signal)
+      .then((bytes) => new GLTFLoader().parseAsync(bytes, '')).then((gltf) => {
       if (disposed) {
         gltf.scene.traverse((object) => {
           if (object instanceof THREE.Mesh) { object.geometry.dispose(); for (const material of [object.material].flat()) material.dispose(); }
@@ -174,6 +190,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       const sourceBounds = new THREE.Box3().setFromObject(gltf.scene);
       gltf.scene.position.sub(sourceBounds.getCenter(new THREE.Vector3()));
       display.add(gltf.scene);
+      gltf.scene.updateWorldMatrix(true, true);
       let triangles = 0;
       let sourceMeshCount = 0;
       gltf.scene.traverse((object) => {
@@ -187,6 +204,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         object.material = new THREE.MeshStandardMaterial({ roughness: 0.68, metalness: 0.02, side: THREE.DoubleSide });
         object.userData.structureId = structure.id;
         meshes.set(structure.id, object as THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>);
+        object.updateWorldMatrix(true, false);
+        detailTargets.set(structure.id, { mesh: object, sourceToLocal: object.matrixWorld.clone().invert().multiply(gltf.scene.matrixWorld) });
         triangles += (object.geometry.index?.count ?? object.geometry.attributes.position.count) / 3;
       });
       if (meshes.size !== atlas.structures.length || sourceMeshCount !== atlas.structures.length) throw new Error(`Model metadata mismatch: ${meshes.size} mapped regions from ${sourceMeshCount} meshes; expected ${atlas.structures.length}.`);
@@ -204,6 +223,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       setStatus('');
       onStatus?.('ready');
       onReady?.({ meshes: meshes.size, triangles });
+      void detailController.request(latest.current.detailAsset, latest.current.settings.selected);
       } catch (error) {
         console.error('Anatomical geometry rejected', error);
         display.visible = false;
@@ -211,12 +231,12 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         onStatus?.('failed');
         setStatus('The anatomical geometry could not be verified against its manifest. Check the local asset and provenance files.');
       }
-    }, undefined, (error) => {
+    }).catch((error) => {
       if (disposed) return;
       console.error('Anatomical asset failed to load', error);
       setFailure(true);
       onStatus?.('failed');
-      setStatus('The anatomical asset could not be loaded. Check the local server and public/atlas files.');
+      setStatus('The anatomical asset could not be loaded. Check the local server and the selected reference asset and provenance files.');
     });
     let pointerDown: { x: number; y: number } | null = null;
     const down = (event: PointerEvent) => { pointerDown = { x: event.clientX, y: event.clientY }; };
@@ -280,6 +300,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     frame = requestAnimationFrame(loop);
     return () => {
       disposed = true;
+      sourceAbort.abort();
+      detailController.dispose();
       cancelAnimationFrame(frame);
       observer.disconnect();
       controls.dispose();
@@ -299,6 +321,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
 
   useEffect(() => { engine.current?.apply(); }, [settings]);
   useEffect(() => { if (cameraPose) engine.current?.setPose(cameraPose); }, [cameraPose]);
+  useEffect(() => { engine.current?.setDetail(); }, [detailAsset, settings.selected]);
   return <div className="viewer-canvas" ref={host} data-background={settings.background}>
     {status && <div className={`viewer-status ${failure ? 'error' : ''}`} role="status">{!failure && <span className="loading-ring" />}{status}</div>}
     {label && !status && <div className="model-label" style={{ left: label.x, top: label.y }}>{label.name}</div>}

@@ -1,6 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "reviewedOn": "2026-10-25",
+  "updatedOn": "2026-10-26",
   "notes": "Resource evaluation is distinct from imported asset provenance. Null denotes unknown or not applicable, as explained by each record. Dataset-specific licenses take precedence over general website descriptions.",
   "resources": [
     {
@@ -46,17 +47,18 @@
     },
     {
       "id": "allen_ccfv3",
-      "title": "Allen Mouse Brain Common Coordinate Framework version 3",
+      "title": "Allen Mouse Brain Common Coordinate Framework: Allen-CCF-2020 package",
       "origin": "Allen Institute for Brain Science",
-      "landingPage": "https://brain-map.org/support/tutorials",
+      "landingPage": "https://raw.githubusercontent.com/AllenInstitute/abc_atlas_access/main/descriptions/Allen-CCF-2020.md",
+      "release": {"id": "Allen-CCF-2020", "packageVersion": "20230630", "reportedImageVolumesSize": "379.1 MB", "reportedMetadataSize": "1.18 MB", "verifiedOn": "2026-10-26"},
       "publication": {"doi": "10.1016/j.cell.2020.04.007", "year": 2020, "firstAuthor": "Quanxin Wang", "verifiedAt": "https://doi.org/10.1016/j.cell.2020.04.007"},
-      "license": {"identifier": null, "verifiedAt": "https://alleninstitute.org/legal/terms-of-use", "redistribution": "general_terms_noncommercial_only_unless_specific_permission", "url": "https://alleninstitute.org/legal/terms-of-use", "datasetSpecificPermissionVerified": false},
+      "license": {"identifier": "LicenseRef-Allen-Institute-Terms", "verifiedAt": "https://raw.githubusercontent.com/AllenInstitute/abc_atlas_access/main/descriptions/Allen-CCF-2020.md", "redistribution": "research_or_other_noncommercial_purposes_subject_to_terms_commercial_permission_required", "url": "https://alleninstitute.org/legal/terms-of-use", "datasetSpecificPermissionVerified": true, "scope": "Allen-CCF-2020 package identified in the source description; not a CC-BY-4.0 grant and not a blanket determination for separate archive releases"},
       "coverage": "Mouse brain reference anatomy only.",
       "methodology": "Average reference from serial two-photon tomography; 3D anatomical annotation.",
       "specimen": {"species": "Mus musculus", "strainAsReported": "C57BL/6J", "ageGroup": "young adult", "referenceImageCount": 1675},
-      "resolution": {"availableVoxelSpacingMicrometres": [10, 25, 50, 100], "source": "https://brain-map.org/support/documentation/projection-dataset"},
-      "download": {"compressedBytes": null, "decision": "deferred_dataset_license_and_subset_review_required"},
-      "limitations": ["Not whole-body anatomy", "10 micrometre template spacing includes interpolation from 100 micrometre z-sampling", "General terms do not establish a permissive license for a specific release", "Registration to the initial body atlas is not established", "Highest-resolution full volumes are unsuitable for automatic initial download"]
+      "resolution": {"referenceTemplateVoxelSpacingMicrometres": 10, "source": "https://raw.githubusercontent.com/AllenInstitute/abc_atlas_access/main/descriptions/Allen-CCF-2020.md", "note": "Other CCF archive releases provide additional resolutions; they are not assumed to be the same package."},
+      "download": {"compressedBytes": null, "decision": "deferred_noncommercial_terms_and_selective_asset_review", "assetsDownloaded": false},
+      "limitations": ["Not whole-body anatomy", "10 micrometre template spacing includes interpolation from 100 micrometre z-sampling", "Selected dataset explicitly uses Allen Institute Terms of Use rather than an unrestricted CC-BY-4.0 license", "Registration to Digimouse is not established", "Full volume package exceeds the current 5 MB acquisition bound and has not been downloaded", "Distinct Allen datasets and software can have different licenses"]
     },
     {
       "id": "rosenhain_microct_2018",
@@ -83,6 +85,77 @@
       "resolution": null,
       "download": {"compressedBytes": null, "decision": "candidate_not_downloaded_or_executed"},
       "limitations": ["Not a whole-heart mechanical contraction model", "Repository availability is not evidence that this application has reproduced results", "Equations, parameters, numerical solver, units and independent validation must be reviewed before implementation", "No prediction of treatment or disease response is supported by this resource review alone"]
+    },
+    {
+      "id": "allen_ccf2017_region_meshes",
+      "title": "Selected Allen CCF 2017 regional brain OBJ candidates",
+      "origin": "Allen Institute for Brain Science",
+      "landingPage": "https://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/structure_meshes/",
+      "sourceRelease": "annotation/ccf_2017",
+      "verifiedOn": "2026-10-26",
+      "publication": {"doi": "10.1016/j.cell.2020.04.007", "year": 2020, "relationship": "reference-framework methods; selected individual files remain uninspected"},
+      "license": {"identifier": null, "verifiedAt": "https://alleninstitute.org/legal/terms-of-use", "redistribution": "deferred_individual_archive_terms_review", "datasetSpecificPermissionVerified": false, "note": "No separate unrestricted license for these selected 2017 OBJ files was established; do not transfer licenses from other Allen packages or access software."},
+      "coverage": "Individual regional brain surfaces with Allen structure identifiers; no whole-body registration.",
+      "methodology": "Official Allen archive surfaces corresponding to the CCF reference; geometry generation and units require file inspection.",
+      "sourceIdEvidence": "https://allensdk.readthedocs.io/en/latest/_static/examples/nb/reference_space.html",
+      "coordinateAssessment": {"volumeAxisConvention": ["anterior-to-posterior", "superior-to-inferior", "left-to-right"], "meshUnits": null, "registrationToDigimouse": null},
+      "download": {"decision": "metadata_review_only_no_assets_downloaded", "assetsDownloaded": false, "maximumBodyBytesForNextPreflight": 5000000, "candidates": [
+        {"structureId": 1011, "name": "Dorsal auditory area", "url": "https://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/structure_meshes/1011.obj", "bytes": null, "sha256": null},
+        {"structureId": 247, "name": "Auditory areas", "url": "https://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/structure_meshes/247.obj", "bytes": null, "sha256": null},
+        {"structureId": 385, "name": "Primary visual area", "url": "https://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/structure_meshes/385.obj", "bytes": null, "sha256": null}
+      ]},
+      "limitations": ["Individual file sizes and checksums have not been preflighted", "Parent and child regional surfaces may overlap", "Allen IDs are not Digimouse labels or reviewed MA mappings", "A source-specific frame and accepted registration are required before any whole-body overlay", "No added geometry or implemented coverage is implied"]
+    },
+    {
+      "id": "mouselight_aa1624",
+      "title": "MouseLight Neuron AA1624",
+      "origin": "HHMI Janelia Research Campus MouseLight Project",
+      "landingPage": "https://janelia.figshare.com/articles/dataset/MouseLight_Neuron_AA1624/27766452",
+      "sourceRecordId": "27766452",
+      "sourceNeuronId": "AA1624",
+      "creators": ["Mary Lay", "Tiago Ferreira", "MouseLight Project Team"],
+      "recordPostedOn": "2024-11-19",
+      "recordVersion": null,
+      "verifiedOn": "2026-10-26",
+      "publication": {"doi": "10.1016/j.cell.2019.07.042", "year": 2019, "relationship": "MouseLight project methods, not independent validation of this later deposit", "verifiedAt": "https://www.janelia.org/publication/reconstruction-of-1000-projection-neurons-reveals-new-cell-types-and-organization-of"},
+      "license": {"identifier": "CC-BY-4.0", "verifiedAt": "https://janelia.figshare.com/articles/dataset/MouseLight_Neuron_AA1624/27766452", "url": "https://creativecommons.org/licenses/by/4.0/", "redistribution": "permitted_with_attribution_for_the_recorded_resource", "verificationLimit": "Primary record indexed by search; direct page and API file metadata were unavailable during this review. Verify the individual file and record version before acquisition."},
+      "coverage": "One reconstructed neuron; not a regional organ mesh, complete cellular atlas or observed synaptic-connectivity graph.",
+      "methodology": "MouseLight single-neuron reconstruction from light microscopy of sparsely labelled brains; project sources describe Allen-reference registration.",
+      "methodologySource": "https://www.janelia.org/project-team/mouselight/resources",
+      "resolution": {"individualFileSampling": null, "coordinateUnits": null},
+      "download": {"reportedSize": "1.1 MB", "bytes": null, "sha256": null, "format": null, "decision": "candidate_file_metadata_and_coordinate_review_required", "assetsDownloaded": false},
+      "limitations": ["Exact file list, version, byte count, checksum and coordinates remain unverified", "The cited project registration does not establish a Digimouse transform or a particular CCF release for this cell", "A single morphology does not establish complete neuronal coverage or functional connectivity"]
+    },
+    {
+      "id": "mouse_musculoskeletal_2021",
+      "title": "A Whole-Body Musculoskeletal Model of the Mouse: resource candidate",
+      "origin": "Tata Ramalingasetty and collaborators",
+      "landingPage": "https://gitlab.com/paper_submissions/mouse_biomechanics_paper",
+      "publication": {"doi": "10.1109/ACCESS.2021.3133078", "year": 2021, "articleLicense": "CC-BY-4.0", "verifiedAt": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8865483/"},
+      "sourceRelease": null,
+      "verifiedOn": "2026-10-26",
+      "license": {"identifier": null, "redistribution": "unresolved_for_model_assets", "note": "The article's CC-BY-4.0 license does not by itself establish a license for separate repository meshes or third-party source geometry."},
+      "coverage": "Published generic skeletal and limb-muscle model; actual available mesh inventory has not been inspected.",
+      "methodology": "Multi-source anatomical references and digitized skeletal objects with modelled limb muscle paths and Hill-type dynamics.",
+      "resolution": null,
+      "download": {"bytes": null, "decision": "deferred_asset_license_release_and_size_review", "assetsDownloaded": false},
+      "limitations": ["Repository asset license, pinned release, complete file inventory and selective sizes were not established", "Composite generic model is not measured geometry of the Digimouse specimen", "Muscle paths and modelling assumptions do not supply complete muscle surface anatomy", "No downloaded asset or implemented model is implied"]
+    },
+    {
+      "id": "morphomuseum_mouse_bony_labyrinth_1376",
+      "title": "Mouse paired bony labyrinths: MorphoMuseuM M3#1376",
+      "origin": "Sabrina Renaud, Léa Amar, Caroline Romestaing, Jean-Pierre Quéré and Renaud Lebrun",
+      "landingPage": "https://www.morphomuseum.com/articles/view/220",
+      "sourceRecord": {"id": "M3#1376", "doi": "10.18563/m3.sf.1376", "specimenId": "SW0ter", "specimenUrl": "https://www.morphomuseum.com/specimens/view/1172", "sourceFileVersion": null, "verifiedOn": "2026-10-26"},
+      "publication": {"doi": "10.18563/journal.m3.220", "year": 2024, "publishedOn": "2024-01-15"},
+      "license": {"identifier": "CC-BY-NC-4.0", "url": "https://creativecommons.org/licenses/by-nc/4.0/", "verifiedAt": "https://www.morphomuseum.com/", "scope": "The repository explicitly licenses all displayed 3D data under CC BY-NC 4.0.", "redistribution": "attribution_and_noncommercial_restriction"},
+      "coverage": "Two bony labyrinth surfaces from a Swiss laboratory mouse; not a complete skull or skeleton.",
+      "specimen": {"species": "Mus musculus", "strain": "Swiss", "sex": "male", "stage": "adult", "registrationToDigimouse": null},
+      "methodology": null,
+      "resolution": null,
+      "coordinateUnits": null,
+      "download": {"bytes": null, "format": null, "sha256": null, "decision": "candidate_noncommercial_terms_and_file_preflight_required", "assetsDownloaded": false, "maximumBodyBytesForNextPreflight": 5000000},
+      "limitations": ["Exact file size, format, checksum, source-file version, acquisition method and resolution were not established", "No source geometry was downloaded or incorporated", "Different specimen and unknown frame preclude assumed anatomical overlay", "Noncommercial terms do not provide an unrestricted commercial redistribution grant"]
     }
   ]
 }

@@ -177,11 +177,11 @@ def asset_binding(manifest_data: bytes) -> tuple[str, dict]:
     return asset, {"atlasId": atlas_id, "assetSha256": digest, "assetBytes": size, "coordinateFrameId": frame}
 
 
-def source_allowed(name: str, anatomy_asset: str) -> bool:
+def source_allowed(name: str, anatomy_asset: str, registered_assets: set[str] | None = None) -> bool:
     path = PurePosixPath(name)
     if len(path.parts) == 1:
         return name in ROOT_FILES
-    if name == f"public/{anatomy_asset}":
+    if name == f"public/{anatomy_asset}" or registered_assets is not None and name in registered_assets:
         return True
     return path.parts[0] in SOURCE_TYPES and path.suffix.lower() in SOURCE_TYPES[path.parts[0]]
 
@@ -203,7 +203,7 @@ def publication_checker(root: Path) -> tuple[dict, types.ModuleType]:
         # Compiling source directly avoids writing bytecode into the input tree.
         exec(compile(read_regular(root, "scripts/check_publication.py", MAX_SOURCE_BYTES),
                      "<publication checker>", "exec"), checker.__dict__)
-        if not callable(getattr(checker, "inspect_content", None)):
+        if not all(callable(getattr(checker, name, None)) for name in ["inspect_content", "anatomy_registry", "inspect_registered_glb"]):
             raise ReleaseError("publication_check_incomplete")
     except (OSError, ValueError, subprocess.TimeoutExpired) as error:
         raise ReleaseError("publication_check_incomplete") from error
@@ -217,7 +217,7 @@ def inspect_records(records: list[ReleaseFile], checker: types.ModuleType) -> No
             raise ReleaseError("publication_content_rejected")
 
 
-def web_files(root: Path, anatomy_asset: str) -> list[ReleaseFile]:
+def web_files(root: Path, anatomy_asset: str, registered_assets: set[str] | None = None) -> list[ReleaseFile]:
     distribution = root / "dist"
     if distribution.is_symlink() or not distribution.is_dir():
         raise ReleaseError("missing_or_unsafe_web_distribution")
@@ -240,7 +240,7 @@ def web_files(root: Path, anatomy_asset: str) -> list[ReleaseFile]:
             if name.casefold() in seen:
                 raise ReleaseError("ambiguous_archive_path")
             seen.add(name.casefold())
-            if name != anatomy_asset and path.suffix.lower() not in WEB_TYPES:
+            if name != anatomy_asset and name not in (registered_assets or set()) and path.suffix.lower() not in WEB_TYPES:
                 raise ReleaseError("unreviewed_web_file_type")
             total += info.st_size
             if total > MAX_WEB_BYTES or len(files) >= MAX_FILES:
@@ -268,6 +268,25 @@ def verify_anatomy(source: list[ReleaseFile], web: list[ReleaseFile], asset: str
             raise ReleaseError("anatomy_checksum_mismatch")
         if len(data) < 20 or data[:4] != b"glTF" or struct.unpack_from("<II", data, 4) != (2, len(data)):
             raise ReleaseError("invalid_anatomy_glb")
+
+
+def verify_registered_assets(source: list[ReleaseFile], web: list[ReleaseFile], registry: dict, checker: types.ModuleType) -> None:
+    source_map = {record.name: record.data for record in source}
+    web_map = {"public/" + record.name: record.data for record in web}
+    metadata_paths = {binding[key] for binding in registry.values() for key in ["manifestPath", "licensePath"]}
+    if "public/atlas-volume/detail-index.json" in source_map:
+        metadata_paths.add("public/atlas-volume/detail-index.json")
+    for path in metadata_paths:
+        if path not in source_map or path not in web_map or not source_map[path] or source_map[path] != web_map[path]:
+            raise ReleaseError("registered_anatomy_metadata_or_license_mismatch")
+    for path, binding in registry.items():
+        if path not in source_map or path not in web_map:
+            raise ReleaseError("registered_anatomy_asset_missing")
+        try:
+            checker.inspect_registered_glb(source_map[path], binding)
+            checker.inspect_registered_glb(web_map[path], binding)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise ReleaseError("registered_anatomy_asset_mismatch") from None
 
 
 def checked_output(root: Path, output: Path) -> Path:
@@ -312,11 +331,16 @@ def prepare_release(root: Path, output: Path) -> dict:
         raise ReleaseError("invalid_package_version") from error
     output = checked_output(root, output)
     asset, anatomy = asset_binding(read_regular(root, "public/atlas/atlas.json", 1024 * 1024))
+    report, checker = publication_checker(root)
+    tracked_names = {name for name, _mode in tracked}
+    try:
+        registry = checker.anatomy_registry(lambda path, limit: read_regular(root, path, limit) if path in tracked_names else None)
+    except (ValueError, TypeError, KeyError, AttributeError):
+        raise ReleaseError("invalid_registered_anatomy") from None
     for name, _mode in tracked:
-        if not source_allowed(name, asset):
+        if not source_allowed(name, asset, set(registry)):
             raise ReleaseError("tracked_path_not_allowlisted")
         regular_input(root, name)
-    report, checker = publication_checker(root)
     source: list[ReleaseFile] = []
     total = 0
     for name, mode in tracked:
@@ -325,8 +349,9 @@ def prepare_release(root: Path, output: Path) -> dict:
         if total > MAX_SOURCE_BYTES:
             raise ReleaseError("source_snapshot_exceeds_bound")
         source.append(ReleaseFile(name, data, mode))
-    web = web_files(root, asset)
+    web = web_files(root, asset, {path.removeprefix("public/") for path in registry})
     verify_anatomy(source, web, asset, anatomy)
+    verify_registered_assets(source, web, registry, checker)
     inspect_records(source, checker)
     inspect_records(web, checker)
     if inventory != git(root, "ls-files", "--stage", "-z"):
@@ -360,6 +385,7 @@ def prepare_release(root: Path, output: Path) -> dict:
                            "sha256": hashlib.sha256(destination.read_bytes()).hexdigest(), "files": len(records)}
     release = {"schemaVersion": "mousebio.release.v1", "version": version, "artifacts": artifacts,
                "anatomy": anatomy, "sourceSnapshotDirectory": "source", "estimatedOutputBytes": estimated,
+               "registeredAnatomy": {"assets": len(registry), "bytes": sum(binding["bytes"] for binding in registry.values())},
                "publicationCheck": {"scope": "tracked", "historyIncluded": False,
                                      "filesInspected": report.get("filesInspected")}}
     metadata = (json.dumps(release, indent=2) + "\n").encode("utf-8")

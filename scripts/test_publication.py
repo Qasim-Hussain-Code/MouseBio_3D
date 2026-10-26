@@ -45,7 +45,8 @@ class PublicationTests(unittest.TestCase):
         self.assertIn("private-key-header", kinds)
 
     def test_glb_metadata_is_checked_and_opaque_binary_is_disclosed(self):
-        content = json.dumps({"extras": {"path": "/".join(["", "home", "private-user", "model"])}}).encode()
+        content = json.dumps({"asset": {"version": "2.0"}, "extras": {"path": "/".join(["", "home", "private-user", "model"])}}).encode()
+        content += b" " * (-len(content) % 4)
         glb = b"glTF" + struct.pack("<II", 2, 20 + len(content)) + struct.pack("<II", len(content), 0x4E4F534A) + content
         findings, checked = inspect_content(glb, "model.glb", "tracked")
         self.assertTrue(checked)

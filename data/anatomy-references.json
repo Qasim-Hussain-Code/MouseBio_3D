@@ -1,0 +1,95 @@
+[
+  {
+    "id": "digimouse-tessellated-v1",
+    "title": "Lightweight: 17 regions",
+    "manifestUrl": "/atlas/atlas.json",
+    "coordinateFrameId": "digimouse-tessellated-native-v1",
+    "assetSha256": "28a1957d1c44512d648bc671008a7d17ef648e99338d516b9afb3f8ed806b685",
+    "coverage": {
+      "regionCount": 17,
+      "systems": [
+        "cardiovascular",
+        "digestive",
+        "endocrine",
+        "immune",
+        "integumentary",
+        "lymphatic",
+        "muscular",
+        "nervous",
+        "reproductive",
+        "respiratory",
+        "skeletal",
+        "urinary"
+      ],
+      "description": "Source-labelled regions from one male Digimouse specimen; incomplete system coverage."
+    },
+    "processingResolution": {
+      "sourceVoxelSpacingMm": null,
+      "processingVoxelSpacingMm": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "method": "Upstream tetrahedral boundary extraction",
+      "limitations": [
+        "Processing spacing does not establish anatomical accuracy.",
+        "No accepted spatial registration between the two references."
+      ]
+    },
+    "licenses": [
+      {
+        "identifier": "CC-BY-SA-4.0",
+        "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+      }
+    ]
+  },
+  {
+    "id": "digimouse-volume-040-v1",
+    "title": "Volume: 21 regions",
+    "manifestUrl": "/atlas-volume/atlas.json",
+    "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+    "assetSha256": "f6715d698b929a28c57e9bcb72f452afd18d00b4561c84f66a237cdee7a2cbc2",
+    "coverage": {
+      "regionCount": 21,
+      "systems": [
+        "cardiovascular",
+        "digestive",
+        "endocrine",
+        "immune",
+        "integumentary",
+        "lymphatic",
+        "muscular",
+        "nervous",
+        "reproductive",
+        "respiratory",
+        "sensory",
+        "skeletal",
+        "urinary"
+      ],
+      "description": "Source-labelled regions from one male Digimouse specimen; incomplete system coverage."
+    },
+    "processingResolution": {
+      "sourceVoxelSpacingMm": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "processingVoxelSpacingMm": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "method": "Categorical subsampling and tetrahedral isosurface extraction",
+      "limitations": [
+        "Processing spacing does not establish anatomical accuracy.",
+        "No accepted spatial registration between the two references."
+      ]
+    },
+    "licenses": [
+      {
+        "identifier": "CC-BY-SA-4.0",
+        "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+      }
+    ]
+  }
+]

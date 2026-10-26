@@ -51,3 +51,10 @@
 .inspector:focus-visible{outline:2px solid #37a48a;outline-offset:-3px}
 @media(max-width:900px){.structure-details-shortcut{display:inline-flex}}
 @media(max-width:600px){.viewport-top{gap:6px}.background-switch button{font-size:8px;padding:5px}.viewport-breadcrumb{font-size:6px}.visibility-presets{gap:12px}}
+.reference-selector { display: grid; gap: 6px; margin: 14px 0 6px; color: var(--text-muted, #657c76); font-size: 11px; }
+.reference-selector select { width: 100%; min-height: 38px; border: 1px solid #d4dfd1; border-radius: 5px; padding: 7px; background: #fff; color: #24433e; font: inherit; }
+.reference-description { margin: 6px 0 14px; font-size: 11px; line-height: 1.6; color: #657c76; }
+.surface-detail { margin: 20px 0; padding: 14px; border: 1px solid #dce4d7; border-radius: 6px; background: #f2f5ee; }
+.surface-detail h3 { margin: 0 0 8px; font-size: 12px; }
+.surface-detail p, .surface-detail small { display: block; margin: 7px 0; font-size: 11px; line-height: 1.6; color: #657c76; }
+.surface-detail label { display: flex; align-items: center; gap: 7px; font-size: 12px; line-height: 1.5; }

@@ -1,0 +1,802 @@
+{
+  "id": "digimouse-volume-040-v1",
+  "title": "Digimouse registered voxel atlas",
+  "assetUrl": "/atlas-volume/digimouse-volume-040.glb",
+  "coordinateFrame": {
+    "id": "digimouse-registered-voxel-native-v1",
+    "assetUnits": "metres",
+    "sourceUnits": "zero-based voxel indices",
+    "sourceVoxelSpacingMm": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "voxelIndexToAssetScale": 0.0001,
+    "origin": "Index(0,0,0) of the supplied Analyze image; no anatomical origin is established",
+    "axes": {
+      "x": "native storage x; anatomical direction unverified",
+      "y": "native storage y; anatomical direction unverified",
+      "z": "native storage z; anatomical direction unverified"
+    },
+    "anatomicalOrientationVerified": false,
+    "physicalCalibrationVerified": false,
+    "voxelToTetrahedralAffine": null
+  },
+  "source": {
+    "id": "digimouse-registered-volume-2007",
+    "title": "Digimouse: a 3D whole body mouse atlas from CT and cryosection data",
+    "authors": [
+      "Belma Dogdas",
+      "David Stout",
+      "Arion F. Chatziioannou",
+      "Richard M. Leahy"
+    ],
+    "doi": "10.1088/0031-9155/52/3/003",
+    "publicationYear": 2007,
+    "url": "https://neuroimage.usc.edu/neuro/Digimouse",
+    "downloadUrl": "https://neuroimage.usc.edu/mouse_atlas/atlas.zip",
+    "license": "CC-BY-SA-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "licenseEvidenceUrl": "https://neuroimage.usc.edu/neuro/Digimouse_license",
+    "archiveSha256": "6f7cbd8a7236a78c47a14c3259d387439c0dc0284b2a83fa955f8c49efe11761",
+    "attribution": "Digimouse, Belma Dogdas, David Stout, Arion F. Chatziioannou and Richard M. Leahy, USC/UCLA, 2007. Volume surfaces adapted by Qasim Hussain for MouseBio_3D under CC BY-SA 4.0.",
+    "methodology": "Registered postmortem CT and colour cryosections from one 28 g normal nude male mouse; categorical anatomical label image.",
+    "sourceVoxelSpacingMm": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "sourceDimensions": [
+      380,
+      992,
+      208
+    ],
+    "modifications": [
+      "Explicit categorical grid subsampling",
+      "Binary half-value interfaces on a consistent tetrahedral grid",
+      "Outward triangle winding and area-weighted normals",
+      "Indexed glTF surfaces with nonquantitative display colours"
+    ]
+  },
+  "structures": [
+    {
+      "id": "digimouse-volume:1",
+      "name": "Body envelope / residual tissue",
+      "systems": [
+        "integumentary",
+        "muscular"
+      ],
+      "sourceLabel": "skin",
+      "sourceRegion": 1,
+      "meshNode": "digimouse-volume:1",
+      "description": "The source skin label is a bulk residual body region with organ cavities. It does not independently resolve epidermis or skin tissue layers.",
+      "geometry": {
+        "vertices": 335760,
+        "triangles": 673232,
+        "boundsMeters": [
+          [
+            0.0017999999690800905,
+            0.00419999985024333,
+            0.0010000000474974513
+          ],
+          [
+            0.03460000082850456,
+            0.09300000220537186,
+            0.020600000396370888
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organism",
+      "color": "#aab9b5",
+      "defaultOpacity": 0.06
+    },
+    {
+      "id": "digimouse-volume:2",
+      "name": "Skeleton",
+      "systems": [
+        "skeletal"
+      ],
+      "sourceLabel": "skeleton",
+      "sourceRegion": 2,
+      "meshNode": "digimouse-volume:2",
+      "description": "Aggregate skeletal label. Individual bones are not independently identified; a finer surface does not add bone names.",
+      "geometry": {
+        "vertices": 112426,
+        "triangles": 225928,
+        "boundsMeters": [
+          [
+            0.002199999988079071,
+            0.007400000002235174,
+            0.00139999995008111
+          ],
+          [
+            0.033799998462200165,
+            0.09260000288486481,
+            0.02019999921321869
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "system",
+      "color": "#dfd7c5",
+      "defaultOpacity": 0.14
+    },
+    {
+      "id": "digimouse-volume:3",
+      "name": "Eye",
+      "systems": [
+        "sensory"
+      ],
+      "sourceLabel": "eye",
+      "sourceRegion": 3,
+      "meshNode": "digimouse-volume:3",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 538,
+        "triangles": 1068,
+        "boundsMeters": [
+          [
+            0.014600000344216824,
+            0.0142000000923872,
+            0.008999999612569809
+          ],
+          [
+            0.023800000548362732,
+            0.016599999740719795,
+            0.01140000019222498
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#75bfc4",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:4",
+      "name": "Medulla",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "medulla",
+      "sourceRegion": 4,
+      "meshNode": "digimouse-volume:4",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 2240,
+        "triangles": 4476,
+        "boundsMeters": [
+          [
+            0.016200000420212746,
+            0.023000000044703484,
+            0.010200000368058681
+          ],
+          [
+            0.021800000220537186,
+            0.03060000017285347,
+            0.013399999588727951
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#af94cf",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:5",
+      "name": "Cerebellum",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "cerebellum",
+      "sourceRegion": 5,
+      "meshNode": "digimouse-volume:5",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 1872,
+        "triangles": 3740,
+        "boundsMeters": [
+          [
+            0.014999999664723873,
+            0.023399999365210533,
+            0.013000000268220901
+          ],
+          [
+            0.023000000044703484,
+            0.027000000700354576,
+            0.015799999237060547
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#c3a4df",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:6",
+      "name": "Olfactory bulbs",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "olfactory bulbs",
+      "sourceRegion": 6,
+      "meshNode": "digimouse-volume:6",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 1130,
+        "triangles": 2256,
+        "boundsMeters": [
+          [
+            0.017799999564886093,
+            0.013000000268220901,
+            0.009399999864399433
+          ],
+          [
+            0.020999999716877937,
+            0.017000000923871994,
+            0.012199999764561653
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#d2b6e8",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:7",
+      "name": "External cerebrum",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "external cerebrum",
+      "sourceRegion": 7,
+      "meshNode": "digimouse-volume:7",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 7148,
+        "triangles": 14292,
+        "boundsMeters": [
+          [
+            0.0142000000923872,
+            0.015799999237060547,
+            0.008999999612569809
+          ],
+          [
+            0.023800000548362732,
+            0.023399999365210533,
+            0.015799999237060547
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#b9a5dc",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:8",
+      "name": "Striatum",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "striatum",
+      "sourceRegion": 8,
+      "meshNode": "digimouse-volume:8",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 1606,
+        "triangles": 3208,
+        "boundsMeters": [
+          [
+            0.015399999916553497,
+            0.01899999938905239,
+            0.012600000016391277
+          ],
+          [
+            0.022199999541044235,
+            0.023399999365210533,
+            0.014600000344216824
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#907bb9",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:9",
+      "name": "Heart",
+      "systems": [
+        "cardiovascular"
+      ],
+      "sourceLabel": "heart",
+      "sourceRegion": 9,
+      "meshNode": "digimouse-volume:9",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 5214,
+        "triangles": 10424,
+        "boundsMeters": [
+          [
+            0.0142000000923872,
+            0.03539999946951866,
+            0.004999999888241291
+          ],
+          [
+            0.023399999365210533,
+            0.04540000110864639,
+            0.010999999940395355
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#d76e79",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:10",
+      "name": "Rest of the brain",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "rest of the brain",
+      "sourceRegion": 10,
+      "meshNode": "digimouse-volume:10",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 8116,
+        "triangles": 16172,
+        "boundsMeters": [
+          [
+            0.014600000344216824,
+            0.013799999840557575,
+            0.00860000029206276
+          ],
+          [
+            0.023399999365210533,
+            0.027799999341368675,
+            0.016200000420212746
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#ac8fbd",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:11",
+      "name": "Masseter muscles",
+      "systems": [
+        "muscular"
+      ],
+      "sourceLabel": "masseter muscles",
+      "sourceRegion": 11,
+      "meshNode": "digimouse-volume:11",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 5468,
+        "triangles": 10928,
+        "boundsMeters": [
+          [
+            0.012199999764561653,
+            0.012199999764561653,
+            0.003800000064074993
+          ],
+          [
+            0.02500000037252903,
+            0.023000000044703484,
+            0.00860000029206276
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#c58297",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:12",
+      "name": "Lachrymal glands",
+      "systems": [
+        "sensory"
+      ],
+      "sourceLabel": "lachrymal glands",
+      "sourceRegion": 12,
+      "meshNode": "digimouse-volume:12",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 2002,
+        "triangles": 3996,
+        "boundsMeters": [
+          [
+            0.0142000000923872,
+            0.013000000268220901,
+            0.007400000002235174
+          ],
+          [
+            0.023800000548362732,
+            0.017400000244379044,
+            0.010200000368058681
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#71a5bd",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:13",
+      "name": "Bladder",
+      "systems": [
+        "urinary"
+      ],
+      "sourceLabel": "bladder",
+      "sourceRegion": 13,
+      "meshNode": "digimouse-volume:13",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 4370,
+        "triangles": 8736,
+        "boundsMeters": [
+          [
+            0.013000000268220901,
+            0.0658000037074089,
+            0.003000000026077032
+          ],
+          [
+            0.01979999989271164,
+            0.0737999975681305,
+            0.009800000116229057
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#d5b16f",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:14",
+      "name": "Testis",
+      "systems": [
+        "reproductive"
+      ],
+      "sourceLabel": "testis",
+      "sourceRegion": 14,
+      "meshNode": "digimouse-volume:14",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 5204,
+        "triangles": 10400,
+        "boundsMeters": [
+          [
+            0.012600000016391277,
+            0.07259999960660934,
+            0.0017999999690800905
+          ],
+          [
+            0.02419999986886978,
+            0.08420000225305557,
+            0.007400000002235174
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#c5a0ca",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:15",
+      "name": "Stomach",
+      "systems": [
+        "digestive"
+      ],
+      "sourceLabel": "stomach",
+      "sourceRegion": 15,
+      "meshNode": "digimouse-volume:15",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 6648,
+        "triangles": 13292,
+        "boundsMeters": [
+          [
+            0.017400000244379044,
+            0.049400001764297485,
+            0.007400000002235174
+          ],
+          [
+            0.028999999165534973,
+            0.05700000002980232,
+            0.017400000244379044
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#dda78b",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:16",
+      "name": "Spleen",
+      "systems": [
+        "lymphatic",
+        "immune"
+      ],
+      "sourceLabel": "spleen",
+      "sourceRegion": 16,
+      "meshNode": "digimouse-volume:16",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 6002,
+        "triangles": 12000,
+        "boundsMeters": [
+          [
+            0.018200000748038292,
+            0.05180000141263008,
+            0.006200000178068876
+          ],
+          [
+            0.03099999949336052,
+            0.06019999831914902,
+            0.01860000006854534
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#a56d9c",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:17",
+      "name": "Pancreas",
+      "systems": [
+        "digestive",
+        "endocrine"
+      ],
+      "sourceLabel": "pancreas",
+      "sourceRegion": 17,
+      "meshNode": "digimouse-volume:17",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 2840,
+        "triangles": 5676,
+        "boundsMeters": [
+          [
+            0.017400000244379044,
+            0.05420000106096268,
+            0.011800000444054604
+          ],
+          [
+            0.028999999165534973,
+            0.06379999965429306,
+            0.015399999916553497
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#d7bd72",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:18",
+      "name": "Liver",
+      "systems": [
+        "digestive"
+      ],
+      "sourceLabel": "liver",
+      "sourceRegion": 18,
+      "meshNode": "digimouse-volume:18",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 39340,
+        "triangles": 78696,
+        "boundsMeters": [
+          [
+            0.005400000140070915,
+            0.044199999421834946,
+            0.0026000000070780516
+          ],
+          [
+            0.029400000348687172,
+            0.06260000169277191,
+            0.018200000748038292
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#b87867",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:19",
+      "name": "Kidneys",
+      "systems": [
+        "urinary"
+      ],
+      "sourceLabel": "kidneys",
+      "sourceRegion": 19,
+      "meshNode": "digimouse-volume:19",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 11548,
+        "triangles": 23088,
+        "boundsMeters": [
+          [
+            0.007799999788403511,
+            0.05420000106096268,
+            0.01140000019222498
+          ],
+          [
+            0.026599999517202377,
+            0.06620000302791595,
+            0.01860000006854534
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#c7887f",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:20",
+      "name": "Adrenal glands",
+      "systems": [
+        "endocrine"
+      ],
+      "sourceLabel": "adrenal glands",
+      "sourceRegion": 20,
+      "meshNode": "digimouse-volume:20",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 530,
+        "triangles": 1052,
+        "boundsMeters": [
+          [
+            0.013399999588727951,
+            0.05339999869465828,
+            0.013799999840557575
+          ],
+          [
+            0.01979999989271164,
+            0.05620000138878822,
+            0.016599999740719795
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#e0c77e",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:21",
+      "name": "Lungs",
+      "systems": [
+        "respiratory"
+      ],
+      "sourceLabel": "lungs",
+      "sourceRegion": 21,
+      "meshNode": "digimouse-volume:21",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 14920,
+        "triangles": 29856,
+        "boundsMeters": [
+          [
+            0.010999999940395355,
+            0.03420000150799751,
+            0.004600000102072954
+          ],
+          [
+            0.02459999918937683,
+            0.04740000143647194,
+            0.015799999237060547
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#91bbc9",
+      "defaultOpacity": 1
+    }
+  ],
+  "statistics": {
+    "structures": 21,
+    "triangles": 1152516,
+    "surfaceVerticesIncludingRegionBoundaries": 574922,
+    "processingGridDimensionsWithPadding": [
+      97,
+      250,
+      54
+    ],
+    "processingGridBytes": 1309500,
+    "processingVoxelSpacingMm": [
+      0.4,
+      0.4,
+      0.4
+    ],
+    "sourceVoxelSpacingMm": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "sampledVoxelCounts": {
+      "0": 875202,
+      "1": 261820,
+      "2": 18408,
+      "3": 93,
+      "4": 724,
+      "5": 476,
+      "6": 292,
+      "7": 2156,
+      "8": 398,
+      "9": 3476,
+      "10": 2459,
+      "11": 1675,
+      "12": 474,
+      "13": 2954,
+      "14": 2353,
+      "15": 3545,
+      "16": 2173,
+      "17": 718,
+      "18": 31386,
+      "19": 7712,
+      "20": 80,
+      "21": 6546
+    },
+    "glbBytes": 27648532,
+    "glbSha256": "f6715d698b929a28c57e9bcb72f452afd18d00b4561c84f66a237cdee7a2cbc2"
+  },
+  "limitations": [
+    "One postmortem normal nude male mouse; no female, developmental, disease-specific or population-average anatomy.",
+    "Voxel label boundaries have finite source resolution; subsampling can remove thin features and small components. Processing spacing is distinct from source spacing and is not a surface-accuracy guarantee.",
+    "No named anatomical orientation or independently verified physical calibration; raw voxel indices define this separate frame.",
+    "No accepted transformation to the tessellated Digimouse frame. These assets must not be overlaid on that model by matching coordinates or label numbers.",
+    "The source skin label is residual bulk body tissue, not a separately segmented skin layer. Skeleton remains aggregate and most individual muscles are absent.",
+    "Paired eyes, glands, kidneys, testes and lungs use shared labels; no laterality, individual lobe or tissue subdivision is inferred.",
+    "Separate binary interfaces approximate each region; multi-label junctions can have gaps from the half-value representation. No smoothing or fabricated tissue fills these gaps.",
+    "These surfaces and numerical topology checks do not constitute independent anatomical expert review or physiological validation."
+  ],
+  "benchmark": {
+    "elapsedSeconds": 10.746659092998016,
+    "peakResidentKiB": 127264,
+    "measuredAtUtc": "2026-10-26T07:51:34+00:00",
+    "step": 4,
+    "perRegion": false
+  },
+  "detailIndexUrl": "/atlas-volume/detail-index.json",
+  "processing": {
+    "sourceVoxelSpacingMm": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "processingVoxelSpacingMm": [
+      0.4,
+      0.4,
+      0.4
+    ],
+    "method": "categorical subsampling and consistent indexed marching tetrahedra at binary isovalue0.5",
+    "sampleOffsetSourceIndices": [
+      0,
+      0,
+      0
+    ],
+    "padding": "one background sample around each boundary",
+    "smoothing": false
+  }
+}

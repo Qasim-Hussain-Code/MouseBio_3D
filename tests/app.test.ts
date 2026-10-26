@@ -35,6 +35,7 @@ const App = (await import('../src/App')).default;
 const { parseExperimentalJson } = await import('../src/domain/experimental');
 const atlasText = await readFile(new URL('../public/atlas/atlas.json', import.meta.url), 'utf8');
 const atlas = JSON.parse(atlasText) as Atlas;
+const volumeText = await readFile(new URL('../public/atlas-volume/atlas.json', import.meta.url), 'utf8');
 
 const originalFetch = globalThis.fetch;
 const originalConsoleError = console.error;
@@ -46,15 +47,17 @@ let unexpectedErrors: unknown[][] = [];
 let expectedWebGLFailures = 0;
 let exportedBlobs: Blob[] = [];
 let downloads: { name: string; url: string }[] = [];
+let expectedRequests = ['/atlas/atlas.json'];
 
 beforeEach(() => {
   requests = []; unexpectedErrors = []; expectedWebGLFailures = 0;
   exportedBlobs = []; downloads = [];
+  expectedRequests = ['/atlas/atlas.json'];
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = String(input);
     requests.push(url);
-    assert.equal(url, '/atlas/atlas.json', 'The tested workflow must not send research data to another endpoint.');
-    return new Response(atlasText, { status: 200, headers: { 'Content-Type': 'application/json' } });
+    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    return new Response(url === '/atlas/atlas.json' ? atlasText : volumeText, { status: 200, headers: { 'Content-Type': 'application/json' } });
   }) as typeof fetch;
   console.error = (...args: unknown[]) => {
     if (typeof args[0] === 'string' && /^THREE\.WebGLRenderer: (?:THREE\.WebGLRenderer: )?Error creating WebGL context/.test(args[0])) {
@@ -85,7 +88,7 @@ afterEach(async () => {
   dom.HTMLAnchorElement.prototype.click = originalAnchorClick;
   assert.deepEqual(unexpectedErrors, [], 'Unexpected runtime or React errors were emitted.');
   assert.ok(expectedWebGLFailures > 0, 'The real Three.js renderer must attempt and fail to create WebGL in this DOM emulator.');
-  assert.deepEqual(requests, ['/atlas/atlas.json']);
+  assert.deepEqual(requests, expectedRequests);
 });
 
 after(async () => {
@@ -550,4 +553,114 @@ test('organs visibility preset preserves selection, background and data while th
   assert.equal(shown.opacity['digimouse:13'], 1);
   assert.equal(shown.selected, 'digimouse:7');
   assert.equal(shown.background, 'white');
+});
+
+test('switching references isolates observations and restores each source-bound dataset', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  await view.findByText('21 visible regions');
+  assert.equal(view.queryByText('8 observations · 4 biological subject IDs · 4 groups'), null);
+  assert.ok(view.getByRole('checkbox', { name: 'Finer selected surface' }));
+  fireEvent.click(view.getByRole('checkbox', { name: 'Finer selected surface' }));
+  assert.equal((view.getByRole('checkbox', { name: 'Finer selected surface' }) as HTMLInputElement).checked, true);
+  fireEvent.click(view.getByRole('button', { name: 'Compare' }));
+  const compareDetailControl = view.getByRole('checkbox', { name: 'Finer selected surface' }) as HTMLInputElement;
+  assert.equal(compareDetailControl.checked, false); assert.equal(compareDetailControl.disabled, true);
+  assert.ok(view.getByText('Compare uses the same base surfaces in both panels.'));
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const volumeView = await savedView(view);
+  assert.equal(volumeView.atlasId, 'digimouse-volume-040-v1');
+  assert.equal(volumeView.selected, 'digimouse-volume:9');
+  assert.equal(volumeView.background, 'white');
+  assert.equal(volumeView.opacity['digimouse-volume:1'], 0.06);
+  assert.equal(volumeView.opacity['digimouse-volume:2'], 0.14);
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
+  await view.findByText('Import rejected. Existing observations are retained.');
+  const volumeCsv = syntheticCsv.replaceAll('digimouse:3', 'digimouse-volume:9').replaceAll('digimouse:4', 'digimouse-volume:13');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(volumeCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  const volumeData = JSON.parse(await exportedBlobs.at(-1)!.text());
+  assert.ok(volumeData.measurements.every((row: { structureId: string }) => row.structureId.startsWith('digimouse-volume:')));
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  await view.findByText('8 observations · 4 biological subject IDs · 4 groups');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  assert.ok(JSON.parse(await exportedBlobs.at(-1)!.text()).measurements.every((row: { structureId: string }) => row.structureId.startsWith('digimouse:')));
+  expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  await view.findByText('21 visible regions');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), volumeData);
+  fireEvent.click(view.getByRole('button', { name: /Skeleton.*digimouse-volume:2/ }));
+  assert.equal(view.queryByRole('checkbox', { name: 'Finer selected surface' }), null);
+  assert.ok(view.getByText('No finer surface is bundled for this region.'));
+  fireEvent.click(view.getByRole('button', { name: 'Clear local data' }));
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
+  expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  await view.findByText('21 visible regions');
+  assert.ok((view.getByRole('button', { name: 'Export JSON' }) as HTMLButtonElement).disabled);
+});
+
+test('a failed reference switch leaves anatomy, view and observations intact', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  const before = await savedView(view);
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    requests.push(String(input));
+    return new Response(atlasText, { status: 200 });
+  }) as typeof fetch;
+  expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  await view.findByRole('alert');
+  assert.equal((view.getByRole('combobox', { name: 'Anatomy reference' }) as HTMLSelectElement).value, atlas.id);
+  assert.deepEqual(await savedView(view), before);
+  assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
+});
+
+test('a file read started in another reference cannot replace observations after switching', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const pending = deferredInputFile('pending.csv');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [pending.file] } });
+  expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  await view.findByText('21 visible regions');
+  await completeRead(pending, syntheticCsv);
+  assert.equal(view.queryByText('Accepted 8 measurements. No data transmitted.'), null);
+  assert.ok((view.getByRole('button', { name: 'Export JSON' }) as HTMLButtonElement).disabled);
+});
+
+test('reads started during a delayed reference switch are canceled when the new reference commits', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const priorView = await savedView(view);
+  let resolveReference!: (response: Response) => void;
+  const response = new Promise<Response>((resolve) => { resolveReference = resolve; });
+  globalThis.fetch = (async (input: RequestInfo | URL) => { requests.push(String(input)); return response; }) as typeof fetch;
+  expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  const pendingData = deferredInputFile('pending.csv');
+  const pendingView = deferredInputFile('pending-view.json');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [pendingData.file] } });
+  fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [pendingView.file] } });
+  await act(async () => { resolveReference(new Response(volumeText, { status: 200 })); await response; });
+  await view.findByText('21 visible regions');
+  await completeRead(pendingData, syntheticCsv);
+  await completeRead(pendingView, JSON.stringify({ ...priorView, background: 'white' }));
+  assert.ok((view.getByRole('button', { name: 'Export JSON' }) as HTMLButtonElement).disabled);
+  assert.equal((await savedView(view)).atlasId, 'digimouse-volume-040-v1');
+  assert.equal((await savedView(view)).background, 'dark');
 });

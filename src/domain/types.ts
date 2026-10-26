@@ -52,6 +52,8 @@ export interface Structure {
   sourceLabel: string | number;
   meshNode: string;
   description?: string;
+  color?: string;
+  defaultOpacity?: number;
   ontology?: OntologyAssociation[];
   scale?: BiologicalScale;
   parentId?: string;

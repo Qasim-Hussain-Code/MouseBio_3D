@@ -1,6 +1,8 @@
 # Privacy and publication
 
-MouseBio_3D keeps imported research observations in the user's browser memory. The import and comparison workflows do not upload observations, call an analysis service, add analytics or write research datasets to browser storage. Reloading, replacing the dataset or using Clear removes the current local observations. Dataset and view downloads occur only through the corresponding user action.
+MouseBio_3D keeps imported research observations in the user's browser memory. The import and comparison workflows do not upload observations, call an analysis service, add analytics or write research datasets to browser storage. Each reference retains its own observations while switching references. Replacing or clearing data affects the active reference; reloading clears all reference datasets. Dataset and view downloads occur only through the corresponding user action.
+
+The repository and its releases must remain private until Qasim Hussain personally decides to make them public. Preparing artifacts or passing content checks does not authorize a visibility change. Local AGENTS.md instructions are ignored and excluded from release archives.
 
 The application serves its code and anatomical assets from the local server. Opening a scientific reference link is a separate visit to that source; imported measurements are not attached to the link. Development commands can download software dependencies and explicitly selected public scientific resources. That activity is distinct from transmitting research observations.
 
@@ -41,12 +43,13 @@ The checker reports relative file paths, finding types, counts and severity. Mat
 
 Exit status zero means that no error or warning was found in the selected scope. Status one means that findings or incomplete-review warnings remain. Status two means that inspection could not complete. Informational reserved-domain fixtures do not make an otherwise clean scan fail. The checker is read-only: it does not rewrite history, delete files, change Git configuration, publish a repository or transmit file contents.
 
-The scanner has explicit bounds of 8 MiB per file and 1,000 distinct historical blobs. A bound or an opaque binary produces a review warning. GLB JSON metadata is inspected, while its binary geometry payload requires the separate checksum, provenance and geometry checks. This pattern-based check is not a complete secret detector, a malware scanner or a substitute for reviewing the publication allowlist. It cannot guarantee that arbitrary binary data, encoded content or a previously unknown credential format is private-information free. Untracked files remain outside its scope until staged.
+The scanner bounds ordinary files at 8 MiB and historical inspection at 1,000 distinct blobs. Registered anatomical GLBs have a separate 80 MiB per-asset and 100 MiB combined bound, with at most 1 MiB of JSON metadata per GLB. Their exact bytes, hashes, source IDs, frame and license declarations must match the manifest and regional index from the same working-tree, staged or historical snapshot. Unregistered GLBs are rejected. An exceeded bound or another opaque binary produces a review warning. Binary geometry payloads require the separate provenance and numerical geometry checks. This pattern-based check is not a complete secret detector, a malware scanner or a substitute for reviewing the publication allowlist. It cannot guarantee that arbitrary binary data, encoded content or a previously unknown credential format is private-information free. Untracked files remain outside its scope until staged.
 
 The publication-check tests use synthetic paths, addresses, tokens, Git repositories and binary fixtures. They verify value-free findings, explicit scope, binary-review warnings and unchanged history. Run them independently with:
 
 ```bash
 python3 scripts/test_publication.py
+python3 scripts/test_registered_anatomy.py
 ```
 
 Any retained warning needs a concrete review decision before publication. Do not make a warning disappear by removing legally required attribution. Keep the reviewed source and web artifacts identifiable by their checksums and document exactly what was distributed.
@@ -57,7 +60,7 @@ The release helper prepares local artifacts from a clean, reviewed checkout and 
 
 ```bash
 python3 scripts/test_release.py
-python3 scripts/prepare_release.py --output .publication/v0.2.0
+python3 scripts/prepare_release.py --output .publication/reviewed-release
 ```
 
 The new output directory contains a plain `source/` snapshot, source and web ZIP archives, `release.json` and `SHA256SUMS`. The source ZIP uses a versioned project directory; the web ZIP places `index.html` at its root. The manifest records public artifact names, sizes, checksums, scientific asset binding and the bounded check scope. It does not include local paths, private Git identities or the development commit identifier.

@@ -1,0 +1,1260 @@
+{
+  "schemaVersion": "mousebio.volume-detail-index.v1",
+  "atlasId": "digimouse-volume-040-v1",
+  "coordinateFrame": {
+    "id": "digimouse-registered-voxel-native-v1",
+    "assetUnits": "metres",
+    "sourceUnits": "zero-based voxel indices",
+    "sourceVoxelSpacingMm": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "voxelIndexToAssetScale": 0.0001,
+    "origin": "Index(0,0,0) of the supplied Analyze image; no anatomical origin is established",
+    "axes": {
+      "x": "native storage x; anatomical direction unverified",
+      "y": "native storage y; anatomical direction unverified",
+      "z": "native storage z; anatomical direction unverified"
+    },
+    "anatomicalOrientationVerified": false,
+    "physicalCalibrationVerified": false,
+    "voxelToTetrahedralAffine": null
+  },
+  "source": {
+    "id": "digimouse-registered-volume-2007",
+    "title": "Digimouse: a 3D whole body mouse atlas from CT and cryosection data",
+    "authors": [
+      "Belma Dogdas",
+      "David Stout",
+      "Arion F. Chatziioannou",
+      "Richard M. Leahy"
+    ],
+    "doi": "10.1088/0031-9155/52/3/003",
+    "publicationYear": 2007,
+    "url": "https://neuroimage.usc.edu/neuro/Digimouse",
+    "downloadUrl": "https://neuroimage.usc.edu/mouse_atlas/atlas.zip",
+    "license": "CC-BY-SA-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "licenseEvidenceUrl": "https://neuroimage.usc.edu/neuro/Digimouse_license",
+    "archiveSha256": "6f7cbd8a7236a78c47a14c3259d387439c0dc0284b2a83fa955f8c49efe11761",
+    "attribution": "Digimouse, Belma Dogdas, David Stout, Arion F. Chatziioannou and Richard M. Leahy, USC/UCLA, 2007. Volume surfaces adapted by Qasim Hussain for MouseBio_3D under CC BY-SA 4.0.",
+    "methodology": "Registered postmortem CT and colour cryosections from one 28 g normal nude male mouse; categorical anatomical label image.",
+    "sourceVoxelSpacingMm": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "sourceDimensions": [
+      380,
+      992,
+      208
+    ],
+    "modifications": [
+      "Explicit categorical grid subsampling",
+      "Binary half-value interfaces on a consistent tetrahedral grid",
+      "Outward triangle winding and area-weighted normals",
+      "Indexed glTF surfaces with nonquantitative display colours"
+    ]
+  },
+  "structures": [
+    {
+      "id": "digimouse-volume:3",
+      "name": "Eye",
+      "systems": [
+        "sensory"
+      ],
+      "sourceLabel": "eye",
+      "sourceRegion": 3,
+      "meshNode": "digimouse-volume:3",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 2214,
+        "triangles": 4420,
+        "boundsMeters": [
+          [
+            0.014499999582767487,
+            0.014100000262260437,
+            0.008899999782443047
+          ],
+          [
+            0.023900000378489494,
+            0.016499999910593033,
+            0.011500000022351742
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#75bfc4",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:4",
+      "name": "Medulla",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "medulla",
+      "sourceRegion": 4,
+      "meshNode": "digimouse-volume:4",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 9142,
+        "triangles": 18280,
+        "boundsMeters": [
+          [
+            0.016100000590085983,
+            0.02290000021457672,
+            0.010099999606609344
+          ],
+          [
+            0.022099999710917473,
+            0.030500000342726707,
+            0.013299999758601189
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#af94cf",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:5",
+      "name": "Cerebellum",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "cerebellum",
+      "sourceRegion": 5,
+      "meshNode": "digimouse-volume:5",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 7660,
+        "triangles": 15316,
+        "boundsMeters": [
+          [
+            0.01510000042617321,
+            0.02329999953508377,
+            0.012900000438094139
+          ],
+          [
+            0.02290000021457672,
+            0.02710000053048134,
+            0.015699999406933784
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#c3a4df",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:6",
+      "name": "Olfactory bulbs",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "olfactory bulbs",
+      "sourceRegion": 6,
+      "meshNode": "digimouse-volume:6",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 4680,
+        "triangles": 9356,
+        "boundsMeters": [
+          [
+            0.017500000074505806,
+            0.013100000098347664,
+            0.009499999694526196
+          ],
+          [
+            0.0210999995470047,
+            0.016899999231100082,
+            0.012299999594688416
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#d2b6e8",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:7",
+      "name": "External cerebrum",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "external cerebrum",
+      "sourceRegion": 7,
+      "meshNode": "digimouse-volume:7",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 29182,
+        "triangles": 58364,
+        "boundsMeters": [
+          [
+            0.014100000262260437,
+            0.015699999406933784,
+            0.008899999782443047
+          ],
+          [
+            0.02370000071823597,
+            0.023499999195337296,
+            0.015699999406933784
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#b9a5dc",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:8",
+      "name": "Striatum",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "striatum",
+      "sourceRegion": 8,
+      "meshNode": "digimouse-volume:8",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 6854,
+        "triangles": 13704,
+        "boundsMeters": [
+          [
+            0.015300000086426735,
+            0.01889999955892563,
+            0.012500000186264515
+          ],
+          [
+            0.022299999371170998,
+            0.023499999195337296,
+            0.014700000174343586
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#907bb9",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:9",
+      "name": "Heart",
+      "systems": [
+        "cardiovascular"
+      ],
+      "sourceLabel": "heart",
+      "sourceRegion": 9,
+      "meshNode": "digimouse-volume:9",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 21080,
+        "triangles": 42156,
+        "boundsMeters": [
+          [
+            0.014299999922513962,
+            0.03550000116229057,
+            0.004900000058114529
+          ],
+          [
+            0.02329999953508377,
+            0.045499999076128006,
+            0.011099999770522118
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#d76e79",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:10",
+      "name": "Rest of the brain",
+      "systems": [
+        "nervous"
+      ],
+      "sourceLabel": "rest of the brain",
+      "sourceRegion": 10,
+      "meshNode": "digimouse-volume:10",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 39794,
+        "triangles": 79512,
+        "boundsMeters": [
+          [
+            0.014499999582767487,
+            0.013700000010430813,
+            0.008700000122189522
+          ],
+          [
+            0.023499999195337296,
+            0.027899999171495438,
+            0.016100000590085983
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#ac8fbd",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:11",
+      "name": "Masseter muscles",
+      "systems": [
+        "muscular"
+      ],
+      "sourceLabel": "masseter muscles",
+      "sourceRegion": 11,
+      "meshNode": "digimouse-volume:11",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 22240,
+        "triangles": 44472,
+        "boundsMeters": [
+          [
+            0.01209999993443489,
+            0.01209999993443489,
+            0.003700000001117587
+          ],
+          [
+            0.024900000542402267,
+            0.023099999874830246,
+            0.008500000461935997
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#c58297",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:12",
+      "name": "Lachrymal glands",
+      "systems": [
+        "sensory"
+      ],
+      "sourceLabel": "lachrymal glands",
+      "sourceRegion": 12,
+      "meshNode": "digimouse-volume:12",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 8158,
+        "triangles": 16308,
+        "boundsMeters": [
+          [
+            0.014100000262260437,
+            0.012900000438094139,
+            0.007499999832361937
+          ],
+          [
+            0.023900000378489494,
+            0.017500000074505806,
+            0.010099999606609344
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#71a5bd",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:13",
+      "name": "Bladder",
+      "systems": [
+        "urinary"
+      ],
+      "sourceLabel": "bladder",
+      "sourceRegion": 13,
+      "meshNode": "digimouse-volume:13",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 17574,
+        "triangles": 35144,
+        "boundsMeters": [
+          [
+            0.012900000438094139,
+            0.065700002014637,
+            0.002899999963119626
+          ],
+          [
+            0.019899999722838402,
+            0.07370000332593918,
+            0.009700000286102295
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#d5b16f",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:14",
+      "name": "Testis",
+      "systems": [
+        "reproductive"
+      ],
+      "sourceLabel": "testis",
+      "sourceRegion": 14,
+      "meshNode": "digimouse-volume:14",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 21004,
+        "triangles": 42000,
+        "boundsMeters": [
+          [
+            0.012500000186264515,
+            0.07249999791383743,
+            0.0017000000225380063
+          ],
+          [
+            0.024299999698996544,
+            0.08410000056028366,
+            0.007300000172108412
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#c5a0ca",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:15",
+      "name": "Stomach",
+      "systems": [
+        "digestive"
+      ],
+      "sourceLabel": "stomach",
+      "sourceRegion": 15,
+      "meshNode": "digimouse-volume:15",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 26558,
+        "triangles": 53112,
+        "boundsMeters": [
+          [
+            0.017500000074505806,
+            0.0494999997317791,
+            0.007300000172108412
+          ],
+          [
+            0.029100000858306885,
+            0.057100001722574234,
+            0.01730000041425228
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#dda78b",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:16",
+      "name": "Spleen",
+      "systems": [
+        "lymphatic",
+        "immune"
+      ],
+      "sourceLabel": "spleen",
+      "sourceRegion": 16,
+      "meshNode": "digimouse-volume:16",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 24300,
+        "triangles": 48596,
+        "boundsMeters": [
+          [
+            0.017899999395012856,
+            0.051899999380111694,
+            0.006300000008195639
+          ],
+          [
+            0.030899999663233757,
+            0.06030000001192093,
+            0.018699999898672104
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#a56d9c",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:17",
+      "name": "Pancreas",
+      "systems": [
+        "digestive",
+        "endocrine"
+      ],
+      "sourceLabel": "pancreas",
+      "sourceRegion": 17,
+      "meshNode": "digimouse-volume:17",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 12082,
+        "triangles": 24160,
+        "boundsMeters": [
+          [
+            0.01730000041425228,
+            0.05429999902844429,
+            0.011900000274181366
+          ],
+          [
+            0.029100000858306885,
+            0.06390000134706497,
+            0.01549999974668026
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#d7bd72",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:18",
+      "name": "Liver",
+      "systems": [
+        "digestive"
+      ],
+      "sourceLabel": "liver",
+      "sourceRegion": 18,
+      "meshNode": "digimouse-volume:18",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 161094,
+        "triangles": 322192,
+        "boundsMeters": [
+          [
+            0.0052999998442828655,
+            0.04410000145435333,
+            0.0024999999441206455
+          ],
+          [
+            0.02930000051856041,
+            0.0625,
+            0.01810000091791153
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#b87867",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:19",
+      "name": "Kidneys",
+      "systems": [
+        "urinary"
+      ],
+      "sourceLabel": "kidneys",
+      "sourceRegion": 19,
+      "meshNode": "digimouse-volume:19",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 46480,
+        "triangles": 92952,
+        "boundsMeters": [
+          [
+            0.007899999618530273,
+            0.05429999902844429,
+            0.011500000022351742
+          ],
+          [
+            0.02669999934732914,
+            0.06610000133514404,
+            0.01850000023841858
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#c7887f",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:20",
+      "name": "Adrenal glands",
+      "systems": [
+        "endocrine"
+      ],
+      "sourceLabel": "adrenal glands",
+      "sourceRegion": 20,
+      "meshNode": "digimouse-volume:20",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 2374,
+        "triangles": 4740,
+        "boundsMeters": [
+          [
+            0.013299999758601189,
+            0.05350000038743019,
+            0.013899999670684338
+          ],
+          [
+            0.019700000062584877,
+            0.05609999969601631,
+            0.016699999570846558
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#e0c77e",
+      "defaultOpacity": 1
+    },
+    {
+      "id": "digimouse-volume:21",
+      "name": "Lungs",
+      "systems": [
+        "respiratory"
+      ],
+      "sourceLabel": "lungs",
+      "sourceRegion": 21,
+      "meshNode": "digimouse-volume:21",
+      "description": "A source-labelled region extracted from the registered Digimouse voxel atlas. Paired source regions are not separated by laterality.",
+      "geometry": {
+        "vertices": 63100,
+        "triangles": 126196,
+        "boundsMeters": [
+          [
+            0.010900000110268593,
+            0.034299999475479126,
+            0.0044999998062849045
+          ],
+          [
+            0.024700000882148743,
+            0.04749999940395355,
+            0.015699999406933784
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "organ",
+      "color": "#91bbc9",
+      "defaultOpacity": 1
+    }
+  ],
+  "assets": [
+    {
+      "structureId": "digimouse-volume:3",
+      "assetUrl": "/atlas-volume/detail/region-3.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 107428,
+      "glbSha256": "64340f6f9b61fe6c348bc06d256820dfef9f9a56a52511d11491e9f7dd7bfc0b",
+      "geometry": {
+        "vertices": 2214,
+        "triangles": 4420,
+        "boundsMeters": [
+          [
+            0.014499999582767487,
+            0.014100000262260437,
+            0.008899999782443047
+          ],
+          [
+            0.023900000378489494,
+            0.016499999910593033,
+            0.011500000022351742
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:4",
+      "assetUrl": "/atlas-volume/detail/region-4.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 440028,
+      "glbSha256": "a2a9142bb8b3c4d2e47c5d29bf48c545d78706bfa13e36a01b63f514050603eb",
+      "geometry": {
+        "vertices": 9142,
+        "triangles": 18280,
+        "boundsMeters": [
+          [
+            0.016100000590085983,
+            0.02290000021457672,
+            0.010099999606609344
+          ],
+          [
+            0.022099999710917473,
+            0.030500000342726707,
+            0.013299999758601189
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:5",
+      "assetUrl": "/atlas-volume/detail/region-5.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 368888,
+      "glbSha256": "299814d0c485a6661fa914a029179eaf44bfa1bdda1328d748e836163f5a73fb",
+      "geometry": {
+        "vertices": 7660,
+        "triangles": 15316,
+        "boundsMeters": [
+          [
+            0.01510000042617321,
+            0.02329999953508377,
+            0.012900000438094139
+          ],
+          [
+            0.02290000021457672,
+            0.02710000053048134,
+            0.015699999406933784
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:6",
+      "assetUrl": "/atlas-volume/detail/region-6.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 225856,
+      "glbSha256": "fa44cdcde71f9167839dddfb0897b5b14c44feff201e3e890234242f02c853c9",
+      "geometry": {
+        "vertices": 4680,
+        "triangles": 9356,
+        "boundsMeters": [
+          [
+            0.017500000074505806,
+            0.013100000098347664,
+            0.009499999694526196
+          ],
+          [
+            0.0210999995470047,
+            0.016899999231100082,
+            0.012299999594688416
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:7",
+      "assetUrl": "/atlas-volume/detail/region-7.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 1402012,
+      "glbSha256": "926179c89d0bb52023dc2c39f92c8db8378c21259779acd6bdf7b959352a9b35",
+      "geometry": {
+        "vertices": 29182,
+        "triangles": 58364,
+        "boundsMeters": [
+          [
+            0.014100000262260437,
+            0.015699999406933784,
+            0.008899999782443047
+          ],
+          [
+            0.02370000071823597,
+            0.023499999195337296,
+            0.015699999406933784
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:8",
+      "assetUrl": "/atlas-volume/detail/region-8.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 330204,
+      "glbSha256": "e13f344d84f9a802a74e3d10d248e3573396de5f26297029c172af7a2f6be678",
+      "geometry": {
+        "vertices": 6854,
+        "triangles": 13704,
+        "boundsMeters": [
+          [
+            0.015300000086426735,
+            0.01889999955892563,
+            0.012500000186264515
+          ],
+          [
+            0.022299999371170998,
+            0.023499999195337296,
+            0.014700000174343586
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:9",
+      "assetUrl": "/atlas-volume/detail/region-9.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 1013056,
+      "glbSha256": "332839fb6ef9861e6f8430fc65a6c6fd68c4d623799a5eb4816a706316d7688f",
+      "geometry": {
+        "vertices": 21080,
+        "triangles": 42156,
+        "boundsMeters": [
+          [
+            0.014299999922513962,
+            0.03550000116229057,
+            0.004900000058114529
+          ],
+          [
+            0.02329999953508377,
+            0.045499999076128006,
+            0.011099999770522118
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:10",
+      "assetUrl": "/atlas-volume/detail/region-10.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 1910480,
+      "glbSha256": "9179d38b31e1532bf1a83889feaba163a7c79b2c4d7abf4557e02ced2de2f428",
+      "geometry": {
+        "vertices": 39794,
+        "triangles": 79512,
+        "boundsMeters": [
+          [
+            0.014499999582767487,
+            0.013700000010430813,
+            0.008700000122189522
+          ],
+          [
+            0.023499999195337296,
+            0.027899999171495438,
+            0.016100000590085983
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:11",
+      "assetUrl": "/atlas-volume/detail/region-11.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 1068700,
+      "glbSha256": "9d8a228f735e3b986f665ea304ca049a87d772a0abc570fed850f020442a2b5a",
+      "geometry": {
+        "vertices": 22240,
+        "triangles": 44472,
+        "boundsMeters": [
+          [
+            0.01209999993443489,
+            0.01209999993443489,
+            0.003700000001117587
+          ],
+          [
+            0.024900000542402267,
+            0.023099999874830246,
+            0.008500000461935997
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:12",
+      "assetUrl": "/atlas-volume/detail/region-12.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 392760,
+      "glbSha256": "3cd5e2665757ae11adc2e2a3dc248e09ada70d38c42e62bdb4879db9fe54b410",
+      "geometry": {
+        "vertices": 8158,
+        "triangles": 16308,
+        "boundsMeters": [
+          [
+            0.014100000262260437,
+            0.012900000438094139,
+            0.007499999832361937
+          ],
+          [
+            0.023900000378489494,
+            0.017500000074505806,
+            0.010099999606609344
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:13",
+      "assetUrl": "/atlas-volume/detail/region-13.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 844768,
+      "glbSha256": "88228255207f968792dd89aa17973ede5ac482d97bd49ad73cae38185909233e",
+      "geometry": {
+        "vertices": 17574,
+        "triangles": 35144,
+        "boundsMeters": [
+          [
+            0.012900000438094139,
+            0.065700002014637,
+            0.002899999963119626
+          ],
+          [
+            0.019899999722838402,
+            0.07370000332593918,
+            0.009700000286102295
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:14",
+      "assetUrl": "/atlas-volume/detail/region-14.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 1009364,
+      "glbSha256": "d0ab2aad27316ab0258a2c3f979202dc3d784889fb3eff4fca47bc8ba4b88456",
+      "geometry": {
+        "vertices": 21004,
+        "triangles": 42000,
+        "boundsMeters": [
+          [
+            0.012500000186264515,
+            0.07249999791383743,
+            0.0017000000225380063
+          ],
+          [
+            0.024299999698996544,
+            0.08410000056028366,
+            0.007300000172108412
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:15",
+      "assetUrl": "/atlas-volume/detail/region-15.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 1276004,
+      "glbSha256": "59a29a8c1135bbeaf2cb8c809f15b4bba300d8be9a670cb5b8af6c4a85465c7d",
+      "geometry": {
+        "vertices": 26558,
+        "triangles": 53112,
+        "boundsMeters": [
+          [
+            0.017500000074505806,
+            0.0494999997317791,
+            0.007300000172108412
+          ],
+          [
+            0.029100000858306885,
+            0.057100001722574234,
+            0.01730000041425228
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:16",
+      "assetUrl": "/atlas-volume/detail/region-16.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 1167620,
+      "glbSha256": "c8b4331bb0a5a46f256c754d499f468b95a212c352bc02ec4ca8f664e3e75425",
+      "geometry": {
+        "vertices": 24300,
+        "triangles": 48596,
+        "boundsMeters": [
+          [
+            0.017899999395012856,
+            0.051899999380111694,
+            0.006300000008195639
+          ],
+          [
+            0.030899999663233757,
+            0.06030000001192093,
+            0.018699999898672104
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:17",
+      "assetUrl": "/atlas-volume/detail/region-17.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 581152,
+      "glbSha256": "48cb2f7e79bafa44be38b150f1856f39a237941958eb19d01d70c3a7ecde5024",
+      "geometry": {
+        "vertices": 12082,
+        "triangles": 24160,
+        "boundsMeters": [
+          [
+            0.01730000041425228,
+            0.05429999902844429,
+            0.011900000274181366
+          ],
+          [
+            0.029100000858306885,
+            0.06390000134706497,
+            0.01549999974668026
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:18",
+      "assetUrl": "/atlas-volume/detail/region-18.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 7733820,
+      "glbSha256": "9d1bde67a25c03f6f6e3c239abaca50cf7c841ebddd1214aff3e4caacda2400e",
+      "geometry": {
+        "vertices": 161094,
+        "triangles": 322192,
+        "boundsMeters": [
+          [
+            0.0052999998442828655,
+            0.04410000145435333,
+            0.0024999999441206455
+          ],
+          [
+            0.02930000051856041,
+            0.0625,
+            0.01810000091791153
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:19",
+      "assetUrl": "/atlas-volume/detail/region-19.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 2232212,
+      "glbSha256": "ea149c63e14c11752211a159d8d8d9cc52ecdcbcd95043c200520b38a3f581b1",
+      "geometry": {
+        "vertices": 46480,
+        "triangles": 92952,
+        "boundsMeters": [
+          [
+            0.007899999618530273,
+            0.05429999902844429,
+            0.011500000022351742
+          ],
+          [
+            0.02669999934732914,
+            0.06610000133514404,
+            0.01850000023841858
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:20",
+      "assetUrl": "/atlas-volume/detail/region-20.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 115124,
+      "glbSha256": "0d825cc1ebbe5ac3cd615b7a3dabf05c2bba5f6d7ad81f6f0d5888ab6467b74a",
+      "geometry": {
+        "vertices": 2374,
+        "triangles": 4740,
+        "boundsMeters": [
+          [
+            0.013299999758601189,
+            0.05350000038743019,
+            0.013899999670684338
+          ],
+          [
+            0.019700000062584877,
+            0.05609999969601631,
+            0.016699999570846558
+          ]
+        ]
+      }
+    },
+    {
+      "structureId": "digimouse-volume:21",
+      "assetUrl": "/atlas-volume/detail/region-21.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 3030020,
+      "glbSha256": "e7fb5429490bd6df4c78ae6558a0035019505cebbb9eb9b98f25f1044a64117d",
+      "geometry": {
+        "vertices": 63100,
+        "triangles": 126196,
+        "boundsMeters": [
+          [
+            0.010900000110268593,
+            0.034299999475479126,
+            0.0044999998062849045
+          ],
+          [
+            0.024700000882148743,
+            0.04749999940395355,
+            0.015699999406933784
+          ]
+        ]
+      }
+    }
+  ],
+  "statistics": {
+    "structures": 19,
+    "triangles": 1050980,
+    "surfaceVerticesIncludingRegionBoundaries": 525570,
+    "processingGridDimensionsWithPadding": [
+      192,
+      498,
+      106
+    ],
+    "processingGridBytes": 10135296,
+    "processingVoxelSpacingMm": [
+      0.2,
+      0.2,
+      0.2
+    ],
+    "sourceVoxelSpacingMm": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "sampledVoxelCounts": {
+      "0": 7003986,
+      "1": 2092091,
+      "2": 147844,
+      "3": 717,
+      "4": 5730,
+      "5": 3804,
+      "6": 2310,
+      "7": 17120,
+      "8": 3256,
+      "9": 27902,
+      "10": 19839,
+      "11": 13399,
+      "12": 3774,
+      "13": 23688,
+      "14": 18759,
+      "15": 28191,
+      "16": 17358,
+      "17": 5715,
+      "18": 250774,
+      "19": 61859,
+      "20": 704,
+      "21": 52140
+    },
+    "glbBytesTotal": 25249496
+  },
+  "limitations": [
+    "One postmortem normal nude male mouse; no female, developmental, disease-specific or population-average anatomy.",
+    "Voxel label boundaries have finite source resolution; subsampling can remove thin features and small components. Processing spacing is distinct from source spacing and is not a surface-accuracy guarantee.",
+    "No named anatomical orientation or independently verified physical calibration; raw voxel indices define this separate frame.",
+    "No accepted transformation to the tessellated Digimouse frame. These assets must not be overlaid on that model by matching coordinates or label numbers.",
+    "The source skin label is residual bulk body tissue, not a separately segmented skin layer. Skeleton remains aggregate and most individual muscles are absent.",
+    "Paired eyes, glands, kidneys, testes and lungs use shared labels; no laterality, individual lobe or tissue subdivision is inferred.",
+    "Separate binary interfaces approximate each region; multi-label junctions can have gaps from the half-value representation. No smoothing or fabricated tissue fills these gaps.",
+    "These surfaces and numerical topology checks do not constitute independent anatomical expert review or physiological validation."
+  ],
+  "benchmark": {
+    "elapsedSeconds": 12.430841595996753,
+    "peakResidentKiB": 73168,
+    "measuredAtUtc": "2026-10-26T07:52:59+00:00",
+    "step": 2,
+    "perRegion": true
+  },
+  "unavailable": [
+    {
+      "structureId": "digimouse-volume:1",
+      "reason": "Fine envelope and aggregate skeleton surfaces are deliberately omitted to limit storage and rendering cost; the complete coarse reference retains this source label."
+    },
+    {
+      "structureId": "digimouse-volume:2",
+      "reason": "Fine envelope and aggregate skeleton surfaces are deliberately omitted to limit storage and rendering cost; the complete coarse reference retains this source label."
+    }
+  ]
+}

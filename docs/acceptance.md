@@ -4,19 +4,23 @@ This record defines the current acceptance criteria and distinguishes software c
 
 ## Evidence currently available
 
-The complete JavaScript suite, production build and fresh local HTTP distribution checks have passed for the current application source. The JavaScript checks exercise the experimental domain, numeric boundary cases, illustrative functions, colour mapping, source-bound view serialization, camera arithmetic, scene transforms, actual-GLB loading and ray intersection, ontology consistency and simulated interface workflows. Python checks have exercised mesh preparation, resource accounting and streamed registered-volume inspection. Production checks exercise notices, compilation, bundling and local HTTP delivery.
+Focused registered-volume checks have passed: five Python geometry cases exercise fixtures, the complete 21-label base reference and all 19 finer regional surfaces, and two actual Three.js GLTFLoader cases inspect IDs, bounds and rest transforms. Both conversion commands reproduced identical GLB checksums. These checks establish numerical and loader consistency, not independent anatomical accuracy or browser rendering.
+
+For the integrated v0.3.0 source on 2026-10-26, all 113 JavaScript and simulated DOM cases passed with no failures or skips. These include per-reference observation restoration and clearing, rejection and asynchronous cancellation, strict regional loading, stale-result disposal, registration-preserving geometry replacement and the Compare base-surface policy. All 41 Python cases passed: 19 geometry, source-volume and resource-accounting cases, and 22 publication and release cases. The production TypeScript check, dependency notice check and build passed. All five loopback distribution cases passed, including exact delivery of the complete volume reference and every regional GLB. These are separate suites; their totals do not include duplicate reruns.
 
 Focused simulated interface checks passed for Dark and White viewer state across modes, background save and restore, the legacy Dark default, unchanged observations and anatomy, the Organs preset and the Structure details shortcut. These checks do not verify actual pixel colours, responsive layout, physical scrolling or a browser WebGL context.
 
-A user-provided screenshot confirms that three-dimensional mouse views have been displayed in the application. This is manual evidence for the shown views. It does not establish systematic browser interaction, playback timing, all imports and downloads, scientific accuracy or representative hardware performance. The automated DOM harness deliberately exercises the WebGL startup-failure path; numerical Three.js tests load the real asset without browser rendering.
+A user-provided screenshot confirms that three-dimensional mouse views have been displayed in the application. This is manual evidence for the shown views, not validation of the optional volume renderer. It does not establish systematic browser interaction, playback timing, all imports and downloads, scientific accuracy or representative hardware performance. The automated DOM harness deliberately exercises the WebGL startup-failure path; numerical Three.js tests load real assets without browser rendering.
 
 ## Feature criteria
 
 | Area | Acceptance criterion | Available checks and remaining limits |
 | --- | --- | --- |
 | Shared representation | Preserve four modes, 14 system categories, stable source IDs and explicit unavailable coverage. | Domain vocabulary and simulated inventory checks exercise state and disclosure; no completeness claim is supported. |
-| Anatomical asset | Load the 17 source regions with independently identified mesh nodes and report loading failure. | Real GLB loading, checksum and stable-ID cases support source consistency. The supplied screenshot supports the shown rendered views. |
-| Coordinates | Preserve source relationships under documented transforms; avoid unsupported anatomical directions or calibrated measurements. | Numerical geometry and scene checks exercise coordinates. Anatomical orientation, calibration and cross-dataset registration remain unresolved. |
+| Anatomical assets | Preserve the tetrahedral reference's 17 regions and the volume reference's 21 labels as separately identified alternatives; disclose loading failures. | Actual GLB loading, checksums and stable-ID cases support source consistency. The supplied screenshot supports only the shown rendered views. |
+| Reference switching | Bind all modes, imports and view files to the selected atlas; retain experimental observations separately without translating IDs. | Source namespaces and frame IDs are explicit. Final integrated switching, restoration and stale-load rejection need coverage; real-browser operation remains pending. |
+| Regional detail | Load only requested volume surfaces at 0.2 mm processing, preserving source IDs, frame, visibility and observations; disclose unavailable fine envelope and skeleton. | Numerical and actual-loader checks cover all 19 files. Integrated request, cache, failure and switching behavior must be checked; rendered benefit and resource cost require browser inspection. |
+| Coordinates | Preserve each source's relationships under documented transforms; reject assumed registration, anatomical directions or calibrated measurements. | Numerical geometry and scene checks exercise coordinates. Source frames differ, no accepted inter-reference transform exists, and orientation and calibration remain unresolved. |
 | Camera and selection | Rotate, zoom, pan, reset, focus, select and synchronize views while preserving camera roll and rejecting unsafe poses. | Scene projection, actual heart-surface ray intersection and serialization cases exercise numerical behavior. Systematic pointer and framing checks in a real browser remain pending. |
 | Visibility and sections | Apply labels, hide, isolate, restore, system controls, per-region opacity and consistent clipping half-spaces. | Simulated controls and numerical clipping cases exercise state and picking rules. Occlusion, label placement and section appearance need browser inspection. |
 | Viewer backgrounds | Apply Dark or White consistently, including comparison views, and preserve the choice in valid view files. | Focused DOM and view-state checks exercise both values and the supported legacy default. Actual pixel contrast needs visual inspection. |
@@ -26,13 +30,13 @@ A user-provided screenshot confirms that three-dimensional mouse views have been
 | Summaries and overlays | Preserve grouping variables, means, subject counts, sample SD and readable common legends. | Descriptive calculations, colour functions and DOM legends exercise numeric consistency. Visual colour correspondence and readability need browser inspection. |
 | Comparison | Compare compatible conditions on the same anatomy, disclose shared subjects and reject incompatible groups. | Domain and simulated comparisons exercise descriptive differences and common scales. Synchronized rendered views need systematic interaction checks. |
 | Provenance and exports | Retain normalized observations and declared provenance in JSON, identify synthetic data and neutralize formula-triggering CSV text. | Domain round trips and captured DOM download blobs exercise exported content. Actual device downloads and source authenticity are separate checks. |
-| View save and restore | Bind display settings to atlas ID, GLB checksum and frame, restore atomically and retain private observations separately. | Schema, shared camera and simulated restoration cases exercise source binding and state. A view file does not reproduce animation phase or an entire research session. |
-| Privacy | Keep observations in memory, clear locally on request and avoid automatic external transmission. | Source review and controlled DOM requests support local operation. Real browser network inspection remains pending. Publication has its own source and metadata review. |
-| Ontology proposals | Retain related, proposed and computational-inference status, attribution and explicit unmapped regions without changing anatomy or data mappings. | Candidate, adapter and inspector cases exercise the current table. Independent expert mapping review remains absent. |
-| Registered volume | Inspect source labels without assuming a registration or increasing rendered coverage. | Streamed assessment cases exercise headers, counts, bounds and rejection paths. No accepted transform or volume-derived viewer geometry exists. |
+| View save and restore | Bind settings to selected atlas ID, GLB checksum and frame, restore atomically and retain observations separately. | Schema, shared camera and simulated restoration cases exercise source binding and state. Cross-reference files require rejection. A view file does not reproduce animation phase or an entire research session. |
+| Local observations | Keep observations in memory per reference, clear locally on request and avoid automatic external transmission. | Source review and controlled DOM requests support local operation. Switching must not cross-map records. Real browser network inspection remains pending. |
+| Ontology proposals | Retain related, proposed and computational-inference status, attribution and explicit unmapped regions without changing anatomy or data mappings. | Candidate, adapter and inspector cases exercise the tetrahedral table. Associations do not transfer to the volume namespace; independent expert mapping review remains absent. |
+| Registered volume | Preserve all 21 source labels, processing choices, source spacing, limitations and source licensing. | Streamed assessment, geometry and loader checks cover source and generated files. Subsampling can remove small features; neither label presence nor numerical closure establishes anatomical accuracy. |
 | Resource budget | Include all project files, dependencies, caches, data, intermediates and Git metadata below 10,000,000,000 bytes. | Accounting cases exercise hidden files, hardlinks, symlink boundaries and budget detection. Run a fresh scan after resource changes. |
 | Hardware | Operate on representative Linux Mint hardware with 16 GB RAM and integrated graphics. | This remains a design target. Browser memory, frame rate and representative hardware checks are incomplete. |
-| Publication hygiene | Review the exact source snapshot, identity metadata, required attribution and possible private data before release. | Synthetic checker cases exercise redacted findings, tracked versus index scope, historical identity detection and unchanged history. Pattern scanning is not a complete security audit. |
+| Repository access | Keep repository and release private unless Qasim Hussain chooses otherwise. | Access control is an administrative setting, separate from scientific test results. Local content checks do not authorize a visibility change. |
 
 ## Reproduce the checks
 
@@ -51,6 +55,7 @@ bash scripts/npm.sh run build
 python3 scripts/test_geometry.py
 python3 scripts/test_resources.py
 python3 scripts/test_volume_assessment.py
+python3 scripts/test_volume_geometry.py
 python3 scripts/test_publication.py
 python3 scripts/resource_usage.py
 ```
@@ -61,12 +66,4 @@ After building, start `bash scripts/npm.sh run preview` in a separate terminal a
 python3 scripts/test_distribution.py --url http://127.0.0.1:4173
 ```
 
-Before publication, check the selected source and index snapshot. Include history only in the checkout whose history will actually be distributed:
-
-```bash
-python3 scripts/check_publication.py --tracked
-python3 scripts/check_publication.py --staged --include-git-metadata
-python3 scripts/check_publication.py --tracked --include-history
-```
-
-The publication scan is separate from routine scientific acceptance because private local development history can be retained while a sanitized source snapshot is published. See [privacy and publication](privacy-and-publication.md). A real browser acceptance session should record browser and viewport details and exercise model loading, pointer controls, labels, backgrounds, opacity, sections, playback, imports, legends, comparisons, downloads and network behavior. A screenshot, HTTP response or simulated DOM case alone does not complete that session.
+A real browser acceptance session should record browser and viewport details and exercise both reference loads, requested finer surfaces, reference switching, pointer controls, labels, backgrounds, opacity, sections, playback, imports, legends, comparisons, view restoration, downloads and network behavior. It should measure memory and frame rate, especially for the volume reference and comparison mode. A screenshot, HTTP response or simulated DOM case alone does not complete that session.

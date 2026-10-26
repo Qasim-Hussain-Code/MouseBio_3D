@@ -12,6 +12,7 @@ import zipfile
 
 from prepare_release import ReleaseError, prepare_release, relative_name
 from check_publication import audit
+from test_registered_anatomy import volume_fixture_files
 
 
 def git(root, *arguments):
@@ -57,6 +58,39 @@ def fixture():
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_registered_volume_and_detail_are_in_both_archives_with_exact_bytes(self):
+        with fixture() as root:
+            files = volume_fixture_files()
+            for name, data in files.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+            git(root, "add", ".")
+            git(root, "commit", "--quiet", "-m", "add_volume_fixture")
+            shutil.copytree(root / "public", root / "dist", dirs_exist_ok=True)
+            release = prepare_release(root, Path(".publication/volume"))
+            self.assertEqual(release["registeredAnatomy"]["assets"], 3)
+            for kind in ["source", "web"]:
+                archive = root / ".publication/volume" / release["artifacts"][kind]["file"]
+                with zipfile.ZipFile(archive) as zipped:
+                    for path, expected in files.items():
+                        name = "MouseBio_3D-1.2.3/" + path if kind == "source" else path.removeprefix("public/")
+                        self.assertEqual(zipped.read(name), expected)
+
+    def test_dist_detail_tampering_is_rejected_before_artifacts_are_created(self):
+        with fixture() as root:
+            for name, data in volume_fixture_files(4).items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+            git(root, "add", ".")
+            git(root, "commit", "--quiet", "-m", "add_volume_fixture")
+            shutil.copytree(root / "public", root / "dist", dirs_exist_ok=True)
+            (root / "dist/atlas-volume/detail/region-3.glb").write_bytes(b"Synthetic mismatched data")
+            with self.assertRaisesRegex(ReleaseError, "registered_anatomy_asset_mismatch"):
+                prepare_release(root, Path(".publication/volume"))
+            self.assertFalse((root / ".publication").exists())
+
     def test_complete_archives_are_deterministic_bound_and_free_of_development_history(self):
         with fixture() as root:
             review = audit(root)
