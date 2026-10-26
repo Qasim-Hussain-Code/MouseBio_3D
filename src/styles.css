@@ -58,3 +58,11 @@
 .surface-detail h3 { margin: 0 0 8px; font-size: 12px; }
 .surface-detail p, .surface-detail small { display: block; margin: 7px 0; font-size: 11px; line-height: 1.6; color: #657c76; }
 .surface-detail label { display: flex; align-items: center; gap: 7px; font-size: 12px; line-height: 1.5; }
+.anatomy-group-bar { display: flex; align-items: end; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+.anatomy-group-bar > label { display: grid; gap: 5px; font-size: 10px; color: #657c76; }
+.anatomy-group-bar select { min-height: 34px; max-width: 100%; padding: 6px 10px; border: 1px solid #d4dfd1; border-radius: 5px; background: #fff; color: #24433e; }
+.anatomy-group-bar .secondary-button { min-height: 34px; padding: 6px 10px; font-size: 10px; }
+.group-limitations { align-self: center; max-width: 100%; color: #657c76; font-size: 10px; line-height: 1.6; }
+.group-limitations summary { cursor: pointer; }
+.group-limitations[open] { flex-basis: 100%; padding: 10px 14px; border: 1px solid #dce4d7; border-radius: 5px; background: #f2f5ee; }
+.group-limitations ul { margin: 6px 0 0; padding-left: 18px; }

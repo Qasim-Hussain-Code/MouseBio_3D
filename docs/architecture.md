@@ -24,6 +24,8 @@ Exact JavaScript versions and package integrity records are retained in `package
 
 The application components expose source annotation, scientific limitations, proposed ontology context and user-declared dataset provenance. These declarations remain distinct: a source segmentation label is not an expert-reviewed ontology crosswalk, and a user-supplied citation is not evidence that the application has verified an observation.
 
+`anatomy-groups.ts` defines display selections only for exact reviewed source inventories. Group IDs are not anatomical identifiers or ontology edges. The application isolates existing members while retaining observations, background and exploration mode. The viewer fits their world-space bounds using the camera aspect, field of view, zoom and roll. Invalid or empty selections leave the camera unchanged; these operations do not alter source coordinates or establish anatomical measurements.
+
 ## Anatomical asset pipeline
 
 The Digimouse tetrahedral importer preserves numerical source region IDs, extracts region boundaries, orients surfaces outward, calculates normals and writes one mesh per region. It performs no smoothing, anatomical subdivision or invented completion. The common asset coordinate frame is retained under a documented uniform scale. Viewer centering, display rotation and local animation pivots preserve resting spatial relationships.

@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { Atlas } from '../domain/types';
 import { assertRegionDetailBinding, isLocalGlbPath, type RegionDetailAsset, type RegionDetailStatus } from './region-detail-registry';
 export { buildRegionDetailAssets, isLocalGlbPath } from './region-detail-registry';
@@ -81,6 +80,7 @@ export async function loadRegionDetailGeometry(asset: RegionDetailAsset, atlas: 
       || !record(document.nodes[0].extras) || document.nodes[0].extras.structureId !== asset.structureId) {
     throw new Error('The detail GLB contains an unexpected anatomical region.');
   }
+  const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
   const model = await new GLTFLoader().parseAsync(bytes, '');
   const meshes: THREE.Mesh[] = [];
   model.scene.traverse((object) => { if (object instanceof THREE.Mesh) meshes.push(object); });

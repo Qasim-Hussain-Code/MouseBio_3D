@@ -165,7 +165,7 @@ test('anatomical inventory stays usable after WebGL failure, including selection
   fireEvent.click(view.getByRole('button', { name: 'Hide Brain' }));
   assert.ok(view.getByText('16 visible regions'));
   fireEvent.click(inspector.getByRole('button', { name: 'Isolate' }));
-  assert.ok(view.getByText('1 visible regions'));
+  assert.ok(view.getByText('1 visible region'));
   fireEvent.click(inspector.getByRole('button', { name: 'Restore' }));
   assert.ok(view.getByText('16 visible regions'));
   assert.ok(view.getByRole('button', { name: 'Show Brain' }));
@@ -663,4 +663,58 @@ test('reads started during a delayed reference switch are canceled when the new 
   assert.ok((view.getByRole('button', { name: 'Export JSON' }) as HTMLButtonElement).disabled);
   assert.equal((await savedView(view)).atlasId, 'digimouse-volume-040-v1');
   assert.equal((await savedView(view)).background, 'dark');
+});
+
+test('source groups isolate existing regions while retaining research data and background', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  fireEvent.change(view.getByRole('combobox', { name: 'Section axis' }), { target: { value: 'z' } });
+  fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'brain' } });
+  assert.ok(view.getByText('1 visible region'));
+  const brain = await savedView(view);
+  assert.equal(brain.selected, 'digimouse:2'); assert.equal(brain.clipAxis, 'off');
+  assert.equal(brain.background, 'white'); assert.equal(brain.atlasId, atlas.id);
+  assert.deepEqual(brain.hidden, atlas.structures.filter((region) => region.id !== 'digimouse:2').map((region) => region.id).sort());
+  assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
+  fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'muscles' } });
+  assert.ok(view.getByText('2 visible regions'));
+  assert.deepEqual((await savedView(view)).hidden.filter((id) => ['digimouse:14', 'digimouse:15'].includes(id)), []);
+  assert.ok((await savedView(view)).hidden.includes('digimouse:1'));
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), observations);
+  fireEvent.click(view.getByRole('button', { name: 'Show all' }));
+  assert.ok(view.getByText('17 visible regions'));
+  assert.equal((view.getByRole('combobox', { name: 'Source anatomy group' }) as HTMLSelectElement).value, 'whole-mouse');
+  fireEvent.click(view.getByRole('button', { name: 'Hide Brain' }));
+  assert.equal((view.getByRole('combobox', { name: 'Source anatomy group' }) as HTMLSelectElement).value, '');
+});
+
+test('volume brain and head groups retain their own IDs across modes and view restoration', async () => {
+  const view = await openApp(); expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  await view.findByText('21 visible regions');
+  fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'brain' } });
+  assert.ok(view.getByText('6 visible regions'));
+  const brain = await savedView(view);
+  const ids = ['digimouse-volume:4', 'digimouse-volume:5', 'digimouse-volume:6', 'digimouse-volume:7', 'digimouse-volume:8', 'digimouse-volume:10'];
+  assert.ok(ids.every((id) => !brain.hidden.includes(id) && brain.opacity[id] === 1));
+  assert.equal(brain.hidden.length, 15);
+  for (const mode of ['Living', 'Compare', 'Anatomy']) {
+    fireEvent.click(view.getByRole('button', { name: mode }));
+    assert.ok(view.getByText('6 visible regions'));
+  }
+  fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'head-organs' } });
+  assert.ok(view.getByText('2 visible regions'));
+  const head = await savedView(view);
+  assert.equal(head.hidden.includes('digimouse-volume:3'), false);
+  assert.equal(head.hidden.includes('digimouse-volume:12'), false);
+  fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [inputFile(JSON.stringify(brain), 'brain-view.json')] } });
+  await view.findByText('6 visible regions');
+  assert.equal((view.getByRole('combobox', { name: 'Source anatomy group' }) as HTMLSelectElement).value, '');
+  assert.equal((await savedView(view)).hidden.length, 15);
 });

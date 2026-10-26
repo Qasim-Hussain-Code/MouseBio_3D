@@ -16,6 +16,7 @@ import { defaultStructureOpacity, initialReferenceSelection, referenceOpacity } 
 import referenceCatalogData from '../data/anatomy-references.json';
 import detailIndexData from '../public/atlas-volume/detail-index.json';
 import { buildRegionDetailAssets, type RegionDetailStatus } from './viewer/region-detail-registry';
+import { buildAnatomyGroups, type AnatomyGroup } from './domain/anatomy-groups';
 
 const referenceCatalog = buildReferenceCatalog(referenceCatalogData);
 
@@ -63,6 +64,7 @@ export default function App() {
   const [referenceLoading, setReferenceLoading] = useState(false);
   const [referenceError, setReferenceError] = useState('');
   const [fineEnabled, setFineEnabled] = useState(false);
+  const [activeGroup, setActiveGroup] = useState('whole-mouse');
   const [detailStatus, setDetailStatus] = useState<RegionDetailStatus>({ status: 'idle', structureId: null });
   const [mode, setMode] = useState<ExplorationMode>('anatomical');
   const [selected, setSelected] = useState<string | null>('digimouse:3');
@@ -91,6 +93,7 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [viewError, setViewError] = useState('');
   const isolation = useRef<string[] | null>(null);
+  const pendingGroupFocus = useRef<{ atlasId: string; ids: readonly string[] } | null>(null);
   const experimentalBank = useRef(createExperimentalBank());
   const currentData = useRef({ atlas, rows, metadata });
   currentData.current = { atlas, rows, metadata };
@@ -130,6 +133,8 @@ export default function App() {
   }, []);
   const summaries = useMemo(() => summarizeMeasurements(rows), [rows]);
   const reference = atlas ? getReference(referenceCatalog.catalog, atlas.id) : undefined;
+  const anatomyGroups = useMemo(() => atlas ? buildAnatomyGroups(atlas) : null, [atlas]);
+  const selectedGroup = anatomyGroups?.groups.find((group) => group.id === activeGroup);
   const detailAssets = useMemo(() => atlas ? buildRegionDetailAssets(detailIndexData, atlas) : null, [atlas]);
   const availableDetail = detailAssets?.assets.find((asset) => asset.structureId === selected);
   const fineActive = fineEnabled && mode !== 'comparative';
@@ -158,8 +163,33 @@ export default function App() {
     conditionA: activeA, conditionB: activeB,
   }) : null;
   const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, colors: colorA, labels, background };
-  const toggleHidden = (id: string) => { isolation.current = null; setHidden((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); };
+  const toggleHidden = (id: string) => { isolation.current = null; setActiveGroup(''); pendingGroupFocus.current = null; setHidden((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); };
   const select = (id: string) => { setSelected(id); setFineEnabled(false); setDetailStatus({ status: 'idle', structureId: null }); };
+  const focusRegions = (ids: readonly string[]) => {
+    if (!atlas || !ids.length) return;
+    pendingGroupFocus.current = { atlasId: atlas.id, ids };
+    if (viewerState.primary === 'ready' && viewer.current) {
+      viewer.current.focusRegions(ids); pendingGroupFocus.current = null;
+    }
+  };
+  const viewerReady = (details: { meshes: number; triangles: number }) => {
+    setDiagnostics(details);
+    const pending = pendingGroupFocus.current;
+    if (pending && pending.atlasId === atlas?.id && viewer.current) {
+      viewer.current.focusRegions(pending.ids); pendingGroupFocus.current = null;
+    }
+  };
+  const exploreGroup = (group: AnatomyGroup) => {
+    if (!atlas) return;
+    const members = new Set(group.structureIds);
+    setHidden(atlas.structures.filter((structure) => !members.has(structure.id)).map((structure) => structure.id));
+    setOpacity(group.id === 'whole-mouse' ? referenceOpacity(atlas) : Object.fromEntries(atlas.structures.map((structure) =>
+      [structure.id, members.has(structure.id) ? 1 : defaultStructureOpacity(structure)])));
+    setSelected(selected && members.has(selected) ? selected : group.id === 'whole-mouse' ? initialReferenceSelection(atlas) : group.structureIds[0] ?? null);
+    setFineEnabled(false); setDetailStatus({ status: 'idle', structureId: null });
+    setClipAxis('off'); isolation.current = null; setActiveGroup(group.id);
+    focusRegions(group.structureIds);
+  };
   const switchReference = async (id: string) => {
     const next = getReference(referenceCatalog.catalog, id);
     if (!next || id === atlas?.id) return;
@@ -183,6 +213,7 @@ export default function App() {
       experimentalBank.current = switched.bank;
       dataImportSequence.current++; viewImportSequence.current++;
       setRows(switched.data.rows); setMetadata(switched.data.metadata); setAtlas(loaded);
+      setActiveGroup('whole-mouse'); pendingGroupFocus.current = null;
       setSelected(initialReferenceSelection(loaded)); setHidden([]); setOpacity(referenceOpacity(loaded));
       setFineEnabled(false); setDetailStatus({ status: 'idle', structureId: null }); setCameraPose(undefined); setDiagnostics(null);
       setClipAxis('off'); setClipPosition(50); setQuery(''); setSeries(''); setConditionA(''); setConditionB('');
@@ -195,12 +226,14 @@ export default function App() {
   };
   const isolate = () => {
     if (!atlas || !selected) return;
+    setActiveGroup(''); pendingGroupFocus.current = null;
     if (isolation.current) { setHidden(isolation.current); isolation.current = null; }
     else { isolation.current = hidden; setHidden(atlas.structures.filter((structure) => structure.id !== selected).map((structure) => structure.id)); }
   };
-  const showAll = () => { setHidden([]); isolation.current = null; if (atlas) setOpacity(referenceOpacity(atlas)); };
+  const showAll = () => { setHidden([]); isolation.current = null; setActiveGroup('whole-mouse'); pendingGroupFocus.current = null; if (atlas) setOpacity(referenceOpacity(atlas)); };
   const showOrgans = () => {
     setHidden([]); isolation.current = null;
+    setActiveGroup('whole-mouse'); pendingGroupFocus.current = null;
     if (atlas) setOpacity(referenceOpacity(atlas, true));
     setNotice('Body envelope and skeleton made translucent.');
   };
@@ -247,6 +280,7 @@ export default function App() {
       if (!result.ok || !result.state) throw new Error(result.errors.join(' '));
       const state = result.state;
       setFineEnabled(false);
+      setActiveGroup(''); pendingGroupFocus.current = null;
       setMode(state.mode); setSelected(state.selected); setHidden(state.hidden); setOpacity(state.opacity);
       setClipAxis(state.clipAxis); setClipPosition(state.clipPosition); setLabels(state.labels); setBackground(state.background);
       setPlaying(state.living.playing); setSpeed(state.living.speed); setCardiac(state.living.cardiac); setRespiratory(state.living.respiratory);
@@ -277,7 +311,7 @@ export default function App() {
       {referenceError && <p role="alert" className="view-import-error">Reference unchanged. {referenceError}</p>}
       <label className="search-field"><Icon name="search" size={16} /><input ref={searchInput} type="search" placeholder="Find a structure or ID" aria-label="Find a structure or ID" value={query} onChange={(event) => { setQuery(event.target.value); setNavigatorTab('structures'); }} /><kbd>/</kbd></label>
       <div className="segmented" role="group" aria-label="Atlas navigation"><button className={navigatorTab === 'structures' ? 'active' : ''} onClick={() => setNavigatorTab('structures')}>Structures <span>{atlas.structures.length}</span></button><button className={navigatorTab === 'systems' ? 'active' : ''} onClick={() => setNavigatorTab('systems')}>Systems <span>{SYSTEMS.length}</span></button></div>
-      <div className="structure-toolbar"><span>{navigatorTab === 'structures' ? `${visibleCount} visible regions` : `${represented} categories represented`}</span><div className="visibility-presets"><button className="text-button" onClick={showOrgans} title="Make the body envelope and skeleton translucent" aria-label="Organs visibility preset">Organs</button><button className="text-button" onClick={showAll}>Show all</button></div></div>
+      <div className="structure-toolbar"><span>{navigatorTab === 'structures' ? `${visibleCount} visible ${visibleCount === 1 ? 'region' : 'regions'}` : `${represented} categories represented`}</span><div className="visibility-presets"><button className="text-button" onClick={showOrgans} title="Make the body envelope and skeleton translucent" aria-label="Organs visibility preset">Organs</button><button className="text-button" onClick={showAll}>Show all</button></div></div>
       <div className="structure-list">
         {navigatorTab === 'structures' ? atlas.structures.filter((structure) => `${structure.name} ${structure.id} ${structure.sourceLabel}`.toLowerCase().includes(query.toLowerCase())).map((structure) => <div key={structure.id} className={`structure-row ${selected === structure.id ? 'selected' : ''} ${hidden.includes(structure.id) ? 'is-hidden' : ''}`}>
           <button className="structure-name" onClick={() => select(structure.id)} aria-pressed={selected === structure.id}><span className={`structure-dot system-${structure.systems[0]}`} style={structure.color ? { backgroundColor: structure.color } : undefined} /><span>{structure.name}<small>{structure.id}</small></span></button>
@@ -285,7 +319,7 @@ export default function App() {
         </div>) : SYSTEMS.map((system) => {
           const structures = atlas.structures.filter((structure) => structure.systems.includes(system.id));
           const shown = structures.some((structure) => !hidden.includes(structure.id));
-          return <label key={system.id} className={`system-row ${structures.length ? '' : 'unavailable'}`}><input type="checkbox" checked={structures.length > 0 && shown} disabled={!structures.length} onChange={() => { isolation.current = null; setHidden((current) => shown ? [...new Set([...current, ...structures.map((structure) => structure.id)])] : current.filter((id) => !structures.some((structure) => structure.id === id))); }} /><span>{system.name}</span><small>{structures.length || 'No mesh'}</small></label>;
+          return <label key={system.id} className={`system-row ${structures.length ? '' : 'unavailable'}`}><input type="checkbox" checked={structures.length > 0 && shown} disabled={!structures.length} onChange={() => { isolation.current = null; setActiveGroup(''); pendingGroupFocus.current = null; setHidden((current) => shown ? [...new Set([...current, ...structures.map((structure) => structure.id)])] : current.filter((id) => !structures.some((structure) => structure.id === id))); }} /><span>{system.name}</span><small>{structures.length || 'No mesh'}</small></label>;
         })}
         {navigatorTab === 'structures' && !atlas.structures.some((structure) => `${structure.name} ${structure.id} ${structure.sourceLabel}`.toLowerCase().includes(query.toLowerCase())) && <p className="empty-small">No matching source region. Missing anatomy is not generated.</p>}
       </div>
@@ -296,6 +330,7 @@ export default function App() {
       <div className="workspace-heading"><div><span className="eyebrow">{MODES.find((item) => item.id === mode)?.label.toUpperCase()} WORKSPACE</span><h2>{mode === 'anatomical' ? 'Anatomical reference' : mode === 'living' ? 'Physiology in motion' : mode === 'experimental' ? 'Map your observations' : 'Compare experimental states'}</h2></div><div className="view-file-actions"><input ref={viewFileInput} type="file" className="view-file-input" accept=".json,application/json" aria-label="Restore view state" onChange={(event) => void restoreView(event.target.files?.[0])} /><button className="secondary-button save-view" onClick={() => viewFileInput.current?.click()} title="Load view settings"><Icon name="upload" size={15} /><span>Load view</span></button><button className="secondary-button save-view" onClick={exportView} title="Save view settings"><Icon name="download" size={15} /><span>Save view</span></button></div></div>
       <button className="structure-details-shortcut secondary-button" aria-controls="structure-inspector" onClick={() => { inspector.current?.scrollIntoView({ block: 'start' }); inspector.current?.focus({ preventScroll: true }); }}><Icon name="info" size={15} /> Structure details{selectedStructure ? `: ${selectedStructure.name}` : ''}</button>
       {viewError && <p className="view-import-error" role="alert">View settings unchanged. {viewError}</p>}
+      <div className="anatomy-group-bar"><label>Isolate a source group<select aria-label="Source anatomy group" value={selectedGroup ? activeGroup : ''} disabled={!anatomyGroups?.ok} onChange={(event) => { const group = anatomyGroups?.groups.find((entry) => entry.id === event.target.value); if (group) exploreGroup(group); }}><option value="" disabled>Current view</option>{anatomyGroups?.groups.map((group) => <option key={group.id} value={group.id}>{group.title} ({group.structureIds.length})</option>)}</select></label><button className="secondary-button" disabled={visibleCount === 0 || viewerState.primary !== 'ready'} onClick={() => focusRegions(atlas.structures.filter((structure) => !hidden.includes(structure.id) && (opacity[structure.id] ?? defaultStructureOpacity(structure)) > 0).map((structure) => structure.id))}><Icon name="focus" size={15} /> Fit visible regions</button>{selectedGroup && <details className="group-limitations"><summary>Group limits</summary><p>{selectedGroup.description}</p><ul>{selectedGroup.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul></details>}</div>
       {(mode === 'experimental' || mode === 'comparative') && <div className="data-toolbar">
         <label>Measurement<select aria-label="Measurement series" value={activeSeries} onChange={(event) => setSeries(event.target.value)} disabled={!seriesOptions.length}><option value="" disabled>No observations imported</option>{seriesOptions.map((group) => <option key={seriesKey(group)} value={seriesKey(group)}>{group.measurement} ({group.unit}) · {group.timePoint}</option>)}</select></label>
         <label>{mode === 'comparative' ? 'Condition A' : 'Condition'}<select aria-label="Condition A" value={activeA} onChange={(event) => setConditionA(event.target.value)} disabled={!conditions.length}>{!conditions.length && <option value="">No condition</option>}{conditions.map((condition) => <option key={condition}>{condition}</option>)}</select></label>
@@ -306,7 +341,7 @@ export default function App() {
       <section className={`viewport ${mode === 'comparative' ? 'comparison-viewport' : ''}`} aria-label="Anatomical viewer" data-background={background}>
         <div className="viewport-top"><span className="viewport-breadcrumb">DIGIMOUSE <span>/</span> {mode === 'comparative' ? 'SYNCHRONIZED REFERENCE' : 'WHOLE ORGANISM'}</span><div className="viewport-top-actions"><span className="viewport-chip"><span /> {atlas.structures.length} source regions</span><div className="background-switch" role="group" aria-label="Viewer background"><button aria-label="Dark background" aria-pressed={background === 'dark'} onClick={() => setBackground('dark')}><span className="background-swatch swatch-dark" />Dark</button><button aria-label="White background" aria-pressed={background === 'white'} onClick={() => setBackground('white')}><span className="background-swatch swatch-white" />White</button></div></div></div>
         <div className="canvas-pair">
-          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} onSelect={select} handle={viewer} onReady={setDiagnostics} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>
+          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>
           {mode === 'comparative' && <div className="canvas-cell"><div className="condition-label"><span>B</span>{activeB || 'Reference anatomy'}</div><Suspense fallback={viewerLoading}><ViewerCanvas atlas={atlas} detailAsset={detailAsset} settings={{ ...settings, colors: colorB }} onSelect={select} handle={compareViewer} onStatus={(status) => setViewerState((previous) => ({ ...previous, secondary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>}
         </div>
         <div className="view-controls"><button className="viewer-button" aria-label="Reset camera" title="Reset camera (Home)" onClick={() => viewer.current?.reset()}><Icon name="reset" size={17} /></button><span className="control-divider" />{(['x', 'y', 'z'] as const).map((axis) => <button className="viewer-button axis-button" key={axis} aria-label={`View along display ${axis} axis`} title={`Display ${axis.toUpperCase()} axis; not an anatomical direction`} onClick={() => viewer.current?.view(axis)}>{axis.toUpperCase()}</button>)}<span className="control-divider" /><button className={`viewer-button ${labels ? 'active' : ''}`} aria-label="Toggle selected structure label" aria-pressed={labels} onClick={() => setLabels(!labels)}>Aa</button></div>
@@ -330,7 +365,7 @@ export default function App() {
       <div className="structure-type">{selectedStructure.systems.map((id) => SYSTEMS.find((system) => system.id === id)?.name).filter(Boolean).join(' / ')}</div><h2>{selectedStructure.name}</h2><code className="structure-id">{selectedStructure.id}</code>
       <section className="surface-detail"><h3>Surface detail</h3><p>{reference?.processingResolution.processingVoxelSpacingMm?.[0]} mm processing grid. Source spacing and surface accuracy are different quantities.</p>{availableDetail ? <><label><input type="checkbox" aria-label="Finer selected surface" checked={fineActive} disabled={mode === 'comparative'} onChange={(event) => { setFineEnabled(event.target.checked); setDetailStatus({ status: 'idle', structureId: null }); }} /> Finer selected surface (0.2 mm)</label><small>{(availableDetail.glbBytes / 1_000_000).toFixed(2)} MB, loaded locally on demand. Other regions retain their base surface.</small><p role="status">{mode === 'comparative' ? 'Compare uses the same base surfaces in both panels.' : viewerFailed ? 'The 3D viewer is unavailable.' : fineActive ? detailStatus.status === 'ready' ? 'Finer surface loaded.' : detailStatus.status === 'failed' ? 'Finer surface unavailable. Base geometry retained.' : 'Preparing finer surface.' : 'Base surface active.'}</p></> : <p>No finer surface is bundled for this region.</p>}<small>View files restore the base surface. Selecting another region resets this control. Finer sampling adds no tissue or cellular anatomy.</small></section>
       <div className="inspector-actions"><button className="primary-button" onClick={() => viewer.current?.focus()}><Icon name="focus" size={15} /> Focus</button><button className="secondary-button" onClick={isolate}>{isolation.current ? 'Restore' : 'Isolate'}</button><button className="icon-button" aria-label={`${hidden.includes(selectedStructure.id) ? 'Show' : 'Hide'} selected structure`} onClick={() => toggleHidden(selectedStructure.id)}><Icon name={hidden.includes(selectedStructure.id) ? 'hidden' : 'eye'} size={17} /></button></div>
-      <div className="opacity-control"><label htmlFor="structure-opacity">Opacity <strong>{Math.round((opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100)}%</strong></label><input id="structure-opacity" type="range" min="0" max="100" value={(opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100} onChange={(event) => setOpacity({ ...opacity, [selectedStructure.id]: +event.target.value / 100 })} /></div>
+      <div className="opacity-control"><label htmlFor="structure-opacity">Opacity <strong>{Math.round((opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100)}%</strong></label><input id="structure-opacity" type="range" min="0" max="100" value={(opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100} onChange={(event) => { setActiveGroup(''); pendingGroupFocus.current = null; setOpacity({ ...opacity, [selectedStructure.id]: +event.target.value / 100 }); }} /></div>
       <section className="inspector-section"><h3>Source annotation</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>Source segmented region</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
       {ontologyCandidate && <OntologyContext candidate={ontologyCandidate} onDownload={() => download('ontology-candidates.json', JSON.stringify(ontologyCandidateData, null, 2))} />}
       {mode === 'living' && <section className="inspector-section"><h3>Motion model</h3><p>{selectedMotion?.limitations[0] ?? 'No physiological animation is implemented for this region.'}</p>{selectedMotion && <span className="status-tag">Illustrative classification</span>}</section>}

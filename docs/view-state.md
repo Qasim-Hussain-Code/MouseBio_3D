@@ -35,3 +35,5 @@ On 2026-10-26, the focused WSL run passed all 15 view-state cases and two transl
 Each view file binds to one anatomical reference through its atlas identifier, GLB checksum and coordinate-frame identifier. Select the matching reference before loading its view file. A file from the other reference is incompatible; source-label numbers and numerical coordinates must not be used to translate it.
 
 Optional finer regional surface selection is transient and is not serialized in a view file. Successfully loading a view restores the selected reference's base geometry. Experimental observations remain separate from view files and stay associated with their original reference in browser memory.
+
+Source-group labels are also transient display controls. Their resulting selected source ID, hidden regions, opacity, clipping and optional camera pose are saved through the normal fields. Loading a valid view restores those settings and shows Current view in the group selector. It does not infer a source group or change the observations.

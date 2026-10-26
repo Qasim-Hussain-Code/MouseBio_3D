@@ -132,14 +132,14 @@
       "origin": "Tata Ramalingasetty and collaborators",
       "landingPage": "https://gitlab.com/paper_submissions/mouse_biomechanics_paper",
       "publication": {"doi": "10.1109/ACCESS.2021.3133078", "year": 2021, "articleLicense": "CC-BY-4.0", "verifiedAt": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8865483/"},
-      "sourceRelease": null,
+        "sourceRelease": {"branch": "master", "commit": "3ba82177b7c824e57a2f9d70909b2d618d1a6261", "tagsOrReleasesFound": false},
       "verifiedOn": "2026-10-26",
       "license": {"identifier": null, "redistribution": "unresolved_for_model_assets", "note": "The article's CC-BY-4.0 license does not by itself establish a license for separate repository meshes or third-party source geometry."},
-      "coverage": "Published generic skeletal and limb-muscle model; actual available mesh inventory has not been inspected.",
+        "coverage": "The pinned main skeletal subtree contains 115 STL filenames; unique anatomical bone coverage and complete-model dependencies remain unverified. Other repository subtrees include rat and embryonic forelimb resources.",
       "methodology": "Multi-source anatomical references and digitized skeletal objects with modelled limb muscle paths and Hill-type dynamics.",
       "resolution": null,
-      "download": {"bytes": null, "decision": "deferred_asset_license_release_and_size_review", "assetsDownloaded": false},
-      "limitations": ["Repository asset license, pinned release, complete file inventory and selective sizes were not established", "Composite generic model is not measured geometry of the Digimouse specimen", "Muscle paths and modelling assumptions do not supply complete muscle surface anatomy", "No downloaded asset or implemented model is implied"]
+        "download": {"bytes": null, "decision": "deferred_asset_license_and_dependency_review", "assetsDownloaded": false, "gitLfs": true, "pointerDeclaredObjectBytes": {"LFemur.stl": 75584, "Head.stl": 1271584, "Tail23.stl": 17184, "mouse.sdf": 292154, "full_mouse.blend": 34463880}},
+        "limitations": ["No explicit model-asset redistribution grant was established; the project API reports no detected license and no LICENSE, COPYING or NOTICE file was found among 962 tree entries", "Git LFS pointer sizes are not geometry-object sizes; declared hashes and sizes were not verified against downloaded model bodies", "Composite generic model is not measured geometry of the Digimouse specimen, and repository subtrees mix species and developmental stages", "Muscle paths and Hill-type modelling do not supply adult segmented muscle volumes", "Complete-model minimum dependency size remains unknown; no geometry object was acquired or incorporated"]
     },
     {
       "id": "morphomuseum_mouse_bony_labyrinth_1376",

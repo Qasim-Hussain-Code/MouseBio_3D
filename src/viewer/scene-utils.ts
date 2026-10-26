@@ -70,6 +70,85 @@ export function applyCameraPose(camera: THREE.Camera, target: THREE.Vector3, pos
   camera.updateMatrixWorld();
 }
 
+/**
+ * Fit a finite world-space box using the existing viewing direction and up.
+ * Symmetric, automatically maintained perspective cameras in the common world
+ * frame are supported. All validation precedes mutation; unsuitable inputs are
+ * a no-op. Padding is a display margin, not an anatomical measurement.
+ */
+export function fitCameraToBounds(
+  camera: THREE.PerspectiveCamera, target: THREE.Vector3, bounds: THREE.Box3, margin = 1.15,
+): boolean {
+  if (bounds.isEmpty() || ![...bounds.min.toArray(), ...bounds.max.toArray()].every((value) =>
+    Number.isFinite(value) && Number.isFinite(Math.fround(value)))
+      || !Number.isFinite(margin) || margin < 1 || !Number.isFinite(camera.fov) || camera.fov <= 0 || camera.fov >= 180
+      || !Number.isFinite(camera.aspect) || camera.aspect <= 0 || !Number.isFinite(camera.zoom) || camera.zoom <= 0
+      || !Number.isFinite(camera.near) || camera.near <= 0 || !Number.isFinite(camera.far) || camera.far <= camera.near
+      || camera.parent !== null || !camera.matrixAutoUpdate || !camera.matrixWorldAutoUpdate
+      || camera.filmOffset !== 0 || camera.view?.enabled) return false;
+  let previous: CameraPose;
+  try { previous = captureCameraPose(camera, target); }
+  catch { return false; }
+  const center = bounds.getCenter(new THREE.Vector3());
+  const size = bounds.getSize(new THREE.Vector3());
+  if (!Number.isFinite(size.lengthSq()) || size.lengthSq() === 0) return false;
+  const direction = camera.position.clone().sub(target).normalize();
+  const right = new THREE.Vector3().crossVectors(camera.up, direction).normalize();
+  const vertical = new THREE.Vector3().crossVectors(direction, right);
+  const tangentY = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / camera.zoom;
+  const tangentX = tangentY * camera.aspect;
+  if (![tangentX, tangentY].every((value) => Number.isFinite(value) && value > 0)) return false;
+  let distance = 0;
+  let minimumZ = Infinity;
+  let maximumZ = -Infinity;
+  for (const x of [bounds.min.x, bounds.max.x]) for (const y of [bounds.min.y, bounds.max.y]) for (const z of [bounds.min.z, bounds.max.z]) {
+    const relative = new THREE.Vector3(x, y, z).sub(center);
+    const depthOffset = relative.dot(direction);
+    minimumZ = Math.min(minimumZ, depthOffset);
+    maximumZ = Math.max(maximumZ, depthOffset);
+    distance = Math.max(distance, depthOffset + margin * Math.abs(relative.dot(right)) / tangentX,
+      depthOffset + margin * Math.abs(relative.dot(vertical)) / tangentY, depthOffset + camera.near * Math.max(margin, 1.01));
+  }
+  distance += Math.max(size.length() * 1e-9, camera.near * 1e-3);
+  const far = Math.max(camera.far, (distance - minimumZ) * Math.max(margin, 1.01));
+  if (!Number.isFinite(distance) || distance <= maximumZ || !Number.isFinite(far)) return false;
+  const position = center.clone().addScaledVector(direction, distance);
+  const pose: CameraPose = { position: [position.x, position.y, position.z],
+    target: [center.x, center.y, center.z], up: [...previous.up] };
+  try { validateCameraPose(pose); }
+  catch { return false; }
+  const projection = new THREE.PerspectiveCamera(camera.fov, camera.aspect, camera.near, far);
+  projection.zoom = camera.zoom;
+  projection.updateProjectionMatrix();
+  const floatProjection = new Float32Array(projection.projectionMatrix.elements);
+  if (!floatProjection.every(Number.isFinite)
+      || !Number.isFinite(new THREE.Matrix4().fromArray(floatProjection).determinant())
+      || new THREE.Matrix4().fromArray(floatProjection).determinant() === 0) return false;
+  applyCameraPose(camera, target, pose);
+  camera.far = far;
+  camera.updateProjectionMatrix();
+  return true;
+}
+
+/** Focus existing source regions, including hidden regions explicitly requested. */
+export function focusCameraOnRegions(
+  camera: THREE.PerspectiveCamera, target: THREE.Vector3,
+  regions: ReadonlyMap<string, THREE.Object3D>, ids: readonly string[], margin = 1.15,
+): boolean {
+  const bounds = new THREE.Box3();
+  let found = false;
+  for (const id of new Set(ids)) {
+    const region = regions.get(id);
+    if (!region) continue;
+    region.updateWorldMatrix(true, false);
+    const regionBounds = new THREE.Box3().setFromObject(region);
+    if (regionBounds.isEmpty() || ![...regionBounds.min.toArray(), ...regionBounds.max.toArray()].every(Number.isFinite)) return false;
+    bounds.union(regionBounds);
+    found = true;
+  }
+  return found && fitCameraToBounds(camera, target, bounds, margin);
+}
+
 /** Asset coordinates are the metre-valued glTF coordinates, not raw source millimetres. */
 export function createDisplayTransform(assetCenter: THREE.Vector3): THREE.Matrix4 {
   finiteVector(assetCenter, 'Asset centre');

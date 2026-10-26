@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas, type ViewBackground } from '../domain';
 import { defaultStructureOpacity } from '../domain/reference-display';
 import { fetchBoundGlb, RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
-import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, isPointRetainedByClipPlane, recenterMeshGeometry, type CameraPose } from './scene-utils';
+import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, focusCameraOnRegions, isPointRetainedByClipPlane, recenterMeshGeometry, type CameraPose } from './scene-utils';
 
 export type { CameraPose } from './scene-utils';
 export type ViewerSettings = {
@@ -23,7 +22,7 @@ export type ViewerSettings = {
   labels: boolean;
   background: ViewBackground;
 };
-export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void };
+export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void };
 type Props = {
   atlas: Atlas;
   settings: ViewerSettings;
@@ -155,8 +154,17 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       controls.update();
       dirty = true;
     };
+    const focusRegions = (ids: readonly string[]) => {
+      if (!loaded || !focusCameraOnRegions(camera, controls.target, meshes, ids)) return;
+      const distance = camera.position.distanceTo(controls.target);
+      controls.minDistance = Math.min(controls.minDistance, distance * 0.9);
+      controls.maxDistance = Math.max(controls.maxDistance, distance * 1.1);
+      controls.update();
+      dirty = true;
+    };
     handle.current = {
       reset,
+      focusRegions,
       view(axis) {
         controls.target.set(0, 0, 0);
         camera.position.set(axis === 'x' ? radius * 3.3 : 0, axis === 'y' ? radius * 3.3 : 0, axis === 'z' ? radius * 3.3 : 0);
@@ -165,21 +173,15 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         dirty = true;
       },
       focus() {
-        const mesh = meshes.get(latest.current.settings.selected ?? '');
-        if (!mesh) return;
-        const box = new THREE.Box3().setFromObject(mesh);
-        const center = box.getCenter(new THREE.Vector3());
-        const distance = Math.max(box.getSize(new THREE.Vector3()).length() * 2.0, radius * 0.15);
-        const direction = camera.position.clone().sub(controls.target).normalize();
-        controls.target.copy(center);
-        camera.position.copy(center).addScaledVector(direction, distance);
-        controls.update();
-        dirty = true;
+        focusRegions(latest.current.settings.selected ? [latest.current.settings.selected] : []);
       },
     };
     const sourceAbort = new AbortController();
     void fetchBoundGlb(atlas.assetUrl, atlas.statistics.glbBytes as number, atlas.statistics.glbSha256 as string, sourceAbort.signal)
-      .then((bytes) => new GLTFLoader().parseAsync(bytes, '')).then((gltf) => {
+      .then(async (bytes) => {
+        const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+        return new GLTFLoader().parseAsync(bytes, '');
+      }).then((gltf) => {
       if (disposed) {
         gltf.scene.traverse((object) => {
           if (object instanceof THREE.Mesh) { object.geometry.dispose(); for (const material of [object.material].flat()) material.dispose(); }
