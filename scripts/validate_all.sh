@@ -7,6 +7,7 @@ python3 scripts/test_geometry.py
 python3 scripts/test_resources.py
 python3 scripts/test_volume_assessment.py
 python3 scripts/test_volume_geometry.py
+python3 scripts/test_hindlimb_geometry.py
 python3 scripts/test_publication.py
 python3 scripts/test_registered_anatomy.py
 python3 scripts/test_release.py

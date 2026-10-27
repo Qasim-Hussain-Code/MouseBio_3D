@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "reviewedOn": "2026-10-25",
-  "updatedOn": "2026-10-26",
+  "updatedOn": "2026-10-27",
   "notes": "Resource evaluation is distinct from imported asset provenance. Null denotes unknown or not applicable, as explained by each record. Dataset-specific licenses take precedence over general website descriptions.",
   "resources": [
     {
@@ -17,6 +17,20 @@
       "resolution": {"registeredVoxelSpacingMm": [0.1, 0.1, 0.1], "matrix": [380, 992, 208], "surfaceBiologicalResolutionMm": null},
       "download": {"url": "https://neuroimage.usc.edu/mouse_atlas/tesselated_atlas.zip", "format": "MATLAB mesh in ZIP", "compressedBytes": null, "publishedTetrahedra": 306773, "publishedVertices": 58244, "publishedHullVertices": 16164, "decision": "selected_initial_asset", "bytesRecordedIn": "imported_asset_manifest"},
       "limitations": ["Single postmortem male nude specimen", "No female or developmental comparison", "Source overview may be more detailed than distributed tetrahedral labels", "No physiological validation implied", "Native anatomical axis directions need explicit verification before anatomical direction labels or quantitative registration"]
+    },
+    {
+      "id": "charles2016_hindlimb_s1",
+      "title": "Mouse hindlimb and pelvis segmented surfaces, S1 Figure",
+      "origin": "Charles JP, Cappellari O, Spence AJ, Hutchinson JR and Wells DJ",
+      "landingPage": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147669",
+      "publication": {"doi": "10.1371/journal.pone.0147669", "figureDoi": "10.1371/journal.pone.0147669.s002", "year": 2016},
+      "license": {"identifier": "CC-BY-4.0", "verifiedAt": "https://journals.plos.org/plosone/s/licenses-and-copyright", "url": "https://creativecommons.org/licenses/by/4.0/", "redistribution": "permitted_with_attribution_and_modifications"},
+      "coverage": "44 source-labelled surfaces from one right hindlimb and pelvis: 37 muscle-named regions, one tendon and six bony or aggregate regions.",
+      "methodology": "Iodine-enhanced microCT and segmentation; S1 Figure PRC triangle surfaces decoded and converted to glTF without smoothing, decimation or registration.",
+      "specimen": {"species": "Mus musculus", "sex": "female", "strain": "C57BL/6", "age_days": 117, "mass_g": 24.9, "count": 1},
+      "resolution": {"reportedAcquisitionMicrometres": 12.96, "surfaceBiologicalResolutionMm": null},
+      "download": {"url": "https://journals.plos.org/plosone/article/file?id=10.1371%2Fjournal.pone.0147669.s002&type=supplementary", "format": "PDF containing PRC", "bytes": 9782060, "sha256": "aadb7a020f3f9ffc1c8b91f3d8e5f9f2a1eef95d24b0816b69ac4f878637ac47", "decision": "selected_regional_reference"},
+      "limitations": ["The 37 muscle-named surfaces differ from the paper's reported 39 muscles", "Foot, Tibia/Fibula and Fabellae retain aggregate source names", "Source coordinates have no accepted registration to Digimouse", "Orientation and physical calibration remain independently unverified", "One regional specimen does not provide female whole-body or population-average anatomy"]
     },
     {
       "id": "emouseatlas_ema147",

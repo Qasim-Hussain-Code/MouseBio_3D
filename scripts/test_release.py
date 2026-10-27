@@ -12,7 +12,7 @@ import zipfile
 
 from prepare_release import ReleaseError, prepare_release, relative_name
 from check_publication import audit
-from test_registered_anatomy import volume_fixture_files
+from test_registered_anatomy import hindlimb_fixture_files, volume_fixture_files
 
 
 def git(root, *arguments):
@@ -58,6 +58,39 @@ def fixture():
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_hindlimb_and_its_distinct_license_are_preserved_in_both_archives(self):
+        with fixture() as root:
+            files = hindlimb_fixture_files()
+            for name, data in files.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+            git(root, "add", ".")
+            git(root, "commit", "--quiet", "-m", "add_hindlimb_fixture")
+            shutil.copytree(root / "public", root / "dist", dirs_exist_ok=True)
+            release = prepare_release(root, Path(".publication/hindlimb"))
+            self.assertEqual(release["registeredAnatomy"]["assets"], 2)
+            for kind in ["source", "web"]:
+                archive = root / ".publication/hindlimb" / release["artifacts"][kind]["file"]
+                with zipfile.ZipFile(archive) as zipped:
+                    for path, expected in files.items():
+                        name = "MouseBio_3D-1.2.3/" + path if kind == "source" else path.removeprefix("public/")
+                        self.assertEqual(zipped.read(name), expected)
+
+    def test_mismatched_hindlimb_web_license_is_rejected_before_packaging(self):
+        with fixture() as root:
+            for name, data in hindlimb_fixture_files().items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+            git(root, "add", ".")
+            git(root, "commit", "--quiet", "-m", "add_hindlimb_fixture")
+            shutil.copytree(root / "public", root / "dist", dirs_exist_ok=True)
+            (root / "dist/atlas-hindlimb/LICENSE.md").write_text("Mismatched attribution.\n")
+            with self.assertRaisesRegex(ReleaseError, "registered_anatomy_metadata_or_license_mismatch"):
+                prepare_release(root, Path(".publication/hindlimb"))
+            self.assertFalse((root / ".publication").exists())
+
     def test_registered_volume_and_detail_are_in_both_archives_with_exact_bytes(self):
         with fixture() as root:
             files = volume_fixture_files(multi_level=True)

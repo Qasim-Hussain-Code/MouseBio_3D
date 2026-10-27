@@ -91,5 +91,30 @@
         "url": "https://creativecommons.org/licenses/by-sa/4.0/"
       }
     ]
+  },
+  {
+    "id": "charles2016-hindlimb-v1",
+    "title": "Hindlimb: 44 source regions",
+    "manifestUrl": "/atlas-hindlimb/atlas.json",
+    "coordinateFrameId": "charles2016-hindlimb-prc-native-v1",
+    "assetSha256": "6cd797bb8b09c80760c3a4c0fa1a682b880aaabccba0e0a6663f7e936abdee63",
+    "coverage": {
+      "regionCount": 44,
+      "systems": ["muscular", "skeletal"],
+      "description": "Right hindlimb and pelvis from one adult female C57BL/6 specimen. This regional reference is separate from the whole-body Digimouse models."
+    },
+    "processingResolution": {
+      "sourceVoxelSpacingMm": null,
+      "processingVoxelSpacingMm": null,
+      "method": "Source-labelled PRC surfaces converted to glTF using the declared file unit",
+      "limitations": [
+        "Source acquisition resolution does not establish surface accuracy or a uniform surface sampling spacing.",
+        "No accepted registration to either Digimouse reference exists.",
+        "The source figure contains 37 muscle-named surfaces; the publication reports 39 muscles and the difference is unresolved."
+      ]
+    },
+    "licenses": [
+      {"identifier": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/"}
+    ]
   }
 ]

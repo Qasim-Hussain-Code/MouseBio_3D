@@ -2,7 +2,7 @@
 
 `buildAnatomyGroups(atlas)` provides bounded selections of existing anatomical regions for isolation or camera framing. It returns `{ ok, groups, errors }`. Each immutable group contains `id`, `title`, `structureIds`, `description` and `limitations`. These local display-group identifiers are distinct from anatomical source identifiers and ontology terms.
 
-Groups are defined only for the reviewed tetrahedral and registered-volume references. The implementation checks the exact reference ID, coordinate-frame ID, complete set of source-region identifiers and original source labels. Missing, added, duplicate or relabelled regions reject the complete list. An unsupported reference returns an explicit error and no groups. No source IDs are guessed from names or borrowed across references.
+Groups are defined for the reviewed tetrahedral, registered-volume and hindlimb references. The implementation checks the exact reference ID, coordinate-frame ID, complete set of source-region identifiers and original source labels. Hindlimb groups additionally bind the reviewed source PDF checksum and license. Missing, added, duplicate or relabelled regions reject the complete list. An unsupported reference returns an explicit error and no groups. No source IDs are guessed from names or borrowed across references.
 
 | Group ID | Tetrahedral reference | Registered-volume reference |
 | --- | --- | --- |
@@ -17,9 +17,11 @@ Every numeric membership above uses its reference's own source namespace. For ex
 
 The muscle group excludes residual body tissue. The tetrahedral labels do not identify named muscles or laterality; they must not be silently called masseter. The volume masseter label provides only that source region, not a complete musculature. Skeleton groups remain aggregate selections without individual bone identifiers. The `organs` group is a convenience that also includes existing muscle regions, rather than an ontology classification.
 
+The hindlimb reference offers all 44 surfaces, 37 source-named muscle regions, six bone or aggregate regions and the source Patellar tendon as separate display groups. `Fabellae`, `Foot` and `Tibia/Fibula` remain aggregate source labels. The paper's count of 39 muscles differs from the figure's 37 muscle-named surfaces; this discrepancy is unresolved. The internal `whole-mouse` group ID retains existing view behavior but is displayed as Whole hindlimb reference for this regional source.
+
 A whole-reference selection means all available source labels, not complete mouse anatomy. The bulk body label must not be interpreted as separately measured skin or muscle. These groups add no geometry, anatomical claims, ontology edges or new spatial registration. Source resolution, missing anatomy, laterality and orientation limitations remain those of the selected reference. Group-based focusing is a camera operation over existing bounds.
 
-The source inventories are preserved in `public/atlas/atlas.json`, `public/atlas-volume/atlas.json`, `data/provenance/digimouse-source-labels.txt` and the registered-volume label record in `data/volume-assessment.json`. See [anatomical-inventory.md](anatomical-inventory.md) and [volume-geometry.md](volume-geometry.md) for their methods and interpretation limits. Automated membership checks are not independent anatomical review.
+The source inventories are preserved in `public/atlas/atlas.json`, `public/atlas-volume/atlas.json`, `public/atlas-hindlimb/atlas.json`, `data/provenance/digimouse-source-labels.txt` and the registered-volume label record in `data/volume-assessment.json`. See [anatomical-inventory.md](anatomical-inventory.md), [volume-geometry.md](volume-geometry.md) and [hindlimb-geometry.md](hindlimb-geometry.md) for their methods and interpretation limits. Automated membership checks are not independent anatomical review.
 
 The focused acceptance tests in `tests/anatomy-groups.test.ts` use both actual manifests and exercise source membership, exclusions, reference separation, immutable output, unsupported references and altered inventories. These tests do not establish group-isolation behavior or camera interactions in a browser; those require application integration checks.
 

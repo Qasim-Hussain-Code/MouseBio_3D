@@ -42,6 +42,29 @@ const REFERENCES: Readonly<Record<string, ReferenceDefinition>> = Object.freeze(
   }),
 });
 
+/**
+ * Source names and display memberships derive from Charles JP, Cappellari O,
+ * Spence AJ, Hutchinson JR and Wells DJ (2016), S1 Figure,
+ * https://doi.org/10.1371/journal.pone.0147669.s002, CC BY 4.0.
+ * The source labels have been adapted as display selections, not ontology
+ * associations. See public/atlas-hindlimb/LICENSE.md for attribution.
+ */
+const HINDLIMB_LABELS = Object.freeze([
+  'Peroneus digiti quinti', 'Peroneus longus', 'Tibialis posterior', 'Flexor digitorum longus',
+  'Peroneus brevis', 'Peroneus digiti quarti', 'Peroneus tertius', 'Soleus', 'Lateral gastrocnemius',
+  'Plantaris', 'Medial gastrocnemius', 'Extensor hallucis longus', 'Extensor digitorum longus',
+  'Tibialis anterior', 'Fabellae', 'Patellar tendon', 'Pelvis', 'Femur', 'Patella', 'Foot', 'Tibia/Fibula',
+  'Pectineus', 'Obturator externus', 'Psoas minor', 'Iliacus', 'Gemellus', 'Obturator internus',
+  'Gluteus maximus', 'Quadratus femoris', 'Psoas major', 'Vastus lateralis', 'Vastus intermedius',
+  'Vastus medialis', 'Adductor longus', 'Rectus femoris', 'Biceps femoris (posterior)',
+  'Biceps femoris (anterior)', 'Popliteus', 'Caudofemoralis', 'Gracilis (anterior)',
+  'Semitendinosus', 'Adductor magnus', 'Semimembranosus', 'Gracilis (posterior)',
+]);
+const HINDLIMB_BONES = Object.freeze([14, 16, 17, 18, 19, 20]);
+const HINDLIMB_TENDON = Object.freeze([15]);
+const HINDLIMB_MUSCLES = Object.freeze([...Array.from({ length: 14 }, (_, index) => index),
+  ...Array.from({ length: 23 }, (_, index) => index + 21)]);
+
 function failure(message: string): AnatomyGroupsResult {
   return Object.freeze({ ok: false, groups: Object.freeze([]), errors: Object.freeze([message]) });
 }
@@ -52,12 +75,48 @@ function group(id: string, title: string, structureIds: readonly string[], descr
     limitations: Object.freeze([...limitations]) });
 }
 
+/** The PDF's zero-based tessellation indices and names are the complete reviewed inventory. */
+function hindlimbGroups(atlas: Atlas): AnatomyGroupsResult {
+  if (atlas.coordinateFrame?.id !== 'charles2016-hindlimb-prc-native-v1'
+      || atlas.source?.id !== 'charles2016-hindlimb-s1-2016' || atlas.source?.license !== 'CC-BY-4.0'
+      || atlas.source?.licenseUrl !== 'https://creativecommons.org/licenses/by/4.0/'
+      || atlas.source?.pdfSha256 !== 'aadb7a020f3f9ffc1c8b91f3d8e5f9f2a1eef95d24b0816b69ac4f878637ac47'
+      || !Array.isArray(atlas.structures) || atlas.structures.length !== HINDLIMB_LABELS.length) {
+    return failure('The reference frame, source provenance or source-region inventory does not match the reviewed display-group definition.');
+  }
+  const prefix = 'charles2016-hindlimb:';
+  const expected = HINDLIMB_LABELS.map((label, index) => ({ id: `${prefix}${index}`, label }));
+  const byId = new Map(atlas.structures.map((structure) => [structure?.id, structure]));
+  if (byId.size !== expected.length || expected.some(({ id, label }) => byId.get(id)?.sourceLabel !== label)) {
+    return failure('Display groups require every original source identifier and label without duplicates or substitutions.');
+  }
+  const ids = (numbers: readonly number[]) => numbers.map((number) => `${prefix}${number}`);
+  const groups = [
+    group('whole-mouse', 'Whole hindlimb reference', expected.map(({ id }) => id),
+      'All named surfaces in the right hindlimb and pelvic source figure.',
+      ['This regional reference represents one adult female specimen, not a complete mouse or a population.',
+        'This selection adds no geometry, biological resolution or independently verified anatomical orientation.']),
+    group('muscles', 'Source muscle regions', ids(HINDLIMB_MUSCLES),
+      'The 37 surfaces named as muscle regions in the source figure.',
+      ['The source paper reports 39 muscles; the difference from these 37 muscle-named surfaces remains unresolved.',
+        'Selection retains the source labels and does not provide muscle dynamics or additional structures.']),
+    group('bones', 'Bone and aggregate regions', ids(HINDLIMB_BONES),
+      'The six source-labelled bone or aggregate surfaces.',
+      ['Fabellae, Foot and Tibia/Fibula remain their original aggregate labels; individual bones are not inferred.']),
+    group('tendon', 'Patellar tendon', ids(HINDLIMB_TENDON),
+      'The existing source-labelled Patellar tendon surface.',
+      ['This selection does not add other tendons or validate muscle and tendon mechanics.']),
+  ];
+  return Object.freeze({ ok: true, groups: Object.freeze(groups), errors: Object.freeze([]) });
+}
+
 /**
  * Return source-label display groups only for an exact reviewed reference inventory.
  * A missing, duplicate, added or relabelled region rejects the complete group list;
  * no guessed identifiers or partial associations are returned.
  */
 export function buildAnatomyGroups(atlas: Atlas): AnatomyGroupsResult {
+  if (atlas?.id === 'charles2016-hindlimb-v1') return hindlimbGroups(atlas);
   if (!atlas || typeof atlas.id !== 'string' || !Object.hasOwn(REFERENCES, atlas.id)) {
     return failure('No supported anatomical display groups are defined for this reference.');
   }

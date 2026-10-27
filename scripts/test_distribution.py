@@ -95,6 +95,18 @@ class ProductionDistributionTests(unittest.TestCase):
             data, _ = get(f"/atlas-volume/{name}")
             self.assertEqual(data, (ROOT / "public/atlas-volume" / name).read_bytes())
 
+    def test_hindlimb_and_its_attribution_match_reviewed_source(self):
+        registry = anatomy_registry(lambda path, limit: (ROOT / path).read_bytes() if (ROOT / path).is_file() else None)
+        path = "public/atlas-hindlimb/charles2016-hindlimb.glb"
+        self.assertIn(path, registry)
+        data, mime = get(path.removeprefix("public"))
+        self.assertNotEqual(mime, "text/html")
+        inspect_registered_glb(data, registry[path])
+        self.assertEqual(data, (ROOT / path).read_bytes())
+        for name in ["atlas.json", "LICENSE.md"]:
+            data, _ = get(f"/atlas-hindlimb/{name}")
+            self.assertEqual(data, (ROOT / "public/atlas-hindlimb" / name).read_bytes())
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)

@@ -18,6 +18,25 @@ MAX_REGISTERED_GLB_BYTES = 80 * 1024 * 1024
 MAX_REGISTERED_TOTAL_BYTES = 100 * 1024 * 1024
 VOLUME_ARCHIVE_SHA256 = "6f7cbd8a7236a78c47a14c3259d387439c0dc0284b2a83fa955f8c49efe11761"
 VOLUME_FRAME = "digimouse-registered-voxel-native-v1"
+HINDLIMB_PDF_SHA256 = "aadb7a020f3f9ffc1c8b91f3d8e5f9f2a1eef95d24b0816b69ac4f878637ac47"
+HINDLIMB_JSON_SHA256 = "0eda5effc49a460fbc89de070baa5d48c940c5f5b0dab1319f5d4f1342629e8c"
+HINDLIMB_PRC_SHA256 = "c300f38c7888b82b0c2e00548c8d2bb5b879b076872e5e44781da8a8477fc659"
+HINDLIMB_DECODER_COMMIT = "24bfa43b7c29203c572892662ec8a5a8e8ae7b96"
+HINDLIMB_FRAME = "charles2016-hindlimb-prc-native-v1"
+HINDLIMB_AUTHORS = ("Charles", "Cappellari", "Spence", "Hutchinson", "Wells")
+# Source-defined names and tessellation order, from the Charles et al. CC BY 4.0 figure.
+HINDLIMB_NAMES = (
+    'Peroneus digiti quinti', 'Peroneus longus', 'Tibialis posterior', 'Flexor digitorum longus',
+    'Peroneus brevis', 'Peroneus digiti quarti', 'Peroneus tertius', 'Soleus',
+    'Lateral gastrocnemius', 'Plantaris', 'Medial gastrocnemius', 'Extensor hallucis longus',
+    'Extensor digitorum longus', 'Tibialis anterior', 'Fabellae', 'Patellar tendon',
+    'Pelvis', 'Femur', 'Patella', 'Foot', 'Tibia/Fibula', 'Pectineus', 'Obturator externus',
+    'Psoas minor', 'Iliacus', 'Gemellus', 'Obturator internus', 'Gluteus maximus',
+    'Quadratus femoris', 'Psoas major', 'Vastus lateralis', 'Vastus intermedius',
+    'Vastus medialis', 'Adductor longus', 'Rectus femoris', 'Biceps femoris (posterior)',
+    'Biceps femoris (anterior)', 'Popliteus', 'Caudofemoralis', 'Gracilis (anterior)',
+    'Semitendinosus', 'Adductor magnus', 'Semimembranosus', 'Gracilis (posterior)',
+)
 DETAIL_LEVELS = {
     "fine-020": (0.2, "public/atlas-volume/detail/"),
     "source-010": (0.1, "public/atlas-volume/native-010/"),
@@ -29,7 +48,7 @@ TOKENS = re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{20,255}|github_pat_[A-Za-z0-9_]
 PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")
 ASSIGNMENT = re.compile(r"(?im)^\s*(?:export\s+)?[\"']?(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password|aws_secret_access_key)[\"']?\s*[:=]\s*[\"']?([^\s\"'#]{8,})")
 URL = re.compile(r"https?://[^\s<>\"']+")
-ATTRIBUTION_PATHS = {"public/THIRD_PARTY_NOTICES.txt", "public/atlas/LICENSE.md", "public/atlas-volume/LICENSE.md"}
+ATTRIBUTION_PATHS = {"public/THIRD_PARTY_NOTICES.txt", "public/atlas/LICENSE.md", "public/atlas-volume/LICENSE.md", "public/atlas-hindlimb/LICENSE.md"}
 
 
 def anatomy_asset_path(url: str, folder: str) -> str:
@@ -121,7 +140,7 @@ def anatomy_registry(read) -> dict[str, dict]:
     """
     registry: dict[str, dict] = {}
     volume = None
-    for folder in ("atlas", "atlas-volume"):
+    for folder in ("atlas", "atlas-volume", "atlas-hindlimb"):
         manifest_path = f"public/{folder}/atlas.json"
         raw = read(manifest_path, MAX_GLB_JSON_BYTES)
         if raw is None:
@@ -145,6 +164,40 @@ def anatomy_registry(read) -> dict[str, dict]:
             if not license_bytes or b"creativecommons.org/licenses/by-sa/4.0" not in license_bytes:
                 raise ValueError("Registered volume attribution is missing")
             volume = manifest
+        if folder == "atlas-hindlimb":
+            if (source.get("id") != "charles2016-hindlimb-s1-2016"
+                    or source.get("pdfSha256") != HINDLIMB_PDF_SHA256
+                    or source.get("decoderJsonSha256") != HINDLIMB_JSON_SHA256
+                    or source.get("prcSha256") != HINDLIMB_PRC_SHA256
+                    or source.get("decoderCommit") != HINDLIMB_DECODER_COMMIT
+                    or source.get("figureDoi") != "10.1371/journal.pone.0147669.s002"
+                    or source.get("license") != "CC-BY-4.0"
+                    or source.get("licenseUrl") != "https://creativecommons.org/licenses/by/4.0/"
+                    or frame != HINDLIMB_FRAME or identifier != "charles2016-hindlimb-v1"
+                    or manifest["coordinateFrame"].get("sourceToAssetScale") != 0.001
+                    or type(manifest["coordinateFrame"].get("sourceUnitMillimetres")) is not int
+                    or manifest["coordinateFrame"]["sourceUnitMillimetres"] != 1
+                    or manifest["coordinateFrame"].get("sourceUnits") != "PRC global millimetre multiple"
+                    or manifest["coordinateFrame"].get("assetUnits") != "metres"
+                    or manifest["coordinateFrame"].get("physicalCalibrationVerified") is not False
+                    or manifest["coordinateFrame"].get("anatomicalOrientationVerified") is not False
+                    or "registrationToDigimouse" not in manifest["coordinateFrame"]
+                    or manifest["coordinateFrame"]["registrationToDigimouse"] is not None
+                    or manifest.get("assetUrl") != "/atlas-hindlimb/charles2016-hindlimb.glb"
+                    or set(expected_ids or []) != {f"charles2016-hindlimb:{index}" for index in range(44)}):
+                raise ValueError("Hindlimb source, license, units, frame or inventory is not registered")
+            for entry in manifest["structures"]:
+                index = entry.get("sourceTessellationIndex")
+                if (type(index) is not int or not 0 <= index < len(HINDLIMB_NAMES)
+                        or entry.get("id") != f"charles2016-hindlimb:{index}"
+                        or entry.get("sourceLabel") != HINDLIMB_NAMES[index]
+                        or entry.get("name") != HINDLIMB_NAMES[index]):
+                    raise ValueError("Hindlimb names and source tessellation indices do not match")
+            license_bytes = read(f"public/{folder}/LICENSE.md", MAX_GLB_JSON_BYTES)
+            if (not license_bytes or b"creativecommons.org/licenses/by/4.0" not in license_bytes
+                    or b"10.1371/journal.pone.0147669.s002" not in license_bytes
+                    or any(author.encode("ascii") not in license_bytes for author in HINDLIMB_AUTHORS)):
+                raise ValueError("Registered hindlimb attribution is missing")
         path = anatomy_asset_path(manifest["assetUrl"], folder)
         size, digest = manifest["statistics"]["glbBytes"], manifest["statistics"]["glbSha256"]
         if (type(size) is not int or not 20 <= size <= MAX_REGISTERED_GLB_BYTES
@@ -154,6 +207,9 @@ def anatomy_registry(read) -> dict[str, dict]:
         registry[path] = {"bytes": size, "sha256": digest, "ids": expected_ids, "atlasId": identifier,
                           "coordinateFrameId": frame, "manifestPath": manifest_path,
                           "licensePath": f"public/{folder}/LICENSE.md"}
+        if folder == "atlas-hindlimb":
+            registry[path]["sourceNames"] = {f"charles2016-hindlimb:{index}": name
+                                             for index, name in enumerate(HINDLIMB_NAMES)}
     detail_path = "public/atlas-volume/detail-index.json"
     raw = read(detail_path, MAX_GLB_JSON_BYTES)
     if raw is not None:
@@ -189,9 +245,18 @@ def inspect_registered_glb(data: bytes, binding: dict) -> bytes:
     metadata = glb_metadata(data)
     if binding["ids"] is not None:
         doc = json.loads(metadata)
-        identifiers = [node.get("extras", {}).get("structureId") for node in doc.get("nodes", []) if "mesh" in node]
+        nodes = [node for node in doc.get("nodes", []) if "mesh" in node]
+        identifiers = [node.get("extras", {}).get("structureId") for node in nodes]
         if len(identifiers) != len(set(identifiers)) or set(identifiers) != set(binding["ids"]):
             raise ValueError("GLB source labels differ from the registered inventory")
+        if "sourceNames" in binding:
+            for node in nodes:
+                extras = node.get("extras", {})
+                identifier = extras.get("structureId")
+                index = extras.get("sourceTessellationIndex")
+                if (type(index) is not int or identifier != f"charles2016-hindlimb:{index}"
+                        or extras.get("sourceName") != binding["sourceNames"].get(identifier)):
+                    raise ValueError("GLB source names and tessellation identities differ from the registered inventory")
     return metadata
 
 
@@ -295,7 +360,7 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
             raise ValueError("Registered anatomical input is absent from the snapshot")
     except (ValueError, TypeError, KeyError, AttributeError, OSError):
         registry = {}
-        findings.append({"path": "public/atlas-volume", "scope": scope, "type": "invalid-anatomy-registry", "count": 1, "severity": "error"})
+        findings.append({"path": "public", "scope": scope, "type": "invalid-anatomy-registry", "count": 1, "severity": "error"})
 
     def inspect(data: bytes, path: str, location: str, bindings: dict | None = None) -> None:
         nonlocal inspected, opaque, registered

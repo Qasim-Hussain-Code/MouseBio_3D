@@ -36,6 +36,7 @@ const { parseExperimentalJson } = await import('../src/domain/experimental');
 const atlasText = await readFile(new URL('../public/atlas/atlas.json', import.meta.url), 'utf8');
 const atlas = JSON.parse(atlasText) as Atlas;
 const volumeText = await readFile(new URL('../public/atlas-volume/atlas.json', import.meta.url), 'utf8');
+const hindlimbText = await readFile(new URL('../public/atlas-hindlimb/atlas.json', import.meta.url), 'utf8');
 
 const originalFetch = globalThis.fetch;
 const originalConsoleError = console.error;
@@ -56,8 +57,8 @@ beforeEach(() => {
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = String(input);
     requests.push(url);
-    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
-    return new Response(url === '/atlas/atlas.json' ? atlasText : volumeText, { status: 200, headers: { 'Content-Type': 'application/json' } });
+    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    return new Response(url === '/atlas/atlas.json' ? atlasText : url === '/atlas-volume/atlas.json' ? volumeText : hindlimbText, { status: 200, headers: { 'Content-Type': 'application/json' } });
   }) as typeof fetch;
   console.error = (...args: unknown[]) => {
     if (typeof args[0] === 'string' && /^THREE\.WebGLRenderer: (?:THREE\.WebGLRenderer: )?Error creating WebGL context/.test(args[0])) {
@@ -168,6 +169,47 @@ test('native gland sampling is explicit and resets on region selection and saved
   fireEvent.click(view.getByRole('button', { name: /Heart.*digimouse-volume:9/ }));
   assert.equal(view.queryByRole('combobox', { name: 'Selected surface processing level' }), null);
   assert.ok(view.getByText('Finer selected surface (0.2 mm)'));
+});
+
+test('regional female hindlimb uses its own anatomy, source groups, observations and unavailable physiology', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  expectedRequests.push('/atlas-hindlimb/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'charles2016-hindlimb-v1' } });
+  await view.findByText('44 visible regions');
+  assert.ok(view.getByText(/Mus musculus · female · 24\.9 g/));
+  assert.equal(view.queryByText('8 observations · 4 biological subject IDs · 4 groups'), null);
+  assert.equal(view.queryByRole('button', { name: 'Organs visibility preset' }), null);
+  assert.ok(view.getByText('No finer surface is bundled for this region.'));
+  assert.ok(view.getAllByText('charles2016-hindlimb:0').length > 0);
+  fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'bones' } });
+  assert.ok(view.getByText('6 visible regions'));
+  fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'muscles' } });
+  assert.ok(view.getByText('37 visible regions'));
+  fireEvent.click(view.getByRole('button', { name: 'Show all' }));
+  fireEvent.click(view.getByRole('button', { name: 'Living' }));
+  assert.ok(view.getByText('No physiological motion is available for this reference.'));
+  assert.equal(view.queryByLabelText('Pause physiology'), null);
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const hindlimbCsv = syntheticCsv.replaceAll('digimouse:3', 'charles2016-hindlimb:0').replaceAll('digimouse:4', 'charles2016-hindlimb:1');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(hindlimbCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  const imported = JSON.parse(await exportedBlobs.at(-1)!.text());
+  assert.ok(imported.measurements.every((row: { structureId: string }) => row.structureId.startsWith('charles2016-hindlimb:')));
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
+  assert.equal((await savedView(view)).background, 'white');
+  expectedRequests.push('/atlas-hindlimb/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'charles2016-hindlimb-v1' } });
+  await view.findByText('44 visible regions');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), imported);
 });
 
 function inputFile(text: string, name = 'synthetic-dom-fixture.csv', size = new TextEncoder().encode(text).byteLength) {

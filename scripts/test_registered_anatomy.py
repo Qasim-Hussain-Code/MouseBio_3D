@@ -8,14 +8,19 @@ import tempfile
 import unittest
 
 from check_publication import (
-    VOLUME_ARCHIVE_SHA256, VOLUME_FRAME, anatomy_registry, audit,
+    VOLUME_ARCHIVE_SHA256, VOLUME_FRAME, HINDLIMB_PDF_SHA256, HINDLIMB_JSON_SHA256,
+    HINDLIMB_PRC_SHA256, HINDLIMB_DECODER_COMMIT,
+    HINDLIMB_FRAME, HINDLIMB_NAMES, anatomy_registry, audit,
     inspect_registered_glb,
 )
 
 
-def synthetic_glb(ids, payload_size=4, extras=None):
+def synthetic_glb(ids, payload_size=4, extras=None, source_names=None):
     doc = {"asset": {"version": "2.0"}, "buffers": [{"byteLength": payload_size}],
            "nodes": [{"mesh": index, "extras": {"structureId": identifier}} for index, identifier in enumerate(ids)]}
+    if source_names is not None:
+        for index, node in enumerate(doc["nodes"]):
+            node["extras"].update(sourceTessellationIndex=index, sourceName=source_names[index])
     if extras is not None:
         doc["extras"] = extras
     metadata = json.dumps(doc).encode()
@@ -83,6 +88,30 @@ def volume_fixture_files(payload_size=9 * 1024 * 1024, multi_level=False):
     return files
 
 
+def hindlimb_fixture_files(source_names=HINDLIMB_NAMES):
+    ids = [f"charles2016-hindlimb:{index}" for index in range(44)]
+    glb = synthetic_glb(ids, source_names=source_names)
+    manifest = {"id": "charles2016-hindlimb-v1", "assetUrl": "/atlas-hindlimb/charles2016-hindlimb.glb",
+                "coordinateFrame": {"id": HINDLIMB_FRAME, "sourceToAssetScale": 0.001,
+                                    "sourceUnitMillimetres": 1, "sourceUnits": "PRC global millimetre multiple", "assetUnits": "metres",
+                                    "physicalCalibrationVerified": False, "anatomicalOrientationVerified": False,
+                                    "registrationToDigimouse": None},
+                "source": {"id": "charles2016-hindlimb-s1-2016", "pdfSha256": HINDLIMB_PDF_SHA256,
+                           "decoderJsonSha256": HINDLIMB_JSON_SHA256, "prcSha256": HINDLIMB_PRC_SHA256,
+                           "decoderCommit": HINDLIMB_DECODER_COMMIT, "figureDoi": "10.1371/journal.pone.0147669.s002",
+                           "license": "CC-BY-4.0",
+                           "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"},
+                "structures": [{"id": identifier, "sourceTessellationIndex": index,
+                                "name": HINDLIMB_NAMES[index], "sourceLabel": HINDLIMB_NAMES[index]}
+                               for index, identifier in enumerate(ids)],
+                "statistics": {"glbBytes": len(glb), "glbSha256": hashlib.sha256(glb).hexdigest()}}
+    return {"public/atlas-hindlimb/atlas.json": json.dumps(manifest).encode(),
+            "public/atlas-hindlimb/charles2016-hindlimb.glb": glb,
+            "public/atlas-hindlimb/LICENSE.md": (b"Charles, Cappellari, Spence, Hutchinson, Wells. Synthetic figure attribution: "
+                b"https://doi.org/10.1371/journal.pone.0147669.s002 "
+                b"https://creativecommons.org/licenses/by/4.0/\n")}
+
+
 def registry_from(files):
     def read(path, limit):
         value = files.get(path)
@@ -97,6 +126,82 @@ def git(root, *arguments):
 
 
 class RegisteredAnatomyTests(unittest.TestCase):
+    def test_hindlimb_registration_binds_names_indices_units_and_attribution(self):
+        files = hindlimb_fixture_files()
+        path = "public/atlas-hindlimb/charles2016-hindlimb.glb"
+        registry = registry_from(files)
+        self.assertEqual(list(registry), [path])
+        self.assertEqual(len(registry[path]["ids"]), 44)
+        self.assertEqual(registry[path]["coordinateFrameId"], HINDLIMB_FRAME)
+        self.assertEqual(registry[path]["sourceNames"]["charles2016-hindlimb:20"], "Tibia/Fibula")
+        inspect_registered_glb(files[path], registry[path])
+
+        # A changed node annotation cannot be hidden by updating only its asset checksum.
+        names = list(HINDLIMB_NAMES)
+        names[20] = "Synthetic replacement"
+        tampered = hindlimb_fixture_files(names)
+        with self.assertRaises(ValueError):
+            inspect_registered_glb(tampered[path], registry_from(tampered)[path])
+
+    def test_hindlimb_manifest_and_attribution_substitution_is_rejected(self):
+        original = hindlimb_fixture_files()
+        path = "public/atlas-hindlimb/atlas.json"
+        cases = [
+            lambda doc: doc["source"].update(pdfSha256="0" * 64),
+            lambda doc: doc["source"].update(decoderJsonSha256="0" * 64),
+            lambda doc: doc["source"].update(prcSha256="0" * 64),
+            lambda doc: doc["source"].update(decoderCommit="0" * 40),
+            lambda doc: doc["source"].update(figureDoi="10.1371/journal.pone.0147669"),
+            lambda doc: doc["source"].update(license="CC-BY-SA-4.0"),
+            lambda doc: doc["source"].update(licenseUrl="https://creativecommons.org/licenses/by-sa/4.0/"),
+            lambda doc: doc["coordinateFrame"].update(id="digimouse-registered-voxel-native-v1"),
+            lambda doc: doc["coordinateFrame"].update(sourceToAssetScale=1),
+            lambda doc: doc["coordinateFrame"].update(sourceUnitMillimetres=2),
+            lambda doc: doc["coordinateFrame"].update(sourceUnitMillimetres=True),
+            lambda doc: doc["coordinateFrame"].update(physicalCalibrationVerified=True),
+            lambda doc: doc["coordinateFrame"].update(anatomicalOrientationVerified=True),
+            lambda doc: doc["coordinateFrame"].update(registrationToDigimouse=[1, 0, 0]),
+            lambda doc: doc["coordinateFrame"].pop("registrationToDigimouse"),
+            lambda doc: doc.update(assetUrl="/atlas-hindlimb/../other.glb"),
+            lambda doc: doc["structures"][20].update(sourceLabel="Tibia"),
+            lambda doc: doc["structures"][20].update(sourceTessellationIndex=19),
+            lambda doc: doc["structures"].pop(),
+        ]
+        for change in cases:
+            with self.subTest(change=change):
+                files = dict(original)
+                document = json.loads(files[path])
+                change(document)
+                files[path] = json.dumps(document).encode()
+                with self.assertRaises(ValueError):
+                    registry_from(files)
+        for license_data in [None, b"CC BY 4.0", b"Charles https://creativecommons.org/licenses/by/4.0/",
+                             b"Charles et al. https://creativecommons.org/licenses/by/4.0/ 10.1371/journal.pone.0147669.s002"]:
+            files = dict(original)
+            if license_data is None:
+                files.pop("public/atlas-hindlimb/LICENSE.md")
+            else:
+                files["public/atlas-hindlimb/LICENSE.md"] = license_data
+            with self.assertRaises(ValueError):
+                registry_from(files)
+
+    def test_history_accepts_pre_hindlimb_and_source_bound_hindlimb_snapshots(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            git(root, "init", "--quiet")
+            git(root, "config", "user.name", "Qasim Hussain")
+            git(root, "config", "user.email", "fixture" + "@" + "users.noreply.github.com")
+            for files in (volume_fixture_files(4, multi_level=True), hindlimb_fixture_files()):
+                for name, data in files.items():
+                    path = root / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(data)
+                git(root, "add", ".")
+                git(root, "commit", "--quiet", "-m", "update_fixture")
+            report = audit(root, history=True)
+            self.assertEqual(report["errorCount"] + report["warningCount"], 0, report)
+            self.assertEqual(report["reachableCommits"], 2)
+
     def test_multiple_processing_levels_bind_distinct_assets_for_the_same_region(self):
         files = volume_fixture_files(4, multi_level=True)
         registry = registry_from(files)

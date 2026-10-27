@@ -137,11 +137,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-Anatomical geometry and adapted atlas metadata are separately licensed CC BY-SA 4.0.
+Digimouse geometry and adapted atlas metadata are separately licensed CC BY-SA 4.0.
 Digimouse, Belma Dogdas, David Stout, Arion F. Chatziioannou and Richard M. Leahy, USC/UCLA, 2007.
 Source: https://neuroimage.usc.edu/neuro/Digimouse
 License: https://creativecommons.org/licenses/by-sa/4.0/
 Geometry adaptation: Qasim Hussain, MouseBio_3D. See atlas/LICENSE.md and atlas-volume/LICENSE.md for tetrahedral boundary and registered-volume surface modifications.
+
+
+Hindlimb source surfaces and source labels are licensed CC BY 4.0.
+Charles JP, Cappellari O, Spence AJ, Hutchinson JR and Wells DJ, 2016, S1 Figure.
+Source: https://doi.org/10.1371/journal.pone.0147669.s002
+License: https://creativecommons.org/licenses/by/4.0/
+Geometry adaptation: Qasim Hussain, MouseBio_3D. See atlas-hindlimb/LICENSE.md for the source and conversion details.
 
 
 Ontology candidate registry: proposed source-label associations, CC BY-SA 4.0.

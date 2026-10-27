@@ -1,0 +1,1680 @@
+{
+  "id": "charles2016-hindlimb-v1",
+  "title": "Charles et al. adult female right hindlimb and pelvis",
+  "assetUrl": "/atlas-hindlimb/charles2016-hindlimb.glb",
+  "coordinateFrame": {
+    "id": "charles2016-hindlimb-prc-native-v1",
+    "sourceUnits": "PRC global millimetre multiple",
+    "assetUnits": "metres",
+    "sourceUnitMillimetres": 1,
+    "sourceToAssetScale": 0.001,
+    "origin": "Source PRC origin, preserved",
+    "axes": {
+      "x": "source x, anatomical direction unverified",
+      "y": "source y, anatomical direction unverified",
+      "z": "source z, anatomical direction unverified"
+    },
+    "anatomicalOrientationVerified": false,
+    "physicalCalibrationVerified": false,
+    "registrationToDigimouse": null
+  },
+  "source": {
+    "id": "charles2016-hindlimb-s1-2016",
+    "displayName": "Charles et al. hindlimb",
+    "citationLabel": "Charles et al., 2016",
+    "title": "Musculoskeletal Geometry, Muscle Architecture and Functional Specialisations of the Mouse Hindlimb",
+    "authors": [
+      "James P. Charles",
+      "Ornella Cappellari",
+      "Andrew J. Spence",
+      "John R. Hutchinson",
+      "Dominic J. Wells"
+    ],
+    "publicationYear": 2016,
+    "doi": "10.1371/journal.pone.0147669",
+    "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147669",
+    "figureDoi": "10.1371/journal.pone.0147669.s002",
+    "license": "CC-BY-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "pdfSha256": "aadb7a020f3f9ffc1c8b91f3d8e5f9f2a1eef95d24b0816b69ac4f878637ac47",
+    "prcSha256": "c300f38c7888b82b0c2e00548c8d2bb5b879b076872e5e44781da8a8477fc659",
+    "decoderJsonSha256": "0eda5effc49a460fbc89de070baa5d48c940c5f5b0dab1319f5d4f1342629e8c",
+    "decoderCommit": "24bfa43b7c29203c572892662ec8a5a8e8ae7b96",
+    "attribution": "Charles JP, Cappellari O, Spence AJ, Hutchinson JR and Wells DJ, 2016, S1 Figure, CC BY 4.0. Surfaces converted to glTF by Qasim Hussain for MouseBio_3D.",
+    "modifications": [
+      "Preserved source-labelled triangle surfaces and diffuse colours",
+      "Uniform PRC unit conversion to metres",
+      "Normalized existing vertex normals",
+      "Serialized indexed glTF geometry without smoothing, repair or registration"
+    ]
+  },
+  "specimen": {
+    "scientificName": "Mus musculus",
+    "taxonomyId": "NCBITaxon:10090",
+    "sex": "female",
+    "strain": "C57BL/6",
+    "age": {
+      "value": 117,
+      "unit": "days"
+    },
+    "mass": {
+      "value": 24.9,
+      "unit": "g"
+    },
+    "scope": "right hindlimb and pelvis",
+    "count": 1,
+    "description": "One adult female C57BL/6 mouse, aged 117 days and weighing 24.9 g.",
+    "sourceReference": "https://doi.org/10.1371/journal.pone.0147669"
+  },
+  "structures": [
+    {
+      "id": "charles2016-hindlimb:0",
+      "name": "Peroneus digiti quinti",
+      "sourceLabel": "Peroneus digiti quinti",
+      "sourceTessellationIndex": 0,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:0",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffd5e6",
+      "sourceDiffuseLinear": [
+        1,
+        0.666666687,
+        0.792156875
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 12514,
+        "triangles": 7460,
+        "boundsMeters": [
+          [
+            0.012595800682902336,
+            0.012961799278855324,
+            0.006451399996876717
+          ],
+          [
+            0.015037800185382366,
+            0.019679399207234383,
+            0.02529890090227127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:1",
+      "name": "Peroneus longus",
+      "sourceLabel": "Peroneus longus",
+      "sourceTessellationIndex": 1,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:1",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#e6d5ff",
+      "sourceDiffuseLinear": [
+        0.792156875,
+        0.666666687,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 11416,
+        "triangles": 10646,
+        "boundsMeters": [
+          [
+            0.012101400643587112,
+            0.008707400411367416,
+            0.013735000044107437
+          ],
+          [
+            0.016385799273848534,
+            0.01958009973168373,
+            0.029893601313233376
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:2",
+      "name": "Tibialis posterior",
+      "sourceLabel": "Tibialis posterior",
+      "sourceTessellationIndex": 2,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:2",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ff9c9c",
+      "sourceDiffuseLinear": [
+        1,
+        0.333333343,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 11015,
+        "triangles": 9964,
+        "boundsMeters": [
+          [
+            0.010779100470244884,
+            0.009143799543380737,
+            0.014941200613975525
+          ],
+          [
+            0.014907900243997574,
+            0.019107598811388016,
+            0.030022498220205307
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:3",
+      "name": "Flexor digitorum longus",
+      "sourceLabel": "Flexor digitorum longus",
+      "sourceTessellationIndex": 3,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:3",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffff9c",
+      "sourceDiffuseLinear": [
+        1,
+        1,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 41195,
+        "triangles": 35940,
+        "boundsMeters": [
+          [
+            0.010531200096011162,
+            0.00914430059492588,
+            0.0037760999985039234
+          ],
+          [
+            0.0156289990991354,
+            0.019488999620079994,
+            0.030029499903321266
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:4",
+      "name": "Peroneus brevis",
+      "sourceLabel": "Peroneus brevis",
+      "sourceTessellationIndex": 4,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:4",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#d5e6ff",
+      "sourceDiffuseLinear": [
+        0.666666687,
+        0.792156875,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 9502,
+        "triangles": 7022,
+        "boundsMeters": [
+          [
+            0.012496999464929104,
+            0.01149940025061369,
+            0.01387380063533783
+          ],
+          [
+            0.014767000451683998,
+            0.01932690106332302,
+            0.026242900639772415
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:5",
+      "name": "Peroneus digiti quarti",
+      "sourceLabel": "Peroneus digiti quarti",
+      "sourceTessellationIndex": 5,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:5",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#e6ffd5",
+      "sourceDiffuseLinear": [
+        0.792156875,
+        1,
+        0.666666687
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 16724,
+        "triangles": 11750,
+        "boundsMeters": [
+          [
+            0.012453300878405571,
+            0.01119229942560196,
+            0.003885699901729822
+          ],
+          [
+            0.015439200215041637,
+            0.019670000299811363,
+            0.028529100120067596
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:6",
+      "name": "Peroneus tertius",
+      "sourceLabel": "Peroneus tertius",
+      "sourceTessellationIndex": 6,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:6",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9cffec",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        1,
+        0.835294127
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 8960,
+        "triangles": 8854,
+        "boundsMeters": [
+          [
+            0.012429100461304188,
+            0.009798699989914894,
+            0.015771299600601196
+          ],
+          [
+            0.016314800828695297,
+            0.019169999286532402,
+            0.029473699629306793
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:7",
+      "name": "Soleus",
+      "sourceLabel": "Soleus",
+      "sourceTessellationIndex": 7,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:7",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffd5e6",
+      "sourceDiffuseLinear": [
+        1,
+        0.666666687,
+        0.792156875
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 8532,
+        "triangles": 8892,
+        "boundsMeters": [
+          [
+            0.011745200492441654,
+            0.010701899416744709,
+            0.01831349916756153
+          ],
+          [
+            0.015756500884890556,
+            0.019900299608707428,
+            0.029611600562930107
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:8",
+      "name": "Lateral gastrocnemius",
+      "sourceLabel": "Lateral gastrocnemius",
+      "sourceTessellationIndex": 8,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:8",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#e6d5ff",
+      "sourceDiffuseLinear": [
+        0.792156875,
+        0.666666687,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 13948,
+        "triangles": 21794,
+        "boundsMeters": [
+          [
+            0.011953100562095642,
+            0.008885299786925316,
+            0.01831439882516861
+          ],
+          [
+            0.01650880090892315,
+            0.020109400153160095,
+            0.032448600977659225
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:9",
+      "name": "Plantaris",
+      "sourceLabel": "Plantaris",
+      "sourceTessellationIndex": 9,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:9",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ec9cff",
+      "sourceDiffuseLinear": [
+        0.835294127,
+        0.333333343,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 9273,
+        "triangles": 11552,
+        "boundsMeters": [
+          [
+            0.011799200437963009,
+            0.008605299517512321,
+            0.018326500430703163
+          ],
+          [
+            0.016034599393606186,
+            0.02002659998834133,
+            0.032578498125076294
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:10",
+      "name": "Medial gastrocnemius",
+      "sourceLabel": "Medial gastrocnemius",
+      "sourceTessellationIndex": 10,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:10",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#e0ff00",
+      "sourceDiffuseLinear": [
+        0.749019623,
+        1,
+        0
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 13103,
+        "triangles": 17524,
+        "boundsMeters": [
+          [
+            0.011687299236655235,
+            0.008417000062763691,
+            0.01831669919192791
+          ],
+          [
+            0.014737299643456936,
+            0.0201043002307415,
+            0.033125199377536774
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:11",
+      "name": "Extensor hallucis longus",
+      "sourceLabel": "Extensor hallucis longus",
+      "sourceTessellationIndex": 11,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:11",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9cff9c",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        1,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 13459,
+        "triangles": 7996,
+        "boundsMeters": [
+          [
+            0.010645799338817596,
+            0.01094920001924038,
+            0.007246899884194136
+          ],
+          [
+            0.014960000291466713,
+            0.018123699352145195,
+            0.027039499953389168
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:12",
+      "name": "Extensor digitorum longus",
+      "sourceLabel": "Extensor digitorum longus",
+      "sourceTessellationIndex": 12,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:12",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffe6d5",
+      "sourceDiffuseLinear": [
+        1,
+        0.792156875,
+        0.666666687
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 37961,
+        "triangles": 29978,
+        "boundsMeters": [
+          [
+            0.010894900187849998,
+            0.00836579967290163,
+            0.004009400028735399
+          ],
+          [
+            0.016252700239419937,
+            0.019332898780703545,
+            0.030155399814248085
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:13",
+      "name": "Tibialis anterior",
+      "sourceLabel": "Tibialis anterior",
+      "sourceTessellationIndex": 13,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:13",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9cffec",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        1,
+        0.835294127
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 13037,
+        "triangles": 17730,
+        "boundsMeters": [
+          [
+            0.011074500158429146,
+            0.007570900022983551,
+            0.015351200476288795
+          ],
+          [
+            0.01603589951992035,
+            0.018042000010609627,
+            0.029477400705218315
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:14",
+      "name": "Fabellae",
+      "sourceLabel": "Fabellae",
+      "sourceTessellationIndex": 14,
+      "systems": [
+        "skeletal"
+      ],
+      "meshNode": "charles2016-hindlimb:14",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled bony or aggregate region from one right hindlimb. The source name is retained without subdividing aggregates.",
+      "scale": "organ",
+      "color": "#fff8e8",
+      "sourceDiffuseLinear": [
+        1,
+        0.941176474,
+        0.807843149
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 873,
+        "triangles": 1002,
+        "boundsMeters": [
+          [
+            0.01331149972975254,
+            0.008224599994719028,
+            0.03167010098695755
+          ],
+          [
+            0.016292700543999672,
+            0.009431799873709679,
+            0.03258819878101349
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:15",
+      "name": "Patellar tendon",
+      "sourceLabel": "Patellar tendon",
+      "sourceTessellationIndex": 15,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:15",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled patellar tendon from one right hindlimb.",
+      "scale": "organ",
+      "color": "#9cf6ff",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        0.917647064,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 2428,
+        "triangles": 2410,
+        "boundsMeters": [
+          [
+            0.013879899866878986,
+            0.006232200190424919,
+            0.029513100162148476
+          ],
+          [
+            0.015566499903798103,
+            0.00763930007815361,
+            0.03240710124373436
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:16",
+      "name": "Pelvis",
+      "sourceLabel": "Pelvis",
+      "sourceTessellationIndex": 16,
+      "systems": [
+        "skeletal"
+      ],
+      "meshNode": "charles2016-hindlimb:16",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled bony or aggregate region from one right hindlimb. The source name is retained without subdividing aggregates.",
+      "scale": "organ",
+      "color": "#fff8e8",
+      "sourceDiffuseLinear": [
+        1,
+        0.941176474,
+        0.807843149
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 17994,
+        "triangles": 27838,
+        "boundsMeters": [
+          [
+            0.008511599153280258,
+            0.008209999650716782,
+            0.03747829794883728
+          ],
+          [
+            0.01864990033209324,
+            0.018792498856782913,
+            0.05443539842963219
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:17",
+      "name": "Femur",
+      "sourceLabel": "Femur",
+      "sourceTessellationIndex": 17,
+      "systems": [
+        "skeletal"
+      ],
+      "meshNode": "charles2016-hindlimb:17",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled bony or aggregate region from one right hindlimb. The source name is retained without subdividing aggregates.",
+      "scale": "organ",
+      "color": "#fff8e8",
+      "sourceDiffuseLinear": [
+        1,
+        0.941176474,
+        0.807843149
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 9810,
+        "triangles": 17570,
+        "boundsMeters": [
+          [
+            0.012660199776291847,
+            0.006434500217437744,
+            0.030325399711728096
+          ],
+          [
+            0.016549699008464813,
+            0.015798499807715416,
+            0.04474879801273346
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:18",
+      "name": "Patella",
+      "sourceLabel": "Patella",
+      "sourceTessellationIndex": 18,
+      "systems": [
+        "skeletal"
+      ],
+      "meshNode": "charles2016-hindlimb:18",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled bony or aggregate region from one right hindlimb. The source name is retained without subdividing aggregates.",
+      "scale": "organ",
+      "color": "#fff8e8",
+      "sourceDiffuseLinear": [
+        1,
+        0.941176474,
+        0.807843149
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 695,
+        "triangles": 1072,
+        "boundsMeters": [
+          [
+            0.014437000267207623,
+            0.006069399882107973,
+            0.032342299818992615
+          ],
+          [
+            0.015576999634504318,
+            0.007097000256180763,
+            0.033947400748729706
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:19",
+      "name": "Foot",
+      "sourceLabel": "Foot",
+      "sourceTessellationIndex": 19,
+      "systems": [
+        "skeletal"
+      ],
+      "meshNode": "charles2016-hindlimb:19",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled bony or aggregate region from one right hindlimb. The source name is retained without subdividing aggregates.",
+      "scale": "organ",
+      "color": "#d5d5d5",
+      "sourceDiffuseLinear": [
+        0.666666687,
+        0.666666687,
+        0.666666687
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 55549,
+        "triangles": 63306,
+        "boundsMeters": [
+          [
+            0.010410699993371964,
+            0.014160900376737118,
+            0.002913600066676736
+          ],
+          [
+            0.01477729994803667,
+            0.02013319917023182,
+            0.018415899947285652
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:20",
+      "name": "Tibia/Fibula",
+      "sourceLabel": "Tibia/Fibula",
+      "sourceTessellationIndex": 20,
+      "systems": [
+        "skeletal"
+      ],
+      "meshNode": "charles2016-hindlimb:20",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled bony or aggregate region from one right hindlimb. The source name is retained without subdividing aggregates.",
+      "scale": "organ",
+      "color": "#f4f4f4",
+      "sourceDiffuseLinear": [
+        0.90196079,
+        0.90196079,
+        0.90196079
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 19852,
+        "triangles": 27808,
+        "boundsMeters": [
+          [
+            0.010966899804770947,
+            0.0072997999377548695,
+            0.016415800899267197
+          ],
+          [
+            0.01644650101661682,
+            0.018872801214456558,
+            0.03096660040318966
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:21",
+      "name": "Pectineus",
+      "sourceLabel": "Pectineus",
+      "sourceTessellationIndex": 21,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:21",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9cf6ff",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        0.917647064,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 5296,
+        "triangles": 7394,
+        "boundsMeters": [
+          [
+            0.011121399700641632,
+            0.011536999605596066,
+            0.03761759772896767
+          ],
+          [
+            0.01494740042835474,
+            0.014025299809873104,
+            0.04431990161538124
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:22",
+      "name": "Obturator externus",
+      "sourceLabel": "Obturator externus",
+      "sourceTessellationIndex": 22,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:22",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffec9c",
+      "sourceDiffuseLinear": [
+        1,
+        0.835294127,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 2716,
+        "triangles": 3436,
+        "boundsMeters": [
+          [
+            0.011396499350667,
+            0.015161399729549885,
+            0.04058869928121567
+          ],
+          [
+            0.014393099583685398,
+            0.017721598967909813,
+            0.043121498078107834
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:23",
+      "name": "Psoas minor",
+      "sourceLabel": "Psoas minor",
+      "sourceTessellationIndex": 23,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:23",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffbc00",
+      "sourceDiffuseLinear": [
+        1,
+        0.501960814,
+        0
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 4149,
+        "triangles": 5620,
+        "boundsMeters": [
+          [
+            0.013489400036633015,
+            0.008565099909901619,
+            0.043823398649692535
+          ],
+          [
+            0.017119700089097023,
+            0.012337899766862392,
+            0.05121869966387749
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:24",
+      "name": "Iliacus",
+      "sourceLabel": "Iliacus",
+      "sourceTessellationIndex": 24,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:24",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#e0ff00",
+      "sourceDiffuseLinear": [
+        0.749019623,
+        1,
+        0
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 8981,
+        "triangles": 14036,
+        "boundsMeters": [
+          [
+            0.013133400119841099,
+            0.00845280010253191,
+            0.04071410000324249
+          ],
+          [
+            0.016864299774169922,
+            0.014545299112796783,
+            0.05161970108747482
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:25",
+      "name": "Gemellus",
+      "sourceLabel": "Gemellus",
+      "sourceTessellationIndex": 25,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:25",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ff9c9c",
+      "sourceDiffuseLinear": [
+        1,
+        0.333333343,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 2900,
+        "triangles": 3246,
+        "boundsMeters": [
+          [
+            0.011659500189125538,
+            0.015002899803221226,
+            0.04234649986028671
+          ],
+          [
+            0.014442299492657185,
+            0.01811330020427704,
+            0.044190797954797745
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:26",
+      "name": "Obturator internus",
+      "sourceLabel": "Obturator internus",
+      "sourceTessellationIndex": 26,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:26",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9c9cff",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        0.333333343,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 3189,
+        "triangles": 4226,
+        "boundsMeters": [
+          [
+            0.010958800092339516,
+            0.014406600035727024,
+            0.04018479958176613
+          ],
+          [
+            0.013988099992275238,
+            0.017397498711943626,
+            0.04338550195097923
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:27",
+      "name": "Gluteus maximus",
+      "sourceLabel": "Gluteus maximus",
+      "sourceTessellationIndex": 27,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:27",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffff9c",
+      "sourceDiffuseLinear": [
+        1,
+        1,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 19215,
+        "triangles": 32468,
+        "boundsMeters": [
+          [
+            0.012783300131559372,
+            0.009078399278223515,
+            0.04180070012807846
+          ],
+          [
+            0.01843619905412197,
+            0.01705159991979599,
+            0.05390780046582222
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:28",
+      "name": "Quadratus femoris",
+      "sourceLabel": "Quadratus femoris",
+      "sourceTessellationIndex": 28,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:28",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffff9c",
+      "sourceDiffuseLinear": [
+        1,
+        1,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 9462,
+        "triangles": 15272,
+        "boundsMeters": [
+          [
+            0.00876769982278347,
+            0.012176799587905407,
+            0.0373476967215538
+          ],
+          [
+            0.016646400094032288,
+            0.015417699702084064,
+            0.04203829914331436
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:29",
+      "name": "Psoas major",
+      "sourceLabel": "Psoas major",
+      "sourceTessellationIndex": 29,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:29",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ff9cd5",
+      "sourceDiffuseLinear": [
+        1,
+        0.333333343,
+        0.666666687
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 5214,
+        "triangles": 7744,
+        "boundsMeters": [
+          [
+            0.012542699463665485,
+            0.009448300115764141,
+            0.04234839975833893
+          ],
+          [
+            0.014466400258243084,
+            0.014242099598050117,
+            0.050387002527713776
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:30",
+      "name": "Vastus lateralis",
+      "sourceLabel": "Vastus lateralis",
+      "sourceTessellationIndex": 30,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:30",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ff9cff",
+      "sourceDiffuseLinear": [
+        1,
+        0.333333343,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 14115,
+        "triangles": 24124,
+        "boundsMeters": [
+          [
+            0.014266000129282475,
+            0.006329500116407871,
+            0.032896898686885834
+          ],
+          [
+            0.017089299857616425,
+            0.015044400468468666,
+            0.04433029890060425
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:31",
+      "name": "Vastus intermedius",
+      "sourceLabel": "Vastus intermedius",
+      "sourceTessellationIndex": 31,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:31",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffec9c",
+      "sourceDiffuseLinear": [
+        1,
+        0.835294127,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 4781,
+        "triangles": 5320,
+        "boundsMeters": [
+          [
+            0.014438100159168243,
+            0.00659869983792305,
+            0.033696603029966354
+          ],
+          [
+            0.015921099111437798,
+            0.012208299711346626,
+            0.040143102407455444
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:32",
+      "name": "Vastus medialis",
+      "sourceLabel": "Vastus medialis",
+      "sourceTessellationIndex": 32,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:32",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ff9c9c",
+      "sourceDiffuseLinear": [
+        1,
+        0.333333343,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 10683,
+        "triangles": 14506,
+        "boundsMeters": [
+          [
+            0.013145899400115013,
+            0.006007900461554527,
+            0.03234059736132622
+          ],
+          [
+            0.015409700572490692,
+            0.013883799314498901,
+            0.04283919930458069
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:33",
+      "name": "Adductor longus",
+      "sourceLabel": "Adductor longus",
+      "sourceTessellationIndex": 33,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:33",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ff9cff",
+      "sourceDiffuseLinear": [
+        1,
+        0.333333343,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 8592,
+        "triangles": 10974,
+        "boundsMeters": [
+          [
+            0.010290499776601791,
+            0.007367599755525589,
+            0.03180810064077377
+          ],
+          [
+            0.014385700225830078,
+            0.013366400264203548,
+            0.04284669831395149
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:34",
+      "name": "Rectus femoris",
+      "sourceLabel": "Rectus femoris",
+      "sourceTessellationIndex": 34,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:34",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9cf6ff",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        0.917647064,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 6351,
+        "triangles": 11876,
+        "boundsMeters": [
+          [
+            0.013774200342595577,
+            0.006064099725335836,
+            0.03356669843196869
+          ],
+          [
+            0.016093000769615173,
+            0.013674699701368809,
+            0.04445589706301689
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:35",
+      "name": "Biceps femoris (posterior)",
+      "sourceLabel": "Biceps femoris (posterior)",
+      "sourceTessellationIndex": 35,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:35",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffe6d5",
+      "sourceDiffuseLinear": [
+        1,
+        0.792156875,
+        0.666666687
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 19747,
+        "triangles": 32262,
+        "boundsMeters": [
+          [
+            0.011190400458872318,
+            0.007638799957931042,
+            0.025993499904870987
+          ],
+          [
+            0.017463799566030502,
+            0.018896600231528282,
+            0.04271269962191582
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:36",
+      "name": "Biceps femoris (anterior)",
+      "sourceLabel": "Biceps femoris (anterior)",
+      "sourceTessellationIndex": 36,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:36",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9cf6ff",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        0.917647064,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 10642,
+        "triangles": 14854,
+        "boundsMeters": [
+          [
+            0.012259299866855145,
+            0.008217200636863708,
+            0.0324816033244133
+          ],
+          [
+            0.017163600772619247,
+            0.017906999215483665,
+            0.04473860189318657
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:37",
+      "name": "Popliteus",
+      "sourceLabel": "Popliteus",
+      "sourceTessellationIndex": 37,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:37",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9c9cff",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        0.333333343,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 4139,
+        "triangles": 4702,
+        "boundsMeters": [
+          [
+            0.012327599339187145,
+            0.008999699726700783,
+            0.02627520076930523
+          ],
+          [
+            0.015943799167871475,
+            0.011386900208890438,
+            0.031099898740649223
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:38",
+      "name": "Caudofemoralis",
+      "sourceLabel": "Caudofemoralis",
+      "sourceTessellationIndex": 38,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:38",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9c9cff",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        0.333333343,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 11756,
+        "triangles": 15258,
+        "boundsMeters": [
+          [
+            0.011902700178325176,
+            0.008108600042760372,
+            0.032757800072431564
+          ],
+          [
+            0.016122600063681602,
+            0.01788649894297123,
+            0.044596198946237564
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:39",
+      "name": "Gracilis (anterior)",
+      "sourceLabel": "Gracilis (anterior)",
+      "sourceTessellationIndex": 39,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:39",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ec9cff",
+      "sourceDiffuseLinear": [
+        0.835294127,
+        0.333333343,
+        1
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 8773,
+        "triangles": 10276,
+        "boundsMeters": [
+          [
+            0.008764499798417091,
+            0.008937700651586056,
+            0.024662500247359276
+          ],
+          [
+            0.013474199920892715,
+            0.013740500435233116,
+            0.03838449716567993
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:40",
+      "name": "Semitendinosus",
+      "sourceLabel": "Semitendinosus",
+      "sourceTessellationIndex": 40,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:40",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9cffec",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        1,
+        0.835294127
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 16141,
+        "triangles": 23928,
+        "boundsMeters": [
+          [
+            0.01036859955638647,
+            0.009946100413799286,
+            0.023979298770427704
+          ],
+          [
+            0.014622899703681469,
+            0.01925629936158657,
+            0.045673999935388565
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:41",
+      "name": "Adductor magnus",
+      "sourceLabel": "Adductor magnus",
+      "sourceTessellationIndex": 41,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:41",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#9cff9c",
+      "sourceDiffuseLinear": [
+        0.333333343,
+        1,
+        0.333333343
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 15393,
+        "triangles": 22264,
+        "boundsMeters": [
+          [
+            0.009029899723827839,
+            0.008832099847495556,
+            0.03302209824323654
+          ],
+          [
+            0.01614679954946041,
+            0.013823100365698338,
+            0.042975496500730515
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:42",
+      "name": "Semimembranosus",
+      "sourceLabel": "Semimembranosus",
+      "sourceTessellationIndex": 42,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:42",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#ffd5e6",
+      "sourceDiffuseLinear": [
+        1,
+        0.666666687,
+        0.792156875
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 14079,
+        "triangles": 23958,
+        "boundsMeters": [
+          [
+            0.011102999560534954,
+            0.008313099853694439,
+            0.028168801218271255
+          ],
+          [
+            0.015159999951720238,
+            0.018414700403809547,
+            0.04175319895148277
+          ]
+        ]
+      }
+    },
+    {
+      "id": "charles2016-hindlimb:43",
+      "name": "Gracilis (posterior)",
+      "sourceLabel": "Gracilis (posterior)",
+      "sourceTessellationIndex": 43,
+      "systems": [
+        "muscular"
+      ],
+      "meshNode": "charles2016-hindlimb:43",
+      "sourceId": "charles2016-hindlimb-s1-2016",
+      "description": "Source-labelled muscle region from one right hindlimb. It is not a muscle activation or physiological model.",
+      "scale": "organ",
+      "color": "#e0ff00",
+      "sourceDiffuseLinear": [
+        0.749019623,
+        1,
+        0
+      ],
+      "defaultOpacity": 1,
+      "geometry": {
+        "vertices": 6011,
+        "triangles": 8358,
+        "boundsMeters": [
+          [
+            0.011098300106823444,
+            0.010652199387550354,
+            0.02549690008163452
+          ],
+          [
+            0.013101300224661827,
+            0.015549399890005589,
+            0.040413398295640945
+          ]
+        ]
+      }
+    }
+  ],
+  "statistics": {
+    "structures": 44,
+    "vertices": 540165,
+    "triangles": 664210,
+    "glbBytes": 20981512,
+    "glbSha256": "6cd797bb8b09c80760c3a4c0fa1a682b880aaabccba0e0a6663f7e936abdee63"
+  },
+  "processing": {
+    "sourceUnitMillimetres": 1,
+    "sourceToAssetScale": 0.001,
+    "normalProcessing": "Normalize source vertex normals without changing direction",
+    "maximumFloat32CoordinateErrorMetres": 1.8625705699992778e-09,
+    "maximumSourceNormalLengthError": 0.02532028598458924,
+    "smoothing": false,
+    "meshRepair": false,
+    "decimation": false,
+    "registration": false
+  },
+  "limitations": [
+    "One adult female C57BL/6 specimen with right hindlimb and pelvic coverage; not a whole-body or population reference.",
+    "The source PDF contains 37 muscle-named surfaces, one tendon and six bony or aggregate surfaces; the publication describes 39 muscles and this discrepancy is unresolved.",
+    "Foot, Tibia/Fibula and Fabellae are source-labelled aggregates; no additional individual bones are inferred.",
+    "Source axes and physical calibration have not been independently verified; no accepted registration to Digimouse exists.",
+    "Surface closure and source acquisition spacing do not establish anatomical accuracy, tissue layers, cellular detail or validated physiology."
+  ]
+}

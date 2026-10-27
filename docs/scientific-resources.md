@@ -12,6 +12,10 @@ Digimouse represents a single 28 g normal nude male specimen imaged after death.
 
 Reference: Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. *Physics in Medicine and Biology*. 2007;52:577-587. [doi:10.1088/0031-9155/52/3/003](https://doi.org/10.1088/0031-9155/52/3/003).
 
+## Regional hindlimb source
+
+[Charles et al. (2016), S1 Figure](https://doi.org/10.1371/journal.pone.0147669.s002) provides segmented right-hindlimb and pelvic surfaces from one adult female C57BL/6 mouse. The figure is distributed under CC BY 4.0 with author attribution and a record of adaptations. Its 44 source-labelled surfaces include 37 muscle-named regions, one tendon and six bony or aggregate regions. The source paper reports 39 muscles; the discrepancy remains unresolved. Source acquisition spacing does not establish biological surface accuracy, and the model has no accepted registration to Digimouse. See [hindlimb geometry](hindlimb-geometry.md) and the [asset notice](../public/atlas-hindlimb/LICENSE.md).
+
 ## Other sources evaluated
 
 | Resource | Verified scope and methods | Reuse decision and limitations |
