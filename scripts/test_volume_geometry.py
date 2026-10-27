@@ -7,7 +7,7 @@ import math
 import struct
 import unittest
 
-from import_volume import ROOT, FRAME_ID, SPACING_M, polygonize
+from import_volume import ROOT, FRAME_ID, SPACING_M, DETAIL_LEVELS, conversion_selection, polygonize
 
 
 def read_glb(path):
@@ -110,6 +110,15 @@ def geometry_report(positions, normals, indices):
 
 
 class MarchingTetrahedraTests(unittest.TestCase):
+    def test_native_conversion_is_bounded_before_grid_allocation(self):
+        self.assertEqual(conversion_selection(1, True), ("source-010", (12, 20)))
+        self.assertEqual(conversion_selection(1, True, "source-010", [20]), ("source-010", (20,)))
+        for parameters in ((1, False), (2, False), (4, True), (1, True, "fine-020"),
+                           (2, True, "source-010"), (1, True, "source-010", [1]),
+                           (1, True, "source-010", [12, 12]), (1, True, "source-010", [])):
+            with self.subTest(parameters=parameters), self.assertRaises(ValueError):
+                conversion_selection(*parameters)
+
     def test_isolated_sample_has_half_step_bounds_and_closed_outward_surface(self):
         grid = bytearray(27)
         grid[13] = 1
@@ -145,7 +154,7 @@ class VolumeAssetTests(unittest.TestCase):
         self.assertEqual(manifest["processing"]["processingVoxelSpacingMm"], [0.4] * 3)
         self.assertFalse(manifest["processing"]["smoothing"])
 
-    def check_asset(self, path, expected_hash, expected_geometry=None):
+    def check_asset(self, path, expected_hash, expected_geometry=None, spacing_mm=None):
         raw, document, binary = read_glb(path)
         self.assertEqual(hashlib.sha256(raw).hexdigest(), expected_hash)
         self.assertLess(len(raw), 80 * 1024 * 1024)
@@ -157,6 +166,10 @@ class VolumeAssetTests(unittest.TestCase):
             n = values(document, binary, primitive["attributes"]["NORMAL"])
             i = values(document, binary, primitive["indices"])
             report = geometry_report(p, n, i)
+            if spacing_mm is not None:
+                half_step = spacing_mm * 0.001 / 2
+                self.assertTrue(all(abs(coordinate / half_step - round(coordinate / half_step)) < 0.0002 for coordinate in p),
+                                "Every vertex must preserve the source-index half-step lattice")
             reports[identifier] = report
             if expected_geometry:
                 expected = expected_geometry[identifier]
@@ -178,15 +191,45 @@ class VolumeAssetTests(unittest.TestCase):
     @unittest.skipUnless((ROOT / "public/atlas-volume/detail-index.json").exists(), "Detail conversion not yet present")
     def test_every_progressive_detail_asset_has_same_frame_and_source_id(self):
         detail = json.loads((ROOT / "public/atlas-volume/detail-index.json").read_text())
+        self.assertEqual(detail["schemaVersion"], "mousebio.volume-detail-index.v2")
         self.assertEqual(detail["coordinateFrame"]["id"], FRAME_ID)
         self.assertEqual({a["structureId"] for a in detail["assets"]}, {f"digimouse-volume:{i}" for i in range(3, 22)})
-        self.assertEqual({a["structureId"] for a in detail["unavailable"]}, {"digimouse-volume:1", "digimouse-volume:2"})
+        self.assertEqual(len(detail["assets"]), 21)
+        self.assertEqual(len(detail["structures"]), 19)
+        self.assertEqual({level["id"] for level in detail["levels"]}, set(DETAIL_LEVELS))
+        pairs = {(a["structureId"], a["levelId"]) for a in detail["assets"] + detail["unavailable"]}
+        self.assertEqual(pairs, {(f"digimouse-volume:{label}", level) for label in range(1, 22) for level in DETAIL_LEVELS})
+        self.assertEqual(len(detail["assets"]) + len(detail["unavailable"]), len(pairs))
+        self.assertTrue(all(a["reason"].strip() for a in detail["unavailable"]))
+        self.assertEqual(detail["statistics"]["assets"], 21)
+        self.assertEqual(detail["statistics"]["structures"], 19)
+        self.assertEqual(detail["statistics"]["glbBytesTotal"], sum(a["glbBytes"] for a in detail["assets"]))
         for asset in detail["assets"]:
+            definition = DETAIL_LEVELS[asset["levelId"]]
+            label = int(asset["structureId"].split(":")[1])
+            self.assertIn(label, definition["labels"])
             self.assertEqual(asset["coordinateFrameId"], FRAME_ID)
-            self.assertEqual(asset["processingVoxelSpacingMm"], [0.2] * 3)
+            spacing = definition["step"] * 0.1
+            self.assertEqual(asset["processingVoxelSpacingMm"], [spacing] * 3)
+            self.assertEqual(asset["assetUrl"], f"/atlas-volume/{definition['directory']}/region-{label}.glb")
             path = ROOT / "public" / asset["assetUrl"].lstrip("/")
-            reports = self.check_asset(path, asset["glbSha256"], {asset["structureId"]: asset["geometry"]})
+            self.assertEqual(path.stat().st_size, asset["glbBytes"])
+            reports = self.check_asset(path, asset["glbSha256"], {asset["structureId"]: asset["geometry"]}, spacing)
             self.assertEqual(set(reports), {asset["structureId"]})
+
+    def test_native_glands_keep_source_identity_and_have_no_invented_laterality(self):
+        detail = json.loads((ROOT / "public/atlas-volume/detail-index.json").read_text())
+        native = {a["structureId"]: a for a in detail["assets"] if a["levelId"] == "source-010"}
+        fine = {a["structureId"]: a for a in detail["assets"] if a["levelId"] == "fine-020"}
+        self.assertEqual(set(native), {"digimouse-volume:12", "digimouse-volume:20"})
+        expected = {
+            "digimouse-volume:12": (66364, 1594108, "0dd11bf1dd60a5792746f07d0cd96a4ded5076fd45e288319789514e2911fede"),
+            "digimouse-volume:20": (19372, 466296, "ff23fd3bf8817863ad932fc8df529a017a690ece8d4831a61e51d81860e174af"),
+        }
+        for identifier, asset in native.items():
+            self.assertEqual((asset["geometry"]["triangles"], asset["glbBytes"], asset["glbSha256"]), expected[identifier])
+            self.assertGreater(asset["geometry"]["triangles"], fine[identifier]["geometry"]["triangles"])
+            self.assertEqual(asset["coordinateFrameId"], fine[identifier]["coordinateFrameId"])
 
 
 if __name__ == "__main__":

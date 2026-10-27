@@ -84,7 +84,7 @@ class ProductionDistributionTests(unittest.TestCase):
     def test_volume_and_all_regional_assets_match_reviewed_source(self):
         registry = anatomy_registry(lambda path, limit: (ROOT / path).read_bytes() if (ROOT / path).is_file() else None)
         volume_assets = {path: binding for path, binding in registry.items() if path.startswith("public/atlas-volume/")}
-        self.assertEqual(len(volume_assets), 20)
+        self.assertEqual(len(volume_assets), 22)
         for path, binding in volume_assets.items():
             with self.subTest(path=path):
                 data, mime = get(path.removeprefix("public"))

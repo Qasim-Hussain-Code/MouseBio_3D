@@ -18,7 +18,11 @@ const localFetcher = (async () => new Response(Uint8Array.from(heartBytes))) as 
 
 test('detail registry preserves all explicit source bindings and unavailable regions', () => {
   assert.equal(details.ok, true, details.errors.join(' '));
-  assert.equal(details.assets.length, 19);
+  assert.equal(details.assets.length, 21);
+  assert.deepEqual(details.levels.map((level) => level.id).sort(), ['fine-020', 'source-010']);
+  assert.equal(details.assets.filter((asset) => asset.levelId === 'fine-020').length, 19);
+  assert.deepEqual(details.assets.filter((asset) => asset.levelId === 'source-010').map((asset) => asset.structureId).sort(),
+    ['digimouse-volume:12', 'digimouse-volume:20']);
   assert.ok(details.assets.every((asset) => asset.atlasId === atlas.id && asset.coordinateFrameId === atlas.coordinateFrame.id
     && asset.atlasAssetSha256 === atlas.statistics.glbSha256));
   assert.equal(details.assets.some((asset) => ['digimouse-volume:1', 'digimouse-volume:2'].includes(asset.structureId)), false);
@@ -26,10 +30,56 @@ test('detail registry preserves all explicit source bindings and unavailable reg
     (value: typeof index) => { value.coordinateFrame.id = 'wrong-frame'; },
     (value: typeof index) => { value.assets[0].assetUrl = 'https://example.org/region.glb'; },
     (value: typeof index) => { value.assets.push(value.assets[0]); },
+    (value: typeof index) => { value.assets[0].levelId = 'unregistered-level'; },
+    (value: typeof index) => { value.assets[0].processingVoxelSpacingMm = [0.1, 0.1, 0.1]; },
+    (value: typeof index) => { value.assets[1].assetUrl = value.assets[0].assetUrl; },
+    (value: typeof index) => { value.levels[0].processingVoxelSpacingMm = [0.01, 0.01, 0.01]; },
+    (value: typeof index) => { value.levels.push(value.levels[0]); },
+    (value: typeof index) => { value.statistics.structures = value.statistics.assets; },
     (value: typeof index) => { value.unavailable.pop(); },
   ]) {
     const invalid = structuredClone(index); change(invalid);
     assert.equal(buildRegionDetailAssets(invalid, atlas).ok, false);
+  }
+});
+
+test('legacy detail indices normalize to one explicit 0.2 mm level for historical snapshots', () => {
+  const legacy = structuredClone(index);
+  legacy.schemaVersion = 'mousebio.volume-detail-index.v1';
+  delete legacy.levels;
+  legacy.assets = legacy.assets.filter((asset: { levelId: string }) => asset.levelId === 'fine-020');
+  legacy.assets.forEach((asset: { levelId?: string }) => { delete asset.levelId; });
+  legacy.unavailable = legacy.unavailable.filter((entry: { levelId: string }) => entry.levelId === 'fine-020');
+  legacy.unavailable.forEach((entry: { levelId?: string }) => { delete entry.levelId; });
+  legacy.statistics.glbBytesTotal = legacy.assets.reduce((sum: number, asset: { glbBytes: number }) => sum + asset.glbBytes, 0);
+  delete legacy.statistics.assets;
+  const normalized = buildRegionDetailAssets(legacy, atlas);
+  assert.equal(normalized.ok, true, normalized.errors.join(' '));
+  assert.equal(normalized.assets.length, 19);
+  assert.deepEqual(normalized.levels.map((level) => level.id), ['fine-020']);
+  assert.ok(normalized.assets.every((asset) => asset.levelId === 'fine-020'));
+});
+
+test('native detail paths and region inventory cannot be reassigned to unreviewed source regions', () => {
+  const invalid = structuredClone(index);
+  const native = invalid.assets.find((asset: { levelId: string }) => asset.levelId === 'source-010');
+  native.structureId = 'digimouse-volume:9';
+  native.assetUrl = '/atlas-volume/native-010/region-9.glb';
+  assert.equal(buildRegionDetailAssets(invalid, atlas).ok, false);
+  const otherFolder = structuredClone(index);
+  otherFolder.assets[0].assetUrl = '/atlas-volume/native-010/region-3.glb';
+  assert.equal(buildRegionDetailAssets(otherFolder, atlas).ok, false);
+});
+
+test('both native source-grid files pass bounded runtime decoding with their unchanged frame', async () => {
+  for (const asset of details.assets.filter((entry) => entry.levelId === 'source-010')) {
+    const bytes = await readFile(new URL(`../public${asset.assetUrl}`, import.meta.url));
+    const geometry = await loadRegionDetailGeometry(asset, atlas, new AbortController().signal,
+      (async () => new Response(Uint8Array.from(bytes))) as typeof fetch);
+    assert.equal(geometry.getAttribute('position').count, asset.geometry.vertices);
+    assert.equal(geometry.index?.count, asset.geometry.triangles * 3);
+    assert.deepEqual(asset.processingVoxelSpacingMm, [0.1, 0.1, 0.1]);
+    geometry.dispose();
   }
 });
 
@@ -121,4 +171,30 @@ test('a failed finer request retains the base and permits an explicit retry', as
   await controller.request(heart, heart.structureId); assert.equal(mesh.geometry, coarse);
   await controller.request(heart, heart.structureId); assert.equal(attempts, 2); assert.notEqual(mesh.geometry, coarse);
   controller.dispose(); assert.equal(mesh.geometry, coarse); coarse.dispose(); [mesh.material].flat().forEach((material) => material.dispose());
+});
+
+test('switching detail levels for the same region aborts the old request and reports the accepted asset hash', async () => {
+  const selected = 'digimouse-volume:20';
+  const fine = details.assets.find((asset) => asset.structureId === selected && asset.levelId === 'fine-020')!;
+  const native = details.assets.find((asset) => asset.structureId === selected && asset.levelId === 'source-010')!;
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry());
+  const coarse = mesh.geometry;
+  const pending: { resolve: (geometry: THREE.BufferGeometry) => void; signal: AbortSignal }[] = [];
+  const ready: string[] = [];
+  const controller = new RegionDetailController(atlas, () => ({ mesh, sourceToLocal: new THREE.Matrix4() }), () => {},
+    (status) => { if (status.status === 'ready') ready.push(status.assetSha256!); },
+    (_asset, _atlas, signal) => new Promise((resolve) => pending.push({ resolve, signal })));
+  const older = controller.request(fine, selected);
+  const newer = controller.request(native, selected);
+  assert.equal(pending[0].signal.aborted, true);
+  const accepted = new THREE.BoxGeometry();
+  pending[1].resolve(accepted); await newer;
+  const stale = new THREE.BoxGeometry(); let disposals = 0;
+  stale.addEventListener('dispose', () => disposals++);
+  pending[0].resolve(stale); await older;
+  assert.equal(mesh.geometry, accepted);
+  assert.deepEqual(ready, [native.glbSha256]);
+  assert.equal(disposals, 1);
+  controller.dispose(); assert.equal(mesh.geometry, coarse);
+  coarse.dispose(); [mesh.material].flat().forEach((material) => material.dispose());
 });

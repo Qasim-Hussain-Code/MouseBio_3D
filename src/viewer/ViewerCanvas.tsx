@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas, type ViewBackground } from '../domain';
@@ -66,7 +66,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       setFailure(true);
       onStatus?.('failed');
       setStatus('WebGL could not start. Enable browser hardware acceleration or use a WebGL 2 compatible browser. The anatomical inventory and data tools remain available.');
-      if (latest.current.detailAsset) latest.current.onDetailStatus?.({ status: 'failed', structureId: latest.current.detailAsset.structureId, message: 'The 3D renderer is unavailable; regional detail was not loaded.' });
+      if (latest.current.detailAsset) latest.current.onDetailStatus?.({ status: 'failed', structureId: latest.current.detailAsset.structureId, assetSha256: latest.current.detailAsset.glbSha256, message: 'The 3D renderer is unavailable; regional detail was not loaded.' });
       return;
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -133,7 +133,11 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       dirty = true;
       if (!disposed && loaded) latest.current.onReady?.({ meshes: meshes.size,
         triangles: [...meshes.values()].reduce((total, mesh) => total + (mesh.geometry.index?.count ?? mesh.geometry.getAttribute('position').count) / 3, 0) });
-    }, (state) => { if (!disposed) latest.current.onDetailStatus?.(state); });
+    }, (state) => {
+      const requested = latest.current.detailAsset;
+      if (!disposed && (requested ? state.structureId === requested.structureId && state.assetSha256 === requested.glbSha256 : state.status === 'idle'))
+        latest.current.onDetailStatus?.(state);
+    });
     const announcePose = () => {
       dirty = true;
       if (!syncing && loaded) latest.current.onCameraChange?.(captureCameraPose(camera, controls.target));
@@ -323,7 +327,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
 
   useEffect(() => { engine.current?.apply(); }, [settings]);
   useEffect(() => { if (cameraPose) engine.current?.setPose(cameraPose); }, [cameraPose]);
-  useEffect(() => { engine.current?.setDetail(); }, [detailAsset, settings.selected]);
+  useLayoutEffect(() => { engine.current?.setDetail(); }, [detailAsset, settings.selected]);
   return <div className="viewer-canvas" ref={host} data-background={settings.background}>
     {status && <div className={`viewer-status ${failure ? 'error' : ''}`} role="status">{!failure && <span className="loading-ring" />}{status}</div>}
     {label && !status && <div className="model-label" style={{ left: label.x, top: label.y }}>{label.name}</div>}

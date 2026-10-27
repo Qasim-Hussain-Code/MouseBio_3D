@@ -30,6 +30,27 @@ FRAME_ID = "digimouse-registered-voxel-native-v1"
 MAX_GLB_BYTES = 80 * 1024 * 1024
 MAX_TRIANGLES = 5_000_000
 SPACING_M = 0.0001
+DETAIL_LEVELS = {
+    "fine-020": {
+        "step": 2, "directory": "detail", "labels": tuple(range(3, 22)),
+        "title": "Finer surface (0.2 mm)",
+        "description": "Every second source sample is retained for the selected region.",
+        "limitations": [
+            "Subsampling can remove thin features and small components.",
+            "Finer processing does not add named structures, tissue layers or cellular anatomy.",
+        ],
+    },
+    "source-010": {
+        "step": 1, "directory": "native-010", "labels": (12, 20),
+        "title": "Source-grid surface (0.1 mm)",
+        "description": "All supplied categorical source samples are retained for the selected gland label.",
+        "limitations": [
+            "Available only for the source lachrymal and adrenal gland labels to bound storage and rendering cost.",
+            "Source-grid sampling adds no anatomy beyond the supplied label image and is not an anatomical accuracy guarantee.",
+            "Paired source labels remain shared; no laterality is assigned.",
+        ],
+    },
+}
 # Vertex order: x changes fastest, then y, then z. Every neighboring cube uses
 # the same face diagonal, giving a conforming simplicial grid.
 TETS = ((0, 1, 3, 7), (0, 1, 5, 7), (0, 2, 3, 7),
@@ -61,7 +82,12 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def processing_grid(step):
+def processing_grid(step, selected_labels=None):
+    if step not in (1, 2, 4):
+        raise ValueError("Processing step must be 1, 2 or 4")
+    selected = set(range(1, 22) if selected_labels is None else selected_labels)
+    if not selected or not selected <= set(range(1, 22)):
+        raise ValueError("Processing labels must belong to the reviewed source inventory")
     raw = SOURCE.read_bytes()
     if digest(raw) != EXPECTED_ARCHIVE_SHA256:
         raise ValueError("Volume source archive differs from the reviewed checksum")
@@ -92,20 +118,26 @@ def processing_grid(step):
                     start = nx * (yy + ny * zz) + 1
                     grid[start:start + len(row)] = row
                     counts.update(row)
-                    for x, label in enumerate(row, 1):
-                        if not label:
+                    for label in selected:
+                        token = bytes((label,))
+                        first = row.find(token)
+                        if first < 0:
                             continue
+                        last = row.rfind(token)
                         if label not in bounds:
-                            bounds[label] = [[x, yy, zz], [x, yy, zz]]
+                            bounds[label] = [[first + 1, yy, zz], [last + 1, yy, zz]]
                         else:
                             minimum, maximum = bounds[label]
-                            for axis, value in enumerate((x, yy, zz)):
-                                minimum[axis] = min(minimum[axis], value)
-                                maximum[axis] = max(maximum[axis], value)
+                            minimum[0] = min(minimum[0], first + 1)
+                            maximum[0] = max(maximum[0], last + 1)
+                            minimum[1] = min(minimum[1], yy)
+                            maximum[1] = max(maximum[1], yy)
+                            minimum[2] = min(minimum[2], zz)
+                            maximum[2] = max(maximum[2], zz)
             if image.read(1):
                 raise ValueError("Unexpected source image tail")
-        if set(bounds) != set(range(1, 22)):
-            raise ValueError(f"Processing step {step} loses source labels: {set(range(1, 22)) - set(bounds)}")
+        if set(bounds) != selected:
+            raise ValueError(f"Processing step {step} loses requested source labels: {selected - set(bounds)}")
     return grid, dims, bounds, counts, labels, aggregates
 
 
@@ -253,6 +285,7 @@ class GlbWriter:
 def source_record():
     return {
         "id": "digimouse-registered-volume-2007", "title": "Digimouse: a 3D whole body mouse atlas from CT and cryosection data",
+        "displayName": "Digimouse", "citationLabel": "Dogdas et al., 2007",
         "authors": ["Belma Dogdas", "David Stout", "Arion F. Chatziioannou", "Richard M. Leahy"],
         "doi": "10.1088/0031-9155/52/3/003", "publicationYear": 2007,
         "url": "https://neuroimage.usc.edu/neuro/Digimouse", "downloadUrl": "https://neuroimage.usc.edu/mouse_atlas/atlas.zip",
@@ -265,17 +298,97 @@ def source_record():
     }
 
 
-def run(step, per_region=False, verify_existing=False):
+def conversion_selection(step, per_region, level_id=None, selected_labels=None):
+    """Reject unreviewed whole native conversion before allocating its grid."""
+    if not per_region:
+        if step != 4 or level_id is not None or selected_labels is not None:
+            raise ValueError("The complete reference is bounded to --step 4; detail levels require --per-region")
+        return None, tuple(range(1, 22))
+    level_id = level_id or {1: "source-010", 2: "fine-020"}.get(step)
+    if level_id not in DETAIL_LEVELS or DETAIL_LEVELS[level_id]["step"] != step:
+        raise ValueError("The regional processing step must match a reviewed detail level")
+    allowed = DETAIL_LEVELS[level_id]["labels"]
+    selected = tuple(sorted(allowed if selected_labels is None else selected_labels))
+    if not selected or len(set(selected)) != len(selected) or not set(selected) <= set(allowed):
+        raise ValueError("Requested labels exceed the reviewed regional processing inventory")
+    return level_id, selected
+
+
+def write_detail_index(level_id, structures, assets, coordinate, limitations, benchmark):
+    """Merge reviewed levels without regenerating or reclassifying other surfaces."""
+    path = OUT / "detail-index.json"
+    previous = json.loads(path.read_text()) if path.exists() else None
+    records, regions = {}, {}
+    if previous is not None:
+        if (previous.get("schemaVersion") not in ("mousebio.volume-detail-index.v1", "mousebio.volume-detail-index.v2")
+                or previous.get("atlasId") != "digimouse-volume-040-v1"
+                or previous.get("coordinateFrame", {}).get("id") != FRAME_ID
+                or previous.get("source", {}).get("archiveSha256") != EXPECTED_ARCHIVE_SHA256):
+            raise ValueError("Existing detail catalog does not match the reviewed source frame")
+        for record in previous["assets"]:
+            record = dict(record)
+            record.setdefault("levelId", "fine-020")
+            existing_level = record["levelId"]
+            if existing_level not in DETAIL_LEVELS:
+                raise ValueError("Existing catalog has an unreviewed processing level")
+            definition = DETAIL_LEVELS[existing_level]
+            label = int(record["structureId"].removeprefix("digimouse-volume:"))
+            expected_url = f"/atlas-volume/{definition['directory']}/region-{label}.glb"
+            if (label not in definition["labels"] or record["structureId"] != f"digimouse-volume:{label}"
+                    or record["assetUrl"] != expected_url or record["coordinateFrameId"] != FRAME_ID
+                    or record["processingVoxelSpacingMm"] != [definition["step"] * 0.1] * 3):
+                raise ValueError("Existing asset differs from its reviewed level binding")
+            raw = (ROOT / "public" / expected_url.lstrip("/")).read_bytes()
+            if len(raw) != record["glbBytes"] or digest(raw) != record["glbSha256"]:
+                raise ValueError("Existing detail asset differs from its catalog checksum")
+            key = (existing_level, label)
+            if key in records:
+                raise ValueError("Existing detail catalog repeats a region-level pair")
+            records[key] = record
+        regions = {region["id"]: region for region in previous["structures"]}
+    for record in assets:
+        label = int(record["structureId"].split(":")[1])
+        records[(level_id, label)] = record
+    for region in structures:
+        if level_id == "fine-020" or region["id"] not in regions:
+            regions[region["id"]] = region
+    ordered = [records[key] for key in sorted(records, key=lambda key: (list(DETAIL_LEVELS).index(key[0]), key[1]))]
+    available_ids = {record["structureId"] for record in ordered}
+    levels = [{"id": identifier, "title": definition["title"],
+               "processingVoxelSpacingMm": [definition["step"] * 0.1] * 3,
+               "description": definition["description"], "limitations": definition["limitations"]}
+              for identifier, definition in DETAIL_LEVELS.items()]
+    unavailable = []
+    for identifier, definition in DETAIL_LEVELS.items():
+        for label in range(1, 22):
+            if (identifier, label) not in records:
+                unavailable.append({"structureId": f"digimouse-volume:{label}", "levelId": identifier,
+                                    "reason": ("This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+                                               if identifier == "source-010" else
+                                               "This finer surface is not bundled. The complete coarse reference retains the source label.")})
+    stats = {"structures": len(available_ids), "assets": len(ordered),
+             "triangles": sum(record["geometry"]["triangles"] for record in ordered),
+             "surfaceVerticesIncludingRegionBoundaries": sum(record["geometry"]["vertices"] for record in ordered),
+             "glbBytesTotal": sum(record["glbBytes"] for record in ordered), "sourceVoxelSpacingMm": [0.1] * 3}
+    result = {"schemaVersion": "mousebio.volume-detail-index.v2", "atlasId": "digimouse-volume-040-v1",
+              "coordinateFrame": coordinate, "source": source_record(), "levels": levels,
+              "structures": [regions[identifier] for identifier in sorted(available_ids, key=lambda value: int(value.split(":")[1]))],
+              "assets": ordered, "unavailable": unavailable, "statistics": stats, "limitations": limitations,
+              "lastConversionBenchmark": {**benchmark, "levelId": level_id}}
+    path.write_text(json.dumps(result, indent=2) + "\n")
+
+
+def run(step, per_region=False, verify_existing=False, level_id=None, selected_labels=None):
     start = time.perf_counter()
-    grid, dims, bounds, counts, labels, aggregates = processing_grid(step)
-    print(f"Processing grid {dims}, {len(grid)} byte values, all21 source labels retained", flush=True)
+    level_id, selected_labels = conversion_selection(step, per_region, level_id, selected_labels)
+    grid, dims, bounds, counts, labels, aggregates = processing_grid(step, selected_labels)
+    print(f"Processing grid {dims}, {len(grid)} byte values, {len(selected_labels)} requested source labels retained", flush=True)
     code = f"{step * 10:03d}"
-    target = OUT / "detail" if per_region else OUT
+    target = OUT / DETAIL_LEVELS[level_id]["directory"] if per_region else OUT
     target.mkdir(parents=True, exist_ok=True)
     writer = GlbWriter()
     structures, assets = [], []
     total_triangles = total_vertices = 0
-    selected_labels = range(3, 22) if per_region else range(1, 22)
     for label in selected_labels:
         region_start = time.perf_counter()
         positions, normals, indices = polygonize(grid, dims, bounds[label], label, step)
@@ -304,7 +417,8 @@ def run(step, per_region=False, verify_existing=False):
             if verify_existing and (not (target / filename).exists() or digest((target / filename).read_bytes()) != digest(glb)):
                 raise ValueError(f"Reproduced detail asset differs: {filename}")
             (target / filename).write_bytes(glb)
-            assets.append({"structureId": record["id"], "assetUrl": f"/atlas-volume/detail/{filename}", "coordinateFrameId": FRAME_ID,
+            assets.append({"structureId": record["id"], "levelId": level_id,
+                           "assetUrl": f"/atlas-volume/{DETAIL_LEVELS[level_id]['directory']}/{filename}", "coordinateFrameId": FRAME_ID,
                            "processingVoxelSpacingMm": [step * 0.1] * 3, "glbBytes": len(glb), "glbSha256": digest(glb), "geometry": record["geometry"]})
         total_triangles += triangles
         total_vertices += vertices
@@ -334,10 +448,7 @@ def run(step, per_region=False, verify_existing=False):
                  "measuredAtUtc": datetime.now(timezone.utc).isoformat(timespec="seconds"), "step": step, "perRegion": per_region}
     if per_region:
         stats.update({"glbBytesTotal": sum(asset["glbBytes"] for asset in assets)})
-        result = {"schemaVersion": "mousebio.volume-detail-index.v1", "atlasId": "digimouse-volume-040-v1", "coordinateFrame": coordinate, "source": source_record(),
-                  "structures": structures, "assets": assets, "statistics": stats, "limitations": limitations, "benchmark": benchmark}
-        result["unavailable"] = [{"structureId": f"digimouse-volume:{label}", "reason": "Fine envelope and aggregate skeleton surfaces are deliberately omitted to limit storage and rendering cost; the complete coarse reference retains this source label."} for label in (1, 2)]
-        (OUT / "detail-index.json").write_text(json.dumps(result, indent=2) + "\n")
+        write_detail_index(level_id, structures, assets, coordinate, limitations, benchmark)
     else:
         glb = writer.finish()
         filename = f"digimouse-volume-{code}.glb"
@@ -347,6 +458,10 @@ def run(step, per_region=False, verify_existing=False):
         stats.update({"glbBytes": len(glb), "glbSha256": digest(glb)})
         result = {"id": f"digimouse-volume-{code}-v1", "title": "Digimouse registered voxel atlas",
                   "assetUrl": f"/atlas-volume/{filename}", "coordinateFrame": coordinate, "source": source_record(),
+                  "specimen": {"scientificName": "Mus musculus", "taxonomyId": "NCBITaxon:10090", "sex": "male",
+                               "mass": {"value": 28, "unit": "g"}, "scope": "whole-body reference", "count": 1,
+                               "description": "One 28 g normal nude male mouse.",
+                               "sourceReference": "https://doi.org/10.1088/0031-9155/52/3/003"},
                   "structures": structures, "statistics": stats, "limitations": limitations, "benchmark": benchmark,
                   "detailIndexUrl": "/atlas-volume/detail-index.json",
                   "processing": {"sourceVoxelSpacingMm": [0.1] * 3, "processingVoxelSpacingMm": [step * 0.1] * 3,
@@ -362,6 +477,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--step", type=int, choices=(1, 2, 4), default=4)
     parser.add_argument("--per-region", action="store_true")
+    parser.add_argument("--level", choices=tuple(DETAIL_LEVELS), help="reviewed regional processing level; must agree with --step")
+    parser.add_argument("--labels", nargs="+", type=int, help="regenerate only reviewed labels at the requested detail level")
     parser.add_argument("--verify-existing", action="store_true", help="require each regenerated GLB to match its existing SHA-256")
     arguments = parser.parse_args()
-    run(arguments.step, arguments.per_region, arguments.verify_existing)
+    run(arguments.step, arguments.per_region, arguments.verify_existing, arguments.level, arguments.labels)

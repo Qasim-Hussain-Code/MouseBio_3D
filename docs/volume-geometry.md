@@ -6,13 +6,17 @@ The optional registered-volume reference represents all 21 nonbackground labels 
 
 The model derives from the same single postmortem normal nude male mouse described by [Dogdas et al. (2007)](https://doi.org/10.1088/0031-9155/52/3/003). The source archive is distributed under CC BY-SA 4.0 and has been reviewed and pinned by SHA-256. Its byte-valued registered image has dimensions 380 by 992 by 208 and source spacing identified by the [official download page](https://neuroimage.usc.edu/neuro/Digimouse_Download) as 0.1 mm isotropic. The preserved archive, bundled license, header inspection and exact labels are documented in [volume-assessment.md](volume-assessment.md). No additional data or dependencies were downloaded for meshing.
 
-## Two processing levels
+## Base and regional processing levels
 
 `public/atlas-volume/atlas.json` describes the whole reference at 0.4 mm processing spacing, produced by retaining every fourth source sample. It identifies `digimouse-volume-040-v1` and loads `digimouse-volume-040.glb`. The GLB contains all 21 labels, 574,922 vertices including separate region interfaces, and 1,152,516 triangles. It occupies 27,648,532 bytes. Body and skeleton account for most triangles. This optional reference has a higher rendering cost than the original lightweight tetrahedral model; representative integrated-graphics performance has not been established.
 
 `public/atlas-volume/detail-index.json` describes 19 optional regional GLBs at 0.2 mm processing spacing, produced by retaining every second source sample. Files `detail/region-3.glb` through `detail/region-21.glb` retain the same registered source frame and structure IDs. Their combined size is 25,249,496 bytes, with 525,570 vertices and 1,050,980 triangles. The largest is the liver, with 322,192 triangles. Envelope and aggregate skeleton fine assets are deliberately unavailable to avoid unnecessary storage and rendering cost. Their coarse source regions remain present. A consuming viewer should request selected regional detail progressively rather than load all detail files initially.
 
 Processing spacing is explicit and differs from source spacing. These sampling levels do not add image information beyond the source. Thin structures and small components can change or disappear with subsampling, even when the numerical source label remains present. Label presence was checked at both processing levels; identical retention of every connected component has not been established. A larger on-screen view is not a higher biological scale.
+
+The detail index additionally includes original-grid 0.1 mm surfaces for source labels 12, lachrymal glands, and 20, adrenal glands. Their source IDs and coordinate frame are unchanged. The lachrymal file contains 33,186 vertices and 66,364 triangles in 1,594,108 bytes. The adrenal file contains 9,690 vertices and 19,372 triangles in 466,296 bytes. These surfaces retain all source samples for the two labels and use the same binary interface method. They add no anatomical labels, subdivisions, laterality or tissue information. Their combined size is 2,060,404 bytes.
+
+The v2 detail index declares two named processing levels, `fine-020` and `source-010`, and accounts for every source-label and level pair as available or unavailable. Its 21 files cover 19 unique regions and total 27,309,900 bytes. The viewer requests one region and level at a time. The native-grid level is deliberately limited to the two gland labels; the converter rejects native whole-body generation and unsupported native labels before allocating a processing grid. Legacy v1 detail registries remain supported for historical source snapshots.
 
 ## Meshing method
 
@@ -37,6 +41,7 @@ Each region records its original source label, system categories, colour, defaul
 ```bash
 python3 scripts/import_volume.py --step 4
 python3 scripts/import_volume.py --step 2 --per-region
+python3 scripts/import_volume.py --step 1 --per-region --level source-010 --labels 12 20
 python3 scripts/test_volume_geometry.py
 # Repeat with --verify-existing to require identical GLB checksums.
 ```
@@ -48,6 +53,8 @@ The complete coarse conversion, including final GLB serialization, took 7.39 sec
 The geometry acceptance script exercises isolated and diagonal/saddle sample fixtures, then checks the actual whole reference and every regional detail file. Checks include GLB headers, inventory, SHA-256 hashes, buffer decoding, finite coordinates, valid indices, nonzero triangles, unit normals, duplicate triangles, opposite edge winding, closed edges, connected cyclic vertex links, positive total signed region volume and recorded bounds. Numerical volume is used only as a consistency check. Internal cavity components can have negative orientation relative to their enclosed spaces while the residual tissue's total oriented volume remains positive.
 
 These checks do not establish independent anatomical accuracy, physical calibration, preservation of every thin component, physiological validity, pixel-level rendering or interaction quality. Any displayed higher-detail reference must retain these limitations. No geometry was added to the existing tetrahedral assets, and repository publication or visibility was not changed by the conversion.
+
+The bounded original-grid conversion reproduced both expected GLB checksums with `--verify-existing`. Its padded grid contains 79,738,680 byte values; the expanded source image is still not written to disk. Source-grid and 0.2 mm gland surfaces each have two connected surface components in the numerical assessment. Equal component counts do not establish retention of every thin feature or independent anatomical accuracy. Combined volume GLBs now occupy 54,958,432 bytes. Earlier timing and validation records below refer to the two-level implementation before these two files were added.
 
 All five geometry tests passed without skips in WSL, including the complete coarse model and all 19 progressive detail assets. The validation run took 10.88 seconds wall time and reached 397,348 KiB peak resident memory. These checks are executed numerical evidence, not expert review.
 

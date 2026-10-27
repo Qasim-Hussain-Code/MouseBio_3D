@@ -49,11 +49,16 @@ test('Three.js loads all21 registered-volume source regions in their separate do
 });
 
 test('every progressive detail GLB loads one matching source region without a frame-changing transform', async () => {
-  assert.equal(detail.assets.length, 19);
-  assert.deepEqual(detail.unavailable.map((entry: { structureId: string }) => entry.structureId).sort(), ['digimouse-volume:1', 'digimouse-volume:2']);
+  assert.equal(detail.assets.length, 21);
+  assert.equal(detail.unavailable.length, 21);
+  const fine = detail.assets.filter((asset: { levelId: string }) => asset.levelId === 'fine-020');
+  const native = detail.assets.filter((asset: { levelId: string }) => asset.levelId === 'source-010');
+  assert.equal(fine.length, 19);
+  assert.deepEqual(native.map((asset: { structureId: string }) => asset.structureId).sort(), ['digimouse-volume:12', 'digimouse-volume:20']);
   for (const asset of detail.assets) {
     assert.equal(asset.coordinateFrameId, manifest.coordinateFrame.id);
-    assert.deepEqual(asset.processingVoxelSpacingMm, [0.2, 0.2, 0.2]);
+    const spacing = asset.levelId === 'source-010' ? 0.1 : 0.2;
+    assert.deepEqual(asset.processingVoxelSpacingMm, [spacing, spacing, spacing]);
     const model = await loadAsset(asset.assetUrl, asset.glbSha256);
     const meshes = regionMeshes(model.scene);
     assert.equal(meshes.length, 1);

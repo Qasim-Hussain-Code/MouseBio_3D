@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "mousebio.volume-detail-index.v1",
+  "schemaVersion": "mousebio.volume-detail-index.v2",
   "atlasId": "digimouse-volume-040-v1",
   "coordinateFrame": {
     "id": "digimouse-registered-voxel-native-v1",
@@ -24,6 +24,8 @@
   "source": {
     "id": "digimouse-registered-volume-2007",
     "title": "Digimouse: a 3D whole body mouse atlas from CT and cryosection data",
+    "displayName": "Digimouse",
+    "citationLabel": "Dogdas et al., 2007",
     "authors": [
       "Belma Dogdas",
       "David Stout",
@@ -57,6 +59,37 @@
       "Indexed glTF surfaces with nonquantitative display colours"
     ]
   },
+  "levels": [
+    {
+      "id": "fine-020",
+      "title": "Finer surface (0.2 mm)",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "description": "Every second source sample is retained for the selected region.",
+      "limitations": [
+        "Subsampling can remove thin features and small components.",
+        "Finer processing does not add named structures, tissue layers or cellular anatomy."
+      ]
+    },
+    {
+      "id": "source-010",
+      "title": "Source-grid surface (0.1 mm)",
+      "processingVoxelSpacingMm": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "description": "All supplied categorical source samples are retained for the selected gland label.",
+      "limitations": [
+        "Available only for the source lachrymal and adrenal gland labels to bound storage and rendering cost.",
+        "Source-grid sampling adds no anatomy beyond the supplied label image and is not an anatomical accuracy guarantee.",
+        "Paired source labels remain shared; no laterality is assigned."
+      ]
+    }
+  ],
   "structures": [
     {
       "id": "digimouse-volume:3",
@@ -677,7 +710,8 @@
             0.011500000022351742
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:4",
@@ -705,7 +739,8 @@
             0.013299999758601189
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:5",
@@ -733,7 +768,8 @@
             0.015699999406933784
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:6",
@@ -761,7 +797,8 @@
             0.012299999594688416
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:7",
@@ -789,7 +826,8 @@
             0.015699999406933784
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:8",
@@ -817,7 +855,8 @@
             0.014700000174343586
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:9",
@@ -845,7 +884,8 @@
             0.011099999770522118
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:10",
@@ -873,7 +913,8 @@
             0.016100000590085983
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:11",
@@ -901,7 +942,8 @@
             0.008500000461935997
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:12",
@@ -929,7 +971,8 @@
             0.010099999606609344
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:13",
@@ -957,7 +1000,8 @@
             0.009700000286102295
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:14",
@@ -985,7 +1029,8 @@
             0.007300000172108412
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:15",
@@ -1013,7 +1058,8 @@
             0.01730000041425228
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:16",
@@ -1041,7 +1087,8 @@
             0.018699999898672104
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:17",
@@ -1069,7 +1116,8 @@
             0.01549999974668026
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:18",
@@ -1097,7 +1145,8 @@
             0.01810000091791153
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:19",
@@ -1125,7 +1174,8 @@
             0.01850000023841858
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:20",
@@ -1153,7 +1203,8 @@
             0.016699999570846558
           ]
         ]
-      }
+      },
+      "levelId": "fine-020"
     },
     {
       "structureId": "digimouse-volume:21",
@@ -1181,54 +1232,186 @@
             0.015699999406933784
           ]
         ]
+      },
+      "levelId": "fine-020"
+    },
+    {
+      "structureId": "digimouse-volume:12",
+      "levelId": "source-010",
+      "assetUrl": "/atlas-volume/native-010/region-12.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "glbBytes": 1594108,
+      "glbSha256": "0dd11bf1dd60a5792746f07d0cd96a4ded5076fd45e288319789514e2911fede",
+      "geometry": {
+        "vertices": 33186,
+        "triangles": 66364,
+        "boundsMeters": [
+          [
+            0.014050000347197056,
+            0.01295000035315752,
+            0.007449999917298555
+          ],
+          [
+            0.02384999953210354,
+            0.017550000920891762,
+            0.010049999691545963
+          ]
+        ]
       }
+    },
+    {
+      "structureId": "digimouse-volume:20",
+      "levelId": "source-010",
+      "assetUrl": "/atlas-volume/native-010/region-20.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "glbBytes": 466296,
+      "glbSha256": "ff23fd3bf8817863ad932fc8df529a017a690ece8d4831a61e51d81860e174af",
+      "geometry": {
+        "vertices": 9690,
+        "triangles": 19372,
+        "boundsMeters": [
+          [
+            0.01334999967366457,
+            0.05355000123381615,
+            0.013949999585747719
+          ],
+          [
+            0.019750000908970833,
+            0.056049998849630356,
+            0.016750000417232513
+          ]
+        ]
+      }
+    }
+  ],
+  "unavailable": [
+    {
+      "structureId": "digimouse-volume:1",
+      "levelId": "fine-020",
+      "reason": "This finer surface is not bundled. The complete coarse reference retains the source label."
+    },
+    {
+      "structureId": "digimouse-volume:2",
+      "levelId": "fine-020",
+      "reason": "This finer surface is not bundled. The complete coarse reference retains the source label."
+    },
+    {
+      "structureId": "digimouse-volume:1",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:2",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:3",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:4",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:5",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:6",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:7",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:8",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:9",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:10",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:11",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:13",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:14",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:15",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:16",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:17",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:18",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:19",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
+    },
+    {
+      "structureId": "digimouse-volume:21",
+      "levelId": "source-010",
+      "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
     }
   ],
   "statistics": {
     "structures": 19,
-    "triangles": 1050980,
-    "surfaceVerticesIncludingRegionBoundaries": 525570,
-    "processingGridDimensionsWithPadding": [
-      192,
-      498,
-      106
-    ],
-    "processingGridBytes": 10135296,
-    "processingVoxelSpacingMm": [
-      0.2,
-      0.2,
-      0.2
-    ],
+    "assets": 21,
+    "triangles": 1136716,
+    "surfaceVerticesIncludingRegionBoundaries": 568446,
+    "glbBytesTotal": 27309900,
     "sourceVoxelSpacingMm": [
       0.1,
       0.1,
       0.1
-    ],
-    "sampledVoxelCounts": {
-      "0": 7003986,
-      "1": 2092091,
-      "2": 147844,
-      "3": 717,
-      "4": 5730,
-      "5": 3804,
-      "6": 2310,
-      "7": 17120,
-      "8": 3256,
-      "9": 27902,
-      "10": 19839,
-      "11": 13399,
-      "12": 3774,
-      "13": 23688,
-      "14": 18759,
-      "15": 28191,
-      "16": 17358,
-      "17": 5715,
-      "18": 250774,
-      "19": 61859,
-      "20": 704,
-      "21": 52140
-    },
-    "glbBytesTotal": 25249496
+    ]
   },
   "limitations": [
     "One postmortem normal nude male mouse; no female, developmental, disease-specific or population-average anatomy.",
@@ -1240,21 +1423,12 @@
     "Separate binary interfaces approximate each region; multi-label junctions can have gaps from the half-value representation. No smoothing or fabricated tissue fills these gaps.",
     "These surfaces and numerical topology checks do not constitute independent anatomical expert review or physiological validation."
   ],
-  "benchmark": {
-    "elapsedSeconds": 12.430841595996753,
-    "peakResidentKiB": 73168,
-    "measuredAtUtc": "2026-10-26T07:52:59+00:00",
-    "step": 2,
-    "perRegion": true
-  },
-  "unavailable": [
-    {
-      "structureId": "digimouse-volume:1",
-      "reason": "Fine envelope and aggregate skeleton surfaces are deliberately omitted to limit storage and rendering cost; the complete coarse reference retains this source label."
-    },
-    {
-      "structureId": "digimouse-volume:2",
-      "reason": "Fine envelope and aggregate skeleton surfaces are deliberately omitted to limit storage and rendering cost; the complete coarse reference retains this source label."
-    }
-  ]
+  "lastConversionBenchmark": {
+    "elapsedSeconds": 4.251610229000001,
+    "peakResidentKiB": 114680,
+    "measuredAtUtc": "2026-10-26T23:47:29+00:00",
+    "step": 1,
+    "perRegion": true,
+    "levelId": "source-010"
+  }
 }

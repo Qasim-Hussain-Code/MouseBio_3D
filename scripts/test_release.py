@@ -60,7 +60,7 @@ def fixture():
 class ReleaseTests(unittest.TestCase):
     def test_registered_volume_and_detail_are_in_both_archives_with_exact_bytes(self):
         with fixture() as root:
-            files = volume_fixture_files()
+            files = volume_fixture_files(multi_level=True)
             for name, data in files.items():
                 path = root / name
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -69,7 +69,7 @@ class ReleaseTests(unittest.TestCase):
             git(root, "commit", "--quiet", "-m", "add_volume_fixture")
             shutil.copytree(root / "public", root / "dist", dirs_exist_ok=True)
             release = prepare_release(root, Path(".publication/volume"))
-            self.assertEqual(release["registeredAnatomy"]["assets"], 3)
+            self.assertEqual(release["registeredAnatomy"]["assets"], 5)
             for kind in ["source", "web"]:
                 archive = root / ".publication/volume" / release["artifacts"][kind]["file"]
                 with zipfile.ZipFile(archive) as zipped:

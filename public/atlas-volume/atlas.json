@@ -56,7 +56,9 @@
       "Binary half-value interfaces on a consistent tetrahedral grid",
       "Outward triangle winding and area-weighted normals",
       "Indexed glTF surfaces with nonquantitative display colours"
-    ]
+    ],
+    "displayName": "Digimouse",
+    "citationLabel": "Dogdas et al., 2007"
   },
   "structures": [
     {
@@ -798,5 +800,18 @@
     ],
     "padding": "one background sample around each boundary",
     "smoothing": false
+  },
+  "specimen": {
+    "scientificName": "Mus musculus",
+    "taxonomyId": "NCBITaxon:10090",
+    "sex": "male",
+    "mass": {
+      "value": 28,
+      "unit": "g"
+    },
+    "scope": "whole-body reference",
+    "count": 1,
+    "description": "One 28 g normal nude male mouse.",
+    "sourceReference": "https://doi.org/10.1088/0031-9155/52/3/003"
   }
 }

@@ -27,6 +27,12 @@ export interface SpecimenMetadata {
   sex: 'male' | 'female' | 'unknown';
   strain?: string;
   age?: { value: number; unit: string };
+  mass?: { value: number; unit: string };
+  /** Source-declared specimen scope, for example an individual or a cohort. */
+  scope?: string;
+  /** Number of source specimens, distinct from the number of segmented regions. */
+  count?: number;
+  description?: string;
   developmentalStage?: { label: string; reference: string };
   sourceReference: string;
 }

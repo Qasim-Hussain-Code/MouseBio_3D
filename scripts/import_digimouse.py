@@ -342,8 +342,13 @@ def convert():
     manifest = {
         "id": "digimouse-tessellated-v1", "title": "Digimouse tessellated atlas",
         "assetUrl": "/atlas/digimouse.glb", "coordinateFrame": coordinate_frame,
+        "specimen": {"scientificName": "Mus musculus", "taxonomyId": "NCBITaxon:10090", "sex": "male",
+                     "mass": {"value": 28, "unit": "g"}, "scope": "whole-body reference", "count": 1,
+                     "description": "One 28 g normal nude male mouse.",
+                     "sourceReference": "https://doi.org/10.1088/0031-9155/52/3/003"},
         "source": {
             "id": "digimouse-2007", "title": "Digimouse: a 3D whole body mouse atlas from CT and cryosection data",
+            "displayName": "Digimouse", "citationLabel": "Dogdas et al., 2007",
             "authors": ["Belma Dogdas", "David Stout", "Arion F. Chatziioannou", "Richard M. Leahy"],
             "institution": "USC Biomedical Imaging Group and UCLA collaborators",
             "publicationYear": 2007, "doi": "10.1088/0031-9155/52/3/003",

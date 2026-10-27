@@ -18,6 +18,10 @@ MAX_REGISTERED_GLB_BYTES = 80 * 1024 * 1024
 MAX_REGISTERED_TOTAL_BYTES = 100 * 1024 * 1024
 VOLUME_ARCHIVE_SHA256 = "6f7cbd8a7236a78c47a14c3259d387439c0dc0284b2a83fa955f8c49efe11761"
 VOLUME_FRAME = "digimouse-registered-voxel-native-v1"
+DETAIL_LEVELS = {
+    "fine-020": (0.2, "public/atlas-volume/detail/"),
+    "source-010": (0.1, "public/atlas-volume/native-010/"),
+}
 EMAIL = re.compile(r"[A-Za-z0-9.!#%+_~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 # [U] preserves the exact match while avoiding a literal home path in this pattern's own source.
 LOCAL_PATH = re.compile(r"(?:[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s<>\"']+|/mnt/[a-z]/[U]sers/[^/\s<>\"']+|/(?:home|Users)/[^/\s<>\"']+)")
@@ -36,6 +40,76 @@ def anatomy_asset_path(url: str, folder: str) -> str:
     if path.as_posix() != url[1:] or any(part in {".", ".."} or not re.fullmatch(r"[A-Za-z0-9_.-]+", part) for part in path.parts):
         raise ValueError("Invalid registered anatomical asset path")
     return "public/" + path.as_posix()
+
+
+def register_details(detail: dict, volume: dict | None, registry: dict[str, dict]) -> None:
+    """Bind supported processing levels to source labels and exact asset bytes."""
+    legacy = detail.get("schemaVersion") == "mousebio.volume-detail-index.v1"
+    if (volume is None or detail.get("schemaVersion") not in {"mousebio.volume-detail-index.v1", "mousebio.volume-detail-index.v2"}
+            or detail.get("atlasId") != volume["id"] or detail.get("coordinateFrame", {}).get("id") != VOLUME_FRAME
+            or detail.get("source", {}).get("archiveSha256") != VOLUME_ARCHIVE_SHA256
+            or detail.get("source", {}).get("id") != volume["source"]["id"]
+            or detail.get("source", {}).get("license") != "CC-BY-SA-4.0"
+            or detail.get("source", {}).get("licenseUrl") != volume["source"]["licenseUrl"]):
+        raise ValueError("Detail index does not bind to the registered volume")
+    level_ids = {"fine-020"} if legacy else set(DETAIL_LEVELS)
+    if not legacy:
+        levels = detail.get("levels")
+        if not isinstance(levels, list) or len(levels) != len(DETAIL_LEVELS):
+            raise ValueError("Invalid registered processing-level inventory")
+        seen_levels = set()
+        for level in levels:
+            if (not isinstance(level, dict) or set(level) != {"id", "title", "processingVoxelSpacingMm", "description", "limitations"}
+                    or level.get("id") not in DETAIL_LEVELS or level["id"] in seen_levels
+                    or not isinstance(level.get("title"), str) or not level["title"].strip()
+                    or not isinstance(level.get("description"), str) or not level["description"].strip()
+                    or not isinstance(level.get("limitations"), list) or not 1 <= len(level["limitations"]) <= 32
+                    or any(not isinstance(value, str) or not value.strip() for value in level["limitations"])
+                    or level.get("processingVoxelSpacingMm") != [DETAIL_LEVELS[level["id"]][0]] * 3):
+                raise ValueError("Invalid registered processing-level declaration")
+            seen_levels.add(level["id"])
+    assets = detail["assets"]
+    expected = {entry["id"] for entry in volume["structures"]}
+    if (not isinstance(assets, list) or len(assets) > len(expected) * len(level_ids)
+            or not isinstance(detail.get("unavailable"), list) or len(detail["unavailable"]) > len(expected) * len(level_ids)):
+        raise ValueError("Unbounded progressive anatomical inventory")
+    selected, unavailable = set(), set()
+    for asset in assets:
+        identifier = asset["structureId"]
+        level_id = "fine-020" if legacy else asset.get("levelId")
+        if not isinstance(identifier, str) or level_id not in level_ids:
+            raise ValueError("Invalid progressive anatomical region or level")
+        pair = (identifier, level_id)
+        path = anatomy_asset_path(asset["assetUrl"], "atlas-volume")
+        size, digest = asset["glbBytes"], asset["glbSha256"]
+        spacing, prefix = DETAIL_LEVELS[level_id]
+        allowed = {f"digimouse-volume:{label}" for label in (range(3, 22) if level_id == "fine-020" else (12, 20))}
+        if (pair in selected or identifier not in expected or path in registry or not path.startswith(prefix)
+                or identifier not in allowed or path != f"{prefix}region-{identifier.rsplit(':', 1)[-1]}.glb"
+                or asset.get("coordinateFrameId") != VOLUME_FRAME or type(size) is not int
+                or not 20 <= size <= MAX_REGISTERED_GLB_BYTES or not isinstance(digest, str)
+                or not re.fullmatch(r"[a-f0-9]{64}", digest) or asset.get("processingVoxelSpacingMm") != [spacing] * 3):
+            raise ValueError("Invalid progressive anatomical asset binding")
+        selected.add(pair)
+        registry[path] = {"bytes": size, "sha256": digest, "ids": [identifier], "atlasId": volume["id"],
+                          "levelId": level_id, "coordinateFrameId": VOLUME_FRAME,
+                          "manifestPath": "public/atlas-volume/detail-index.json", "licensePath": "public/atlas-volume/LICENSE.md"}
+    for entry in detail["unavailable"]:
+        level_id = "fine-020" if legacy else entry.get("levelId")
+        identifier = entry["structureId"]
+        if (not isinstance(identifier, str) or level_id not in level_ids or identifier not in expected
+                or (identifier, level_id) in unavailable or not isinstance(entry.get("reason"), str) or not entry["reason"].strip()):
+            raise ValueError("Invalid unavailable detail inventory")
+        unavailable.add((identifier, level_id))
+    available_ids = {identifier for identifier, _level_id in selected}
+    structure_ids = [entry["id"] for entry in detail["structures"]]
+    expected_pairs = {(identifier, level_id) for identifier in expected for level_id in level_ids}
+    if (selected & unavailable or selected | unavailable != expected_pairs
+            or len(structure_ids) != len(set(structure_ids)) or set(structure_ids) != available_ids
+            or detail["statistics"]["structures"] != len(available_ids)
+            or (not legacy and detail["statistics"].get("assets") != len(assets))
+            or detail["statistics"]["glbBytesTotal"] != sum(asset["glbBytes"] for asset in assets)):
+        raise ValueError("Progressive detail coverage is inconsistent")
 
 
 def anatomy_registry(read) -> dict[str, dict]:
@@ -83,38 +157,7 @@ def anatomy_registry(read) -> dict[str, dict]:
     detail_path = "public/atlas-volume/detail-index.json"
     raw = read(detail_path, MAX_GLB_JSON_BYTES)
     if raw is not None:
-        detail = json.loads(raw)
-        if (volume is None or detail.get("schemaVersion") != "mousebio.volume-detail-index.v1"
-                or detail.get("atlasId") != volume["id"] or detail.get("coordinateFrame", {}).get("id") != VOLUME_FRAME
-                or detail.get("source", {}).get("archiveSha256") != VOLUME_ARCHIVE_SHA256
-                or detail.get("source", {}).get("license") != "CC-BY-SA-4.0"):
-            raise ValueError("Detail index does not bind to the registered volume")
-        assets = detail["assets"]
-        selected, unavailable = set(), set()
-        for asset in assets:
-            identifier = asset["structureId"]
-            path = anatomy_asset_path(asset["assetUrl"], "atlas-volume")
-            size, digest = asset["glbBytes"], asset["glbSha256"]
-            if (identifier in selected or identifier not in {entry["id"] for entry in volume["structures"]}
-                    or path in registry or not path.startswith("public/atlas-volume/detail/")
-                    or asset.get("coordinateFrameId") != VOLUME_FRAME or type(size) is not int
-                    or not 20 <= size <= MAX_REGISTERED_GLB_BYTES or not isinstance(digest, str)
-                    or not re.fullmatch(r"[a-f0-9]{64}", digest)):
-                raise ValueError("Invalid progressive anatomical asset binding")
-            selected.add(identifier)
-            registry[path] = {"bytes": size, "sha256": digest, "ids": [identifier], "atlasId": volume["id"],
-                              "coordinateFrameId": VOLUME_FRAME, "manifestPath": detail_path,
-                              "licensePath": "public/atlas-volume/LICENSE.md"}
-        for entry in detail.get("unavailable", []):
-            if entry["structureId"] in unavailable or not entry.get("reason"):
-                raise ValueError("Invalid unavailable detail inventory")
-            unavailable.add(entry["structureId"])
-        expected = {entry["id"] for entry in volume["structures"]}
-        if (selected & unavailable or selected | unavailable != expected
-                or {entry["id"] for entry in detail["structures"]} != selected
-                or detail["statistics"]["structures"] != len(assets)
-                or detail["statistics"]["glbBytesTotal"] != sum(asset["glbBytes"] for asset in assets)):
-            raise ValueError("Progressive detail coverage is inconsistent")
+        register_details(json.loads(raw), volume, registry)
     if sum(asset["bytes"] for asset in registry.values()) > MAX_REGISTERED_TOTAL_BYTES:
         raise ValueError("Registered anatomical assets exceed the total bound")
     return registry

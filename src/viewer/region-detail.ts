@@ -136,9 +136,9 @@ export class RegionDetailController {
     this.abort?.abort(); this.restore();
     if (!key || !asset) { this.status({ status: 'idle', structureId: null }); return; }
     const target = this.target(asset.structureId);
-    if (!target) { this.status({ status: 'failed', structureId: asset.structureId, message: 'The coarse region is unavailable.' }); return; }
+    if (!target) { this.status({ status: 'failed', structureId: asset.structureId, assetSha256: asset.glbSha256, message: 'The coarse region is unavailable.' }); return; }
     const abort = new AbortController(); this.abort = abort;
-    this.status({ status: 'loading', structureId: asset.structureId });
+    this.status({ status: 'loading', structureId: asset.structureId, assetSha256: asset.glbSha256 });
     let fine: THREE.BufferGeometry | undefined;
     try {
       assertRegionDetailBinding(asset, this.atlas);
@@ -151,13 +151,13 @@ export class RegionDetailController {
       this.active = { target, coarse, fine };
       fine = undefined;
       this.changed();
-      this.status({ status: 'ready', structureId: asset.structureId, triangles: asset.geometry.triangles,
+      this.status({ status: 'ready', structureId: asset.structureId, assetSha256: asset.glbSha256, triangles: asset.geometry.triangles,
         processingVoxelSpacingMm: asset.processingVoxelSpacingMm });
     } catch (error) {
       fine?.dispose();
       if (!this.disposed && sequence === this.sequence) {
         this.key = '';
-        this.status({ status: 'failed', structureId: asset.structureId,
+        this.status({ status: 'failed', structureId: asset.structureId, assetSha256: asset.glbSha256,
           message: error instanceof Error ? error.message : 'Detail loading failed; the coarse region is retained.' });
       }
     }

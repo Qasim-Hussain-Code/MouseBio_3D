@@ -108,6 +108,68 @@ async function openApp() {
   return view;
 }
 
+test('specimen and citation UI uses declared metadata rather than a hardcoded Digimouse description', async () => {
+  // Metadata-only software fixture. This does not represent a female geometry import.
+  const fixture = structuredClone(atlas);
+  fixture.specimen = { scientificName: 'Mus musculus', taxonomyId: 'NCBITaxon:10090', sex: 'female',
+    strain: 'Synthetic metadata strain', age: { value: 117, unit: 'days' }, mass: { value: 24.9, unit: 'g' },
+    scope: 'synthetic metadata coverage', count: 1, description: 'Synthetic specimen declaration for interface testing.',
+    sourceReference: 'synthetic-metadata-fixture' };
+  fixture.source.displayName = 'Synthetic declared reference';
+  fixture.source.citationLabel = 'Synthetic declared citation';
+  fixture.source.title = 'Synthetic declared source title';
+  fixture.source.doi = 'not a DOI'; fixture.source.url = 'javascript:alert(1)';
+  globalThis.fetch = (async (input: RequestInfo | URL) => { requests.push(String(input)); return new Response(JSON.stringify(fixture)); }) as typeof fetch;
+  const view = await openApp();
+  assert.ok(view.getByText('Mus musculus · female · 24.9 g'));
+  assert.equal(view.queryByText('Mus musculus · male · 28 g'), null);
+  assert.ok(view.getByText('Synthetic declared citation'));
+  assert.equal(view.queryByRole('link', { name: /View publication/ }), null);
+  fireEvent.click(view.getByRole('button', { name: 'Methods, sources and limitations' }));
+  const methods = within(view.getByRole('dialog'));
+  assert.ok(methods.getByText('Synthetic metadata strain'));
+  assert.ok(methods.getByText('117 days'));
+  assert.ok(methods.getByText('24.9 g'));
+  assert.equal(methods.queryByText(/28 g male/), null);
+});
+
+test('missing specimen attributes are shown as unknown in the interface', async () => {
+  const fixture = structuredClone(atlas);
+  delete fixture.specimen;
+  globalThis.fetch = (async (input: RequestInfo | URL) => { requests.push(String(input)); return new Response(JSON.stringify(fixture)); }) as typeof fetch;
+  const view = await openApp();
+  assert.ok(view.getByText('Unknown · Unknown · Unknown'));
+  fireEvent.click(view.getByRole('button', { name: 'Methods, sources and limitations' }));
+  const methods = view.getByRole('dialog');
+  assert.ok([...methods.querySelectorAll('dd')].every((item) => item.textContent === 'Unknown'));
+});
+
+test('native gland sampling is explicit and resets on region selection and saved view loading', async () => {
+  const view = await openApp(); expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  await view.findByText('21 visible regions');
+  fireEvent.click(view.getByRole('button', { name: /Lachrymal.*digimouse-volume:12/i }));
+  const baseView = await savedView(view);
+  const level = view.getByRole('combobox', { name: 'Selected surface processing level' }) as HTMLSelectElement;
+  assert.equal(level.options.length, 2);
+  assert.equal(level.value, 'fine-020');
+  fireEvent.change(level, { target: { value: 'source-010' } });
+  assert.ok(view.getByText('Finer selected surface (0.1 mm)'));
+  fireEvent.click(view.getByRole('checkbox', { name: 'Finer selected surface' }));
+  assert.equal((view.getByRole('checkbox', { name: 'Finer selected surface' }) as HTMLInputElement).checked, true);
+  fireEvent.click(view.getByRole('button', { name: 'Compare' }));
+  assert.equal((view.getByRole('combobox', { name: 'Selected surface processing level' }) as HTMLSelectElement).disabled, true);
+  assert.equal((view.getByRole('checkbox', { name: 'Finer selected surface' }) as HTMLInputElement).checked, false);
+  fireEvent.click(view.getByRole('button', { name: 'Anatomy' }));
+  fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [inputFile(JSON.stringify(baseView), 'base-view.json')] } });
+  await waitFor(() => assert.equal((view.getByRole('combobox', { name: 'Selected surface processing level' }) as HTMLSelectElement).value, 'fine-020'));
+  assert.equal((view.getByRole('checkbox', { name: 'Finer selected surface' }) as HTMLInputElement).checked, false);
+  fireEvent.change(view.getByRole('combobox', { name: 'Selected surface processing level' }), { target: { value: 'source-010' } });
+  fireEvent.click(view.getByRole('button', { name: /Heart.*digimouse-volume:9/ }));
+  assert.equal(view.queryByRole('combobox', { name: 'Selected surface processing level' }), null);
+  assert.ok(view.getByText('Finer selected surface (0.2 mm)'));
+});
+
 function inputFile(text: string, name = 'synthetic-dom-fixture.csv', size = new TextEncoder().encode(text).byteLength) {
   return { name, size, text: async () => text };
 }
@@ -201,7 +263,7 @@ test('four modes expose honest availability and retain pause, speed and process-
   fireEvent.click(view.getByRole('button', { name: 'Compare' }));
   assert.ok(view.getByRole('heading', { name: 'Compare experimental states' }));
   assert.equal(view.getAllByText(/WebGL could not start/).length, 2);
-  assert.ok(view.getByText(/Both panels use the same male reference geometry/));
+  assert.ok(view.getByText(/Both panels use the same selected reference geometry/));
   assert.equal(view.container.querySelector('.quantitative-legend'), null);
   fireEvent.click(view.getByRole('button', { name: 'Living' }));
   assert.ok(view.getByRole('button', { name: 'Play physiology' }));
