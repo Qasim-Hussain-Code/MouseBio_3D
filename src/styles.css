@@ -66,3 +66,9 @@
 .group-limitations summary { cursor: pointer; }
 .group-limitations[open] { flex-basis: 100%; padding: 10px 14px; border: 1px solid #dce4d7; border-radius: 5px; background: #f2f5ee; }
 .group-limitations ul { margin: 6px 0 0; padding-left: 18px; }
+
+.native-surface-record code { font-size: 9px; overflow-wrap: anywhere; }
+.native-surface-record details { margin-top: 12px; }
+.native-surface-record summary { cursor: pointer; font-size: 10px; line-height: 1.7; }
+.native-surface-record details p { font-size: 10px; line-height: 1.7; margin-top: 10px; }
+.native-surface-record dd { min-width: 0; overflow-wrap: anywhere; }

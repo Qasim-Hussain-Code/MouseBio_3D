@@ -39,3 +39,11 @@ The converter accepts `--archive`, `--metadata` and `--output` for controlled lo
 The source assessment found no nonfinite coordinates, degenerate triangles or duplicate triangles. Exact-position topology checks classified 23 of the 77 surfaces as closed under the executed conditions. The remaining surfaces retain recorded boundary, nonmanifold, winding or vertex-link defects. The representation does not silently remove these defects. Source-native signed volume or length has unknown physical units and is not a calibrated biological measurement.
 
 Asset checks verify the binary layout, source inventory, per-region counts, coordinate bounds, finite positions and display normals, valid indices and the declared source-native frame. They distinguish preservation of known source defects from an assertion that every mesh is closed. Actual browser rendering, representative GPU performance, self-intersection freedom, independent anatomical review and physiological validation require separate evidence. Camera magnification adds no biological resolution.
+
+## Selected-surface inspection
+
+The structure inspector exposes the exact source filename, zero-based serialization index, source EMAPA identifier and exact anatomy-index match separately. The unannotated reference surface receives no inferred identity. Index-unmatched source filenames do not acquire an anatomy-index label by array order or name similarity.
+
+Indexed vertex and triangle counts and expandable topology diagnostics come from the reviewed manifest. Boundary edges, nonmanifold edges, winding conflicts, noncyclic vertex links, degenerate triangles, duplicate triangles and mesh components retain their source-condition meaning. A closed classification refers only to the executed numerical conditions; it does not establish self-intersection freedom or anatomical accuracy. Components describe the indexed mesh rather than biological connectivity. No physical length, area or volume is reported.
+
+The domain summary requires the reviewed asset checksum, archive, frame and source inventory and rejects malformed records. The displayed summary and nested topology are immutable copies. The record updates with selection and is unavailable for other references. This interface adds no geometry, repair, coordinate conversion, ontology certainty or external transmission.

@@ -863,3 +863,36 @@ test('volume brain and head groups retain their own IDs across modes and view re
   assert.equal((view.getByRole('combobox', { name: 'Source anatomy group' }) as HTMLSelectElement).value, '');
   assert.equal((await savedView(view)).hidden.length, 15);
 });
+
+
+test('native source inspection follows selection without inferring index matches or changing the view background', async () => {
+  const view = await openApp(); expectedRequests.push('/atlas-ema147/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'ema147-native-v1' } });
+  await view.findByText('77 visible regions');
+  fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  fireEvent.click(view.getByRole('button', { name: /optic stalk.*ema147:EMAPA:16678/i }));
+  let record = within(view.getByRole('region', { name: 'Native surface record' }));
+  assert.ok(record.getByText('Surfaces/EMAPA16678_optic_stalk.stl'));
+  assert.ok(record.getByText('EMAPA:16678'));
+  assert.ok(record.getByText('Label 39 in source index'));
+  assert.ok(record.getByText('Closed under executed numerical checks.'));
+  fireEvent.click(record.getByText('Recorded topology counts'));
+  assert.ok(record.getByText('Mesh components'));
+  assert.ok(record.getByText('Physical mesh units are unknown. Numerical mesh checks do not establish anatomical accuracy.'));
+  fireEvent.click(view.getByRole('button', { name: /midbrain ventricular layer.*ema147:EMAPA:16979/i }));
+  record = within(view.getByRole('region', { name: 'Native surface record' }));
+  assert.ok(record.getByText('EMAPA:16979'));
+  assert.ok(record.getByText('No exact anatomy-index match'));
+  assert.equal(record.queryByText('Label 39 in source index'), null);
+  fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'reference' } });
+  record = within(view.getByRole('region', { name: 'Native surface record' }));
+  assert.ok(record.getByText('Surfaces/reference.stl'));
+  assert.ok(record.getByText('Unannotated in source filename'));
+  assert.ok(record.getByText('No exact anatomy-index match'));
+  assert.equal((await savedView(view)).background, 'white');
+  assert.equal((await savedView(view)).selected, 'ema147:reference');
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  assert.equal(view.queryByRole('region', { name: 'Native surface record' }), null);
+});
