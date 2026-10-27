@@ -37,6 +37,7 @@ const atlasText = await readFile(new URL('../public/atlas/atlas.json', import.me
 const atlas = JSON.parse(atlasText) as Atlas;
 const volumeText = await readFile(new URL('../public/atlas-volume/atlas.json', import.meta.url), 'utf8');
 const hindlimbText = await readFile(new URL('../public/atlas-hindlimb/atlas.json', import.meta.url), 'utf8');
+const ema147Text = await readFile(new URL('../public/atlas-ema147/atlas.json', import.meta.url), 'utf8');
 
 const originalFetch = globalThis.fetch;
 const originalConsoleError = console.error;
@@ -57,8 +58,8 @@ beforeEach(() => {
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = String(input);
     requests.push(url);
-    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
-    return new Response(url === '/atlas/atlas.json' ? atlasText : url === '/atlas-volume/atlas.json' ? volumeText : hindlimbText, { status: 200, headers: { 'Content-Type': 'application/json' } });
+    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    return new Response(url === '/atlas/atlas.json' ? atlasText : url === '/atlas-volume/atlas.json' ? volumeText : url === '/atlas-hindlimb/atlas.json' ? hindlimbText : ema147Text, { status: 200, headers: { 'Content-Type': 'application/json' } });
   }) as typeof fetch;
   console.error = (...args: unknown[]) => {
     if (typeof args[0] === 'string' && /^THREE\.WebGLRenderer: (?:THREE\.WebGLRenderer: )?Error creating WebGL context/.test(args[0])) {
@@ -210,6 +211,46 @@ test('regional female hindlimb uses its own anatomy, source groups, observations
   await view.findByText('44 visible regions');
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), imported);
+});
+
+test('EMA147 retains unknown units, conflicting age estimates and source-bound observations across reference switches', async () => {
+  const view = await openApp(); expectedRequests.push('/atlas-ema147/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'ema147-native-v1' } });
+  await view.findByText('77 visible regions');
+  assert.ok(view.getByText(/^Native source coordinates/));
+  assert.ok(view.getByText('TS23'));
+  assert.ok(view.getByRole('link', { name: 'E15.0 (estimated)' }));
+  assert.ok(view.getByRole('link', { name: '14.5 dpc' }));
+  assert.ok(view.getByText('Unknown · Unknown · Unknown'));
+  fireEvent.click(view.getByRole('button', { name: /Systems 14/ }));
+  assert.ok(view.getByText(/Anatomical system classifications are not reviewed/));
+  fireEvent.click(view.getByRole('button', { name: /Structures 77/ }));
+  fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'vessels' } });
+  assert.ok(view.getByText('3 visible regions'));
+  const nativeView = await savedView(view);
+  assert.equal(nativeView.assetSha256, JSON.parse(ema147Text).statistics.assetSha256);
+  assert.equal(nativeView.coordinateFrameId, 'emouseatlas-ema147-stl-native-v1');
+  fireEvent.click(view.getByRole('button', { name: 'Living' }));
+  assert.ok(view.getByText('No physiological motion is available for this reference.'));
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const nativeCsv = syntheticCsv.replaceAll('digimouse:3', 'ema147:EMAPA:16098').replaceAll('digimouse:4', 'ema147:EMAPA:16105');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(nativeCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  const local = JSON.parse(await exportedBlobs.at(-1)!.text());
+  assert.ok(local.measurements.every((row: { structureId: string }) => row.structureId.startsWith('ema147:EMAPA:')));
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  assert.equal(view.queryByText('8 observations · 4 biological subject IDs · 4 groups'), null);
+  fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [inputFile(JSON.stringify(nativeView), 'native-view.json')] } });
+  await view.findByRole('alert');
+  assert.equal((await savedView(view)).atlasId, atlas.id);
+  expectedRequests.push('/atlas-ema147/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'ema147-native-v1' } });
+  await view.findByText('77 visible regions');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), local);
 });
 
 function inputFile(text: string, name = 'synthetic-dom-fixture.csv', size = new TextEncoder().encode(text).byteLength) {

@@ -203,15 +203,25 @@ def publication_checker(root: Path) -> tuple[dict, types.ModuleType]:
         # Compiling source directly avoids writing bytecode into the input tree.
         exec(compile(read_regular(root, "scripts/check_publication.py", MAX_SOURCE_BYTES),
                      "<publication checker>", "exec"), checker.__dict__)
-        if not all(callable(getattr(checker, name, None)) for name in ["inspect_content", "anatomy_registry", "inspect_registered_glb"]):
+        if not all(callable(getattr(checker, name, None)) for name in ["inspect_content", "anatomy_registry", "inspect_registered_asset"]):
             raise ReleaseError("publication_check_incomplete")
     except (OSError, ValueError, subprocess.TimeoutExpired) as error:
         raise ReleaseError("publication_check_incomplete") from error
     return report, checker
 
 
-def inspect_records(records: list[ReleaseFile], checker: types.ModuleType) -> None:
+def inspect_records(records: list[ReleaseFile], checker: types.ModuleType, registry: dict | None = None) -> None:
     for record in records:
+        path = record.name if record.name.startswith("public/") else "public/" + record.name
+        if registry and path in registry:
+            try:
+                metadata = checker.inspect_registered_asset(record.data, registry[path])
+                findings = checker.scan_text(metadata.decode("utf-8"), record.name, "release-input")
+            except (ValueError, TypeError, KeyError, AttributeError, UnicodeError):
+                raise ReleaseError("registered_anatomy_asset_mismatch") from None
+            if any(finding.get("severity") in {"error", "warning"} for finding in findings):
+                raise ReleaseError("publication_content_rejected")
+            continue
         findings, reviewed = checker.inspect_content(record.data, record.name, "release-input")
         if not reviewed or any(finding.get("severity") in {"error", "warning"} for finding in findings):
             raise ReleaseError("publication_content_rejected")
@@ -283,8 +293,8 @@ def verify_registered_assets(source: list[ReleaseFile], web: list[ReleaseFile], 
         if path not in source_map or path not in web_map:
             raise ReleaseError("registered_anatomy_asset_missing")
         try:
-            checker.inspect_registered_glb(source_map[path], binding)
-            checker.inspect_registered_glb(web_map[path], binding)
+            checker.inspect_registered_asset(source_map[path], binding)
+            checker.inspect_registered_asset(web_map[path], binding)
         except (ValueError, TypeError, KeyError, AttributeError):
             raise ReleaseError("registered_anatomy_asset_mismatch") from None
 
@@ -352,8 +362,8 @@ def prepare_release(root: Path, output: Path) -> dict:
     web = web_files(root, asset, {path.removeprefix("public/") for path in registry})
     verify_anatomy(source, web, asset, anatomy)
     verify_registered_assets(source, web, registry, checker)
-    inspect_records(source, checker)
-    inspect_records(web, checker)
+    inspect_records(source, checker, registry)
+    inspect_records(web, checker, registry)
     if inventory != git(root, "ls-files", "--stage", "-z"):
         raise ReleaseError("tracked_inventory_changed")
     clean_tree(root)

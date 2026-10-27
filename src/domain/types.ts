@@ -22,8 +22,8 @@ export type BiologicalScale = 'organism' | 'system' | 'organ' | 'tissue' | 'cell
 export type ModelClassification = 'illustrative' | 'parameterized' | 'validated';
 
 export interface SpecimenMetadata {
-  scientificName: 'Mus musculus';
-  taxonomyId: 'NCBITaxon:10090';
+  scientificName?: 'Mus musculus';
+  taxonomyId?: 'NCBITaxon:10090';
   sex: 'male' | 'female' | 'unknown';
   strain?: string;
   age?: { value: number; unit: string };
@@ -34,6 +34,7 @@ export interface SpecimenMetadata {
   count?: number;
   description?: string;
   developmentalStage?: { label: string; reference: string };
+  ageClaims?: { value: number; unit: string; sourceReference: string; label?: string }[];
   sourceReference: string;
 }
 

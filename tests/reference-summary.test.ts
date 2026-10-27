@@ -50,6 +50,26 @@ test('missing metadata stays unknown even with a familiar atlas ID or descriptiv
   });
 });
 
+test('a developmental stage and conflicting age claims do not supply an age, species, sex, mass or specimen count', () => {
+  const summary = buildReferenceSummary(atlas({ specimen: {
+    sex: 'unknown', strain: 'C57BL6', developmentalStage: { label: 'TS23', reference: 'https://example.org/source' },
+    sourceReference: 'https://example.org/source',
+  }, ageClaims: [
+    { value: 15, unit: 'embryonic days', label: 'Estimated source age', sourceReference: 'https://example.org/deposit' },
+    { value: 14.5, unit: 'dpc', label: 'Another source age', sourceReference: 'https://example.org/summary' },
+  ] }));
+  for (const key of ['age', 'scientificName', 'sex', 'mass', 'count'] as const) assert.equal(summary.specimen[key], 'Unknown');
+  assert.deepEqual(summary.developmental, { stage: 'TS23', ageClaims: [
+    { age: '15 embryonic days', source: 'Estimated source age', url: 'https://example.org/deposit' },
+    { age: '14.5 dpc', source: 'Another source age', url: 'https://example.org/summary' },
+  ] });
+  const unsafe = buildReferenceSummary(atlas({ ageClaims: [
+    { value: -1, unit: 'dpc', label: 'Invalid quantity', sourceReference: 'https://example.org/source' },
+    { value: 15, unit: 'dpc', label: 'Unsafe source link', sourceReference: 'javascript:alert(1)' },
+  ] }));
+  assert.deepEqual(unsafe.developmental.ageClaims, [{ age: '15 dpc', source: 'Unsafe source link', url: null }]);
+});
+
 test('bibliographic fallback assembles only declared authors, year and title', () => {
   const summary = buildReferenceSummary(atlas({ source: {
     authors: ['First Example', 'Second Example'], publicationYear: 2020, title: 'Declared source title',

@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "mousebio.ema147-source-metadata.v1",
+  "sourceId": "emouseatlas-ema147-2017",
+  "doi": "10.7488/ds/2167",
+  "repositoryUrl": "https://datashare.ed.ac.uk/items/5016a5d4-2017-4fdc-a934-964fc2b542ec/full",
+  "metadataApi": "https://datashare.ed.ac.uk/server/api/core/items/5016a5d4-2017-4fdc-a934-964fc2b542ec",
+  "citation": {
+    "authors": ["Seth Ruffins", "Russell Jacobs", "Chris Armit", "Nick Burton", "Bill Hill", "Richard Baldock"],
+    "year": 2017,
+    "title": "3D mouse embryo model: EMA147, Stage TS23, Age E15.0 (est)",
+    "publisher": "University of Edinburgh. College of Medicine and Veterinary Medicine"
+  },
+  "license": {"identifier": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/", "evidence": "The repository item declares Creative Commons Attribution 4.0 International Public License."},
+  "archive": {
+    "filename": "Surfaces.zip",
+    "url": "https://datashare.ed.ac.uk/server/api/core/bitstreams/7829c9db-bf18-4d69-af2b-5d10be9afa18/content",
+    "bytes": 11393742,
+    "repositoryMd5": "a05d23a90e7ff8368bfaa77238a897d8",
+    "sha256": "efd5df6df9b69cf21a62d1f4245ecc5419ee4e5c4c72635f444ce3fba5b7971c",
+    "surfaceFiles": 77,
+    "expandedBytes": 71761523,
+    "triangles": 374725
+  },
+  "specimenDeclarations": {
+    "sourceSpeciesLabel": "mouse",
+    "model": "embryo",
+    "stage": "TS23",
+    "strain": "C57BL6",
+    "sex": null,
+    "mass": null,
+    "specimenCount": null,
+    "age": null,
+    "ageClaims": [
+      {"description": "E15.0, estimated", "source": "https://datashare.ed.ac.uk/items/5016a5d4-2017-4fdc-a934-964fc2b542ec/full"},
+      {"description": "15 dpc", "source": "https://www.emouseatlas.org/eAtlasViewer_ema/application/ema/anatomy/EMA147.php"},
+      {"description": "14.5 dpc", "source": "https://emouseatlas.org/emap/ema/modelsummary/modelsummary.html"}
+    ],
+    "ageConflictResolved": false
+  },
+  "imageDeclarations": {
+    "method": "MRI, 11.7 Tesla, 4C",
+    "anatomicalDelineation": "Full 3D",
+    "voxelSpacingMicrometres": [80, 80, 80],
+    "preparation": "4% PFA",
+    "embedding": "Fomblin",
+    "surfaceAccuracy": null
+  },
+  "sourceTextChecksums": {
+    "model_info.txt": {"bytes": 448, "sha256": "cf37ac2de4f7ce79cfeb912dda70257ee06a561511ef54a18a7d89fa69cbeb21"},
+    "README.txt": {"bytes": 2203, "sha256": "6e68704cf516682243460f835179124f84d93afae7e4ca7d5901f8c1d8c0c671"},
+    "TS23_EMA147_anatomy.txt": {"bytes": 5324, "sha256": "970f2870a1e56603b6be75225de1ec9c0a6f0ec91dfb16bea73849c0155bac1b"}
+  },
+  "annotationInventory": {
+    "indexLabels": 76,
+    "emapaLabelledSurfaceFiles": 76,
+    "exactMatchingIdentifiers": 68,
+    "indexOnlyIdentifiers": ["EMAPA:16057", "EMAPA:16978", "EMAPA:17023", "EMAPA:19134", "EMAPA:25765", "EMAPA:32710", "EMAPA:32718", "EMAPA:32740"],
+    "surfaceOnlyIdentifiers": ["EMAPA:16979", "EMAPA:17296", "EMAPA:17533", "EMAPA:17535", "EMAPA:17674", "EMAPA:17795", "EMAPA:17888", "EMAPA:18143"],
+    "unannotatedFile": "reference.stl",
+    "mappingByFileOrderAccepted": false,
+    "independentOntologyReview": false
+  },
+  "coordinateInterpretation": {
+    "frameId": "emouseatlas-ema147-stl-native-v1",
+    "physicalUnits": null,
+    "numericScale": 1,
+    "acceptedStlToImageTransform": null,
+    "anatomicalOrientationVerified": false,
+    "physicalCalibrationVerified": false,
+    "acceptedCrossReferenceRegistration": null
+  },
+  "sourceTopology": {
+    "closedUnderExecutedChecks": 23,
+    "surfaces": 77,
+    "nonfiniteCoordinates": 0,
+    "degenerateTriangles": 0,
+    "duplicateTriangles": 0,
+    "boundaryEdges": 1411,
+    "nonmanifoldEdges": 2285,
+    "inconsistentWindingEdges": 11,
+    "noncyclicVertexLinks": 4139,
+    "silentRepairApplied": false
+  },
+  "limitations": [
+    "Physical STL units and image linkage are not established by MRI voxel spacing.",
+    "Conflicting source age claims remain unresolved; sex, mass and explicit specimen count remain unknown.",
+    "The surface and label-table inventories differ; no correspondence is inferred from order.",
+    "Source topology defects are retained and disclosed rather than silently repaired.",
+    "Source-native visualization does not establish calibrated measurement, adult anatomy, registration or physiological validation."
+  ]
+}

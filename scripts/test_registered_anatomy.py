@@ -1,4 +1,5 @@
-"""Synthetic checks for bounded metadata review of larger registered GLBs."""
+"""Bounded registered-asset checks with synthetic GLBs and the actual native PLY."""
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -11,7 +12,7 @@ from check_publication import (
     VOLUME_ARCHIVE_SHA256, VOLUME_FRAME, HINDLIMB_PDF_SHA256, HINDLIMB_JSON_SHA256,
     HINDLIMB_PRC_SHA256, HINDLIMB_DECODER_COMMIT,
     HINDLIMB_FRAME, HINDLIMB_NAMES, anatomy_registry, audit,
-    inspect_registered_glb,
+    inspect_registered_glb, inspect_registered_asset, ply_metadata,
 )
 
 
@@ -121,11 +122,101 @@ def registry_from(files):
     return anatomy_registry(read)
 
 
+def ema147_fixture_files():
+    """Reuse the reviewed asset in isolated repository/packaging integration tests."""
+    root = Path(__file__).resolve().parents[1]
+    names = ['public/atlas-ema147/atlas.json', 'public/atlas-ema147/ema147-native.ply',
+             'public/atlas-ema147/LICENSE.md', 'data/provenance/ema147-source-index.txt']
+    return {name: (root / name).read_bytes() for name in names}
+
+
 def git(root, *arguments):
     return subprocess.run(["git", "-C", str(root), *arguments], check=True, capture_output=True).stdout
 
 
 class RegisteredAnatomyTests(unittest.TestCase):
+    def test_actual_native_ply_preserves_unitless_source_binding(self):
+        files = ema147_fixture_files()
+        path = 'public/atlas-ema147/ema147-native.ply'
+        registry = registry_from(files)
+        self.assertEqual(list(registry), [path])
+        binding = registry[path]
+        self.assertEqual(binding['format'], 'ply-native-v1')
+        self.assertEqual((binding['vertices'], binding['triangles'], len(binding['regions'])), (185779, 374725, 77))
+        header = inspect_registered_asset(files[path], binding)
+        self.assertLessEqual(len(header), 16 * 1024)
+        self.assertIn(b'units unknown', header)
+        self.assertEqual(header.count(b'comment region '), 77)
+
+    def test_native_manifest_cannot_invent_units_identity_or_resolved_source_claims(self):
+        original = ema147_fixture_files()
+        path = 'public/atlas-ema147/atlas.json'
+        changes = [
+            lambda doc: doc['coordinateFrame'].update(sourceUnits='millimetres'),
+            lambda doc: doc['coordinateFrame'].update(sourceToAssetScale=0.00008),
+            lambda doc: doc['coordinateFrame'].update(unitsVerified=True),
+            lambda doc: doc['coordinateFrame'].update(physicalCalibrationVerified=True),
+            lambda doc: doc['source'].update(archiveSha256='0' * 64),
+            lambda doc: doc['source'].update(anatomyIndexSha256='0' * 64),
+            lambda doc: doc['source'].update(license='CC-BY-SA-4.0'),
+            lambda doc: doc['specimen'].update(sex='female'),
+            lambda doc: doc['specimen'].update(age={'value':15,'unit':'days'}),
+            lambda doc: doc['specimen'].update(scientificName='Mus musculus'),
+            lambda doc: doc['specimen'].update(taxonomyId='NCBITaxon:10090'),
+            lambda doc: doc.update(ageConflictResolved=True),
+            lambda doc: doc['ageClaims'].pop(),
+            lambda doc: doc['sourceInventoryComparison']['indexOnlyIdentifiers'].clear(),
+            lambda doc: doc['structures'][0].update(id='ema147:EMAPA:1'),
+            lambda doc: doc['structures'][0].update(sourceFile='Surfaces/EMAPA1_replacement.stl'),
+            lambda doc: doc['structures'][0].update(sourceRegionIndex=1),
+            lambda doc: doc['structures'][0].update(systems=['skeletal']),
+            lambda doc: doc['structures'][0]['geometry'].update(vertexOffset=1),
+            lambda doc: doc['statistics'].update(glbSha256=doc['statistics']['assetSha256']),
+            lambda doc: doc['processing'].update(meshRepair=True),
+            lambda doc: doc['statistics']['sourceTopology'].update(boundaryEdges=0),
+        ]
+        for case,change in enumerate(changes):
+            with self.subTest(case=case):
+                files = dict(original); document = json.loads(files[path]); change(document)
+                files[path] = json.dumps(document).encode()
+                with self.assertRaises(ValueError): registry_from(files)
+        for missing in ('public/atlas-ema147/LICENSE.md','data/provenance/ema147-source-index.txt'):
+            files = dict(original); files.pop(missing)
+            with self.assertRaises(ValueError): registry_from(files)
+
+    def test_native_ply_rejects_reassigned_comments_vertices_faces_and_header(self):
+        files = ema147_fixture_files(); path = 'public/atlas-ema147/ema147-native.ply'
+        original = files[path]; binding = registry_from(files)[path]
+        header, vertices, _triangles = ply_metadata(original)
+        start = len(header); face_start = start + vertices * 28
+        cases = []
+        changed = bytearray(original); struct.pack_into('<f',changed,start,float('nan')); cases.append(changed)
+        changed = bytearray(original); struct.pack_into('<f',changed,start + 12,3); cases.append(changed)
+        changed = bytearray(original); struct.pack_into('<I',changed,start + 24,1); cases.append(changed)
+        changed = bytearray(original); changed[face_start] = 4; cases.append(changed)
+        changed = bytearray(original); struct.pack_into('<I',changed,face_start + 1,vertices); cases.append(changed)
+        cases.append(original.replace(b'property float x\n',b'property double x\n',1))
+        cases.append(original.replace(b'comment region 0 ema147:',b'comment region 0 changed:',1))
+        cases.append(original.replace(b'element vertex ',b'comment file:///unreviewed\nelement vertex ',1))
+        cases.append(original + b'\0')
+        for changed in cases:
+            with self.subTest(size=len(changed)):
+                altered = copy.deepcopy(binding); altered.update(bytes=len(changed), sha256=hashlib.sha256(changed).hexdigest())
+                with self.assertRaises(ValueError): inspect_registered_asset(bytes(changed), altered)
+
+    def test_history_accepts_pre_native_and_native_source_snapshots(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            git(root,'init','--quiet'); git(root,'config','user.name','Qasim Hussain')
+            git(root,'config','user.email','fixture' + '@' + 'users.noreply.github.com')
+            for files in (volume_fixture_files(4, multi_level=True), ema147_fixture_files()):
+                for name,data in files.items():
+                    path = root / name; path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(data)
+                git(root,'add','.'); git(root,'commit','--quiet','-m','update_fixture')
+            report = audit(root,history=True)
+            self.assertEqual(report['errorCount'] + report['warningCount'],0,report)
+            self.assertEqual(report['reachableCommits'],2)
+
     def test_hindlimb_registration_binds_names_indices_units_and_attribution(self):
         files = hindlimb_fixture_files()
         path = "public/atlas-hindlimb/charles2016-hindlimb.glb"
@@ -339,11 +430,13 @@ class RegisteredAnatomyTests(unittest.TestCase):
             root = Path(directory)
             git(root, "init", "--quiet")
             (root / "unknown.glb").write_bytes(synthetic_glb(["synthetic:1"]))
+            (root / "unknown.ply").write_bytes(b"ply\nformat binary_little_endian 1.0\nend_header\n")
             (root / "AGENTS.md").write_text("Synthetic internal instructions.\n")
             git(root, "add", ".")
             report = audit(root)
             types = {finding["type"] for finding in report["findings"]}
             self.assertIn("unregistered-or-invalid-anatomy-asset", types)
+            self.assertEqual(sum(item['type'] == 'unregistered-or-invalid-anatomy-asset' for item in report['findings']),2)
             self.assertIn("private-input-path-tracked", types)
 
 

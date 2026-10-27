@@ -1,16 +1,13 @@
 import * as THREE from 'three';
 import type { Atlas } from '../domain/types';
-import { assertRegionDetailBinding, isLocalGlbPath, type RegionDetailAsset, type RegionDetailStatus } from './region-detail-registry';
+import { assertRegionDetailBinding, type RegionDetailAsset, type RegionDetailStatus } from './region-detail-registry';
+import { fetchBoundAnatomyBytes } from './asset-fetch';
 export { buildRegionDetailAssets, isLocalGlbPath } from './region-detail-registry';
 export type { RegionDetailAsset, RegionDetailStatus } from './region-detail-registry';
 
-const MAX_BYTES = 80 * 1024 * 1024;
 function record(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
     && [Object.prototype, null].includes(Object.getPrototypeOf(value));
-}
-function checksum(value: unknown): value is string {
-  return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 }
 /** Refuse external resources before GLTFLoader can resolve them. */
 export function inspectInternalGlb(bytes: ArrayBuffer): Record<string, unknown> {
@@ -47,28 +44,9 @@ export function inspectInternalGlb(bytes: ArrayBuffer): Record<string, unknown> 
 /** Bounded same-origin request with decoded byte and SHA-256 checks. No research data is sent. */
 export async function fetchBoundGlb(url: string, expectedBytes: number, expectedHash: string, signal: AbortSignal,
   fetcher: typeof fetch = fetch): Promise<ArrayBuffer> {
-  if (!isLocalGlbPath(url) || !Number.isSafeInteger(expectedBytes) || expectedBytes < 28 || expectedBytes > MAX_BYTES
-      || !checksum(expectedHash)) throw new Error('Invalid local anatomical asset binding.');
-  const response = await fetcher(url, { signal, credentials: 'same-origin', redirect: 'error' });
-  if (!response.ok || response.type === 'opaque' || !response.body) throw new Error('The local anatomical asset could not be read.');
-  const bytes = new Uint8Array(expectedBytes);
-  const reader = response.body.getReader();
-  let offset = 0;
-  try {
-    while (true) {
-      if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (offset + value.byteLength > expectedBytes) throw new Error('The anatomical asset exceeds its declared byte limit.');
-      bytes.set(value, offset); offset += value.byteLength;
-    }
-  } catch (error) { await reader.cancel().catch(() => {}); throw error; }
-  finally { reader.releaseLock(); }
-  if (offset !== expectedBytes) throw new Error('The anatomical asset byte count does not match its registry.');
-  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map((value) => value.toString(16).padStart(2, '0')).join('');
-  if (hash !== expectedHash) throw new Error('The anatomical asset checksum does not match its registry.');
-  inspectInternalGlb(bytes.buffer);
-  return bytes.buffer;
+  const bytes = await fetchBoundAnatomyBytes(url, expectedBytes, expectedHash, signal, 'glb', fetcher);
+  inspectInternalGlb(bytes);
+  return bytes;
 }
 
 export async function loadRegionDetailGeometry(asset: RegionDetailAsset, atlas: Atlas, signal: AbortSignal,

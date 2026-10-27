@@ -12,7 +12,7 @@ import zipfile
 
 from prepare_release import ReleaseError, prepare_release, relative_name
 from check_publication import audit
-from test_registered_anatomy import hindlimb_fixture_files, volume_fixture_files
+from test_registered_anatomy import ema147_fixture_files, hindlimb_fixture_files, volume_fixture_files
 
 
 def git(root, *arguments):
@@ -58,6 +58,35 @@ def fixture():
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_native_ply_and_its_attribution_are_preserved_in_both_archives(self):
+        with fixture() as root:
+            files = ema147_fixture_files()
+            for name,data in files.items():
+                path = root / name; path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(data)
+            git(root,'add','.'); git(root,'commit','--quiet','-m','add_native_fixture')
+            shutil.copytree(root/'public',root/'dist',dirs_exist_ok=True)
+            release = prepare_release(root,Path('.publication/native'))
+            self.assertEqual(release['registeredAnatomy']['assets'],2)
+            for kind in ('source','web'):
+                archive = root/'.publication/native'/release['artifacts'][kind]['file']
+                with zipfile.ZipFile(archive) as zipped:
+                    for path,expected in files.items():
+                        if kind == 'web' and not path.startswith('public/'):
+                            self.assertNotIn(path,zipped.namelist()); continue
+                        name = 'MouseBio_3D-1.2.3/' + path if kind == 'source' else path.removeprefix('public/')
+                        self.assertEqual(zipped.read(name),expected)
+
+    def test_native_web_tampering_is_rejected_before_packaging(self):
+        for changed_name in ('atlas-ema147/ema147-native.ply','atlas-ema147/LICENSE.md'):
+            with self.subTest(path=changed_name), fixture() as root:
+                for name,data in ema147_fixture_files().items():
+                    path = root/name; path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(data)
+                git(root,'add','.'); git(root,'commit','--quiet','-m','add_native_fixture')
+                shutil.copytree(root/'public',root/'dist',dirs_exist_ok=True)
+                (root/'dist'/changed_name).write_bytes(b'Changed native release input')
+                with self.assertRaises(ReleaseError): prepare_release(root,Path('.publication/native'))
+                self.assertFalse((root/'.publication').exists())
+
     def test_hindlimb_and_its_distinct_license_are_preserved_in_both_archives(self):
         with fixture() as root:
             files = hindlimb_fixture_files()

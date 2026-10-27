@@ -1,5 +1,6 @@
 import { SYSTEMS, type Atlas, type DatasetMetadata, type ExperimentalMeasurement, type SystemId } from './types';
 import { exportExperimentalJson, parseExperimentalJson, type ImportOptions } from './experimental';
+import { atlasAssetSha256 } from './atlas-asset';
 
 export const MAX_ANATOMY_REFERENCES = 32;
 export type VoxelSpacingMm = readonly [number, number, number];
@@ -186,12 +187,13 @@ export function getReference(catalog: readonly AnatomyReference[], id: string): 
 }
 
 function atlasBinding(atlas: Atlas): AtlasBinding | null {
-  if (!identifier(atlas?.id) || !identifier(atlas?.coordinateFrame?.id) || !checksum(atlas?.statistics?.glbSha256)
+  const assetHash = atlas && atlasAssetSha256(atlas);
+  if (!identifier(atlas?.id) || !identifier(atlas?.coordinateFrame?.id) || !assetHash
       || !Array.isArray(atlas.structures) || !atlas.structures.length
       || atlas.structures.some((structure) => !record(structure) || !identifier(structure.id)
         || !Array.isArray(structure.systems) || !structure.systems.every((system) => typeof system === 'string' && SYSTEM_IDS.has(system)))
       || new Set(atlas.structures.map((structure) => structure.id)).size !== atlas.structures.length) return null;
-  return { atlasId: atlas.id, assetSha256: atlas.statistics.glbSha256, coordinateFrameId: atlas.coordinateFrame.id,
+  return { atlasId: atlas.id, assetSha256: assetHash, coordinateFrameId: atlas.coordinateFrame.id,
     regionIds: Object.freeze(atlas.structures.map((structure) => structure.id).sort()) };
 }
 

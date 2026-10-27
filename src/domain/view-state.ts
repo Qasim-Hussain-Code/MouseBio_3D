@@ -1,5 +1,6 @@
 import type { Atlas, ExplorationMode } from './types';
 import { cameraPoseErrors, type CameraPose, type Vector3Tuple } from './camera-pose';
+import { atlasAssetSha256 } from './atlas-asset';
 
 export const VIEW_STATE_SCHEMA_VERSION = 'mousebio.view.v1' as const;
 export const MAX_VIEW_STATE_BYTES = 1024 * 1024;
@@ -80,7 +81,7 @@ function validCameraPose(value: unknown, errors: string[]): value is ViewCameraP
 }
 
 function binding(atlas: Atlas): Omit<ViewStateDocument, keyof ViewState> {
-  const hash = atlas.statistics.glbSha256;
+  const hash = atlasAssetSha256(atlas);
   const frame = atlas.coordinateFrame.id;
   if (typeof atlas.id !== 'string' || !atlas.id || typeof hash !== 'string' || !/^[a-f0-9]{64}$/.test(hash)
       || typeof frame !== 'string' || !frame) {

@@ -1,6 +1,6 @@
 # Technical architecture
 
-MouseBio_3D uses one versioned anatomical reference across four exploration modes. Its initial implementation is a static browser application. The local server serves application code and public reference assets; imported research files are read by browser JavaScript and are not uploaded to that server.
+MouseBio_3D uses one selected versioned anatomical reference at a time across four exploration modes. Its initial implementation is a static browser application. The local server serves application code and public reference assets; imported research files are read by browser JavaScript and are not uploaded to that server.
 
 ## Stack decisions
 
@@ -8,7 +8,7 @@ MouseBio_3D uses one versioned anatomical reference across four exploration mode
 | --- | --- |
 | React | Coordinates the anatomical navigator, inspector, mode controls and local data workflow. State remains in memory. No account service or remote application backend is needed. |
 | TypeScript | Defines anatomical, experimental, evidence and physiological interfaces. Runtime validators separately check file contents, because static types cannot validate imported scientific data. |
-| Three.js | Loads the source-derived GLB, renders independently selectable regions and supplies orbit controls, ray picking and surface clipping. Direct Three.js avoids another rendering abstraction in this small prototype. |
+| Three.js | Loads source-derived GLB or registered native PLY assets, renders independently selectable regions and supplies orbit controls, ray picking and surface clipping. Direct Three.js avoids another rendering abstraction in this small prototype. |
 | Vite | Builds the static distribution and supplies local development and preview servers. The renderer is loaded separately from the interface so the inventory and data tools can start independently. |
 | Python standard library | Converts the fixed, checksum-reviewed MATLAB mesh and inspects the registered volume. The current algorithms do not require a scientific Python environment or Blender installation. |
 | Node test runner and tsx | Execute the TypeScript acceptance tests against the same source modules used by the application. |
@@ -30,11 +30,13 @@ The application components expose source annotation, scientific limitations, pro
 
 The Digimouse tetrahedral importer preserves numerical source region IDs, extracts region boundaries, orients surfaces outward, calculates normals and writes one mesh per region. It performs no smoothing, anatomical subdivision or invented completion. The common asset coordinate frame is retained under a documented uniform scale. Viewer centering, display rotation and local animation pivots preserve resting spatial relationships.
 
-The application offers the lightweight 17-region GLB and a separate 21-region registered-volume reference. `atlas-catalog.ts` validates declared source coverage, licenses, checksums and frames. Its private in-memory bank binds observations to the exact reference, asset, frame and region inventory. Switching references saves current observations and retrieves only the chosen reference's own data, with no ID conversion. Reference switching invalidates pending dataset and view reads before loading and again when the switch commits.
+The application offers a lightweight 17-region GLB, a separate 21-region volume reference, a 44-surface hindlimb GLB and a 77-surface EMA147 native PLY reference. `atlas-catalog.ts` validates declared source coverage, licenses, checksums and frames. Its private in-memory bank binds observations to the exact reference, asset, frame and region inventory. Switching references saves current observations and retrieves only the chosen reference's own data, with no ID conversion. Reference switching invalidates pending dataset and view reads before loading and again when the switch commits.
 
 The volume importer streams the compressed source, samples an explicitly declared processing grid and extracts categorical interfaces without smoothing or adding labels. A complete 0.4 mm processing reference and 19 optional 0.2 mm regional files have separate checksums. Fine envelope and skeleton surfaces are deliberately unavailable. These spacings describe processing; they do not establish anatomical accuracy. No spatial registration to the tetrahedral reference is accepted.
 
 `region-detail-registry.ts` validates detail declarations without importing Three.js into the initial application bundle. The renderer loads a requested asset with bounded same-origin reads, byte and SHA-256 checks, and self-contained GLB metadata validation. `RegionDetailController` retains at most one finer region per viewer, restores its base on selection changes and discards stale results. A stored source-to-local rest transform preserves registration while leaving the mesh pivot, material and camera unchanged. Compare uses base geometry in both panels. Per-system streaming and further source-supported anatomy remain future work.
+
+`atlas-loader.ts` dispatches a checksum-bound local asset to GLTFLoader or the strict native PLY decoder. `asset-fetch.ts` enforces bounded same-origin reads and rejects redirects. `native-ply.ts` validates the registered binary schema, source identities, per-region ranges, finite positions, generated normals, triangles and bounds without assigning metric units. EMA147 coordinates retain numerical scale 1; its image spacing is not an accepted mesh transform. Developmental source ages remain separate attributed claims in `DevelopmentalContext`.
 
 ## Physiology and biological scale
 

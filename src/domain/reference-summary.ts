@@ -3,6 +3,7 @@ import type { Atlas } from './types';
 const UNKNOWN = 'Unknown';
 
 export interface ReferenceSummary {
+  developmental: { stage: string; ageClaims: { age: string; source: string; url: string | null }[] };
   specimen: {
     scientificName: string;
     sex: string;
@@ -106,8 +107,16 @@ export function buildReferenceSummary(atlas: Atlas): ReferenceSummary {
   const doi = text(field(source, 'doi'));
   const count = field(specimen, 'count');
   const sex = field(specimen, 'sex');
+  const declaredClaims = field(atlas, 'ageClaims') ?? field(specimen, 'ageClaims');
+  const ageClaims: ReferenceSummary['developmental']['ageClaims'] = [];
+  if (Array.isArray(declaredClaims) && declaredClaims.length <= 16) for (const claim of declaredClaims) {
+    const age = quantity(claim, true);
+    const source = text(field(claim, 'label')) ?? text(field(claim, 'source')) ?? text(field(claim, 'sourceReference'));
+    if (age && source) ageClaims.push({ age, source, url: httpsUrl(field(claim, 'sourceReference')) ?? httpsUrl(field(claim, 'url')) });
+  }
 
   return {
+    developmental: { stage: text(field(field(specimen, 'developmentalStage'), 'label')) ?? UNKNOWN, ageClaims },
     specimen: {
       scientificName: text(field(specimen, 'scientificName')) ?? UNKNOWN,
       sex: sex === 'male' || sex === 'female' ? sex : UNKNOWN,

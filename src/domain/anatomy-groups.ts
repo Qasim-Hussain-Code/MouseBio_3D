@@ -1,4 +1,5 @@
 import type { Atlas } from './types';
+import { buildEma147Groups } from './ema147-groups';
 
 /** Local display selections, not new anatomical identifiers or ontology assertions. */
 export interface AnatomyGroup {
@@ -116,6 +117,7 @@ function hindlimbGroups(atlas: Atlas): AnatomyGroupsResult {
  * no guessed identifiers or partial associations are returned.
  */
 export function buildAnatomyGroups(atlas: Atlas): AnatomyGroupsResult {
+  if (atlas?.id === 'ema147-native-v1') return buildEma147Groups(atlas);
   if (atlas?.id === 'charles2016-hindlimb-v1') return hindlimbGroups(atlas);
   if (!atlas || typeof atlas.id !== 'string' || !Object.hasOwn(REFERENCES, atlas.id)) {
     return failure('No supported anatomical display groups are defined for this reference.');

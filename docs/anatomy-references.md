@@ -4,7 +4,7 @@ An anatomical reference identifies a particular asset and its source frame. Sepa
 
 ## Catalog declarations
 
-`buildReferenceCatalog` validates a bounded array of known reference declarations. Each entry contains an atlas ID, display title, application-local manifest URL, coordinate-frame ID, GLB SHA-256, coverage, processing resolution and license records. Coverage reports the number of available segmented regions and the represented system categories, with a description of limits. A represented category does not imply complete coverage of that system.
+`buildReferenceCatalog` validates a bounded array of known reference declarations. Each entry contains an atlas ID, display title, application-local manifest URL, coordinate-frame ID, asset SHA-256 (GLB or registered native PLY), coverage, processing resolution and license records. Coverage reports the number of available segmented regions and the represented system categories, with a description of limits. A represented category does not imply complete coverage of that system.
 
 Source and processing voxel spacings are separate three-component values in millimetres. An unknown or inapplicable spacing is explicitly `null`. The extraction method and limitations are required. These declarations do not establish anatomical accuracy or independent physical calibration. Processing or resampling at a smaller spacing does not by itself supply new biological detail. Camera magnification does not change either recorded spacing.
 

@@ -151,6 +151,13 @@ License: https://creativecommons.org/licenses/by/4.0/
 Geometry adaptation: Qasim Hussain, MouseBio_3D. See atlas-hindlimb/LICENSE.md for the source and conversion details.
 
 
+EMA147 source surfaces and source labels are licensed CC BY 4.0.
+Ruffins S, Jacobs R, Armit C, Burton N, Hill B and Baldock R, 2017, University of Edinburgh.
+Source: https://doi.org/10.7488/ds/2167
+License: https://creativecommons.org/licenses/by/4.0/
+Native-coordinate adaptation: Qasim Hussain, MouseBio_3D. Units remain unknown. See atlas-ema147/LICENSE.md for source and processing details.
+
+
 Ontology candidate registry: proposed source-label associations, CC BY-SA 4.0.
 Mouse adult gross anatomy ontology terms and labels: Mouse Genome Informatics, The Jackson Laboratory, CC BY 4.0.
 Source license: https://www.informatics.jax.org/mgihome/other/copyright.shtml

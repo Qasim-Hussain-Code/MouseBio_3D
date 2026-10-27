@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas, type ViewBackground } from '../domain';
 import { defaultStructureOpacity } from '../domain/reference-display';
-import { fetchBoundGlb, RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
+import { RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
+import { loadAtlasScene } from './atlas-loader';
 import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, focusCameraOnRegions, isPointRetainedByClipPlane, recenterMeshGeometry, type CameraPose } from './scene-utils';
 
 export type { CameraPose } from './scene-utils';
@@ -73,7 +74,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     renderer.localClippingEnabled = true;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.setClearColor(latest.current.settings.background === 'white' ? '#ffffff' : '#111d23', 1);
-    renderer.domElement.setAttribute('aria-label', title ?? 'Interactive Digimouse anatomical model');
+    renderer.domElement.setAttribute('aria-label', title ?? 'Interactive anatomical source model');
     renderer.domElement.setAttribute('role', 'img');
     renderer.domElement.setAttribute('tabindex', '0');
     element.appendChild(renderer.domElement);
@@ -181,11 +182,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       },
     };
     const sourceAbort = new AbortController();
-    void fetchBoundGlb(atlas.assetUrl, atlas.statistics.glbBytes as number, atlas.statistics.glbSha256 as string, sourceAbort.signal)
-      .then(async (bytes) => {
-        const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
-        return new GLTFLoader().parseAsync(bytes, '');
-      }).then((gltf) => {
+    void loadAtlasScene(atlas, sourceAbort.signal).then((sourceScene) => {
+      const gltf = { scene: sourceScene };
       if (disposed) {
         gltf.scene.traverse((object) => {
           if (object instanceof THREE.Mesh) { object.geometry.dispose(); for (const material of [object.material].flat()) material.dispose(); }

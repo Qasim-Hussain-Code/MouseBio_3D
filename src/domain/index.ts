@@ -3,3 +3,4 @@ export * from './experimental';
 export * from './physiology';
 export * from './view-state';
 export * from './ontology';
+export * from './atlas-asset';

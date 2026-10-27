@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import struct
 import subprocess
@@ -16,6 +17,15 @@ MAX_HISTORY_BLOBS = 1000
 MAX_GLB_JSON_BYTES = 1024 * 1024
 MAX_REGISTERED_GLB_BYTES = 80 * 1024 * 1024
 MAX_REGISTERED_TOTAL_BYTES = 100 * 1024 * 1024
+MAX_PLY_HEADER_BYTES = 16 * 1024
+EMA147_ARCHIVE_SHA256 = "efd5df6df9b69cf21a62d1f4245ecc5419ee4e5c4c72635f444ce3fba5b7971c"
+EMA147_MODEL_INFO_SHA256 = "cf37ac2de4f7ce79cfeb912dda70257ee06a561511ef54a18a7d89fa69cbeb21"
+EMA147_README_SHA256 = "6e68704cf516682243460f835179124f84d93afae7e4ca7d5901f8c1d8c0c671"
+EMA147_ANATOMY_INDEX_SHA256 = "970f2870a1e56603b6be75225de1ec9c0a6f0ec91dfb16bea73849c0155bac1b"
+EMA147_FRAME = "emouseatlas-ema147-stl-native-v1"
+# SHA-256 of sorted, newline-delimited filenames from the CC BY 4.0 source archive.
+EMA147_INVENTORY_SHA256 = "19e3c365b2e677533e85ce9aa7c8507128087bb8ad2b03ba394b46c9b4ba8cd1"
+EMA147_TOPOLOGY_SHA256 = "3321ead11161ab0a0c99095d41a99ae64605bce2833e405df68993b264d37e52"
 VOLUME_ARCHIVE_SHA256 = "6f7cbd8a7236a78c47a14c3259d387439c0dc0284b2a83fa955f8c49efe11761"
 VOLUME_FRAME = "digimouse-registered-voxel-native-v1"
 HINDLIMB_PDF_SHA256 = "aadb7a020f3f9ffc1c8b91f3d8e5f9f2a1eef95d24b0816b69ac4f878637ac47"
@@ -48,11 +58,11 @@ TOKENS = re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{20,255}|github_pat_[A-Za-z0-9_]
 PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")
 ASSIGNMENT = re.compile(r"(?im)^\s*(?:export\s+)?[\"']?(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password|aws_secret_access_key)[\"']?\s*[:=]\s*[\"']?([^\s\"'#]{8,})")
 URL = re.compile(r"https?://[^\s<>\"']+")
-ATTRIBUTION_PATHS = {"public/THIRD_PARTY_NOTICES.txt", "public/atlas/LICENSE.md", "public/atlas-volume/LICENSE.md", "public/atlas-hindlimb/LICENSE.md"}
+ATTRIBUTION_PATHS = {"public/THIRD_PARTY_NOTICES.txt", "public/atlas/LICENSE.md", "public/atlas-volume/LICENSE.md", "public/atlas-hindlimb/LICENSE.md", "public/atlas-ema147/LICENSE.md"}
 
 
-def anatomy_asset_path(url: str, folder: str) -> str:
-    if (not isinstance(url, str) or not url.startswith(f"/{folder}/") or not url.endswith(".glb")
+def anatomy_asset_path(url: str, folder: str, suffix: str = ".glb") -> str:
+    if (not isinstance(url, str) or not url.startswith(f"/{folder}/") or not url.endswith(suffix)
             or any(character in url for character in "%?#:\\") or "//" in url):
         raise ValueError("Invalid registered anatomical asset path")
     path = PurePosixPath(url[1:])
@@ -129,6 +139,145 @@ def register_details(detail: dict, volume: dict | None, registry: dict[str, dict
             or (not legacy and detail["statistics"].get("assets") != len(assets))
             or detail["statistics"]["glbBytesTotal"] != sum(asset["glbBytes"] for asset in assets)):
         raise ValueError("Progressive detail coverage is inconsistent")
+
+
+def register_ema147(manifest: dict, read, registry: dict[str, dict]) -> None:
+    source, frame = manifest.get("source", {}), manifest.get("coordinateFrame", {})
+    if (manifest.get("id") != "ema147-native-v1" or manifest.get("assetFormat") != "ply-native-v1"
+            or manifest.get("assetUrl") != "/atlas-ema147/ema147-native.ply"
+            or source.get("id") != "emouseatlas-ema147-2017" or source.get("archiveSha256") != EMA147_ARCHIVE_SHA256
+            or source.get("archiveBytes") != 11393742 or source.get("doi") != "10.7488/ds/2167"
+            or source.get("sourceSurfaceInventorySha256") != EMA147_INVENTORY_SHA256
+            or source.get("modelInfoSha256") != EMA147_MODEL_INFO_SHA256 or source.get("readmeSha256") != EMA147_README_SHA256
+            or source.get("anatomyIndexSha256") != EMA147_ANATOMY_INDEX_SHA256
+            or source.get("license") != "CC-BY-4.0" or source.get("licenseUrl") != "https://creativecommons.org/licenses/by/4.0/"
+            or frame.get("id") != EMA147_FRAME or frame.get("sourceUnits") != "unknown" or frame.get("assetUnits") != "unknown"
+            or type(frame.get("sourceToAssetScale")) not in {int, float} or frame["sourceToAssetScale"] != 1
+            or frame.get("unitsVerified") is not False or frame.get("physicalCalibrationVerified") is not False
+            or frame.get("anatomicalOrientationVerified") is not False
+            or "registrationToDigimouse" not in frame or frame["registrationToDigimouse"] is not None):
+        raise ValueError("EMA147 source, license or uncalibrated frame is not registered")
+    structures = manifest.get("structures")
+    if not isinstance(structures, list) or len(structures) != 77:
+        raise ValueError("EMA147 requires the exact source surface inventory")
+    files = [entry["sourceFile"] for entry in structures]
+    if (files != sorted(files) or len(set(files)) != len(files)
+            or hashlib.sha256(("\n".join(files) + "\n").encode()).hexdigest() != EMA147_INVENTORY_SHA256):
+        raise ValueError("EMA147 source filenames differ from the reviewed archive")
+    source_index = read("data/provenance/ema147-source-index.txt", MAX_GLB_JSON_BYTES)
+    if not source_index or hashlib.sha256(source_index).hexdigest() != EMA147_ANATOMY_INDEX_SHA256:
+        raise ValueError("EMA147 anatomy index is missing or differs from the reviewed source")
+    index_records = {}
+    for line in source_index.decode("utf-8").splitlines():
+        match = re.fullmatch(r'\s*([0-9]+)\s+([0-9]+)\s+([0-9]+)\s+([0-9]+)\s+[0-9.]+\s+[01]\s+[01]\s+"(EMAPA:[0-9]+ [^"]+)"', line)
+        if match:
+            number, red, green, blue = map(int, match.groups()[:4])
+            label = match.group(5)
+            index_records[label.split(" ", 1)[0]] = (number, f"#{red:02x}{green:02x}{blue:02x}", label)
+    index_ids = list(index_records)
+    if len(index_ids) != 76 or len(set(index_ids)) != 76:
+        raise ValueError("EMA147 anatomy index does not have its exact identifier inventory")
+    surface_ids = {"EMAPA:" + re.fullmatch(r"Surfaces/EMAPA([0-9]+)_[A-Za-z0-9_]+\.stl", filename).group(1)
+                   for filename in files if filename != "Surfaces/reference.stl"}
+    index_ids = set(index_ids)
+    comparison = manifest.get("sourceInventoryComparison", {})
+    if (comparison.get("anatomyIndexIdentifiers") != 76 or comparison.get("surfaceEMAPAIdentifiers") != 76
+            or comparison.get("matchingIdentifiers") != sorted(index_ids & surface_ids)
+            or comparison.get("indexOnlyIdentifiers") != sorted(index_ids - surface_ids)
+            or comparison.get("surfaceOnlyIdentifiers") != sorted(surface_ids - index_ids)
+            or comparison.get("unannotatedSourceFiles") != ["Surfaces/reference.stl"]):
+        raise ValueError("EMA147 index and surface comparison cannot be silently substituted")
+    specimen = manifest.get("specimen", {})
+    if (specimen.get("sex") != "unknown" or any(specimen.get(key) is not None for key in ("age", "mass", "count", "scientificName", "taxonomyId"))
+            or specimen.get("strain") != "C57BL6" or specimen.get("developmentalStage", {}).get("label") != "TS23"):
+        raise ValueError("EMA147 undeclared specimen characteristics must remain unknown")
+    claims = manifest.get("ageClaims")
+    expected_claims = {
+        "https://datashare.ed.ac.uk/items/5016a5d4-2017-4fdc-a934-964fc2b542ec/full": (15, "embryonic days", {"E15.0 (estimated)", "E15.0 estimated", "E15.0, estimated"}),
+        "https://www.emouseatlas.org/eAtlasViewer_ema/application/ema/anatomy/EMA147.php": (15, "dpc", {"15 dpc"}),
+        "https://emouseatlas.org/emap/ema/modelsummary/modelsummary.html": (14.5, "dpc", {"14.5 dpc"}),
+    }
+    if (not isinstance(claims, list) or len(claims) != 3
+            or {claim.get("sourceReference") for claim in claims} != set(expected_claims)
+            or any(type(claim.get("value")) not in {int, float}
+                   or (claim["value"], claim.get("unit")) != expected_claims[claim["sourceReference"]][:2]
+                   or claim.get("label") not in expected_claims[claim["sourceReference"]][2] for claim in claims)
+            or manifest.get("ageConflictResolved") is not False):
+        raise ValueError("EMA147 conflicting source age claims must remain separately attributed")
+    regions = []
+    vertex_offset = triangle_offset = 0
+    for index, entry in enumerate(structures):
+        filename = entry["sourceFile"]
+        match = re.fullmatch(r"Surfaces/EMAPA([0-9]+)_([A-Za-z0-9_]+)\.stl", filename)
+        identifier = f"ema147:EMAPA:{match.group(1)}" if match else "ema147:reference" if filename == "Surfaces/reference.stl" else None
+        filename_label = match.group(2) if match else "reference"
+        if (entry.get("id") != identifier or type(entry.get("sourceRegionIndex")) is not int or entry["sourceRegionIndex"] != index
+                or entry.get("sourceLabel") != PurePosixPath(filename).stem
+                or entry.get("sourceFilenameLabel") != filename_label or entry.get("systems") != []):
+            raise ValueError("EMA147 source IDs, labels or region order differ from their filenames")
+        anatomy_id = "EMAPA:" + match.group(1) if match else None
+        if ((anatomy_id and entry.get("sourceEMAPAId") != anatomy_id)
+                or anatomy_id is None and entry.get("sourceEMAPAId") is not None or entry.get("ontology")):
+            raise ValueError("EMA147 filename anatomy identifiers were substituted")
+        if anatomy_id in index_records:
+            number, color, label = index_records[anatomy_id]
+            if (entry.get("sourceVolumeLabelIndex") != number or entry.get("sourceIndexLabel") != label
+                    or entry.get("color") != color or entry.get("colorProvenance") != "source-index exact EMAPA identifier"):
+                raise ValueError("EMA147 source index correspondence differs from the exact identifier match")
+        elif (any(key in entry for key in ("sourceVolumeLabelIndex", "sourceIndexLabel"))
+              or entry.get("color") != "#aab4b5"
+              or entry.get("colorProvenance") != "neutral display fallback; no exact source-index identifier match"):
+            raise ValueError("EMA147 unmatched surfaces must not acquire a source index correspondence")
+        geometry = entry["geometry"]
+        vertices, triangles = geometry["vertices"], geometry["triangles"]
+        bounds = geometry["boundsSourceUnits"]
+        if (type(vertices) is not int or not 0 < vertices <= 10_000_000
+                or type(triangles) is not int or not 0 < triangles <= 5_000_000
+                or type(geometry.get("vertexOffset")) is not int or geometry["vertexOffset"] != vertex_offset
+                or type(geometry.get("triangleOffset")) is not int or geometry["triangleOffset"] != triangle_offset
+                or not isinstance(bounds, list) or len(bounds) != 2
+                or any(not isinstance(vector, list) or len(vector) != 3
+                       or any(type(value) not in {int, float} or not math.isfinite(value) for value in vector) for vector in bounds)
+                or any(bounds[0][axis] > bounds[1][axis] for axis in range(3))):
+            raise ValueError("EMA147 geometry ranges or source bounds are invalid")
+        regions.append({"id": identifier, "sourceFile": filename, "vertices": vertices, "triangles": triangles,
+                        "vertexOffset": vertex_offset, "triangleOffset": triangle_offset, "boundsSourceUnits": bounds})
+        vertex_offset += vertices
+        triangle_offset += triangles
+    statistics = manifest["statistics"]
+    topology_records = [{"sourceFile": entry["sourceFile"], "sourceTopology": entry["geometry"].get("sourceTopology")}
+                        for entry in structures]
+    if (hashlib.sha256(json.dumps(topology_records, sort_keys=True, separators=(",", ":")).encode()).hexdigest() != EMA147_TOPOLOGY_SHA256
+            or statistics.get("closedManifoldSourceRegions") != 23
+            or statistics.get("sourceTopology") != {"degenerateTriangles": 0, "duplicateTriangles": 0, "boundaryEdges": 1411,
+                "nonmanifoldEdges": 2285, "inconsistentWindingEdges": 11, "noncyclicVertexLinks": 4139}):
+        raise ValueError("EMA147 known source topology defects must remain disclosed")
+    size, digest = statistics["assetBytes"], statistics["assetSha256"]
+    if (type(size) is not int or not 20 <= size <= MAX_REGISTERED_GLB_BYTES
+            or not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest)
+            or statistics.get("vertices") != vertex_offset or statistics.get("triangles") != triangle_offset
+            or statistics.get("structures") != 77 or any(key in statistics for key in ("glbBytes", "glbSha256"))):
+        raise ValueError("EMA147 native asset statistics are inconsistent")
+    processing = manifest.get("processing", {})
+    if (type(processing.get("sourceToAssetScale")) not in {int, float} or processing["sourceToAssetScale"] != 1
+            or any(processing.get(key) is not False for key in ("geometricSmoothing", "meshRepair", "decimation", "triangleRemoval", "windingRepair", "registration"))
+            or processing.get("positionStorage") != "float32" or processing.get("normalFallbackVertices") != 0
+            or processing.get("normalProcessing") != "Area-weighted unit vertex normals for display; original STL facet normals are not stored in the PLY."
+            or processing.get("normalCancellationFallback") != "First incident nonzero triangle normal in original source order."):
+        raise ValueError("EMA147 native geometry must retain source scale, triangles and defects")
+    notice = read("public/atlas-ema147/LICENSE.md", MAX_GLB_JSON_BYTES)
+    if (not notice or b"creativecommons.org/licenses/by/4.0" not in notice or b"10.7488/ds/2167" not in notice
+            or any(author not in notice for author in (b"Ruffins", b"Jacobs", b"Armit", b"Burton", b"Hill", b"Baldock"))):
+        raise ValueError("Registered EMA147 attribution is missing")
+    path = anatomy_asset_path(manifest["assetUrl"], "atlas-ema147", ".ply")
+    if path in registry:
+        raise ValueError("Repeated EMA147 asset path")
+    registry[path] = {"format": "ply-native-v1", "bytes": size, "sha256": digest,
+                      "ids": [region["id"] for region in regions], "regions": regions,
+                      "vertices": vertex_offset, "triangles": triangle_offset,
+                      "atlasId": manifest["id"], "coordinateFrameId": EMA147_FRAME,
+                      "manifestPath": "public/atlas-ema147/atlas.json", "licensePath": "public/atlas-ema147/LICENSE.md",
+                      "sourcePaths": ["data/provenance/ema147-source-index.txt"]}
 
 
 def anatomy_registry(read) -> dict[str, dict]:
@@ -210,6 +359,10 @@ def anatomy_registry(read) -> dict[str, dict]:
         if folder == "atlas-hindlimb":
             registry[path]["sourceNames"] = {f"charles2016-hindlimb:{index}": name
                                              for index, name in enumerate(HINDLIMB_NAMES)}
+    ema147_path = "public/atlas-ema147/atlas.json"
+    raw = read(ema147_path, MAX_GLB_JSON_BYTES)
+    if raw is not None:
+        register_ema147(json.loads(raw), read, registry)
     detail_path = "public/atlas-volume/detail-index.json"
     raw = read(detail_path, MAX_GLB_JSON_BYTES)
     if raw is not None:
@@ -258,6 +411,83 @@ def inspect_registered_glb(data: bytes, binding: dict) -> bytes:
                         or extras.get("sourceName") != binding["sourceNames"].get(identifier)):
                     raise ValueError("GLB source names and tessellation identities differ from the registered inventory")
     return metadata
+
+
+def ply_metadata(data: bytes) -> tuple[bytes, int, int]:
+    """Accept only the bounded native, indexed triangle PLY representation."""
+    marker = b"\nend_header\n"
+    end = data.find(marker, 0, MAX_PLY_HEADER_BYTES)
+    if end < 0:
+        raise ValueError("Missing or unbounded PLY header")
+    end += len(marker)
+    metadata = data[:end]
+    lines = metadata.decode("ascii").splitlines()
+    if any(not line or any(ord(character) < 32 or ord(character) > 126 for character in line) for line in lines):
+        raise ValueError("Invalid PLY header text")
+    declarations = [line for line in lines if not line.startswith("comment ")]
+    if len(declarations) != 13 or declarations[:2] != ["ply", "format binary_little_endian 1.0"]:
+        raise ValueError("Unsupported PLY representation")
+    vertex_match = re.fullmatch(r"element vertex ([1-9][0-9]*)", declarations[2])
+    face_match = re.fullmatch(r"element face ([1-9][0-9]*)", declarations[10])
+    if not vertex_match or not face_match or declarations[3:10] != [
+            "property float x", "property float y", "property float z", "property float nx", "property float ny",
+            "property float nz", "property uint source_region_index"] or declarations[11:] != [
+                "property list uchar uint vertex_indices", "end_header"]:
+        raise ValueError("Unsupported PLY properties")
+    vertices, triangles = int(vertex_match.group(1)), int(face_match.group(1))
+    if not 0 < vertices <= 10_000_000 or not 0 < triangles <= 5_000_000 or len(data) != end + vertices * 28 + triangles * 13:
+        raise ValueError("PLY counts or byte length exceed their bounds")
+    return metadata, vertices, triangles
+
+
+def inspect_registered_ply(data: bytes, binding: dict) -> bytes:
+    if len(data) != binding["bytes"] or hashlib.sha256(data).hexdigest() != binding["sha256"]:
+        raise ValueError("Anatomical asset checksum mismatch")
+    metadata, vertex_count, triangle_count = ply_metadata(data)
+    if vertex_count != binding["vertices"] or triangle_count != binding["triangles"]:
+        raise ValueError("PLY geometry inventory differs from its declaration")
+    vertex_start = len(metadata)
+    face_start = vertex_start + vertex_count * 28
+    next_vertex = next_triangle = 0
+    regions = binding["regions"]
+    region_comments = [line for line in metadata.decode("ascii").splitlines() if line.startswith("comment region ")]
+    if region_comments != [f"comment region {index} {region['id']} {region['sourceFile']}" for index, region in enumerate(regions)]:
+        raise ValueError("PLY source identity comments differ from the registered inventory")
+    if [line for line in metadata.decode("ascii").splitlines() if line.startswith("comment ")] != [
+            "comment MouseBio_3D EMA147 native source coordinates; units unknown", *region_comments]:
+        raise ValueError("PLY contains an unregistered metadata comment")
+    for region_index, region in enumerate(regions):
+        if region["vertexOffset"] != next_vertex or region["triangleOffset"] != next_triangle:
+            raise ValueError("PLY regional ranges are not contiguous")
+        vertices, triangles = region["vertices"], region["triangles"]
+        lower, upper = [math.inf] * 3, [-math.inf] * 3
+        for offset in range(next_vertex, next_vertex + vertices):
+            values = struct.unpack_from("<6fI", data, vertex_start + offset * 28)
+            if (values[6] != region_index or not all(math.isfinite(value) for value in values[:6])
+                    or abs(math.sqrt(sum(value * value for value in values[3:6])) - 1) > 1e-5):
+                raise ValueError("PLY vertex coordinates, normals or source region are invalid")
+            for axis, value in enumerate(values[:3]):
+                lower[axis], upper[axis] = min(lower[axis], value), max(upper[axis], value)
+        if any(abs(value - region["boundsSourceUnits"][side][axis]) > max(1e-5, abs(value) * 1e-6)
+               for side, bounds in enumerate((lower, upper)) for axis, value in enumerate(bounds)):
+            raise ValueError("PLY source-coordinate bounds differ from the manifest")
+        for offset in range(next_triangle, next_triangle + triangles):
+            count, a, b, c = struct.unpack_from("<BIII", data, face_start + offset * 13)
+            if count != 3 or any(index < next_vertex or index >= next_vertex + vertices for index in (a, b, c)):
+                raise ValueError("PLY triangle indices cross a source region or exceed its vertices")
+        next_vertex += vertices
+        next_triangle += triangles
+    if next_vertex != vertex_count or next_triangle != triangle_count:
+        raise ValueError("PLY source ranges do not cover the complete asset")
+    return metadata
+
+
+def inspect_registered_asset(data: bytes, binding: dict) -> bytes:
+    if binding.get("format", "glb") == "glb":
+        return inspect_registered_glb(data, binding)
+    if binding.get("format") == "ply-native-v1":
+        return inspect_registered_ply(data, binding)
+    raise ValueError("Unsupported registered anatomical asset format")
 
 
 def git(root: Path, *arguments: str, required: bool = True) -> bytes:
@@ -365,11 +595,11 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
     def inspect(data: bytes, path: str, location: str, bindings: dict | None = None) -> None:
         nonlocal inspected, opaque, registered
         selected_registry = registry if bindings is None else bindings
-        if path.lower().endswith(".glb"):
+        if path.lower().endswith((".glb", ".ply")):
             try:
                 if path not in selected_registry:
                     raise ValueError("Unregistered anatomical asset")
-                metadata = inspect_registered_glb(data, selected_registry[path])
+                metadata = inspect_registered_asset(data, selected_registry[path])
                 findings.extend(scan_text(metadata.decode("utf-8"), path, location))
                 inspected += 1
                 registered += 1

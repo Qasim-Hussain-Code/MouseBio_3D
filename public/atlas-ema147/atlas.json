@@ -1,0 +1,3681 @@
+{
+  "id": "ema147-native-v1",
+  "title": "eMouseAtlas EMA147 native-coordinate developmental surfaces",
+  "assetUrl": "/atlas-ema147/ema147-native.ply",
+  "assetFormat": "ply-native-v1",
+  "coordinateFrame": {
+    "id": "emouseatlas-ema147-stl-native-v1",
+    "sourceUnits": "unknown",
+    "assetUnits": "unknown",
+    "sourceToAssetScale": 1,
+    "unitsVerified": false,
+    "anatomicalOrientationVerified": false,
+    "physicalCalibrationVerified": false,
+    "registrationToDigimouse": null,
+    "origin": "Deposited STL origin, unchanged; anatomical origin unverified",
+    "axes": {
+      "x": "deposited STL x; anatomical direction unverified",
+      "y": "deposited STL y; anatomical direction unverified",
+      "z": "deposited STL z; anatomical direction unverified"
+    }
+  },
+  "source": {
+    "id": "emouseatlas-ema147-2017",
+    "displayName": "eMouseAtlas EMA147",
+    "citationLabel": "Ruffins et al., 2017",
+    "title": "3D mouse embryo model: EMA147, Stage TS23, Age E15.0 (est)",
+    "authors": [
+      "Seth Ruffins",
+      "Russell Jacobs",
+      "Chris Armit",
+      "Nick Burton",
+      "Bill Hill",
+      "Richard Baldock"
+    ],
+    "publicationYear": 2017,
+    "doi": "10.7488/ds/2167",
+    "url": "https://datashare.ed.ac.uk/items/5016a5d4-2017-4fdc-a934-964fc2b542ec/full",
+    "downloadUrl": "https://datashare.ed.ac.uk/server/api/core/bitstreams/7829c9db-bf18-4d69-af2b-5d10be9afa18/content",
+    "license": "CC-BY-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "archiveBytes": 11393742,
+    "archiveSha256": "efd5df6df9b69cf21a62d1f4245ecc5419ee4e5c4c72635f444ce3fba5b7971c",
+    "modelInfoSha256": "cf37ac2de4f7ce79cfeb912dda70257ee06a561511ef54a18a7d89fa69cbeb21",
+    "readmeSha256": "6e68704cf516682243460f835179124f84d93afae7e4ca7d5901f8c1d8c0c671",
+    "anatomyIndexSha256": "970f2870a1e56603b6be75225de1ec9c0a6f0ec91dfb16bea73849c0155bac1b",
+    "sourceSurfaceInventorySha256": "19e3c365b2e677533e85ce9aa7c8507128087bb8ad2b03ba394b46c9b4ba8cd1",
+    "attribution": "Ruffins S, Jacobs R, Armit C, Burton N, Hill B and Baldock R, 2017, University of Edinburgh, doi:10.7488/ds/2167, CC BY 4.0. Native-coordinate PLY adaptation by Qasim Hussain for MouseBio_3D.",
+    "modifications": [
+      "Exact-position indexing within each source surface",
+      "Float32 native-coordinate storage without a physical scale conversion",
+      "Generated area-weighted vertex normals for display",
+      "Original source triangles, winding and topology defects retained"
+    ],
+    "reportedImageVoxelSpacingMicrometres": [
+      80,
+      80,
+      80
+    ]
+  },
+  "specimen": {
+    "sex": "unknown",
+    "strain": "C57BL6",
+    "developmentalStage": {
+      "label": "TS23",
+      "reference": "https://datashare.ed.ac.uk/items/5016a5d4-2017-4fdc-a934-964fc2b542ec/full"
+    },
+    "scope": "embryonic anatomical reference",
+    "description": "Source-declared C57BL6 mouse model at Theiler stage TS23. Age claims conflict; sex and mass are not declared.",
+    "sourceReference": "https://doi.org/10.7488/ds/2167"
+  },
+  "ageClaims": [
+    {
+      "value": 15,
+      "unit": "embryonic days",
+      "label": "E15.0 (estimated)",
+      "sourceReference": "https://datashare.ed.ac.uk/items/5016a5d4-2017-4fdc-a934-964fc2b542ec/full"
+    },
+    {
+      "value": 15,
+      "unit": "dpc",
+      "label": "15 dpc",
+      "sourceReference": "https://www.emouseatlas.org/eAtlasViewer_ema/application/ema/anatomy/EMA147.php"
+    },
+    {
+      "value": 14.5,
+      "unit": "dpc",
+      "label": "14.5 dpc",
+      "sourceReference": "https://emouseatlas.org/emap/ema/modelsummary/modelsummary.html"
+    }
+  ],
+  "ageConflictResolved": false,
+  "sourceInventoryComparison": {
+    "anatomyIndexIdentifiers": 76,
+    "surfaceEMAPAIdentifiers": 76,
+    "matchingIdentifiers": [
+      "EMAPA:16098",
+      "EMAPA:16105",
+      "EMAPA:16247",
+      "EMAPA:16668",
+      "EMAPA:16678",
+      "EMAPA:16706",
+      "EMAPA:16728",
+      "EMAPA:16797",
+      "EMAPA:16833",
+      "EMAPA:16846",
+      "EMAPA:16849",
+      "EMAPA:16896",
+      "EMAPA:16974",
+      "EMAPA:17021",
+      "EMAPA:17161",
+      "EMAPA:17167",
+      "EMAPA:17172",
+      "EMAPA:17185",
+      "EMAPA:17302",
+      "EMAPA:17307",
+      "EMAPA:17373",
+      "EMAPA:17503",
+      "EMAPA:17525",
+      "EMAPA:17544",
+      "EMAPA:17550",
+      "EMAPA:17563",
+      "EMAPA:17576",
+      "EMAPA:17577",
+      "EMAPA:17608",
+      "EMAPA:17635",
+      "EMAPA:17639",
+      "EMAPA:17670",
+      "EMAPA:17682",
+      "EMAPA:17701",
+      "EMAPA:17787",
+      "EMAPA:17824",
+      "EMAPA:17838",
+      "EMAPA:17852",
+      "EMAPA:17962",
+      "EMAPA:18010",
+      "EMAPA:18017",
+      "EMAPA:18028",
+      "EMAPA:18290",
+      "EMAPA:18321",
+      "EMAPA:18328",
+      "EMAPA:18344",
+      "EMAPA:18415",
+      "EMAPA:18426",
+      "EMAPA:18535",
+      "EMAPA:18544",
+      "EMAPA:18590",
+      "EMAPA:18601",
+      "EMAPA:18705",
+      "EMAPA:18708",
+      "EMAPA:18721",
+      "EMAPA:18722",
+      "EMAPA:19103",
+      "EMAPA:19104",
+      "EMAPA:19106",
+      "EMAPA:19141",
+      "EMAPA:19142",
+      "EMAPA:19143",
+      "EMAPA:19209",
+      "EMAPA:19431",
+      "EMAPA:19432",
+      "EMAPA:25135",
+      "EMAPA:28601",
+      "EMAPA:35998"
+    ],
+    "indexOnlyIdentifiers": [
+      "EMAPA:16057",
+      "EMAPA:16978",
+      "EMAPA:17023",
+      "EMAPA:19134",
+      "EMAPA:25765",
+      "EMAPA:32710",
+      "EMAPA:32718",
+      "EMAPA:32740"
+    ],
+    "surfaceOnlyIdentifiers": [
+      "EMAPA:16979",
+      "EMAPA:17296",
+      "EMAPA:17533",
+      "EMAPA:17535",
+      "EMAPA:17674",
+      "EMAPA:17795",
+      "EMAPA:17888",
+      "EMAPA:18143"
+    ],
+    "unannotatedSourceFiles": [
+      "Surfaces/reference.stl"
+    ],
+    "limitations": [
+      "Equal inventory counts do not establish equal identities. File order is not a label-volume mapping.",
+      "Colours transfer only for exact source EMAPA identifiers; no anatomical substitutions are made."
+    ]
+  },
+  "structures": [
+    {
+      "id": "ema147:EMAPA:16098",
+      "name": "head mesenchyme",
+      "sourceLabel": "EMAPA16098_head_mesenchyme",
+      "sourceFile": "Surfaces/EMAPA16098_head_mesenchyme.stl",
+      "sourceFilenameLabel": "head_mesenchyme",
+      "sourceRegionIndex": 0,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16098",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#b29919",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 0,
+        "vertices": 9854,
+        "triangleOffset": 0,
+        "triangles": 19999,
+        "boundsSourceUnits": [
+          [
+            5.272480010986328,
+            14.491700172424316,
+            118.7969970703125
+          ],
+          [
+            76.1593017578125,
+            72.74849700927734,
+            154.2169952392578
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 71,
+          "nonmanifoldEdges": 194,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 296,
+          "components": 6
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16098",
+      "sourceVolumeLabelIndex": 16,
+      "sourceIndexLabel": "EMAPA:16098 head mesenchyme"
+    },
+    {
+      "id": "ema147:EMAPA:16105",
+      "name": "heart",
+      "sourceLabel": "EMAPA16105_heart",
+      "sourceFile": "Surfaces/EMAPA16105_heart.stl",
+      "sourceFilenameLabel": "heart",
+      "sourceRegionIndex": 1,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16105",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#e566e5",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 9854,
+        "vertices": 3004,
+        "triangleOffset": 19999,
+        "triangles": 6002,
+        "boundsSourceUnits": [
+          [
+            17.9468994140625,
+            50.63370132446289,
+            66.78600311279297
+          ],
+          [
+            60.52149963378906,
+            79.02950286865234,
+            91.16069793701172
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 9,
+          "nonmanifoldEdges": 7,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 15,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16105",
+      "sourceVolumeLabelIndex": 49,
+      "sourceIndexLabel": "EMAPA:16105 heart"
+    },
+    {
+      "id": "ema147:EMAPA:16247",
+      "name": "gut",
+      "sourceLabel": "EMAPA16247_gut",
+      "sourceFile": "Surfaces/EMAPA16247_gut.stl",
+      "sourceFilenameLabel": "gut",
+      "sourceRegionIndex": 2,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16247",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4ccccc",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 12858,
+        "vertices": 5789,
+        "triangleOffset": 26001,
+        "triangles": 11744,
+        "boundsSourceUnits": [
+          [
+            18.30229949951172,
+            21.565500259399414,
+            20.7721004486084
+          ],
+          [
+            54.76470184326172,
+            68.94180297851562,
+            64.16470336914062
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 120,
+          "nonmanifoldEdges": 150,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 279,
+          "components": 7
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16247",
+      "sourceVolumeLabelIndex": 19,
+      "sourceIndexLabel": "EMAPA:16247 gut"
+    },
+    {
+      "id": "ema147:EMAPA:16668",
+      "name": "dorsal root ganglion",
+      "sourceLabel": "EMAPA16668_dorsal_root_ganglion",
+      "sourceFile": "Surfaces/EMAPA16668_dorsal_root_ganglion.stl",
+      "sourceFilenameLabel": "dorsal_root_ganglion",
+      "sourceRegionIndex": 3,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16668",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#b29919",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 18647,
+        "vertices": 3006,
+        "triangleOffset": 37745,
+        "triangles": 5992,
+        "boundsSourceUnits": [
+          [
+            26.97800064086914,
+            77.98889923095703,
+            15.87909984588623
+          ],
+          [
+            49.721900939941406,
+            100.8489990234375,
+            131.031005859375
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 5,
+          "nonmanifoldEdges": 51,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 73,
+          "components": 17
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16668",
+      "sourceVolumeLabelIndex": 36,
+      "sourceIndexLabel": "EMAPA:16668 dorsal root ganglion"
+    },
+    {
+      "id": "ema147:EMAPA:16678",
+      "name": "optic stalk",
+      "sourceLabel": "EMAPA16678_optic_stalk",
+      "sourceFile": "Surfaces/EMAPA16678_optic_stalk.stl",
+      "sourceFilenameLabel": "optic_stalk",
+      "sourceRegionIndex": 4,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16678",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#cc994c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 21653,
+        "vertices": 50,
+        "triangleOffset": 43737,
+        "triangles": 92,
+        "boundsSourceUnits": [
+          [
+            21.746400833129883,
+            29.2947998046875,
+            115.21299743652344
+          ],
+          [
+            60.730899810791016,
+            34.45920181274414,
+            119.83100128173828
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16678",
+      "sourceVolumeLabelIndex": 39,
+      "sourceIndexLabel": "EMAPA:16678 optic stalk"
+    },
+    {
+      "id": "ema147:EMAPA:16706",
+      "name": "pharynx",
+      "sourceLabel": "EMAPA16706_pharynx",
+      "sourceFile": "Surfaces/EMAPA16706_pharynx.stl",
+      "sourceFilenameLabel": "pharynx",
+      "sourceRegionIndex": 5,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16706",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#7fcc99",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 21703,
+        "vertices": 310,
+        "triangleOffset": 43829,
+        "triangles": 616,
+        "boundsSourceUnits": [
+          [
+            36.285701751708984,
+            38.76129913330078,
+            115.8550033569336
+          ],
+          [
+            44.137298583984375,
+            61.82899856567383,
+            120.15899658203125
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16706",
+      "sourceVolumeLabelIndex": 51,
+      "sourceIndexLabel": "EMAPA:16706 pharynx"
+    },
+    {
+      "id": "ema147:EMAPA:16728",
+      "name": "lung",
+      "sourceLabel": "EMAPA16728_lung",
+      "sourceFile": "Surfaces/EMAPA16728_lung.stl",
+      "sourceFilenameLabel": "lung",
+      "sourceRegionIndex": 6,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16728",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#b2b266",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 22013,
+        "vertices": 5839,
+        "triangleOffset": 44445,
+        "triangles": 11673,
+        "boundsSourceUnits": [
+          [
+            11.489700317382812,
+            56.87889862060547,
+            43.96549987792969
+          ],
+          [
+            65.5770034790039,
+            94.5365982055664,
+            93.17569732666016
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 142,
+          "nonmanifoldEdges": 96,
+          "inconsistentWindingEdges": 1,
+          "noncyclicVertexLinks": 236,
+          "components": 8
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16728",
+      "sourceVolumeLabelIndex": 64,
+      "sourceIndexLabel": "EMAPA:16728 lung"
+    },
+    {
+      "id": "ema147:EMAPA:16797",
+      "name": "trigeminal V ganglion",
+      "sourceLabel": "EMAPA16797_trigeminal_V_ganglion",
+      "sourceFile": "Surfaces/EMAPA16797_trigeminal_V_ganglion.stl",
+      "sourceFilenameLabel": "trigeminal_V_ganglion",
+      "sourceRegionIndex": 7,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16797",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff6666",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 27852,
+        "vertices": 821,
+        "triangleOffset": 56118,
+        "triangles": 1637,
+        "boundsSourceUnits": [
+          [
+            19.59280014038086,
+            41.79159927368164,
+            117.82099914550781
+          ],
+          [
+            61.25559997558594,
+            56.44850158691406,
+            134.21800231933594
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 4,
+          "nonmanifoldEdges": 7,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 11,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16797",
+      "sourceVolumeLabelIndex": 33,
+      "sourceIndexLabel": "EMAPA:16797 trigeminal V ganglion"
+    },
+    {
+      "id": "ema147:EMAPA:16833",
+      "name": "esophagus",
+      "sourceLabel": "EMAPA16833_esophagus",
+      "sourceFile": "Surfaces/EMAPA16833_esophagus.stl",
+      "sourceFilenameLabel": "esophagus",
+      "sourceRegionIndex": 8,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16833",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ffffb2",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 28673,
+        "vertices": 753,
+        "triangleOffset": 57755,
+        "triangles": 1502,
+        "boundsSourceUnits": [
+          [
+            36.64889907836914,
+            72.65679931640625,
+            40.79970169067383
+          ],
+          [
+            46.864200592041016,
+            83.92919921875,
+            114.21499633789062
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16833",
+      "sourceVolumeLabelIndex": 52,
+      "sourceIndexLabel": "EMAPA:16833 esophagus"
+    },
+    {
+      "id": "ema147:EMAPA:16846",
+      "name": "liver",
+      "sourceLabel": "EMAPA16846_liver",
+      "sourceFile": "Surfaces/EMAPA16846_liver.stl",
+      "sourceFilenameLabel": "liver",
+      "sourceRegionIndex": 9,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16846",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#198719",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 29426,
+        "vertices": 9975,
+        "triangleOffset": 59257,
+        "triangles": 20000,
+        "boundsSourceUnits": [
+          [
+            4.930610179901123,
+            35.4911003112793,
+            23.92690086364746
+          ],
+          [
+            76.28309631347656,
+            92.1050033569336,
+            69.77269744873047
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 142,
+          "nonmanifoldEdges": 150,
+          "inconsistentWindingEdges": 1,
+          "noncyclicVertexLinks": 282,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16846",
+      "sourceVolumeLabelIndex": 59,
+      "sourceIndexLabel": "EMAPA:16846 liver"
+    },
+    {
+      "id": "ema147:EMAPA:16849",
+      "name": "main bronchus",
+      "sourceLabel": "EMAPA16849_main_bronchus",
+      "sourceFile": "Surfaces/EMAPA16849_main_bronchus.stl",
+      "sourceFilenameLabel": "main_bronchus",
+      "sourceRegionIndex": 10,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16849",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff9900",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 39401,
+        "vertices": 620,
+        "triangleOffset": 79257,
+        "triangles": 1250,
+        "boundsSourceUnits": [
+          [
+            28.80150032043457,
+            66.056396484375,
+            71.8584976196289
+          ],
+          [
+            48.854000091552734,
+            85.04000091552734,
+            111.21399688720703
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 12,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 12,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16849",
+      "sourceVolumeLabelIndex": 65,
+      "sourceIndexLabel": "EMAPA:16849 main bronchus"
+    },
+    {
+      "id": "ema147:EMAPA:16896",
+      "name": "diencephalon",
+      "sourceLabel": "EMAPA16896_diencephalon",
+      "sourceFile": "Surfaces/EMAPA16896_diencephalon.stl",
+      "sourceFilenameLabel": "diencephalon",
+      "sourceRegionIndex": 11,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16896",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#337f4c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 40021,
+        "vertices": 3046,
+        "triangleOffset": 80507,
+        "triangles": 6077,
+        "boundsSourceUnits": [
+          [
+            24.14780044555664,
+            23.487600326538086,
+            119.84600067138672
+          ],
+          [
+            56.792198181152344,
+            52.73189926147461,
+            148.1320037841797
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 17,
+          "nonmanifoldEdges": 15,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 32,
+          "components": 3
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16896",
+      "sourceVolumeLabelIndex": 21,
+      "sourceIndexLabel": "EMAPA:16896 diencephalon"
+    },
+    {
+      "id": "ema147:EMAPA:16974",
+      "name": "midbrain",
+      "sourceLabel": "EMAPA16974_midbrain",
+      "sourceFile": "Surfaces/EMAPA16974_midbrain.stl",
+      "sourceFilenameLabel": "midbrain",
+      "sourceRegionIndex": 12,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16974",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#00cc7f",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 43067,
+        "vertices": 4684,
+        "triangleOffset": 86584,
+        "triangles": 9408,
+        "boundsSourceUnits": [
+          [
+            21.866199493408203,
+            25.46190071105957,
+            146.88499450683594
+          ],
+          [
+            58.490299224853516,
+            72.51820373535156,
+            169.1510009765625
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 32,
+          "nonmanifoldEdges": 49,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 82,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16974",
+      "sourceVolumeLabelIndex": 31,
+      "sourceIndexLabel": "EMAPA:16974 midbrain"
+    },
+    {
+      "id": "ema147:EMAPA:16979",
+      "name": "midbrain ventricular layer",
+      "sourceLabel": "EMAPA16979_midbrain_ventricular_layer",
+      "sourceFile": "Surfaces/EMAPA16979_midbrain_ventricular_layer.stl",
+      "sourceFilenameLabel": "midbrain_ventricular_layer",
+      "sourceRegionIndex": 13,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:16979",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#aab4b5",
+      "defaultOpacity": 1,
+      "colorProvenance": "neutral display fallback; no exact source-index identifier match",
+      "geometry": {
+        "vertexOffset": 47751,
+        "vertices": 1292,
+        "triangleOffset": 95992,
+        "triangles": 2608,
+        "boundsSourceUnits": [
+          [
+            29.805400848388672,
+            34.61180114746094,
+            155.09100341796875
+          ],
+          [
+            48.677398681640625,
+            71.22350311279297,
+            164.51100158691406
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 5,
+          "nonmanifoldEdges": 10,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 16,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:16979"
+    },
+    {
+      "id": "ema147:EMAPA:17021",
+      "name": "stomach",
+      "sourceLabel": "EMAPA17021_stomach",
+      "sourceFile": "Surfaces/EMAPA17021_stomach.stl",
+      "sourceFilenameLabel": "stomach",
+      "sourceRegionIndex": 14,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17021",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#33334c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 49043,
+        "vertices": 2346,
+        "triangleOffset": 98600,
+        "triangles": 4695,
+        "boundsSourceUnits": [
+          [
+            39.66790008544922,
+            55.045101165771484,
+            26.117399215698242
+          ],
+          [
+            69.5979995727539,
+            90.03730010986328,
+            45.16749954223633
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 15,
+          "nonmanifoldEdges": 15,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 31,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17021",
+      "sourceVolumeLabelIndex": 54,
+      "sourceIndexLabel": "EMAPA:17021 stomach"
+    },
+    {
+      "id": "ema147:EMAPA:17161",
+      "name": "cornea",
+      "sourceLabel": "EMAPA17161_cornea",
+      "sourceFile": "Surfaces/EMAPA17161_cornea.stl",
+      "sourceFilenameLabel": "cornea",
+      "sourceRegionIndex": 15,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17161",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#33334c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 51389,
+        "vertices": 381,
+        "triangleOffset": 103295,
+        "triangles": 754,
+        "boundsSourceUnits": [
+          [
+            9.040800094604492,
+            20.374399185180664,
+            108.447998046875
+          ],
+          [
+            73.55470275878906,
+            31.76849937438965,
+            123.04100036621094
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17161",
+      "sourceVolumeLabelIndex": 38,
+      "sourceIndexLabel": "EMAPA:17161 cornea"
+    },
+    {
+      "id": "ema147:EMAPA:17167",
+      "name": "perioptic mesenchyme",
+      "sourceLabel": "EMAPA17167_perioptic_mesenchyme",
+      "sourceFile": "Surfaces/EMAPA17167_perioptic_mesenchyme.stl",
+      "sourceFilenameLabel": "perioptic_mesenchyme",
+      "sourceRegionIndex": 16,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17167",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#33b2b2",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 51770,
+        "vertices": 2658,
+        "triangleOffset": 104049,
+        "triangles": 5358,
+        "boundsSourceUnits": [
+          [
+            8.916159629821777,
+            18.453899383544922,
+            106.79399871826172
+          ],
+          [
+            73.06559753417969,
+            39.83610153198242,
+            127.1729965209961
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 11,
+          "nonmanifoldEdges": 15,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 30,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17167",
+      "sourceVolumeLabelIndex": 42,
+      "sourceIndexLabel": "EMAPA:17167 perioptic mesenchyme"
+    },
+    {
+      "id": "ema147:EMAPA:17172",
+      "name": "pigmented retinal epithelium",
+      "sourceLabel": "EMAPA17172_pigmented_retinal_epithelium",
+      "sourceFile": "Surfaces/EMAPA17172_pigmented_retinal_epithelium.stl",
+      "sourceFilenameLabel": "pigmented_retinal_epithelium",
+      "sourceRegionIndex": 17,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17172",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4cb2b2",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 54428,
+        "vertices": 732,
+        "triangleOffset": 109407,
+        "triangles": 1390,
+        "boundsSourceUnits": [
+          [
+            12.448699951171875,
+            20.61709976196289,
+            108.58100128173828
+          ],
+          [
+            71.25379943847656,
+            36.43880081176758,
+            121.3280029296875
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 5,
+          "components": 19
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17172",
+      "sourceVolumeLabelIndex": 44,
+      "sourceIndexLabel": "EMAPA:17172 pigmented retinal epithelium"
+    },
+    {
+      "id": "ema147:EMAPA:17185",
+      "name": "tongue",
+      "sourceLabel": "EMAPA17185_tongue",
+      "sourceFile": "Surfaces/EMAPA17185_tongue.stl",
+      "sourceFilenameLabel": "tongue",
+      "sourceRegionIndex": 18,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17185",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff33b2",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 55160,
+        "vertices": 1661,
+        "triangleOffset": 110797,
+        "triangles": 3318,
+        "boundsSourceUnits": [
+          [
+            29.99449920654297,
+            23.604700088500977,
+            85.82520294189453
+          ],
+          [
+            50.93040084838867,
+            59.82939910888672,
+            114.16000366210938
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17185",
+      "sourceVolumeLabelIndex": 53,
+      "sourceIndexLabel": "EMAPA:17185 tongue"
+    },
+    {
+      "id": "ema147:EMAPA:17296",
+      "name": "posterior semicircular canal",
+      "sourceLabel": "EMAPA17296_posterior_semicircular_canal",
+      "sourceFile": "Surfaces/EMAPA17296_posterior_semicircular_canal.stl",
+      "sourceFilenameLabel": "posterior_semicircular_canal",
+      "sourceRegionIndex": 19,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17296",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#aab4b5",
+      "defaultOpacity": 1,
+      "colorProvenance": "neutral display fallback; no exact source-index identifier match",
+      "geometry": {
+        "vertexOffset": 56821,
+        "vertices": 126,
+        "triangleOffset": 114115,
+        "triangles": 240,
+        "boundsSourceUnits": [
+          [
+            15.758500099182129,
+            70.94219970703125,
+            124.83200073242188
+          ],
+          [
+            62.692501068115234,
+            75.98560333251953,
+            134.63600158691406
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 3
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17296"
+    },
+    {
+      "id": "ema147:EMAPA:17302",
+      "name": "hyaloid cavity",
+      "sourceLabel": "EMAPA17302_hyaloid_cavity",
+      "sourceFile": "Surfaces/EMAPA17302_hyaloid_cavity.stl",
+      "sourceFilenameLabel": "hyaloid_cavity",
+      "sourceRegionIndex": 20,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17302",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4ce54c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 56947,
+        "vertices": 506,
+        "triangleOffset": 114355,
+        "triangles": 1044,
+        "boundsSourceUnits": [
+          [
+            13.742500305175781,
+            22.392499923706055,
+            109.28700256347656
+          ],
+          [
+            69.35299682617188,
+            34.217201232910156,
+            117.7020034790039
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 4,
+          "nonmanifoldEdges": 10,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 22,
+          "components": 3
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17302",
+      "sourceVolumeLabelIndex": 40,
+      "sourceIndexLabel": "EMAPA:17302 hyaloid cavity"
+    },
+    {
+      "id": "ema147:EMAPA:17307",
+      "name": "basilar artery",
+      "sourceLabel": "EMAPA17307_basilar_artery",
+      "sourceFile": "Surfaces/EMAPA17307_basilar_artery.stl",
+      "sourceFilenameLabel": "basilar_artery",
+      "sourceRegionIndex": 21,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17307",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#198719",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 57453,
+        "vertices": 22,
+        "triangleOffset": 115399,
+        "triangles": 40,
+        "boundsSourceUnits": [
+          [
+            38.93239974975586,
+            51.721900939941406,
+            133.46499633789062
+          ],
+          [
+            41.07080078125,
+            53.893001556396484,
+            136.5749969482422
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17307",
+      "sourceVolumeLabelIndex": 48,
+      "sourceIndexLabel": "EMAPA:17307 basilar artery"
+    },
+    {
+      "id": "ema147:EMAPA:17373",
+      "name": "metanephros",
+      "sourceLabel": "EMAPA17373_metanephros",
+      "sourceFile": "Surfaces/EMAPA17373_metanephros.stl",
+      "sourceFilenameLabel": "metanephros",
+      "sourceRegionIndex": 22,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17373",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#7fff7f",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 57475,
+        "vertices": 2153,
+        "triangleOffset": 115439,
+        "triangles": 4270,
+        "boundsSourceUnits": [
+          [
+            17.66080093383789,
+            63.72999954223633,
+            16.82080078125
+          ],
+          [
+            55.80569839477539,
+            85.91339874267578,
+            38.24660110473633
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 38,
+          "nonmanifoldEdges": 17,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 56,
+          "components": 4
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17373",
+      "sourceVolumeLabelIndex": 61,
+      "sourceIndexLabel": "EMAPA:17373 metanephros"
+    },
+    {
+      "id": "ema147:EMAPA:17503",
+      "name": "pancreas",
+      "sourceLabel": "EMAPA17503_pancreas",
+      "sourceFile": "Surfaces/EMAPA17503_pancreas.stl",
+      "sourceFilenameLabel": "pancreas",
+      "sourceRegionIndex": 23,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17503",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4c19cc",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 59628,
+        "vertices": 1557,
+        "triangleOffset": 119709,
+        "triangles": 3123,
+        "boundsSourceUnits": [
+          [
+            24.36549949645996,
+            54.721099853515625,
+            21.790800094604492
+          ],
+          [
+            59.753501892089844,
+            73.26519775390625,
+            45.25149917602539
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 15,
+          "nonmanifoldEdges": 19,
+          "inconsistentWindingEdges": 1,
+          "noncyclicVertexLinks": 37,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17503",
+      "sourceVolumeLabelIndex": 20,
+      "sourceIndexLabel": "EMAPA:17503 pancreas"
+    },
+    {
+      "id": "ema147:EMAPA:17525",
+      "name": "skin",
+      "sourceLabel": "EMAPA17525_skin",
+      "sourceFile": "Surfaces/EMAPA17525_skin.stl",
+      "sourceFilenameLabel": "skin",
+      "sourceRegionIndex": 24,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17525",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff1933",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 61185,
+        "vertices": 9356,
+        "triangleOffset": 122832,
+        "triangles": 19849,
+        "boundsSourceUnits": [
+          [
+            -0.9201229810714722,
+            -0.7551109790802002,
+            -1.1451200246810913
+          ],
+          [
+            82.48429870605469,
+            107.8479995727539,
+            168.82899475097656
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 220,
+          "nonmanifoldEdges": 248,
+          "inconsistentWindingEdges": 6,
+          "noncyclicVertexLinks": 618,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17525",
+      "sourceVolumeLabelIndex": 23,
+      "sourceIndexLabel": "EMAPA:17525 skin"
+    },
+    {
+      "id": "ema147:EMAPA:17533",
+      "name": "epithalamus mantle layer",
+      "sourceLabel": "EMAPA17533_epithalamus_mantle_layer",
+      "sourceFile": "Surfaces/EMAPA17533_epithalamus_mantle_layer.stl",
+      "sourceFilenameLabel": "epithalamus_mantle_layer",
+      "sourceRegionIndex": 25,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17533",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#aab4b5",
+      "defaultOpacity": 1,
+      "colorProvenance": "neutral display fallback; no exact source-index identifier match",
+      "geometry": {
+        "vertexOffset": 70541,
+        "vertices": 9881,
+        "triangleOffset": 142681,
+        "triangles": 20000,
+        "boundsSourceUnits": [
+          [
+            12.951299667358398,
+            8.843870162963867,
+            118.83100128173828
+          ],
+          [
+            68.52960205078125,
+            51.25419998168945,
+            155.14100646972656
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 66,
+          "nonmanifoldEdges": 128,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 219,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17533"
+    },
+    {
+      "id": "ema147:EMAPA:17535",
+      "name": "epithalamus ventricular layer",
+      "sourceLabel": "EMAPA17535_epithalamus_ventricular_layer",
+      "sourceFile": "Surfaces/EMAPA17535_epithalamus_ventricular_layer.stl",
+      "sourceFilenameLabel": "epithalamus_ventricular_layer",
+      "sourceRegionIndex": 26,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17535",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#aab4b5",
+      "defaultOpacity": 1,
+      "colorProvenance": "neutral display fallback; no exact source-index identifier match",
+      "geometry": {
+        "vertexOffset": 80422,
+        "vertices": 5942,
+        "triangleOffset": 162681,
+        "triangles": 11866,
+        "boundsSourceUnits": [
+          [
+            14.973600387573242,
+            9.829330444335938,
+            118.802001953125
+          ],
+          [
+            66.58399963378906,
+            51.37200164794922,
+            159.1280059814453
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 63,
+          "nonmanifoldEdges": 52,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 122,
+          "components": 5
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17535"
+    },
+    {
+      "id": "ema147:EMAPA:17544",
+      "name": "cerebral cortex",
+      "sourceLabel": "EMAPA17544_cerebral_cortex",
+      "sourceFile": "Surfaces/EMAPA17544_cerebral_cortex.stl",
+      "sourceFilenameLabel": "cerebral_cortex",
+      "sourceRegionIndex": 27,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17544",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#cc0000",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 86364,
+        "vertices": 8934,
+        "triangleOffset": 174547,
+        "triangles": 18500,
+        "boundsSourceUnits": [
+          [
+            11.49370002746582,
+            8.172410011291504,
+            123.13300323486328
+          ],
+          [
+            70.5624008178711,
+            52.710899353027344,
+            161.92100524902344
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 24,
+          "nonmanifoldEdges": 110,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 190,
+          "components": 7
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17544",
+      "sourceVolumeLabelIndex": 27,
+      "sourceIndexLabel": "EMAPA:17544 cerebral cortex"
+    },
+    {
+      "id": "ema147:EMAPA:17550",
+      "name": "medulla oblongata",
+      "sourceLabel": "EMAPA17550_medulla_oblongata",
+      "sourceFile": "Surfaces/EMAPA17550_medulla_oblongata.stl",
+      "sourceFilenameLabel": "medulla_oblongata",
+      "sourceRegionIndex": 28,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17550",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#b2cce5",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 95298,
+        "vertices": 3060,
+        "triangleOffset": 193047,
+        "triangles": 6115,
+        "boundsSourceUnits": [
+          [
+            24.554000854492188,
+            51.078399658203125,
+            125.8499984741211
+          ],
+          [
+            56.76340103149414,
+            94.32389831542969,
+            148.17300415039062
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 12,
+          "nonmanifoldEdges": 11,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 23,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17550",
+      "sourceVolumeLabelIndex": 28,
+      "sourceIndexLabel": "EMAPA:17550 medulla oblongata"
+    },
+    {
+      "id": "ema147:EMAPA:17563",
+      "name": "pons",
+      "sourceLabel": "EMAPA17563_pons",
+      "sourceFile": "Surfaces/EMAPA17563_pons.stl",
+      "sourceFilenameLabel": "pons",
+      "sourceRegionIndex": 29,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17563",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#007f7f",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 98358,
+        "vertices": 1653,
+        "triangleOffset": 199162,
+        "triangles": 3304,
+        "boundsSourceUnits": [
+          [
+            23.00779914855957,
+            48.633201599121094,
+            136.8419952392578
+          ],
+          [
+            57.31959915161133,
+            66.21769714355469,
+            149.14100646972656
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 2,
+          "nonmanifoldEdges": 3,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 5,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17563",
+      "sourceVolumeLabelIndex": 30,
+      "sourceIndexLabel": "EMAPA:17563 pons"
+    },
+    {
+      "id": "ema147:EMAPA:17576",
+      "name": "trigeminal V nerve",
+      "sourceLabel": "EMAPA17576_trigeminal_V_nerve",
+      "sourceFile": "Surfaces/EMAPA17576_trigeminal_V_nerve.stl",
+      "sourceFilenameLabel": "trigeminal_V_nerve",
+      "sourceRegionIndex": 30,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17576",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#33b233",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 100011,
+        "vertices": 237,
+        "triangleOffset": 202466,
+        "triangles": 462,
+        "boundsSourceUnits": [
+          [
+            24.50480079650879,
+            47.322200775146484,
+            124.33000183105469
+          ],
+          [
+            56.778900146484375,
+            54.59120178222656,
+            132.2239990234375
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 3
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17576",
+      "sourceVolumeLabelIndex": 34,
+      "sourceIndexLabel": "EMAPA:17576 trigeminal V nerve"
+    },
+    {
+      "id": "ema147:EMAPA:17577",
+      "name": "spinal cord",
+      "sourceLabel": "EMAPA17577_spinal_cord",
+      "sourceFile": "Surfaces/EMAPA17577_spinal_cord.stl",
+      "sourceFilenameLabel": "spinal_cord",
+      "sourceRegionIndex": 31,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17577",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#cc4ccc",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 100248,
+        "vertices": 5108,
+        "triangleOffset": 202928,
+        "triangles": 10216,
+        "boundsSourceUnits": [
+          [
+            30.05299949645996,
+            32.77080154418945,
+            0.8320909738540649
+          ],
+          [
+            46.16270065307617,
+            104.58999633789062,
+            135.1699981689453
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 2,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 3,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17577",
+      "sourceVolumeLabelIndex": 35,
+      "sourceIndexLabel": "EMAPA:17577 spinal cord"
+    },
+    {
+      "id": "ema147:EMAPA:17608",
+      "name": "nasal septum",
+      "sourceLabel": "EMAPA17608_nasal_septum",
+      "sourceFile": "Surfaces/EMAPA17608_nasal_septum.stl",
+      "sourceFilenameLabel": "nasal_septum",
+      "sourceRegionIndex": 32,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17608",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#7fcc99",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 105356,
+        "vertices": 573,
+        "triangleOffset": 213144,
+        "triangles": 1142,
+        "boundsSourceUnits": [
+          [
+            39.05730056762695,
+            8.165470123291016,
+            99.07640075683594
+          ],
+          [
+            43.45589828491211,
+            33.67110061645508,
+            116.67500305175781
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17608",
+      "sourceVolumeLabelIndex": 46,
+      "sourceIndexLabel": "EMAPA:17608 nasal septum"
+    },
+    {
+      "id": "ema147:EMAPA:17635",
+      "name": "Meckel s cartilage",
+      "sourceLabel": "EMAPA17635_Meckel_s_cartilage",
+      "sourceFile": "Surfaces/EMAPA17635_Meckel_s_cartilage.stl",
+      "sourceFilenameLabel": "Meckel_s_cartilage",
+      "sourceRegionIndex": 33,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17635",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4cb299",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 105929,
+        "vertices": 492,
+        "triangleOffset": 214286,
+        "triangles": 976,
+        "boundsSourceUnits": [
+          [
+            13.430399894714355,
+            48.69430160522461,
+            115.7760009765625
+          ],
+          [
+            67.939697265625,
+            61.82469940185547,
+            129.2010040283203
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17635",
+      "sourceVolumeLabelIndex": 57,
+      "sourceIndexLabel": "EMAPA:17635 Meckel's cartilage"
+    },
+    {
+      "id": "ema147:EMAPA:17639",
+      "name": "maxilla",
+      "sourceLabel": "EMAPA17639_maxilla",
+      "sourceFile": "Surfaces/EMAPA17639_maxilla.stl",
+      "sourceFilenameLabel": "maxilla",
+      "sourceRegionIndex": 34,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17639",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#33b2b2",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 106421,
+        "vertices": 673,
+        "triangleOffset": 215262,
+        "triangles": 1346,
+        "boundsSourceUnits": [
+          [
+            26.798799514770508,
+            21.37030029296875,
+            101.1050033569336
+          ],
+          [
+            54.89030075073242,
+            46.81370162963867,
+            117.18499755859375
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 1,
+          "nonmanifoldEdges": 4,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 6,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17639",
+      "sourceVolumeLabelIndex": 58,
+      "sourceIndexLabel": "EMAPA:17639 maxilla"
+    },
+    {
+      "id": "ema147:EMAPA:17670",
+      "name": "nasopharynx",
+      "sourceLabel": "EMAPA17670_nasopharynx",
+      "sourceFile": "Surfaces/EMAPA17670_nasopharynx.stl",
+      "sourceFilenameLabel": "nasopharynx",
+      "sourceRegionIndex": 35,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17670",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4ccccc",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 107094,
+        "vertices": 220,
+        "triangleOffset": 216608,
+        "triangles": 436,
+        "boundsSourceUnits": [
+          [
+            36.30569839477539,
+            28.45549964904785,
+            108.79299926757812
+          ],
+          [
+            45.137298583984375,
+            41.86650085449219,
+            117.21299743652344
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17670",
+      "sourceVolumeLabelIndex": 4,
+      "sourceIndexLabel": "EMAPA:17670 nasopharynx"
+    },
+    {
+      "id": "ema147:EMAPA:17674",
+      "name": "cervical vertebra",
+      "sourceLabel": "EMAPA17674_cervical_vertebra",
+      "sourceFile": "Surfaces/EMAPA17674_cervical_vertebra.stl",
+      "sourceFilenameLabel": "cervical_vertebra",
+      "sourceRegionIndex": 36,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17674",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#aab4b5",
+      "defaultOpacity": 1,
+      "colorProvenance": "neutral display fallback; no exact source-index identifier match",
+      "geometry": {
+        "vertexOffset": 107314,
+        "vertices": 8647,
+        "triangleOffset": 217044,
+        "triangles": 17596,
+        "boundsSourceUnits": [
+          [
+            24.650100708007812,
+            28.425199508666992,
+            4.862189769744873
+          ],
+          [
+            51.472198486328125,
+            104.66699981689453,
+            117.17500305175781
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 34,
+          "nonmanifoldEdges": 157,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 223,
+          "components": 3
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17674"
+    },
+    {
+      "id": "ema147:EMAPA:17682",
+      "name": "temporal bone",
+      "sourceLabel": "EMAPA17682_temporal_bone",
+      "sourceFile": "Surfaces/EMAPA17682_temporal_bone.stl",
+      "sourceFilenameLabel": "temporal_bone",
+      "sourceRegionIndex": 37,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17682",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff664c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 115961,
+        "vertices": 4737,
+        "triangleOffset": 234640,
+        "triangles": 9440,
+        "boundsSourceUnits": [
+          [
+            10.228500366210938,
+            50.60810089111328,
+            116.86599731445312
+          ],
+          [
+            70.02980041503906,
+            94.71820068359375,
+            144.2220001220703
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 91,
+          "nonmanifoldEdges": 82,
+          "inconsistentWindingEdges": 1,
+          "noncyclicVertexLinks": 186,
+          "components": 18
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17682",
+      "sourceVolumeLabelIndex": 72,
+      "sourceIndexLabel": "EMAPA:17682 temporal bone"
+    },
+    {
+      "id": "ema147:EMAPA:17701",
+      "name": "diaphragm",
+      "sourceLabel": "EMAPA17701_diaphragm",
+      "sourceFile": "Surfaces/EMAPA17701_diaphragm.stl",
+      "sourceFilenameLabel": "diaphragm",
+      "sourceRegionIndex": 38,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17701",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff9900",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 120698,
+        "vertices": 7698,
+        "triangleOffset": 244080,
+        "triangles": 15746,
+        "boundsSourceUnits": [
+          [
+            4.782569885253906,
+            44.63600158691406,
+            33.810001373291016
+          ],
+          [
+            74.39250183105469,
+            93.33110046386719,
+            71.13809967041016
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 32,
+          "nonmanifoldEdges": 127,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 190,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17701",
+      "sourceVolumeLabelIndex": 8,
+      "sourceIndexLabel": "EMAPA:17701 diaphragm"
+    },
+    {
+      "id": "ema147:EMAPA:17787",
+      "name": "cerebellum",
+      "sourceLabel": "EMAPA17787_cerebellum",
+      "sourceFile": "Surfaces/EMAPA17787_cerebellum.stl",
+      "sourceFilenameLabel": "cerebellum",
+      "sourceRegionIndex": 39,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17787",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#00b2ff",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 128396,
+        "vertices": 1652,
+        "triangleOffset": 259826,
+        "triangles": 3333,
+        "boundsSourceUnits": [
+          [
+            18.944700241088867,
+            56.315799713134766,
+            135.78199768066406
+          ],
+          [
+            61.54290008544922,
+            73.12550354003906,
+            154.2030029296875
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 15,
+          "nonmanifoldEdges": 30,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 48,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17787",
+      "sourceVolumeLabelIndex": 29,
+      "sourceIndexLabel": "EMAPA:17787 cerebellum"
+    },
+    {
+      "id": "ema147:EMAPA:17795",
+      "name": "cerebral aqueduct",
+      "sourceLabel": "EMAPA17795_cerebral_aqueduct",
+      "sourceFile": "Surfaces/EMAPA17795_cerebral_aqueduct.stl",
+      "sourceFilenameLabel": "cerebral_aqueduct",
+      "sourceRegionIndex": 40,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17795",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#aab4b5",
+      "defaultOpacity": 1,
+      "colorProvenance": "neutral display fallback; no exact source-index identifier match",
+      "geometry": {
+        "vertexOffset": 130048,
+        "vertices": 30,
+        "triangleOffset": 263159,
+        "triangles": 56,
+        "boundsSourceUnits": [
+          [
+            38.49509811401367,
+            59.696998596191406,
+            148.22500610351562
+          ],
+          [
+            41.16279983520508,
+            62.804100036621094,
+            151.75999450683594
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17795"
+    },
+    {
+      "id": "ema147:EMAPA:17824",
+      "name": "ossicle",
+      "sourceLabel": "EMAPA17824_ossicle",
+      "sourceFile": "Surfaces/EMAPA17824_ossicle.stl",
+      "sourceFilenameLabel": "ossicle",
+      "sourceRegionIndex": 41,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17824",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff33b2",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 130078,
+        "vertices": 444,
+        "triangleOffset": 263215,
+        "triangles": 879,
+        "boundsSourceUnits": [
+          [
+            12.296500205993652,
+            50.31079864501953,
+            117.78099822998047
+          ],
+          [
+            67.96029663085938,
+            64.10179901123047,
+            134.23699951171875
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 3,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 3,
+          "components": 3
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17824",
+      "sourceVolumeLabelIndex": 37,
+      "sourceIndexLabel": "EMAPA:17824 ossicle"
+    },
+    {
+      "id": "ema147:EMAPA:17838",
+      "name": "lens",
+      "sourceLabel": "EMAPA17838_lens",
+      "sourceFile": "Surfaces/EMAPA17838_lens.stl",
+      "sourceFilenameLabel": "lens",
+      "sourceRegionIndex": 42,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17838",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4cb299",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 130522,
+        "vertices": 370,
+        "triangleOffset": 264094,
+        "triangles": 732,
+        "boundsSourceUnits": [
+          [
+            11.274900436401367,
+            21.74220085144043,
+            108.25800323486328
+          ],
+          [
+            71.23770141601562,
+            31.52079963684082,
+            123.18800354003906
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17838",
+      "sourceVolumeLabelIndex": 41,
+      "sourceIndexLabel": "EMAPA:17838 lens"
+    },
+    {
+      "id": "ema147:EMAPA:17852",
+      "name": "nasal capsule",
+      "sourceLabel": "EMAPA17852_nasal_capsule",
+      "sourceFile": "Surfaces/EMAPA17852_nasal_capsule.stl",
+      "sourceFilenameLabel": "nasal_capsule",
+      "sourceRegionIndex": 43,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17852",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4c19cc",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 130892,
+        "vertices": 3499,
+        "triangleOffset": 264826,
+        "triangles": 7031,
+        "boundsSourceUnits": [
+          [
+            23.22100067138672,
+            5.197329998016357,
+            88.18949890136719
+          ],
+          [
+            58.08250045776367,
+            36.08169937133789,
+            120.12699890136719
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 117,
+          "nonmanifoldEdges": 190,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 305,
+          "components": 7
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17852",
+      "sourceVolumeLabelIndex": 45,
+      "sourceIndexLabel": "EMAPA:17852 nasal capsule"
+    },
+    {
+      "id": "ema147:EMAPA:17888",
+      "name": "stomach fundus epithelium",
+      "sourceLabel": "EMAPA17888_stomach_fundus_epithelium",
+      "sourceFile": "Surfaces/EMAPA17888_stomach_fundus_epithelium.stl",
+      "sourceFilenameLabel": "stomach_fundus_epithelium",
+      "sourceRegionIndex": 44,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17888",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#aab4b5",
+      "defaultOpacity": 1,
+      "colorProvenance": "neutral display fallback; no exact source-index identifier match",
+      "geometry": {
+        "vertexOffset": 134391,
+        "vertices": 801,
+        "triangleOffset": 271857,
+        "triangles": 1578,
+        "boundsSourceUnits": [
+          [
+            46.929100036621094,
+            57.510799407958984,
+            33.122100830078125
+          ],
+          [
+            65.79149627685547,
+            86.90290069580078,
+            42.12379837036133
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 8,
+          "nonmanifoldEdges": 18,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 34,
+          "components": 15
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17888"
+    },
+    {
+      "id": "ema147:EMAPA:17962",
+      "name": "ovary",
+      "sourceLabel": "EMAPA17962_ovary",
+      "sourceFile": "Surfaces/EMAPA17962_ovary.stl",
+      "sourceFilenameLabel": "ovary",
+      "sourceRegionIndex": 45,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:17962",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#e5e5e1",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 135192,
+        "vertices": 319,
+        "triangleOffset": 273435,
+        "triangles": 636,
+        "boundsSourceUnits": [
+          [
+            18.17140007019043,
+            59.68479919433594,
+            16.784799575805664
+          ],
+          [
+            56.998199462890625,
+            72.97740173339844,
+            27.215299606323242
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 6,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 6,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:17962",
+      "sourceVolumeLabelIndex": 63,
+      "sourceIndexLabel": "EMAPA:17962 ovary"
+    },
+    {
+      "id": "ema147:EMAPA:18010",
+      "name": "rib",
+      "sourceLabel": "EMAPA18010_rib",
+      "sourceFile": "Surfaces/EMAPA18010_rib.stl",
+      "sourceFilenameLabel": "rib",
+      "sourceRegionIndex": 46,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18010",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#e566e5",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 135511,
+        "vertices": 6791,
+        "triangleOffset": 274071,
+        "triangles": 13529,
+        "boundsSourceUnits": [
+          [
+            6.44828987121582,
+            66.53890228271484,
+            34.832401275634766
+          ],
+          [
+            70.89099884033203,
+            98.32769775390625,
+            95.1281967163086
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 1,
+          "nonmanifoldEdges": 15,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 25,
+          "components": 19
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18010",
+      "sourceVolumeLabelIndex": 1,
+      "sourceIndexLabel": "EMAPA:18010 rib"
+    },
+    {
+      "id": "ema147:EMAPA:18017",
+      "name": "frontal bone primordium",
+      "sourceLabel": "EMAPA18017_frontal_bone_primordium",
+      "sourceFile": "Surfaces/EMAPA18017_frontal_bone_primordium.stl",
+      "sourceFilenameLabel": "frontal_bone_primordium",
+      "sourceRegionIndex": 47,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18017",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#7f4c00",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 142302,
+        "vertices": 7672,
+        "triangleOffset": 287600,
+        "triangles": 15420,
+        "boundsSourceUnits": [
+          [
+            8.945329666137695,
+            8.758119583129883,
+            112.99700164794922
+          ],
+          [
+            71.90950012207031,
+            52.605499267578125,
+            168.20599365234375
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 15,
+          "nonmanifoldEdges": 47,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 77,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18017",
+      "sourceVolumeLabelIndex": 71,
+      "sourceIndexLabel": "EMAPA:18017 frontal bone primordium"
+    },
+    {
+      "id": "ema147:EMAPA:18028",
+      "name": "pelvic girdle skeleton",
+      "sourceLabel": "EMAPA18028_pelvic_girdle_skeleton",
+      "sourceFile": "Surfaces/EMAPA18028_pelvic_girdle_skeleton.stl",
+      "sourceFilenameLabel": "pelvic_girdle_skeleton",
+      "sourceRegionIndex": 48,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18028",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#00b2ff",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 149974,
+        "vertices": 854,
+        "triangleOffset": 303020,
+        "triangles": 1700,
+        "boundsSourceUnits": [
+          [
+            25.583999633789062,
+            36.644100189208984,
+            5.782569885253906
+          ],
+          [
+            53.250099182128906,
+            65.1801986694336,
+            15.178299903869629
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18028",
+      "sourceVolumeLabelIndex": 76,
+      "sourceIndexLabel": "EMAPA:18028 pelvic girdle skeleton"
+    },
+    {
+      "id": "ema147:EMAPA:18143",
+      "name": "calcaneum cartilage condensation",
+      "sourceLabel": "EMAPA18143_calcaneum_cartilage_condensation",
+      "sourceFile": "Surfaces/EMAPA18143_calcaneum_cartilage_condensation.stl",
+      "sourceFilenameLabel": "calcaneum_cartilage_condensation",
+      "sourceRegionIndex": 49,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18143",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#aab4b5",
+      "defaultOpacity": 1,
+      "colorProvenance": "neutral display fallback; no exact source-index identifier match",
+      "geometry": {
+        "vertexOffset": 150828,
+        "vertices": 215,
+        "triangleOffset": 304720,
+        "triangles": 422,
+        "boundsSourceUnits": [
+          [
+            22.15130043029785,
+            14.136300086975098,
+            29.783599853515625
+          ],
+          [
+            55.9901008605957,
+            22.753799438476562,
+            40.931800842285156
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18143"
+    },
+    {
+      "id": "ema147:EMAPA:18290",
+      "name": "mandible",
+      "sourceLabel": "EMAPA18290_mandible",
+      "sourceFile": "Surfaces/EMAPA18290_mandible.stl",
+      "sourceFilenameLabel": "mandible",
+      "sourceRegionIndex": 50,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18290",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4ce54c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 151043,
+        "vertices": 1987,
+        "triangleOffset": 305142,
+        "triangles": 4010,
+        "boundsSourceUnits": [
+          [
+            17.47170066833496,
+            34.75640106201172,
+            85.30570220947266
+          ],
+          [
+            63.757198333740234,
+            53.67290115356445,
+            119.2020034790039
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 2,
+          "nonmanifoldEdges": 9,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 21,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18290",
+      "sourceVolumeLabelIndex": 56,
+      "sourceIndexLabel": "EMAPA:18290 mandible"
+    },
+    {
+      "id": "ema147:EMAPA:18321",
+      "name": "bladder",
+      "sourceLabel": "EMAPA18321_bladder",
+      "sourceFile": "Surfaces/EMAPA18321_bladder.stl",
+      "sourceFilenameLabel": "bladder",
+      "sourceRegionIndex": 51,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18321",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#194c4c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 153030,
+        "vertices": 870,
+        "triangleOffset": 309152,
+        "triangles": 1741,
+        "boundsSourceUnits": [
+          [
+            32.0458984375,
+            37.01919937133789,
+            21.254199981689453
+          ],
+          [
+            47.809898376464844,
+            51.530399322509766,
+            38.144798278808594
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 1,
+          "nonmanifoldEdges": 4,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 6,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18321",
+      "sourceVolumeLabelIndex": 60,
+      "sourceIndexLabel": "EMAPA:18321 bladder"
+    },
+    {
+      "id": "ema147:EMAPA:18328",
+      "name": "Mullerian tubercle",
+      "sourceLabel": "EMAPA18328_Mullerian_tubercle",
+      "sourceFile": "Surfaces/EMAPA18328_Mullerian_tubercle.stl",
+      "sourceFilenameLabel": "Mullerian_tubercle",
+      "sourceRegionIndex": 52,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18328",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#e566e5",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 153900,
+        "vertices": 1034,
+        "triangleOffset": 310893,
+        "triangles": 2063,
+        "boundsSourceUnits": [
+          [
+            15.726799964904785,
+            46.61589813232422,
+            17.757099151611328
+          ],
+          [
+            61.25510025024414,
+            80.40450286865234,
+            28.244300842285156
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 5,
+          "nonmanifoldEdges": 4,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 9,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18328",
+      "sourceVolumeLabelIndex": 62,
+      "sourceIndexLabel": "EMAPA:18328 Mullerian tubercle"
+    },
+    {
+      "id": "ema147:EMAPA:18344",
+      "name": "sternum",
+      "sourceLabel": "EMAPA18344_sternum",
+      "sourceFile": "Surfaces/EMAPA18344_sternum.stl",
+      "sourceFilenameLabel": "sternum",
+      "sourceRegionIndex": 53,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18344",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#b2cce5",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 154934,
+        "vertices": 662,
+        "triangleOffset": 312956,
+        "triangles": 1320,
+        "boundsSourceUnits": [
+          [
+            34.312198638916016,
+            45.05099868774414,
+            68.06819915771484
+          ],
+          [
+            45.85060119628906,
+            67.93329620361328,
+            101.19999694824219
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 2,
+          "nonmanifoldEdges": 2,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 4,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18344",
+      "sourceVolumeLabelIndex": 75,
+      "sourceIndexLabel": "EMAPA:18344 sternum"
+    },
+    {
+      "id": "ema147:EMAPA:18415",
+      "name": "vena cava",
+      "sourceLabel": "EMAPA18415_vena_cava",
+      "sourceFile": "Surfaces/EMAPA18415_vena_cava.stl",
+      "sourceFilenameLabel": "vena_cava",
+      "sourceRegionIndex": 54,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18415",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#e5e5e1",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 155596,
+        "vertices": 1118,
+        "triangleOffset": 314276,
+        "triangles": 2228,
+        "boundsSourceUnits": [
+          [
+            26.795900344848633,
+            67.73870086669922,
+            70.79769897460938
+          ],
+          [
+            52.5192985534668,
+            82.89990234375,
+            112.7770004272461
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18415",
+      "sourceVolumeLabelIndex": 50,
+      "sourceIndexLabel": "EMAPA:18415 vena cava"
+    },
+    {
+      "id": "ema147:EMAPA:18426",
+      "name": "adrenal gland",
+      "sourceLabel": "EMAPA18426_adrenal_gland",
+      "sourceFile": "Surfaces/EMAPA18426_adrenal_gland.stl",
+      "sourceFilenameLabel": "adrenal_gland",
+      "sourceRegionIndex": 55,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18426",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff1933",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 156714,
+        "vertices": 365,
+        "triangleOffset": 316504,
+        "triangles": 722,
+        "boundsSourceUnits": [
+          [
+            23.827600479125977,
+            78.7686996459961,
+            30.78969955444336
+          ],
+          [
+            51.940399169921875,
+            89.59649658203125,
+            39.18899917602539
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18426",
+      "sourceVolumeLabelIndex": 17,
+      "sourceIndexLabel": "EMAPA:18426 adrenal gland"
+    },
+    {
+      "id": "ema147:EMAPA:18535",
+      "name": "spleen primordium",
+      "sourceLabel": "EMAPA18535_spleen_primordium",
+      "sourceFile": "Surfaces/EMAPA18535_spleen_primordium.stl",
+      "sourceFilenameLabel": "spleen_primordium",
+      "sourceRegionIndex": 56,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18535",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4cff4c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 157079,
+        "vertices": 398,
+        "triangleOffset": 317226,
+        "triangles": 792,
+        "boundsSourceUnits": [
+          [
+            50.752498626708984,
+            60.585601806640625,
+            23.822900772094727
+          ],
+          [
+            64.3125991821289,
+            88.93949890136719,
+            36.1973991394043
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18535",
+      "sourceVolumeLabelIndex": 18,
+      "sourceIndexLabel": "EMAPA:18535 spleen primordium"
+    },
+    {
+      "id": "ema147:EMAPA:18544",
+      "name": "pineal primordium",
+      "sourceLabel": "EMAPA18544_pineal_primordium",
+      "sourceFile": "Surfaces/EMAPA18544_pineal_primordium.stl",
+      "sourceFilenameLabel": "pineal_primordium",
+      "sourceRegionIndex": 57,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18544",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#e56666",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 157477,
+        "vertices": 115,
+        "triangleOffset": 318018,
+        "triangles": 233,
+        "boundsSourceUnits": [
+          [
+            38.0177001953125,
+            25.16029930114746,
+            152.05299377441406
+          ],
+          [
+            43.808799743652344,
+            32.6870002746582,
+            159.052001953125
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 1,
+          "nonmanifoldEdges": 3,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 5,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18544",
+      "sourceVolumeLabelIndex": 26,
+      "sourceIndexLabel": "EMAPA:18544 pineal primordium"
+    },
+    {
+      "id": "ema147:EMAPA:18590",
+      "name": "neural retina",
+      "sourceLabel": "EMAPA18590_neural_retina",
+      "sourceFile": "Surfaces/EMAPA18590_neural_retina.stl",
+      "sourceFilenameLabel": "neural_retina",
+      "sourceRegionIndex": 58,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18590",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#194c4c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 157592,
+        "vertices": 1305,
+        "triangleOffset": 318251,
+        "triangles": 2645,
+        "boundsSourceUnits": [
+          [
+            11.502300262451172,
+            19.95159912109375,
+            108.63099670410156
+          ],
+          [
+            70.73370361328125,
+            36.10390090942383,
+            125.16000366210938
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 1,
+          "nonmanifoldEdges": 7,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 14,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18590",
+      "sourceVolumeLabelIndex": 43,
+      "sourceIndexLabel": "EMAPA:18590 neural retina"
+    },
+    {
+      "id": "ema147:EMAPA:18601",
+      "name": "aorta",
+      "sourceLabel": "EMAPA18601_aorta",
+      "sourceFile": "Surfaces/EMAPA18601_aorta.stl",
+      "sourceFilenameLabel": "aorta",
+      "sourceRegionIndex": 59,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18601",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#7fff7f",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 158897,
+        "vertices": 807,
+        "triangleOffset": 320896,
+        "triangles": 1610,
+        "boundsSourceUnits": [
+          [
+            33.972801208496094,
+            67.75679779052734,
+            46.7859001159668
+          ],
+          [
+            47.38159942626953,
+            89.59349822998047,
+            92.19229888916016
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18601",
+      "sourceVolumeLabelIndex": 47,
+      "sourceIndexLabel": "EMAPA:18601 aorta"
+    },
+    {
+      "id": "ema147:EMAPA:18705",
+      "name": "basioccipital bone",
+      "sourceLabel": "EMAPA18705_basioccipital_bone",
+      "sourceFile": "Surfaces/EMAPA18705_basioccipital_bone.stl",
+      "sourceFilenameLabel": "basioccipital_bone",
+      "sourceRegionIndex": 60,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18705",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#337f4c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 159704,
+        "vertices": 1229,
+        "triangleOffset": 322506,
+        "triangles": 2484,
+        "boundsSourceUnits": [
+          [
+            21.742900848388672,
+            62.81769943237305,
+            120.82099914550781
+          ],
+          [
+            55.2577018737793,
+            94.88200378417969,
+            129.17300415039062
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 10,
+          "nonmanifoldEdges": 23,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 35,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18705",
+      "sourceVolumeLabelIndex": 69,
+      "sourceIndexLabel": "EMAPA:18705 basioccipital bone"
+    },
+    {
+      "id": "ema147:EMAPA:18708",
+      "name": "exoccipital bone",
+      "sourceLabel": "EMAPA18708_exoccipital_bone",
+      "sourceFile": "Surfaces/EMAPA18708_exoccipital_bone.stl",
+      "sourceFilenameLabel": "exoccipital_bone",
+      "sourceRegionIndex": 61,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18708",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#b2e566",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 160933,
+        "vertices": 470,
+        "triangleOffset": 324990,
+        "triangles": 963,
+        "boundsSourceUnits": [
+          [
+            20.575899124145508,
+            67.22319793701172,
+            124.93099975585938
+          ],
+          [
+            59.0005989074707,
+            81.57019805908203,
+            134.2259979248047
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 39,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 39,
+          "components": 3
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18708",
+      "sourceVolumeLabelIndex": 70,
+      "sourceIndexLabel": "EMAPA:18708 exoccipital bone"
+    },
+    {
+      "id": "ema147:EMAPA:18721",
+      "name": "clavicle",
+      "sourceLabel": "EMAPA18721_clavicle",
+      "sourceFile": "Surfaces/EMAPA18721_clavicle.stl",
+      "sourceFilenameLabel": "clavicle",
+      "sourceRegionIndex": 62,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18721",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#e56666",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 161403,
+        "vertices": 168,
+        "triangleOffset": 325953,
+        "triangles": 332,
+        "boundsSourceUnits": [
+          [
+            14.447400093078613,
+            62.33300018310547,
+            105.7959976196289
+          ],
+          [
+            30.9060001373291,
+            68.84760284423828,
+            116.90599822998047
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18721",
+      "sourceVolumeLabelIndex": 73,
+      "sourceIndexLabel": "EMAPA:18721 clavicle"
+    },
+    {
+      "id": "ema147:EMAPA:18722",
+      "name": "scapula",
+      "sourceLabel": "EMAPA18722_scapula",
+      "sourceFile": "Surfaces/EMAPA18722_scapula.stl",
+      "sourceFilenameLabel": "scapula",
+      "sourceRegionIndex": 63,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:18722",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#cc0000",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 161571,
+        "vertices": 2363,
+        "triangleOffset": 326285,
+        "triangles": 4729,
+        "boundsSourceUnits": [
+          [
+            6.735650062561035,
+            60.886600494384766,
+            91.06759643554688
+          ],
+          [
+            72.78160095214844,
+            97.98500061035156,
+            116.19000244140625
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 4,
+          "nonmanifoldEdges": 6,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 11,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:18722",
+      "sourceVolumeLabelIndex": 74,
+      "sourceIndexLabel": "EMAPA:18722 scapula"
+    },
+    {
+      "id": "ema147:EMAPA:19103",
+      "name": "radius",
+      "sourceLabel": "EMAPA19103_radius",
+      "sourceFile": "Surfaces/EMAPA19103_radius.stl",
+      "sourceFilenameLabel": "radius",
+      "sourceRegionIndex": 64,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:19103",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#00cc7f",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 163934,
+        "vertices": 854,
+        "triangleOffset": 331014,
+        "triangles": 1701,
+        "boundsSourceUnits": [
+          [
+            3.4923300743103027,
+            29.736099243164062,
+            77.7968978881836
+          ],
+          [
+            79.41339874267578,
+            64.07890319824219,
+            91.4905014038086
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 1,
+          "nonmanifoldEdges": 2,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 3,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:19103",
+      "sourceVolumeLabelIndex": 9,
+      "sourceIndexLabel": "EMAPA:19103 radius"
+    },
+    {
+      "id": "ema147:EMAPA:19104",
+      "name": "ulna",
+      "sourceLabel": "EMAPA19104_ulna",
+      "sourceFile": "Surfaces/EMAPA19104_ulna.stl",
+      "sourceFilenameLabel": "ulna",
+      "sourceRegionIndex": 65,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:19104",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#7f007f",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 164788,
+        "vertices": 1089,
+        "triangleOffset": 332715,
+        "triangles": 2172,
+        "boundsSourceUnits": [
+          [
+            2.665719985961914,
+            32.744598388671875,
+            71.75779724121094
+          ],
+          [
+            80.37000274658203,
+            71.89459991455078,
+            85.19400024414062
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 1,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 2,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:19104",
+      "sourceVolumeLabelIndex": 10,
+      "sourceIndexLabel": "EMAPA:19104 ulna"
+    },
+    {
+      "id": "ema147:EMAPA:19106",
+      "name": "humerus",
+      "sourceLabel": "EMAPA19106_humerus",
+      "sourceFile": "Surfaces/EMAPA19106_humerus.stl",
+      "sourceFilenameLabel": "humerus",
+      "sourceRegionIndex": 66,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:19106",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#007f7f",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 165877,
+        "vertices": 1947,
+        "triangleOffset": 334887,
+        "triangles": 3907,
+        "boundsSourceUnits": [
+          [
+            1.1015900373458862,
+            55.56549835205078,
+            75.78849792480469
+          ],
+          [
+            79.42479705810547,
+            76.17449951171875,
+            114.23899841308594
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 14,
+          "nonmanifoldEdges": 30,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 45,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:19106",
+      "sourceVolumeLabelIndex": 11,
+      "sourceIndexLabel": "EMAPA:19106 humerus"
+    },
+    {
+      "id": "ema147:EMAPA:19141",
+      "name": "fibula",
+      "sourceLabel": "EMAPA19141_fibula",
+      "sourceFile": "Surfaces/EMAPA19141_fibula.stl",
+      "sourceFilenameLabel": "fibula",
+      "sourceRegionIndex": 67,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:19141",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff6666",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 167824,
+        "vertices": 534,
+        "triangleOffset": 338794,
+        "triangles": 1056,
+        "boundsSourceUnits": [
+          [
+            11.262700080871582,
+            16.118600845336914,
+            22.798200607299805
+          ],
+          [
+            67.58550262451172,
+            35.747798919677734,
+            41.18870162963867
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 3
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:19141",
+      "sourceVolumeLabelIndex": 13,
+      "sourceIndexLabel": "EMAPA:19141 fibula"
+    },
+    {
+      "id": "ema147:EMAPA:19142",
+      "name": "tibia",
+      "sourceLabel": "EMAPA19142_tibia",
+      "sourceFile": "Surfaces/EMAPA19142_tibia.stl",
+      "sourceFilenameLabel": "tibia",
+      "sourceRegionIndex": 68,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:19142",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#33b233",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 168358,
+        "vertices": 1410,
+        "triangleOffset": 339850,
+        "triangles": 2820,
+        "boundsSourceUnits": [
+          [
+            4.845719814300537,
+            18.347400665283203,
+            24.83009910583496
+          ],
+          [
+            74.80259704589844,
+            47.917999267578125,
+            44.875
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 5,
+          "nonmanifoldEdges": 13,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 18,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:19142",
+      "sourceVolumeLabelIndex": 14,
+      "sourceIndexLabel": "EMAPA:19142 tibia"
+    },
+    {
+      "id": "ema147:EMAPA:19143",
+      "name": "femur",
+      "sourceLabel": "EMAPA19143_femur",
+      "sourceFile": "Surfaces/EMAPA19143_femur.stl",
+      "sourceFilenameLabel": "femur",
+      "sourceRegionIndex": 69,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:19143",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#cc4ccc",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 169768,
+        "vertices": 1665,
+        "triangleOffset": 342670,
+        "triangles": 3327,
+        "boundsSourceUnits": [
+          [
+            6.342879772186279,
+            36.61429977416992,
+            5.8954901695251465
+          ],
+          [
+            75.09410095214844,
+            53.273799896240234,
+            37.15520095825195
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 6,
+          "nonmanifoldEdges": 11,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 17,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:19143",
+      "sourceVolumeLabelIndex": 15,
+      "sourceIndexLabel": "EMAPA:19143 femur"
+    },
+    {
+      "id": "ema147:EMAPA:19209",
+      "name": "brown fat",
+      "sourceLabel": "EMAPA19209_brown_fat",
+      "sourceFile": "Surfaces/EMAPA19209_brown_fat.stl",
+      "sourceFilenameLabel": "brown_fat",
+      "sourceRegionIndex": 70,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:19209",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4cff4c",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 171433,
+        "vertices": 1296,
+        "triangleOffset": 345997,
+        "triangles": 2587,
+        "boundsSourceUnits": [
+          [
+            15.534899711608887,
+            92.86910247802734,
+            75.03810119628906
+          ],
+          [
+            56.714900970458984,
+            105.05500030517578,
+            98.9541015625
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 7,
+          "nonmanifoldEdges": 10,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 16,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:19209",
+      "sourceVolumeLabelIndex": 5,
+      "sourceIndexLabel": "EMAPA:19209 brown fat"
+    },
+    {
+      "id": "ema147:EMAPA:19431",
+      "name": "C1 vertebra",
+      "sourceLabel": "EMAPA19431_C1_vertebra",
+      "sourceFile": "Surfaces/EMAPA19431_C1_vertebra.stl",
+      "sourceFilenameLabel": "C1_vertebra",
+      "sourceRegionIndex": 71,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:19431",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#b2b266",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 172729,
+        "vertices": 217,
+        "triangleOffset": 348584,
+        "triangles": 426,
+        "boundsSourceUnits": [
+          [
+            24.379600524902344,
+            82.83769989013672,
+            129.79200744628906
+          ],
+          [
+            52.119300842285156,
+            94.43109893798828,
+            135.21099853515625
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:19431",
+      "sourceVolumeLabelIndex": 67,
+      "sourceIndexLabel": "EMAPA:19431 C1 vertebra"
+    },
+    {
+      "id": "ema147:EMAPA:19432",
+      "name": "C2 vertebra",
+      "sourceLabel": "EMAPA19432_C2_vertebra",
+      "sourceFile": "Surfaces/EMAPA19432_C2_vertebra.stl",
+      "sourceFilenameLabel": "C2_vertebra",
+      "sourceRegionIndex": 72,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:19432",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#ff9900",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 172946,
+        "vertices": 926,
+        "triangleOffset": 349010,
+        "triangles": 1858,
+        "boundsSourceUnits": [
+          [
+            25.821699142456055,
+            74.4446029663086,
+            115.76599884033203
+          ],
+          [
+            51.49810028076172,
+            98.00540161132812,
+            126.9739990234375
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 6,
+          "nonmanifoldEdges": 16,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 21,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:19432",
+      "sourceVolumeLabelIndex": 68,
+      "sourceIndexLabel": "EMAPA:19432 C2 vertebra"
+    },
+    {
+      "id": "ema147:EMAPA:25135",
+      "name": "masseter",
+      "sourceLabel": "EMAPA25135_masseter",
+      "sourceFile": "Surfaces/EMAPA25135_masseter.stl",
+      "sourceFilenameLabel": "masseter",
+      "sourceRegionIndex": 73,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:25135",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#b2b266",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 173872,
+        "vertices": 1357,
+        "triangleOffset": 350868,
+        "triangles": 2708,
+        "boundsSourceUnits": [
+          [
+            13.88640022277832,
+            24.565500259399414,
+            98.83809661865234
+          ],
+          [
+            67.97489929199219,
+            56.65489959716797,
+            115.14199829101562
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 1,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 2,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:25135",
+      "sourceVolumeLabelIndex": 2,
+      "sourceIndexLabel": "EMAPA:25135 masseter"
+    },
+    {
+      "id": "ema147:EMAPA:28601",
+      "name": "urothelium of bladder",
+      "sourceLabel": "EMAPA28601_urothelium_of_bladder",
+      "sourceFile": "Surfaces/EMAPA28601_urothelium_of_bladder.stl",
+      "sourceFilenameLabel": "urothelium_of_bladder",
+      "sourceRegionIndex": 74,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:28601",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#4cb2b2",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 175229,
+        "vertices": 148,
+        "triangleOffset": 353576,
+        "triangles": 292,
+        "boundsSourceUnits": [
+          [
+            35.83169937133789,
+            41.01649856567383,
+            22.824100494384766
+          ],
+          [
+            43.589900970458984,
+            48.595001220703125,
+            34.792999267578125
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 0,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 0,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:28601",
+      "sourceVolumeLabelIndex": 6,
+      "sourceIndexLabel": "EMAPA:28601 urothelium of bladder"
+    },
+    {
+      "id": "ema147:EMAPA:35998",
+      "name": "pituitary gland",
+      "sourceLabel": "EMAPA35998_pituitary_gland",
+      "sourceFile": "Surfaces/EMAPA35998_pituitary_gland.stl",
+      "sourceFilenameLabel": "pituitary_gland",
+      "sourceRegionIndex": 75,
+      "systems": [],
+      "meshNode": "ema147:EMAPA:35998",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#b2e566",
+      "defaultOpacity": 1,
+      "colorProvenance": "source-index exact EMAPA identifier",
+      "geometry": {
+        "vertexOffset": 175377,
+        "vertices": 426,
+        "triangleOffset": 353868,
+        "triangles": 866,
+        "boundsSourceUnits": [
+          [
+            32.63050079345703,
+            46.5265007019043,
+            120.83000183105469
+          ],
+          [
+            48.016998291015625,
+            57.79499816894531,
+            131.18899536132812
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 0,
+          "nonmanifoldEdges": 24,
+          "inconsistentWindingEdges": 0,
+          "noncyclicVertexLinks": 24,
+          "components": 2
+        },
+        "normalFallbackVertices": 0
+      },
+      "sourceEMAPAId": "EMAPA:35998",
+      "sourceVolumeLabelIndex": 22,
+      "sourceIndexLabel": "EMAPA:35998 pituitary gland"
+    },
+    {
+      "id": "ema147:reference",
+      "name": "Unannotated reference surface",
+      "sourceLabel": "reference",
+      "sourceFile": "Surfaces/reference.stl",
+      "sourceFilenameLabel": "reference",
+      "sourceRegionIndex": 76,
+      "systems": [],
+      "meshNode": "ema147:reference",
+      "description": "Deposited EMA147 source surface. Coordinate units and anatomical orientation remain unverified; source topology defects are retained.",
+      "color": "#aab4b5",
+      "defaultOpacity": 0.08,
+      "colorProvenance": "neutral display fallback; no exact source-index identifier match",
+      "geometry": {
+        "vertexOffset": 175803,
+        "vertices": 9976,
+        "triangleOffset": 354734,
+        "triangles": 19991,
+        "boundsSourceUnits": [
+          [
+            -2.9523301124572754,
+            -2.9701099395751953,
+            -3.012089967727661
+          ],
+          [
+            84.2677001953125,
+            110.37799835205078,
+            171.06500244140625
+          ]
+        ],
+        "sourceTopology": {
+          "degenerateTriangles": 0,
+          "duplicateTriangles": 0,
+          "boundaryEdges": 15,
+          "nonmanifoldEdges": 30,
+          "inconsistentWindingEdges": 1,
+          "noncyclicVertexLinks": 49,
+          "components": 1
+        },
+        "normalFallbackVertices": 0
+      }
+    }
+  ],
+  "statistics": {
+    "structures": 77,
+    "vertices": 185779,
+    "triangles": 374725,
+    "assetBytes": 10079275,
+    "assetSha256": "8593f83eb1ebf05f17203b9b3b3257adcf04195b7d117ab312efa4ed1a38a75f",
+    "sourceTopology": {
+      "degenerateTriangles": 0,
+      "duplicateTriangles": 0,
+      "boundaryEdges": 1411,
+      "nonmanifoldEdges": 2285,
+      "inconsistentWindingEdges": 11,
+      "noncyclicVertexLinks": 4139
+    },
+    "closedManifoldSourceRegions": 23
+  },
+  "processing": {
+    "sourceToAssetScale": 1,
+    "geometricSmoothing": false,
+    "meshRepair": false,
+    "decimation": false,
+    "triangleRemoval": false,
+    "windingRepair": false,
+    "registration": false,
+    "positionStorage": "float32",
+    "maximumFloat32CoordinateErrorSourceUnits": 7.568359364995558e-06,
+    "vertexReuse": "Only exactly equal positions within one source surface share an index.",
+    "normalProcessing": "Area-weighted unit vertex normals for display; original STL facet normals are not stored in the PLY.",
+    "normalCancellationFallback": "First incident nonzero triangle normal in original source order.",
+    "normalFallbackVertices": 0
+  },
+  "limitations": [
+    "Deposited STL units are unknown. Image voxel spacing is not a surface scale; calibrated measurements are unavailable.",
+    "Source ages E15.0 estimated, 15 dpc and 14.5 dpc remain unresolved; TS23 is consistently declared.",
+    "The anatomy index and STL inventory share only 68 of 76 EMAPA identifiers. No mapping by file order or substituted anatomy is made.",
+    "The unannotated reference.stl surface has no asserted anatomical identity. Its low opacity is a display setting.",
+    "Open/nonmanifold edges, winding conflicts and noncyclic vertex links are retained. Numerical checks do not establish anatomical accuracy.",
+    "The embryonic source is separate from adult references. No physiological validation, adult anatomy or accepted registration is inferred.",
+    "Anatomical directions, physical calibration and unreviewed system categories remain unavailable. Magnification adds no biological detail."
+  ]
+}

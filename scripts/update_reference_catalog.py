@@ -17,11 +17,16 @@ for directory, title, source_spacing, processing_spacing, method, description, l
      ['Source acquisition resolution does not establish surface accuracy or a uniform surface sampling spacing.',
       'No accepted registration to either Digimouse reference exists.',
       'The source figure contains 37 muscle-named surfaces; the publication reports 39 muscles and the difference is unresolved.']),
+    ('atlas-ema147', 'EMA147: 77 native surfaces', None, None, 'Source-native indexed PLY without physical-unit conversion',
+     'TS23 embryonic source surfaces in uncalibrated native coordinates. Source age estimates, topology defects and annotation discrepancies remain unresolved.',
+     ['The reported MRI image spacing does not establish STL coordinate units or a mesh-to-image transform.',
+      'Only 23 of 77 source surfaces meet the executed closed-topology checks; source defects are retained.',
+      'The surface and anatomy-index inventories share only 68 EMAPA identifiers; no mapping by order is accepted.']),
 ]:
     atlas = json.loads((ROOT / 'public' / directory / 'atlas.json').read_text())
     references.append({
         'id': atlas['id'], 'title': title, 'manifestUrl': f'/{directory}/atlas.json',
-        'coordinateFrameId': atlas['coordinateFrame']['id'], 'assetSha256': atlas['statistics']['glbSha256'],
+        'coordinateFrameId': atlas['coordinateFrame']['id'], 'assetSha256': atlas['statistics'].get('assetSha256', atlas['statistics'].get('glbSha256')),
         'coverage': {'regionCount': len(atlas['structures']),
                      'systems': sorted({system for region in atlas['structures'] for system in region['systems']}),
                      'description': description},

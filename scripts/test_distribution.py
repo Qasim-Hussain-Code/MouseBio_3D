@@ -9,7 +9,7 @@ from pathlib import Path
 import unittest
 from urllib.parse import urljoin, urlparse
 from urllib.request import urlopen
-from check_publication import anatomy_registry, inspect_registered_glb
+from check_publication import anatomy_registry, inspect_registered_asset
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = "http://127.0.0.1:4173/"
@@ -89,7 +89,7 @@ class ProductionDistributionTests(unittest.TestCase):
             with self.subTest(path=path):
                 data, mime = get(path.removeprefix("public"))
                 self.assertNotEqual(mime, "text/html")
-                inspect_registered_glb(data, binding)
+                inspect_registered_asset(data, binding)
                 self.assertEqual(data, (ROOT / path).read_bytes())
         for name in ["atlas.json", "detail-index.json", "LICENSE.md"]:
             data, _ = get(f"/atlas-volume/{name}")
@@ -101,11 +101,23 @@ class ProductionDistributionTests(unittest.TestCase):
         self.assertIn(path, registry)
         data, mime = get(path.removeprefix("public"))
         self.assertNotEqual(mime, "text/html")
-        inspect_registered_glb(data, registry[path])
+        inspect_registered_asset(data, registry[path])
         self.assertEqual(data, (ROOT / path).read_bytes())
         for name in ["atlas.json", "LICENSE.md"]:
             data, _ = get(f"/atlas-hindlimb/{name}")
             self.assertEqual(data, (ROOT / "public/atlas-hindlimb" / name).read_bytes())
+
+    def test_native_ema147_and_its_attribution_match_reviewed_source(self):
+        registry = anatomy_registry(lambda path, limit: (ROOT/path).read_bytes() if (ROOT/path).is_file() else None)
+        path = 'public/atlas-ema147/ema147-native.ply'
+        self.assertIn(path,registry)
+        data,mime = get(path.removeprefix('public'))
+        self.assertNotEqual(mime,'text/html')
+        inspect_registered_asset(data,registry[path])
+        self.assertEqual(data,(ROOT/path).read_bytes())
+        for name in ('atlas.json','LICENSE.md'):
+            data,_ = get(f'/atlas-ema147/{name}')
+            self.assertEqual(data,(ROOT/'public/atlas-ema147'/name).read_bytes())
 
 
 if __name__ == "__main__":

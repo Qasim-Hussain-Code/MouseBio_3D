@@ -116,5 +116,30 @@
     "licenses": [
       {"identifier": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/"}
     ]
+  },
+  {
+    "id": "ema147-native-v1",
+    "title": "EMA147: 77 native surfaces",
+    "manifestUrl": "/atlas-ema147/atlas.json",
+    "coordinateFrameId": "emouseatlas-ema147-stl-native-v1",
+    "assetSha256": "8593f83eb1ebf05f17203b9b3b3257adcf04195b7d117ab312efa4ed1a38a75f",
+    "coverage": {
+      "regionCount": 77,
+      "systems": [],
+      "description": "TS23 embryonic source surfaces in uncalibrated native coordinates. Source age estimates, topology defects and annotation discrepancies remain unresolved."
+    },
+    "processingResolution": {
+      "sourceVoxelSpacingMm": null,
+      "processingVoxelSpacingMm": null,
+      "method": "Source-native indexed PLY without physical-unit conversion",
+      "limitations": [
+        "The reported MRI image spacing does not establish STL coordinate units or a mesh-to-image transform.",
+        "Only 23 of 77 source surfaces meet the executed closed-topology checks; source defects are retained.",
+        "The surface and anatomy-index inventories share only 68 EMAPA identifiers; no mapping by order is accepted."
+      ]
+    },
+    "licenses": [
+      {"identifier": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/"}
+    ]
   }
 ]
