@@ -442,8 +442,8 @@
         "MouseLight Project Team"
       ],
       "recordPostedOn": "2024-11-19",
-      "recordVersion": null,
-      "verifiedOn": "2026-10-26",
+      "recordVersion": 1,
+      "verifiedOn": "2026-10-28",
       "publication": {
         "doi": "10.1016/j.cell.2019.07.042",
         "year": 2019,
@@ -452,10 +452,17 @@
       },
       "license": {
         "identifier": "CC-BY-4.0",
-        "verifiedAt": "https://janelia.figshare.com/articles/dataset/MouseLight_Neuron_AA1624/27766452",
+        "verifiedAt": "https://api.figshare.com/v2/articles/27766452",
         "url": "https://creativecommons.org/licenses/by/4.0/",
-        "redistribution": "permitted_with_attribution_for_the_recorded_resource",
-        "verificationLimit": "Primary record indexed by search; direct page and API file metadata were unavailable during this review. Verify the individual file and record version before acquisition."
+        "scope": "License declared by the identified Figshare version 1 deposit; no morphology body or header inspected.",
+        "redistribution": "deposit_declares_attribution_license_file_header_conflict_review_pending",
+        "separateNeuronBrowserTerms": {
+          "identifier": "CC-BY-NC-4.0",
+          "url": "https://creativecommons.org/licenses/by-nc/4.0/",
+          "verifiedAt": "https://www.janelia.org/project-team/mouselight/neuronbrowser",
+          "scope": "Official terms for material found or downloaded from the MouseLight database and NeuronBrowser.",
+          "note": "The broader Browser terms differ from the specific Figshare declaration. Do not transfer the Figshare license to Browser assets; inspect subsequently acquired deposit files for conflicting terms before import."
+        }
       },
       "coverage": "One reconstructed neuron; not a regional organ mesh, complete cellular atlas or observed synaptic-connectivity graph.",
       "methodology": "MouseLight single-neuron reconstruction from light microscopy of sparsely labelled brains; project sources describe Allen-reference registration.",
@@ -465,18 +472,77 @@
         "coordinateUnits": null
       },
       "download": {
-        "reportedSize": "1.1 MB",
-        "bytes": null,
+        "bytes": 1157661,
         "sha256": null,
-        "format": null,
-        "decision": "candidate_file_metadata_and_coordinate_review_required",
-        "assetsDownloaded": false
+        "format": "SWC and JSON as declared by filenames and API media types; bodies uninspected",
+        "decision": "metadata_verified_body_header_coordinate_and_license_conflict_review_pending",
+        "assetsDownloaded": false,
+        "files": [
+          {
+            "id": 50605332,
+            "name": "AA1624.swc",
+            "bytes": 321126,
+            "mediaType": "text/plain",
+            "downloadUrl": "https://ndownloader.figshare.com/files/50605332",
+            "repositorySuppliedMd5": "fcb1e32b3782c0bf8e5dd652cf1630e3",
+            "repositoryComputedMd5": "fcb1e32b3782c0bf8e5dd652cf1630e3",
+            "sha256": null,
+            "bodyInspected": false
+          },
+          {
+            "id": 50605335,
+            "name": "AA1624.json",
+            "bytes": 836535,
+            "mediaType": "application/json",
+            "downloadUrl": "https://ndownloader.figshare.com/files/50605335",
+            "repositorySuppliedMd5": "58e5cb6bae425601235262a87e1e9b09",
+            "repositoryComputedMd5": "58e5cb6bae425601235262a87e1e9b09",
+            "sha256": null,
+            "bodyInspected": false
+          }
+        ],
+        "headerPreflight": {
+          "method": "HEAD",
+          "stableEndpointStatus": 302,
+          "redirectedStorageStatus": 403,
+          "getAttempted": false,
+          "interpretation": "A redirected HEAD failure does not establish that ordinary GET fails; method-specific signed-storage behavior remains unresolved. Temporary signed URLs are not retained."
+        },
+        "nextAcquisition": {
+          "scope": "SWC only after resource accounting and rechecking version-specific metadata",
+          "fileId": 50605332,
+          "expectedBytes": 321126,
+          "maximumBodyBytes": 321126,
+          "expectedRepositoryMd5": "fcb1e32b3782c0bf8e5dd652cf1630e3",
+          "computeBodySha256": true,
+          "preserveOriginalNodeIdsAndParents": true,
+          "checkFileHeaderLicenseAndCoordinatesBeforeImport": true
+        }
       },
       "limitations": [
-        "Exact file list, version, byte count, checksum and coordinates remain unverified",
-        "The cited project registration does not establish a Digimouse transform or a particular CCF release for this cell",
-        "A single morphology does not establish complete neuronal coverage or functional connectivity"
-      ]
+        "File metadata and repository MD5 values are verified as declarations; body accessibility, actual bytes, file headers and SHA-256 remain unverified.",
+        "Individual specimen, sex, age, cell type, physical coordinate units, CCF release and a file-specific transform remain unknown.",
+        "The Figshare CC BY 4.0 declaration differs from separate NeuronBrowser CC BY-NC 4.0 terms; file-header license review remains necessary before import.",
+        "A redirected HEAD 403 does not establish a GET failure; no morphology GET was attempted.",
+        "No source geometry is imported and no measured radii, complete cellular coverage, synaptic connectivity or functional connectivity is inferred.",
+        "Project-level Allen registration establishes no Digimouse transform or particular CCF release for AA1624."
+      ],
+      "recordPublishedAt": "2024-11-19T22:35:39Z",
+      "recordDoi": "10.25378/janelia.27766452.v1",
+      "recordApi": "https://api.figshare.com/v2/articles/27766452",
+      "versionApi": "https://api.figshare.com/v2/articles/27766452/versions/1",
+      "versionsApi": "https://api.figshare.com/v2/articles/27766452/versions",
+      "recordCitation": "Lay M, Ferreira T and MouseLight Project Team (2024). MouseLight Neuron AA1624. Janelia Research Campus. Dataset version 1. doi:10.25378/janelia.27766452.v1.",
+      "specimen": null,
+      "sex": null,
+      "age": null,
+      "cellType": null,
+      "coordinateFrame": {
+        "units": null,
+        "ccfRelease": null,
+        "individualFileTransform": null,
+        "registrationToDigimouse": null
+      }
     },
     {
       "id": "mouse_musculoskeletal_2021",

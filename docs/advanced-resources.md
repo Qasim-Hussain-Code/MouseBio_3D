@@ -1,6 +1,8 @@
 # Additional anatomical resource assessment
 
-This assessment concerns datasets that could provide detail beyond the registered Digimouse label inventory. It is a source review, not an import report. No assets from the resources below were incorporated, and no model archive or mesh body was downloaded for this assessment. The active atlas manifest remains the authority for implemented coverage. Source pages and metadata were reviewed on 26 October 2026.
+This assessment concerns datasets that could provide detail beyond the registered Digimouse label inventory. It is a source review, not an import report. No assets from the resources below were incorporated during this initial assessment, and no model archive or mesh body was downloaded for that review. The active atlas manifest remains the authority for implemented coverage. Source pages and metadata were reviewed on 26 October 2026.
+
+EMA147 was subsequently imported as a separate native-coordinate reference; see [current methods](ema147-geometry.md). The later [cellular source assessment](cellular-assessment.md) records file-level AA1624 metadata without acquiring or implementing its morphology.
 
 ## Allen regional brain anatomy
 

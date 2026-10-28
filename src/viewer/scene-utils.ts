@@ -149,7 +149,7 @@ export function focusCameraOnRegions(
   return found && fitCameraToBounds(camera, target, bounds, margin);
 }
 
-/** Asset coordinates are the metre-valued glTF coordinates, not raw source millimetres. */
+/** Preserve asset numerical units while centering and applying the display rotation. */
 export function createDisplayTransform(assetCenter: THREE.Vector3): THREE.Matrix4 {
   finiteVector(assetCenter, 'Asset centre');
   return new THREE.Matrix4().makeRotationZ(DISPLAY_ROTATION_Z)

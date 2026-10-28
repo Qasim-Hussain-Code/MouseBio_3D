@@ -896,3 +896,37 @@ test('native source inspection follows selection without inferring index matches
   await view.findByText('17 visible regions');
   assert.equal(view.queryByRole('region', { name: 'Native surface record' }), null);
 });
+
+
+test('source layers preserve observations, background and saved display across faded and hidden contexts', async () => {
+  const view = await openApp(); expectedRequests.push('/atlas-ema147/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'ema147-native-v1' } });
+  await view.findByText('77 visible regions');
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const csv = syntheticCsv.replaceAll('digimouse:3', 'ema147:EMAPA:16098').replaceAll('digimouse:4', 'ema147:EMAPA:16105');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(csv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
+  fireEvent.click(view.getByText('Compose source layers'));
+  const controls = within(view.container.querySelector('.source-layer-controls')! as HTMLElement);
+  const apply = () => fireEvent.click(controls.getByRole('button', { name: 'Apply source layers' }));
+  const choose = () => { fireEvent.click(controls.getByRole('checkbox', { name: /Selected vessel-labelled surfaces/ })); fireEvent.click(controls.getByRole('checkbox', { name: /Trigeminal-labelled surfaces/ })); };
+  assert.equal((controls.getByRole('button', { name: 'Apply source layers' }) as HTMLButtonElement).disabled, true);
+  choose(); fireEvent.change(controls.getByRole('combobox', { name: 'Other source regions' }), { target: { value: 'faded' } }); apply();
+  const faded = await savedView(view), ids = [16797, 17307, 17576, 18415, 18601].map((id) => `ema147:EMAPA:${id}`);
+  assert.deepEqual(faded.hidden, []); for (const id of ids) assert.equal(faded.opacity[id], 1);
+  assert.equal(faded.opacity['ema147:EMAPA:17525'], 0.15); assert.equal(faded.opacity['ema147:reference'], 0.08);
+  assert.equal(faded.background, 'white'); assert.equal(faded.clipAxis, 'off');
+  assert.equal((view.getByRole('combobox', { name: 'Source anatomy group' }) as HTMLSelectElement).value, '');
+  fireEvent.click(view.getByRole('button', { name: 'Compare' })); assert.deepEqual((await savedView(view)).opacity, faded.opacity);
+  choose(); fireEvent.change(controls.getByRole('combobox', { name: 'Other source regions' }), { target: { value: 'hidden' } }); apply();
+  assert.ok(view.getByText('5 visible regions')); const hidden = await savedView(view);
+  assert.equal(hidden.hidden.length, 72); assert.ok(ids.every((id) => !hidden.hidden.includes(id)));
+  fireEvent.click(view.getByRole('button', { name: 'Show all' })); assert.ok(view.getByText('77 visible regions'));
+  fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [inputFile(JSON.stringify(faded), 'layers-view.json')] } });
+  await view.findByText('View settings restored.'); const restored = await savedView(view);
+  assert.deepEqual(restored.opacity, faded.opacity); assert.deepEqual(restored.hidden, faded.hidden); assert.equal(restored.background, 'white');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), observations);
+});

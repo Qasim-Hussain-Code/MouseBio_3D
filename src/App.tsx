@@ -21,6 +21,8 @@ import { buildReferenceSummary } from './domain/reference-summary';
 import { SurfaceDetail } from './components/SurfaceDetail';
 import { DevelopmentalContext } from './components/DevelopmentalContext';
 import { NativeSurfaceRecord } from './components/NativeSurfaceRecord';
+import { SourceLayerControls } from './components/SourceLayerControls';
+import { composeSourceLayers } from './domain/source-layers';
 
 const referenceCatalog = buildReferenceCatalog(referenceCatalogData);
 
@@ -201,6 +203,18 @@ export default function App() {
     setClipAxis('off'); isolation.current = null; setActiveGroup(group.id);
     focusRegions(group.structureIds);
   };
+  const applySourceLayers = (ids: readonly string[], context: 'hidden' | 'faded') => {
+    if (!atlas) return { ok: false, error: 'The anatomical reference is unavailable.' };
+    const result = composeSourceLayers(atlas, ids, context);
+    if (!result.ok) return { ok: false, error: result.errors.join(' ') };
+    setHidden([...result.hidden]); setOpacity({ ...result.opacity });
+    setSelected(selected && result.structureIds.includes(selected) ? selected : result.structureIds[0] ?? null);
+    setFineEnabled(false); setDetailLevel('fine-020'); setDetailStatus({ status: 'idle', structureId: null });
+    setClipAxis('off'); isolation.current = null; setActiveGroup('');
+    focusRegions(result.structureIds);
+    setNotice(`${result.structureIds.length} source regions selected. Other regions ${context === 'hidden' ? 'hidden' : 'faded'}.`);
+    return { ok: true };
+  };
   const switchReference = async (id: string) => {
     const next = getReference(referenceCatalog.catalog, id);
     if (!next || id === atlas?.id) return;
@@ -347,6 +361,7 @@ export default function App() {
       {viewError && <p className="view-import-error" role="alert">View settings unchanged. {viewError}</p>}
       {atlas.assetFormat === 'ply-native-v1' && <p className="view-import-error" role="status">Native source coordinates. Physical units are unknown; no calibrated measurements or cross-reference registration are available.</p>}
       <div className="anatomy-group-bar"><label>Isolate a source group<select aria-label="Source anatomy group" value={selectedGroup ? activeGroup : ''} disabled={!anatomyGroups?.ok} onChange={(event) => { const group = anatomyGroups?.groups.find((entry) => entry.id === event.target.value); if (group) exploreGroup(group); }}><option value="" disabled>Current view</option>{anatomyGroups?.groups.map((group) => <option key={group.id} value={group.id}>{group.title} ({group.structureIds.length})</option>)}</select></label><button className="secondary-button" disabled={visibleCount === 0 || viewerState.primary !== 'ready'} onClick={() => focusRegions(atlas.structures.filter((structure) => !hidden.includes(structure.id) && (opacity[structure.id] ?? defaultStructureOpacity(structure)) > 0).map((structure) => structure.id))}><Icon name="focus" size={15} /> Fit visible regions</button>{selectedGroup && <details className="group-limitations"><summary>Group limits</summary><p>{selectedGroup.description}</p><ul>{selectedGroup.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul></details>}</div>
+      {anatomyGroups?.ok && <SourceLayerControls key={atlas.id} groups={anatomyGroups.groups} onApply={applySourceLayers} />}
       {(mode === 'experimental' || mode === 'comparative') && <div className="data-toolbar">
         <label>Measurement<select aria-label="Measurement series" value={activeSeries} onChange={(event) => setSeries(event.target.value)} disabled={!seriesOptions.length}><option value="" disabled>No observations imported</option>{seriesOptions.map((group) => <option key={seriesKey(group)} value={seriesKey(group)}>{group.measurement} ({group.unit}) · {group.timePoint}</option>)}</select></label>
         <label>{mode === 'comparative' ? 'Condition A' : 'Condition'}<select aria-label="Condition A" value={activeA} onChange={(event) => setConditionA(event.target.value)} disabled={!conditions.length}>{!conditions.length && <option value="">No condition</option>}{conditions.map((condition) => <option key={condition}>{condition}</option>)}</select></label>

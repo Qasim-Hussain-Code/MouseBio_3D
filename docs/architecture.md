@@ -38,6 +38,8 @@ The volume importer streams the compressed source, samples an explicitly declare
 
 `atlas-loader.ts` dispatches a checksum-bound local asset to GLTFLoader or the strict native PLY decoder. `asset-fetch.ts` enforces bounded same-origin reads and rejects redirects. `native-ply.ts` validates the registered binary schema, source identities, per-region ranges, finite positions, generated normals, triangles and bounds without assigning metric units. EMA147 coordinates retain numerical scale 1; its image spacing is not an accepted mesh transform. Developmental source ages remain separate attributed claims in `DevelopmentalContext`.
 
+`source-layers.ts` composes trusted source-group memberships into immutable visibility and opacity settings. `SourceLayerControls` stages group choices without changing anatomical metadata. The application resets clipping and regional detail before fitting the resulting source-bound selection. The saved-view schema retains its display result without storing a layer hierarchy.
+
 ## Physiology and biological scale
 
 The physiological registry binds implemented illustrative processes to explicit atlas and structure IDs. Other systems have extension records with no implemented model. Quantitative models must additionally supply equations, parameter sources, units, numerical methods, assumptions, uncertainty and appropriate independent validation before stronger classifications can be justified. An equation used for display motion is not itself a quantitative physiological model.

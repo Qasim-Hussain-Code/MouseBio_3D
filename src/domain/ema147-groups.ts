@@ -100,12 +100,39 @@ export function buildEma147Groups(atlas: Atlas): AnatomyGroupsResult {
     ids.add(id);
   }
   const all = atlas.structures.map(region => region.id);
+  // Exact deposited filename stems, not inferred system or ontology mappings.
+  const fromSourceLabels = (labels: readonly string[]) => atlas.structures
+    .filter(region => labels.includes(String(region.sourceLabel))).map(region => region.id);
   const common = ['Physical source units and anatomical orientation remain unknown.',
-    'Source topology defects and conflicting age claims remain unresolved; these selections add no geometry or registration.'];
+    'Source topology defects and conflicting age claims remain unresolved; these selections add no geometry or registration.',
+    'Display selections may overlap; they are not partitions or formal anatomical system classifications.',
+    'Selections do not establish complete organs or systems, laterality or biological connectivity.'];
   const groups = [
     group('whole-mouse', 'All native source surfaces', all, 'All 77 deposited surfaces, including the unannotated reference surface.', common),
     group('named-surfaces', 'EMAPA-labelled source surfaces', all.filter(id => id !== 'ema147:reference'), 'The 76 source filenames carrying EMAPA identifiers.',
       [...common, 'Only 68 identifiers match the separate anatomy index; file order and similar names do not establish correspondence.']),
+    group('internal-surfaces', 'Named surfaces without skin', all.filter(id => id !== 'ema147:EMAPA:17525' && id !== 'ema147:reference'),
+      'The 75 named source surfaces after excluding only the file labelled skin and the unannotated reference file.',
+      [...common, 'This filename-based exclusion does not establish that every selected surface is anatomically internal or that the skin is a closed envelope.']),
+    group('neural-surfaces', 'Selected neural-labelled surfaces', fromSourceLabels([
+      'EMAPA16668_dorsal_root_ganglion', 'EMAPA16678_optic_stalk', 'EMAPA16797_trigeminal_V_ganglion',
+      'EMAPA16896_diencephalon', 'EMAPA16974_midbrain', 'EMAPA16979_midbrain_ventricular_layer',
+      'EMAPA17533_epithalamus_mantle_layer', 'EMAPA17535_epithalamus_ventricular_layer', 'EMAPA17544_cerebral_cortex',
+      'EMAPA17550_medulla_oblongata', 'EMAPA17563_pons', 'EMAPA17576_trigeminal_V_nerve', 'EMAPA17577_spinal_cord',
+      'EMAPA17787_cerebellum', 'EMAPA18590_neural_retina',
+    ]), 'Selected source filenames naming brain regions and layers, spinal cord, ganglia, optic stalk, trigeminal nerve and neural retina.',
+      [...common, 'The selection is incomplete neural coverage and supplies no reviewed innervation graph, functional connections or developmental lineage.']),
+    group('bone-cartilage', 'Explicit bone and cartilage labels', fromSourceLabels([
+      'EMAPA17635_Meckel_s_cartilage', 'EMAPA17682_temporal_bone', 'EMAPA18017_frontal_bone_primordium',
+      'EMAPA18143_calcaneum_cartilage_condensation', 'EMAPA18705_basioccipital_bone', 'EMAPA18708_exoccipital_bone',
+    ]), 'The six deposited filenames explicitly containing bone or cartilage, retaining the source primordium and condensation wording.',
+      [...common, 'Other named skeletal regions are omitted from this narrow filename selection. These labels do not establish mineralization, ossification state or a complete skeleton.']),
+    group('tissue-layers', 'Explicit tissue and layer labels', fromSourceLabels([
+      'EMAPA16098_head_mesenchyme', 'EMAPA16979_midbrain_ventricular_layer', 'EMAPA17167_perioptic_mesenchyme',
+      'EMAPA17172_pigmented_retinal_epithelium', 'EMAPA17533_epithalamus_mantle_layer',
+      'EMAPA17535_epithalamus_ventricular_layer', 'EMAPA17888_stomach_fundus_epithelium', 'EMAPA28601_urothelium_of_bladder',
+    ]), 'The eight source filenames explicitly naming mesenchyme, a layer, epithelium or urothelium.',
+      [...common, 'This is not an exhaustive tissue inventory, microscopic histological reconstruction or cellular anatomy. Layer-labelled surfaces also occur in the neural selection.']),
     group('vessels', 'Selected vessel-labelled surfaces', [17307, 18415, 18601].map(id => `ema147:EMAPA:${id}`),
       'The source files labelled basilar artery, vena cava and aorta.', [...common, 'This selection does not establish a complete vascular network, connectivity or blood flow.']),
     group('trigeminal', 'Trigeminal-labelled surfaces', [16797, 17576].map(id => `ema147:EMAPA:${id}`),

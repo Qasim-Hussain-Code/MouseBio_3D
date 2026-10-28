@@ -72,3 +72,18 @@
 .native-surface-record summary { cursor: pointer; font-size: 10px; line-height: 1.7; }
 .native-surface-record details p { font-size: 10px; line-height: 1.7; margin-top: 10px; }
 .native-surface-record dd { min-width: 0; overflow-wrap: anywhere; }
+
+.source-layer-controls { margin: 0 0 14px; padding: 12px 14px; border: 1px solid #dce4d7; border-radius: 6px; background: #f7f9f2; }
+.source-layer-controls > summary { cursor: pointer; color: #41664e; font-size: 12px; }
+.source-layer-controls > p { font-size: 11px; line-height: 1.7; margin-top: 10px; color: #657c69; }
+.source-layer-controls fieldset { border: 0; min-width: 0; margin: 12px 0; padding: 0; }
+.source-layer-controls legend { font-size: 11px; margin-bottom: 9px; }
+.source-layer-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+.source-layer-options label { display: flex; align-items: flex-start; gap: 7px; font-size: 11px; line-height: 1.5; }
+.source-layer-options input { margin-top: 3px; flex-shrink: 0; }
+.source-layer-options small { display: block; font-size: 10px; color: #7c8d75; }
+.source-layer-actions { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.source-layer-actions label { display: grid; gap: 6px; font-size: 11px; }
+.source-layer-actions select { padding: 7px; border: 1px solid #d4dfd1; border-radius: 4px; background: #fff; color: #24433e; font: inherit; max-width: 100%; }
+.source-layer-controls .source-layer-hint { font-size: 10px; }
+@media(max-width:600px) { .source-layer-options { grid-template-columns: 1fr; } .source-layer-actions label { width: 100%; } }
