@@ -23,6 +23,9 @@ import { DevelopmentalContext } from './components/DevelopmentalContext';
 import { NativeSurfaceRecord } from './components/NativeSurfaceRecord';
 import { SourceLayerControls } from './components/SourceLayerControls';
 import { composeSourceLayers } from './domain/source-layers';
+import { parseLocalTrace, MAX_LOCAL_TRACE_BYTES, type LocalTraceAsset } from './domain/local-trace';
+import type { ViewerDiagnostics } from './viewer/viewer-diagnostics';
+import { LocalTraceRecord } from './components/LocalTraceRecord';
 
 const referenceCatalog = buildReferenceCatalog(referenceCatalogData);
 
@@ -69,6 +72,9 @@ export default function App() {
   const [loadError, setLoadError] = useState('');
   const [referenceLoading, setReferenceLoading] = useState(false);
   const [referenceError, setReferenceError] = useState('');
+  const [localTrace, setLocalTrace] = useState<LocalTraceAsset | null>(null);
+  const [traceLoading, setTraceLoading] = useState(false);
+  const [traceError, setTraceError] = useState('');
   const [fineEnabled, setFineEnabled] = useState(false);
   const [detailLevel, setDetailLevel] = useState('fine-020');
   const [activeGroup, setActiveGroup] = useState('whole-mouse');
@@ -88,7 +94,7 @@ export default function App() {
   const [cardiac, setCardiac] = useState(true);
   const [respiratory, setRespiratory] = useState(true);
   const [methods, setMethods] = useState(false);
-  const [diagnostics, setDiagnostics] = useState<{ meshes: number; triangles: number } | null>(null);
+  const [diagnostics, setDiagnostics] = useState<ViewerDiagnostics | null>(null);
   const [viewerState, setViewerState] = useState<Record<string, 'loading' | 'ready' | 'failed'>>({ primary: 'loading', secondary: 'loading' });
   const [rows, setRows] = useState<ExperimentalMeasurement[]>([]);
   const [metadata, setMetadata] = useState<DatasetMetadata>({ origin: 'user-data' });
@@ -106,11 +112,13 @@ export default function App() {
   currentData.current = { atlas, rows, metadata };
   const referenceRequest = useRef<AbortController | null>(null);
   const referenceSequence = useRef(0);
+  const traceImportSequence = useRef(0);
   const dataImportSequence = useRef(0);
   const viewImportSequence = useRef(0);
   const viewer = useRef<ViewerHandle | null>(null);
   const compareViewer = useRef<ViewerHandle | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const traceFileInput = useRef<HTMLInputElement>(null);
   const viewFileInput = useRef<HTMLInputElement>(null);
   const searchInput = useRef<HTMLInputElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -185,7 +193,7 @@ export default function App() {
       viewer.current.focusRegions(ids); pendingGroupFocus.current = null;
     }
   };
-  const viewerReady = (details: { meshes: number; triangles: number }) => {
+  const viewerReady = (details: ViewerDiagnostics) => {
     setDiagnostics(details);
     const pending = pendingGroupFocus.current;
     if (pending && pending.atlasId === atlas?.id && viewer.current) {
@@ -215,23 +223,9 @@ export default function App() {
     setNotice(`${result.structureIds.length} source regions selected. Other regions ${context === 'hidden' ? 'hidden' : 'faded'}.`);
     return { ok: true };
   };
-  const switchReference = async (id: string) => {
-    const next = getReference(referenceCatalog.catalog, id);
-    if (!next || id === atlas?.id) return;
-    const sequence = ++referenceSequence.current;
-    referenceRequest.current?.abort();
-    const abort = new AbortController(); referenceRequest.current = abort;
-    setReferenceLoading(true); setReferenceError('');
-    dataImportSequence.current++; viewImportSequence.current++;
-    try {
-      const response = await fetch(next.manifestUrl, { signal: abort.signal });
-      if (!response.ok) throw new Error('The selected reference could not be loaded.');
-      const loaded = await response.json() as Atlas;
-      if (sequence !== referenceSequence.current || abort.signal.aborted) return;
-      const checked = validateReferenceAtlas(next, loaded);
-      if (!checked.ok) throw new Error(checked.errors.join(' '));
+  const adoptReference = (loaded: Atlas) => {
       const current = currentData.current;
-      if (!current.atlas) return;
+      if (!current.atlas) throw new Error('The current reference is unavailable.');
       const switched = switchAtlasExperimentalData(experimentalBank.current, current.atlas,
         { rows: current.rows, metadata: current.metadata }, loaded);
       if (!switched.ok || !switched.data) throw new Error(switched.errors.join(' '));
@@ -242,8 +236,55 @@ export default function App() {
       setSelected(initialReferenceSelection(loaded)); setHidden([]); setOpacity(referenceOpacity(loaded));
       setFineEnabled(false); setDetailLevel('fine-020'); setDetailStatus({ status: 'idle', structureId: null }); setCameraPose(undefined); setDiagnostics(null);
       setClipAxis('off'); setClipPosition(50); setQuery(''); setSeries(''); setConditionA(''); setConditionB('');
-      setImportResult(null); setViewError(''); isolation.current = null;
-      setNotice(switched.restored ? 'Reference switched. Its local observations were restored.' : 'Reference switched. Previous observations remain in this browser session.');
+      setImportResult(null); setViewError(''); setTraceError(''); isolation.current = null;
+      return switched.restored;
+  };
+  const openLocalTrace = async (file?: File) => {
+    if (!file) return;
+    const sequence = ++traceImportSequence.current;
+    referenceSequence.current++; referenceRequest.current?.abort();
+    dataImportSequence.current++; viewImportSequence.current++;
+    setReferenceLoading(false); setTraceLoading(true); setTraceError(''); setReferenceError(''); setViewError('');
+    try {
+      if (!Number.isSafeInteger(file.size) || file.size <= 0 || file.size > MAX_LOCAL_TRACE_BYTES) throw new Error('Local SWC files must fit the 2 MiB input limit.');
+      let bytes: ArrayBuffer;
+      try { bytes = await file.arrayBuffer(); } catch { throw new Error('The local trace file could not be read.'); }
+      if (sequence !== traceImportSequence.current) return;
+      if (bytes.byteLength !== file.size) throw new Error('The local file byte count changed while reading.');
+      const result = await parseLocalTrace(bytes);
+      if (sequence !== traceImportSequence.current) return;
+      if (!result.ok || !result.asset) throw new Error(result.errors.join(' '));
+      adoptReference(result.asset.atlas);
+      setLocalTrace(result.asset);
+      setNotice('Local trace opened. No file data transmitted.');
+    } catch (error) {
+      if (sequence === traceImportSequence.current) setTraceError(error instanceof Error ? error.message : 'The local trace could not be read.');
+    } finally {
+      if (sequence === traceImportSequence.current) { setTraceLoading(false); if (traceFileInput.current) traceFileInput.current.value = ''; }
+    }
+  };
+  const switchReference = async (id: string) => {
+    const next = getReference(referenceCatalog.catalog, id);
+    const cachedTrace = localTrace?.atlas.id === id ? localTrace : null;
+    if ((!next && !cachedTrace) || id === atlas?.id) return;
+    traceImportSequence.current++; setTraceLoading(false); setTraceError('');
+    const sequence = ++referenceSequence.current;
+    referenceRequest.current?.abort();
+    const abort = new AbortController(); referenceRequest.current = abort;
+    setReferenceLoading(true); setReferenceError('');
+    dataImportSequence.current++; viewImportSequence.current++;
+    try {
+      let loaded: Atlas;
+      if (cachedTrace) loaded = cachedTrace.atlas;
+      else {
+        const response = await fetch(next!.manifestUrl, { signal: abort.signal });
+        if (!response.ok) throw new Error('The selected reference could not be loaded.');
+        loaded = await response.json() as Atlas;
+        if (!validateReferenceAtlas(next!, loaded).ok) throw new Error('Reference binding mismatch.');
+      }
+      if (sequence !== referenceSequence.current || abort.signal.aborted) return;
+      const restored = adoptReference(loaded);
+      setNotice(restored ? 'Reference switched. Its local observations were restored.' : 'Reference switched. Previous observations remain in this browser session.');
     } catch (error) {
       if (sequence === referenceSequence.current && !abort.signal.aborted)
         setReferenceError(error instanceof Error ? error.message : 'Reference switch failed.');
@@ -321,6 +362,7 @@ export default function App() {
   const sourceLink = referenceSummary.source.doiUrl ?? referenceSummary.source.url;
   const represented = SYSTEMS.filter((system) => atlas.structures.some((structure) => structure.systems.includes(system.id))).length;
   const visibleCount = atlas.structures.filter((structure) => !hidden.includes(structure.id) && (opacity[structure.id] ?? 1) > 0).length;
+  const activeTrace = localTrace?.atlas === atlas ? localTrace : undefined;
   const hasBodyEnvelope = atlas.structures.some((structure) => structure.id === 'digimouse:1' || structure.id === 'digimouse-volume:1');
   const viewerFailed = viewerState.primary === 'failed' || (mode === 'comparative' && viewerState.secondary === 'failed');
   return <div className="app-shell">
@@ -334,14 +376,17 @@ export default function App() {
       <div className="panel-heading"><span className="eyebrow">REFERENCE ATLAS</span><span className="version-tag">v{appVersion}</span></div>
       <h1>Explore the mouse</h1><p className="muted compact">Anatomy and local observations.</p>
       <div className="reference-card"><span className="reference-dot" /><div><strong>{referenceSummary.source.displayName}</strong><small>{referenceSummary.specimen.scientificName} · {referenceSummary.specimen.sex} · {referenceSummary.specimen.mass}</small></div><span className="tiny-tag">{referenceSummary.source.license}</span></div>
-      <label className="reference-selector">Anatomy reference<select aria-label="Anatomy reference" value={atlas.id} disabled={referenceLoading} onChange={(event) => void switchReference(event.target.value)}>{referenceCatalog.catalog.map((entry) => <option key={entry.id} value={entry.id}>{entry.title}</option>)}</select></label>
-      <p className="reference-description">{referenceLoading ? 'Loading reference. Current observations are retained.' : reference?.coverage.description ?? 'Coverage description unavailable.'}</p>
+      <label className="reference-selector">Anatomy reference<select aria-label="Anatomy reference" value={atlas.id} disabled={referenceLoading} onChange={(event) => void switchReference(event.target.value)}>{referenceCatalog.catalog.map((entry) => <option key={entry.id} value={entry.id}>{entry.title}</option>)}{localTrace && <option value={localTrace.atlas.id}>Local morphology trace</option>}</select></label>
+      <div className="local-trace-input"><input ref={traceFileInput} type="file" accept=".swc,text/plain" aria-label="Open local SWC trace" onChange={(event) => void openLocalTrace(event.target.files?.[0])} /><button className="secondary-button" onClick={() => traceFileInput.current?.click()}>Open local SWC</button><small>Local files stay in browser memory. Reload clears them.</small></div>
+      {traceError && <p role="alert" className="view-import-error">Local trace unchanged. {traceError}</p>}
+
+      <p className="reference-description">{traceLoading ? 'Reading local trace. Current reference and observations are retained.' : referenceLoading ? 'Loading reference. Current observations are retained.' : activeTrace ? 'User-supplied source samples and parent links. Physical units, biological identity and provenance are unverified.' : reference?.coverage.description ?? 'Coverage description unavailable.'}</p>
       {referenceError && <p role="alert" className="view-import-error">Reference unchanged. {referenceError}</p>}
       <label className="search-field"><Icon name="search" size={16} /><input ref={searchInput} type="search" placeholder="Find a structure or ID" aria-label="Find a structure or ID" value={query} onChange={(event) => { setQuery(event.target.value); setNavigatorTab('structures'); }} /><kbd>/</kbd></label>
       <div className="segmented" role="group" aria-label="Atlas navigation"><button className={navigatorTab === 'structures' ? 'active' : ''} onClick={() => setNavigatorTab('structures')}>Structures <span>{atlas.structures.length}</span></button><button className={navigatorTab === 'systems' ? 'active' : ''} onClick={() => setNavigatorTab('systems')}>Systems <span>{SYSTEMS.length}</span></button></div>
       <div className="structure-toolbar"><span>{navigatorTab === 'structures' ? `${visibleCount} visible ${visibleCount === 1 ? 'region' : 'regions'}` : `${represented} categories represented`}</span><div className="visibility-presets">{hasBodyEnvelope && <button className="text-button" onClick={showOrgans} title="Make the body envelope and skeleton translucent" aria-label="Organs visibility preset">Organs</button>}<button className="text-button" onClick={showAll}>Show all</button></div></div>
       <div className="structure-list">
-        {navigatorTab === 'systems' && represented === 0 && <p className="empty-small">Anatomical system classifications are not reviewed for this source. Use its named surface list.</p>}
+        {navigatorTab === 'systems' && represented === 0 && <p className="empty-small">{activeTrace ? 'System classifications are not reviewed for this local trace.' : 'Anatomical system classifications are not reviewed for this source. Use its named surface list.'}</p>}
         {navigatorTab === 'structures' ? atlas.structures.filter((structure) => `${structure.name} ${structure.id} ${structure.sourceLabel}`.toLowerCase().includes(query.toLowerCase())).map((structure) => <div key={structure.id} className={`structure-row ${selected === structure.id ? 'selected' : ''} ${hidden.includes(structure.id) ? 'is-hidden' : ''}`}>
           <button className="structure-name" onClick={() => select(structure.id)} aria-pressed={selected === structure.id}><span className={`structure-dot system-${structure.systems[0]}`} style={structure.color ? { backgroundColor: structure.color } : undefined} /><span>{structure.name}<small>{structure.id}</small></span></button>
           <button className="visibility-button" aria-label={`${hidden.includes(structure.id) ? 'Show' : 'Hide'} ${structure.name}`} onClick={() => toggleHidden(structure.id)}><Icon name={hidden.includes(structure.id) ? 'hidden' : 'eye'} size={15} /></button>
@@ -359,7 +404,7 @@ export default function App() {
       <div className="workspace-heading"><div><span className="eyebrow">{MODES.find((item) => item.id === mode)?.label.toUpperCase()} WORKSPACE</span><h2>{mode === 'anatomical' ? 'Anatomical reference' : mode === 'living' ? availableMotion.length ? 'Physiology in motion' : 'Physiology availability' : mode === 'experimental' ? 'Map your observations' : 'Compare experimental states'}</h2></div><div className="view-file-actions"><input ref={viewFileInput} type="file" className="view-file-input" accept=".json,application/json" aria-label="Restore view state" onChange={(event) => void restoreView(event.target.files?.[0])} /><button className="secondary-button save-view" onClick={() => viewFileInput.current?.click()} title="Load view settings"><Icon name="upload" size={15} /><span>Load view</span></button><button className="secondary-button save-view" onClick={exportView} title="Save view settings"><Icon name="download" size={15} /><span>Save view</span></button></div></div>
       <button className="structure-details-shortcut secondary-button" aria-controls="structure-inspector" onClick={() => { inspector.current?.scrollIntoView({ block: 'start' }); inspector.current?.focus({ preventScroll: true }); }}><Icon name="info" size={15} /> Structure details{selectedStructure ? `: ${selectedStructure.name}` : ''}</button>
       {viewError && <p className="view-import-error" role="alert">View settings unchanged. {viewError}</p>}
-      {atlas.assetFormat === 'ply-native-v1' && <p className="view-import-error" role="status">Native source coordinates. Physical units are unknown; no calibrated measurements or cross-reference registration are available.</p>}
+      {(atlas.assetFormat === 'ply-native-v1' || activeTrace) && <p className="view-import-error" role="status">Native source coordinates. Physical units are unknown; no calibrated measurements or cross-reference registration are available.</p>}
       <div className="anatomy-group-bar"><label>Isolate a source group<select aria-label="Source anatomy group" value={selectedGroup ? activeGroup : ''} disabled={!anatomyGroups?.ok} onChange={(event) => { const group = anatomyGroups?.groups.find((entry) => entry.id === event.target.value); if (group) exploreGroup(group); }}><option value="" disabled>Current view</option>{anatomyGroups?.groups.map((group) => <option key={group.id} value={group.id}>{group.title} ({group.structureIds.length})</option>)}</select></label><button className="secondary-button" disabled={visibleCount === 0 || viewerState.primary !== 'ready'} onClick={() => focusRegions(atlas.structures.filter((structure) => !hidden.includes(structure.id) && (opacity[structure.id] ?? defaultStructureOpacity(structure)) > 0).map((structure) => structure.id))}><Icon name="focus" size={15} /> Fit visible regions</button>{selectedGroup && <details className="group-limitations"><summary>Group limits</summary><p>{selectedGroup.description}</p><ul>{selectedGroup.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul></details>}</div>
       {anatomyGroups?.ok && <SourceLayerControls key={atlas.id} groups={anatomyGroups.groups} onApply={applySourceLayers} />}
       {(mode === 'experimental' || mode === 'comparative') && <div className="data-toolbar">
@@ -372,8 +417,8 @@ export default function App() {
       <section className={`viewport ${mode === 'comparative' ? 'comparison-viewport' : ''}`} aria-label="Anatomical viewer" data-background={background}>
         <div className="viewport-top"><span className="viewport-breadcrumb">{referenceSummary.source.displayName.toUpperCase()} <span>/</span> {mode === 'comparative' ? 'SYNCHRONIZED REFERENCE' : referenceSummary.specimen.scope.toUpperCase()}</span><div className="viewport-top-actions"><span className="viewport-chip"><span /> {atlas.structures.length} source regions</span><div className="background-switch" role="group" aria-label="Viewer background"><button aria-label="Dark background" aria-pressed={background === 'dark'} onClick={() => setBackground('dark')}><span className="background-swatch swatch-dark" />Dark</button><button aria-label="White background" aria-pressed={background === 'white'} onClick={() => setBackground('white')}><span className="background-swatch swatch-white" />White</button></div></div></div>
         <div className="canvas-pair">
-          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>
-          {mode === 'comparative' && <div className="canvas-cell"><div className="condition-label"><span>B</span>{activeB || 'Reference anatomy'}</div><Suspense fallback={viewerLoading}><ViewerCanvas atlas={atlas} detailAsset={detailAsset} settings={{ ...settings, colors: colorB }} onSelect={select} handle={compareViewer} onStatus={(status) => setViewerState((previous) => ({ ...previous, secondary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>}
+          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>
+          {mode === 'comparative' && <div className="canvas-cell"><div className="condition-label"><span>B</span>{activeB || 'Reference anatomy'}</div><Suspense fallback={viewerLoading}><ViewerCanvas atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} settings={{ ...settings, colors: colorB }} onSelect={select} handle={compareViewer} onStatus={(status) => setViewerState((previous) => ({ ...previous, secondary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>}
         </div>
         <div className="view-controls"><button className="viewer-button" aria-label="Reset camera" title="Reset camera (Home)" onClick={() => viewer.current?.reset()}><Icon name="reset" size={17} /></button><span className="control-divider" />{(['x', 'y', 'z'] as const).map((axis) => <button className="viewer-button axis-button" key={axis} aria-label={`View along display ${axis} axis`} title={`Display ${axis.toUpperCase()} axis; not an anatomical direction`} onClick={() => viewer.current?.view(axis)}>{axis.toUpperCase()}</button>)}<span className="control-divider" /><button className={`viewer-button ${labels ? 'active' : ''}`} aria-label="Toggle selected structure label" aria-pressed={labels} onClick={() => setLabels(!labels)}>Aa</button></div>
         {shownGroups.length > 0 && (mode === 'experimental' || mode === 'comparative') && <div className="quantitative-legend"><strong>Mean {first?.measurement}</strong><span>{first?.unit} · {first?.timePoint}</span><div className="color-ramp" /><div className="legend-numbers"><span>{format(min)}</span><span>{format(max)}</span></div><small>Unmapped regions retain atlas colors</small></div>}
@@ -389,17 +434,18 @@ export default function App() {
         {rows.length > 0 && <><p className="dataset-source">{metadata.sourceReference ? `Declared source: ${metadata.sourceReference}` : 'Source reference not supplied.'}</p><DatasetDetails metadata={metadata} onChange={setMetadata} /></>}
         {mode === 'comparative' && <p className="comparison-note">Both panels use the same selected reference geometry. Only imported measurements change. Condition labels do not generate anatomical differences.</p>}
       </div>}
-      <footer className="workspace-footer"><span><span className={`status-dot ${viewerFailed ? 'status-failed' : ''}`} /> {viewerFailed ? '3D viewer unavailable' : diagnostics ? `${diagnostics.meshes} meshes loaded · ${diagnostics.triangles.toLocaleString()} triangles` : 'Loading anatomy'}</span><span>Source-derived geometry · no expert review</span></footer>
+      <footer className="workspace-footer"><span><span className={`status-dot ${viewerFailed ? 'status-failed' : ''}`} /> {viewerFailed ? '3D viewer unavailable' : diagnostics ? diagnostics.traces ? `${diagnostics.traces} trace · ${diagnostics.samples.toLocaleString()} samples · ${diagnostics.segments.toLocaleString()} parent links` : `${diagnostics.meshes} meshes loaded · ${diagnostics.triangles.toLocaleString()} triangles` : 'Loading anatomy'}</span><span>Source-derived geometry · no expert review</span></footer>
     </main>
 
     <aside className="inspector panel" id="structure-inspector" ref={inspector} tabIndex={-1}><div className="panel-heading"><span className="eyebrow">STRUCTURE INSPECTOR</span><Icon name="focus" size={16} /></div>{selectedStructure ? <>
-      <div className="structure-type">{selectedStructure.systems.map((id) => SYSTEMS.find((system) => system.id === id)?.name).filter(Boolean).join(' / ') || 'Source surface; system classification unreviewed'}</div><h2>{selectedStructure.name}</h2><code className="structure-id">{selectedStructure.id}</code>
+      <div className="structure-type">{selectedStructure.systems.map((id) => SYSTEMS.find((system) => system.id === id)?.name).filter(Boolean).join(' / ') || (activeTrace ? 'Local trace; biological identity unverified' : 'Source surface; system classification unreviewed')}</div><h2>{selectedStructure.name}</h2><code className="structure-id">{selectedStructure.id}</code>
       <DevelopmentalContext summary={referenceSummary} />
-      <SurfaceDetail baseSpacing={reference?.processingResolution.processingVoxelSpacingMm?.[0]} levels={selectedLevels} levelId={detailLevel} asset={availableDetail} enabled={fineActive} comparative={mode === 'comparative'} viewerFailed={viewerFailed} status={detailStatus} onLevelChange={(id) => { setDetailLevel(id); setDetailStatus({ status: 'idle', structureId: null }); }} onEnabledChange={(enabled) => { setFineEnabled(enabled); setDetailStatus({ status: 'idle', structureId: null }); }} />
+      {activeTrace && <LocalTraceRecord asset={activeTrace} />}
+      {!activeTrace && <SurfaceDetail baseSpacing={reference?.processingResolution.processingVoxelSpacingMm?.[0]} levels={selectedLevels} levelId={detailLevel} asset={availableDetail} enabled={fineActive} comparative={mode === 'comparative'} viewerFailed={viewerFailed} status={detailStatus} onLevelChange={(id) => { setDetailLevel(id); setDetailStatus({ status: 'idle', structureId: null }); }} onEnabledChange={(enabled) => { setFineEnabled(enabled); setDetailStatus({ status: 'idle', structureId: null }); }} />}
       <div className="inspector-actions"><button className="primary-button" onClick={() => viewer.current?.focus()}><Icon name="focus" size={15} /> Focus</button><button className="secondary-button" onClick={isolate}>{isolation.current ? 'Restore' : 'Isolate'}</button><button className="icon-button" aria-label={`${hidden.includes(selectedStructure.id) ? 'Show' : 'Hide'} selected structure`} onClick={() => toggleHidden(selectedStructure.id)}><Icon name={hidden.includes(selectedStructure.id) ? 'hidden' : 'eye'} size={17} /></button></div>
       <div className="opacity-control"><label htmlFor="structure-opacity">Opacity <strong>{Math.round((opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100)}%</strong></label><input id="structure-opacity" type="range" min="0" max="100" value={(opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100} onChange={(event) => { setActiveGroup(''); pendingGroupFocus.current = null; setOpacity({ ...opacity, [selectedStructure.id]: +event.target.value / 100 }); }} /></div>
       <NativeSurfaceRecord atlas={atlas} structureId={selectedStructure.id} />
-      <section className="inspector-section"><h3>Source annotation</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>Source segmented region</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
+      <section className="inspector-section"><h3>Source annotation</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>{activeTrace ? 'Traced samples and parent links' : 'Source segmented region'}</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
       {ontologyCandidate && <OntologyContext candidate={ontologyCandidate} onDownload={() => download('ontology-candidates.json', JSON.stringify(ontologyCandidateData, null, 2))} />}
       {mode === 'living' && <section className="inspector-section"><h3>Motion model</h3><p>{selectedMotion?.limitations[0] ?? 'No physiological animation is implemented for this region.'}</p>{selectedMotion && <span className="status-tag">Illustrative classification</span>}</section>}
       {(mode === 'experimental' || mode === 'comparative') && <section className="inspector-section"><h3>Mapped observations</h3>{selectedSummaries.length ? <><p className="muted compact">Mean and sample standard deviation, in {first?.unit}. No inferential statistics.</p>{selectedSummaries.map((group) => <div className="measurement-card" key={group.condition}><span>{group.condition} <small>n = {group.n}</small></span><strong>{format(group.mean)} <small>{group.unit}</small></strong><p>SD {format(group.sd)} · {group.timePoint}</p></div>)}{comparison && <div className="comparison-result">{comparison.ok ? <><span>Mean B minus mean A</span><strong>{format(comparison.difference)} {first?.unit}</strong></> : comparison.errors.map((error) => <p key={error.code}>{error.message}</p>)}{comparison.warnings.map((warning) => <p key={warning.code}>{warning.message}</p>)}</div>}</> : <p>No observations match this structure and the selected series.</p>}</section>}

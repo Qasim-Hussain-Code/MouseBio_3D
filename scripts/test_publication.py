@@ -5,12 +5,34 @@ import struct
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
+
+import check_publication
 from pathlib import Path
 
 from check_publication import audit, inspect_content, scan_text
 
 
 class PublicationTests(unittest.TestCase):
+    def git_bytes(self, root, *arguments, payload=None):
+        return subprocess.run(["git", "-C", str(root), *arguments], input=payload,
+                              capture_output=True, check=True).stdout
+
+    def repository(self, root):
+        self.git_bytes(root, "init", "--quiet")
+        for key, value in [("user.name", "Qasim Hussain"),
+                           ("user.email", "fixture" + "@" + "users.noreply.github.com"),
+                           ("commit.gpgsign", "false"), ("tag.gpgsign", "false")]:
+            self.git_bytes(root, "config", key, value)
+        (root / "guide.txt").write_text("Portable guide.\n")
+        self.git_bytes(root, "add", "guide.txt")
+        self.git_bytes(root, "commit", "--quiet", "-m", "add_fixture")
+
+    def repository_state(self, root):
+        return tuple(self.git_bytes(root, *arguments) for arguments in [
+            ("show-ref", "--head"), ("ls-files", "--stage"), ("status", "--porcelain"),
+        ])
+
     def test_local_paths_and_credentials_are_reported_without_values(self):
         address = "person" + "@" + "mailprovider.org"
         token = "ghp_" + "a" * 30
@@ -97,6 +119,104 @@ class PublicationTests(unittest.TestCase):
             self.assertNotIn(address, json.dumps(report))
             after = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], check=True, capture_output=True).stdout
             self.assertEqual(before, after)
+
+
+    def test_removed_historical_private_paths_are_checked_before_blob_dedup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.repository(root)
+            paths = ["AGENTS.md", "nested/aGeNtS.Md", "research-data/observations.csv",
+                     "data/raw/original.txt", ".aws/credentials", ".env.local"]
+            for name in [*paths, ".env.example"]:
+                file = root / name
+                file.parent.mkdir(parents=True, exist_ok=True)
+                # The surviving guide shares this blob, so history dedup sees it first.
+                file.write_text("Portable guide.\n")
+            (root / "link-target.txt").write_text("guide.txt")
+            (root / "history-symlink").symlink_to("guide.txt")
+            self.git_bytes(root, "add", "--all")
+            target = self.git_bytes(root, "rev-parse", "HEAD").decode().strip()
+            self.git_bytes(root, "update-index", "--add", "--cacheinfo", "160000", target, "history-submodule")
+            self.git_bytes(root, "commit", "--quiet", "-m", "add_private_paths")
+            for name in [*paths, "history-symlink"]:
+                (root / name).unlink()
+            self.git_bytes(root, "rm", "--cached", "history-submodule")
+            self.git_bytes(root, "add", "--all")
+            self.git_bytes(root, "commit", "--quiet", "-m", "remove_private_paths")
+            before = self.repository_state(root)
+            report = audit(root, history=True)
+            blocked = {entry["path"] for entry in report["findings"]
+                       if entry["scope"] == "history" and entry["type"] == "private-input-path-tracked"}
+            self.assertEqual(blocked, set(paths))
+            nonregular = {entry["path"] for entry in report["findings"]
+                          if entry["scope"] == "history" and entry["type"] == "missing-or-symlink-input"}
+            self.assertEqual(nonregular, {"history-symlink", "history-submodule"})
+            self.assertFalse(any(entry["type"] == "private-input-path-tracked" and entry["path"] == ".env.example"
+                                 for entry in report["findings"]))
+            self.assertFalse(any(entry["type"] == "private-input-path-tracked" and entry["scope"] == "tracked"
+                                 for entry in report["findings"]))
+            self.assertEqual(before, self.repository_state(root))
+
+    def test_reachable_commit_messages_are_scanned_without_values_or_rewriting(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.repository(root)
+            address = "person" + "@" + "mailprovider.org"
+            token = "ghp_" + "b" * 30
+            local_path = "/".join(["", "home", "private-user", "project"])
+            assigned = "s" * 12
+            message = "\n".join(["review_record", address, token, local_path, "password=" + assigned])
+            self.git_bytes(root, "commit", "--quiet", "--allow-empty", "-F", "-", payload=message.encode())
+            before = self.repository_state(root)
+            report = audit(root, history=True)
+            matches = [entry for entry in report["findings"] if entry["path"].startswith(".git/history/commits/")]
+            self.assertTrue({"email-address", "credential-token-pattern", "machine-local-user-path",
+                             "credential-assignment"} <= {entry["type"] for entry in matches})
+            self.assertTrue(all(entry["scope"] == "git-metadata" for entry in matches))
+            for value in [address, token, local_path, assigned]:
+                self.assertNotIn(value, json.dumps(report))
+            self.assertEqual(before, self.repository_state(root))
+
+    def test_nested_annotated_tag_contents_and_tagger_are_scanned_without_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.repository(root)
+            address = "private-tagger" + "@" + "mailprovider.org"
+            token = "ghp_" + "c" * 30
+            local_path = "/".join(["", "home", "private-user", "tag-source"])
+            message = "\n".join(["review_tag", token, local_path])
+            self.git_bytes(root, "-c", "user.email=" + address, "tag", "-a", token, "-F", "-", payload=message.encode())
+            self.git_bytes(root, "tag", "-a", "outer_tag", token, "-m", "portable_tag")
+            self.git_bytes(root, "tag", "-d", token)
+            before = self.repository_state(root)
+            report = audit(root, history=True)
+            matches = [entry for entry in report["findings"] if entry["path"].startswith(".git/history/tags/")]
+            self.assertTrue({"reachable-tag-non-noreply-email", "email-address",
+                             "credential-token-pattern", "machine-local-user-path"}
+                            <= {entry["type"] for entry in matches})
+            self.assertTrue(all(entry["scope"] == "git-metadata" for entry in matches))
+            for value in [address, token, local_path]:
+                self.assertNotIn(value, json.dumps(report))
+            self.assertEqual(before, self.repository_state(root))
+
+    def test_commit_and_tag_metadata_retain_size_and_object_scan_bounds(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.repository(root)
+            self.git_bytes(root, "commit", "--quiet", "--allow-empty", "-m", "x" * 600)
+            self.git_bytes(root, "tag", "-a", "bounded_tag", "-m", "y" * 600)
+            before = self.repository_state(root)
+            with patch.object(check_publication, "MAX_FILE_BYTES", 256):
+                report = audit(root, history=True)
+            bounded = [entry["path"] for entry in report["findings"]
+                       if entry["type"] == "file-exceeds-scan-bound" and entry["scope"] == "git-metadata"]
+            self.assertTrue(any(path.startswith(".git/history/commits/") for path in bounded))
+            self.assertTrue(any(path.startswith(".git/history/tags/") for path in bounded))
+            with patch.object(check_publication, "MAX_HISTORY_BLOBS", 1):
+                report = audit(root, history=True)
+            self.assertTrue(any(entry["type"] == "history-metadata-exceeds-scan-bound"
+                                for entry in report["findings"]))
+            self.assertEqual(before, self.repository_state(root))
 
 
 if __name__ == "__main__":

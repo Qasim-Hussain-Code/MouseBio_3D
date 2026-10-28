@@ -506,6 +506,15 @@ def safe_path(path: str) -> str:
     return TOKENS.sub("[redacted-token]", EMAIL.sub("[redacted-email]", path))
 
 
+def private_input_path(path: str) -> bool:
+    """Apply the same local-only path policy to snapshots and historical trees."""
+    parts = PurePosixPath(path).parts
+    name = PurePosixPath(path).name
+    return bool(parts) and (parts[0] in {"research-data", ".aws"} or path.startswith("data/raw/")
+                            or name.lower() == "agents.md"
+                            or name.startswith(".env") and name != ".env.example")
+
+
 def scan_text(text: str, path: str, scope: str) -> list[dict]:
     findings: list[dict] = []
 
@@ -619,17 +628,14 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
     for entry in filter(None, entries):
         entry_metadata, path = entry.split("\t", 1)
         _mode, oid, stage = entry_metadata.split()
+        if private_input_path(path):
+            findings.append({"path": safe_path(path), "scope": scope, "type": "private-input-path-tracked", "count": 1, "severity": "error"})
         if stage != "0":
             findings.append({"path": safe_path(path), "scope": scope, "type": "unmerged-index", "count": 1, "severity": "error"})
             continue
         if _mode not in {"100644", "100755"}:
             findings.append({"path": safe_path(path), "scope": scope, "type": "missing-or-symlink-input", "count": 1, "severity": "warning"})
             continue
-        parts = Path(path).parts
-        if parts and (parts[0] in {"research-data", "data/raw", ".aws"} or path.startswith("data/raw/")
-                      or Path(path).name.lower() == "agents.md"
-                      or Path(path).name.startswith(".env") and Path(path).name != ".env.example"):
-            findings.append({"path": safe_path(path), "scope": scope, "type": "private-input-path-tracked", "count": 1, "severity": "error"})
         if scope == "staged":
             size = int(git(root, "cat-file", "-s", oid))
             if size > (MAX_REGISTERED_GLB_BYTES if path in registry else MAX_FILE_BYTES):
@@ -659,6 +665,48 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
         if non_noreply:
             findings.append({"path": ".git/history", "scope": "git-metadata", "type": "reachable-history-non-noreply-email", "count": non_noreply, "severity": "error"})
         commits = git(root, "rev-list", "--all", required=False).decode().splitlines()
+        metadata_seen: set[str] = set()
+
+        def read_git_metadata(kind: str, oid: str) -> bytes | None:
+            # Object IDs identify findings without exposing tag names or messages.
+            path = f".git/history/{'commits' if kind == 'commit' else 'tags'}/{oid}"
+            if oid in metadata_seen:
+                return None
+            metadata_seen.add(oid)
+            if len(metadata_seen) > MAX_HISTORY_BLOBS:
+                return None
+            if int(git(root, "cat-file", "-s", oid)) > MAX_FILE_BYTES:
+                findings.append({"path": path, "scope": "git-metadata", "type": "file-exceeds-scan-bound", "count": 1, "severity": "warning"})
+                return None
+            data = git(root, "cat-file", kind, oid)
+            matches, checked = inspect_content(data, path, "git-metadata")
+            findings.extend(matches)
+            if not checked:
+                findings.append({"path": path, "scope": "git-metadata", "type": "opaque-git-metadata-not-reviewed", "count": 1, "severity": "warning"})
+            return data
+
+        for commit in commits:
+            read_git_metadata("commit", commit)
+        refs = git(root, "for-each-ref", "--format=%(objecttype) %(objectname)").decode().splitlines()
+        pending_tags = [line.split(" ", 1)[1] for line in refs if line.startswith("tag ")]
+        while pending_tags:
+            oid = pending_tags.pop()
+            data = read_git_metadata("tag", oid)
+            if data is None:
+                continue
+            header = data.split(b"\n\n", 1)[0]
+            tagger_emails = re.findall(rb"(?m)^tagger [^\r\n]*<([^<>\r\n]+)>[^\r\n]*$", header)
+            non_noreply = sum(not email.strip().lower().endswith(b"@users.noreply.github.com") for email in tagger_emails)
+            if non_noreply:
+                findings.append({"path": f".git/history/tags/{oid}", "scope": "git-metadata", "type": "reachable-tag-non-noreply-email", "count": non_noreply, "severity": "error"})
+            if re.search(rb"(?m)^type tag$", header):
+                target = re.search(rb"(?m)^object ([0-9a-f]{40,64})$", header)
+                if target:
+                    pending_tags.append(target.group(1).decode("ascii"))
+                else:
+                    findings.append({"path": f".git/history/tags/{oid}", "scope": "git-metadata", "type": "unreadable-tag-target", "count": 1, "severity": "warning"})
+        if len(metadata_seen) > MAX_HISTORY_BLOBS:
+            findings.append({"path": ".git/history", "scope": "git-metadata", "type": "history-metadata-exceeds-scan-bound", "count": len(metadata_seen) - MAX_HISTORY_BLOBS, "severity": "warning"})
     historical_blobs = 0
     if history:
         seen: set[str] = set()
@@ -668,6 +716,12 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
             for entry in filter(None, tree):
                 entry_metadata, path = entry.split("\t", 1)
                 history_snapshot[path] = entry_metadata.split()
+                historical_mode, historical_kind, _oid = history_snapshot[path]
+                if historical_mode not in {"100644", "100755"} or historical_kind != "blob":
+                    findings.append({"path": safe_path(path), "scope": "history", "type": "missing-or-symlink-input", "count": 1, "severity": "warning"})
+                # A reused blob can occur at a forbidden path in another tree.
+                if private_input_path(path):
+                    findings.append({"path": safe_path(path), "scope": "history", "type": "private-input-path-tracked", "count": 1, "severity": "error"})
 
             def read_history(path: str, limit: int):
                 if path not in history_snapshot:
@@ -687,7 +741,7 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
             for entry in filter(None, tree):
                 entry_metadata, path = entry.split("\t", 1)
                 _mode, kind, oid = entry_metadata.split()
-                if kind != "blob" or oid in seen:
+                if _mode not in {"100644", "100755"} or kind != "blob" or oid in seen:
                     continue
                 seen.add(oid)
                 if historical_blobs >= MAX_HISTORY_BLOBS:

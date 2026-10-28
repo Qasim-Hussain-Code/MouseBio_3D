@@ -930,3 +930,125 @@ test('source layers preserve observations, background and saved display across f
   assert.deepEqual(restored.opacity, faded.opacity); assert.deepEqual(restored.hidden, faded.hidden); assert.equal(restored.background, 'white');
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), observations);
 });
+
+
+// Synthetic SWC software input. It is not a biological reconstruction.
+const localTraceFixture = ['# LOCAL_HEADER_PRIVATE_MARKER', '10 1 0 0 0 1 -1', '30 2 1 0 0 1 10',
+  '20 3 1 1 0 2 30', '40 3 1 0 1 2 30', '99 0 10 10 10 0 -1'].join('\n');
+function traceFile(text = localTraceFixture) {
+  const bytes = new TextEncoder().encode(text);
+  return { name: 'local-private-label.swc', size: bytes.byteLength, arrayBuffer: async () => bytes.slice().buffer } as File;
+}
+function pendingTraceFile() {
+  let resolve!: (value: ArrayBuffer) => void;
+  const promise = new Promise<ArrayBuffer>((done) => { resolve = done; });
+  return { file: { name: 'pending.swc', size: new TextEncoder().encode(localTraceFixture).byteLength,
+    arrayBuffer: () => promise } as File, resolve, promise };
+}
+
+test('local SWC remains in memory, supports source-bound observations and views, and switches without trace requests', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
+  await view.findByText('Local trace opened. No file data transmitted.');
+  assert.ok(view.getByText('1 visible region'));
+  const record = within(view.getByRole('region', { name: 'Local trace record' }));
+  assert.ok(record.getByText('Samples stored')); assert.ok(record.getByText('Isolated samples'));
+  assert.equal(view.queryByText('local-private-label.swc'), null);
+  assert.equal(view.queryByText('LOCAL_HEADER_PRIVATE_MARKER'), null);
+  assert.equal(view.queryByRole('heading', { name: 'Surface detail' }), null);
+  const opened = await savedView(view); const id = opened.selected!;
+  assert.match(id, /^local-trace:[a-f0-9]{64}:record$/); assert.equal(opened.background, 'white');
+  assert.match(opened.coordinateFrameId, /^local-trace-native-[a-f0-9]{64}$/);
+  fireEvent.click(view.getByRole('button', { name: 'Living' }));
+  assert.ok(view.getByText('No physiological motion is available for this reference.'));
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const csv = ['structure_id,measurement,value,unit,replicate,condition,time_point',
+    `${id},synthetic marker,1,AU,subject-1,control,baseline`, `${id},synthetic marker,3,AU,subject-2,control,baseline`,
+    `${id},synthetic marker,2,AU,subject-1,treated,baseline`, `${id},synthetic marker,4,AU,subject-2,treated,baseline`].join('\n');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(csv)] } });
+  await view.findByText('Accepted 4 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); const data = JSON.parse(await exportedBlobs.at(-1)!.text());
+  const localView = await savedView(view);
+  assert.equal(JSON.stringify(localView).includes('LOCAL_HEADER_PRIVATE_MARKER'), false);
+  assert.equal(Object.hasOwn(localView, 'nodes'), false);
+  fireEvent.click(view.getByRole('button', { name: 'Compare' })); assert.equal((await savedView(view)).atlasId, localView.atlasId);
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [inputFile(JSON.stringify(localView), 'trace-view.json')] } });
+  await view.findByRole('alert'); assert.equal((await savedView(view)).atlasId, atlas.id);
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: localView.atlasId } });
+  await view.findByText('1 visible region');
+  assert.ok(view.getByText('4 observations · 2 biological subject IDs · 2 groups'));
+  fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [inputFile(JSON.stringify(localView), 'trace-view.json')] } });
+  await view.findByText('View settings restored.'); assert.deepEqual(await savedView(view), localView);
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), data);
+});
+
+test('invalid and oversized SWC imports retain the current local geometry, view and observations', async () => {
+  const view = await openApp();
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
+  await view.findByText('Local trace opened. No file data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const local = await savedView(view), id = local.selected!;
+  const csv = ['structure_id,measurement,value,unit,replicate,condition,time_point',
+    `${id},synthetic marker,1,AU,subject-1,control,baseline`, `${id},synthetic marker,3,AU,subject-2,control,baseline`].join('\n');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(csv)] } });
+  await view.findByText('Accepted 2 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
+  const before = await savedView(view);
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile('1 1 0 0 0 1 -1\n2 2 1 0 0 1 3')] } });
+  await view.findByRole('alert'); assert.deepEqual(await savedView(view), before);
+  let read = false;
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [{ size: 2 * 1024 * 1024 + 1,
+    arrayBuffer: async () => { read = true; return new ArrayBuffer(0); } } as File] } });
+  await view.findByText(/Local SWC files must fit the 2 MiB input limit/);
+  assert.equal(read, false); assert.deepEqual(await savedView(view), before);
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), observations);
+});
+
+test('pending local reads cannot replace a later successful trace or a selected reference', async () => {
+  const view = await openApp(); const pending = pendingTraceFile();
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [pending.file] } });
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile(localTraceFixture + '\n# newer-source')] } });
+  await view.findByText('Local trace opened. No file data transmitted.'); const latest = await savedView(view);
+  await act(async () => { pending.resolve(new TextEncoder().encode(localTraceFixture).buffer); await pending.promise; });
+  assert.deepEqual(await savedView(view), latest);
+  const switching = pendingTraceFile();
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [switching.file] } });
+  expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  await view.findByText('21 visible regions');
+  await act(async () => { switching.resolve(new TextEncoder().encode(localTraceFixture).buffer); await switching.promise; });
+  assert.equal((await savedView(view)).atlasId, 'digimouse-volume-040-v1');
+});
+
+
+test('local file read errors omit private error text and retain the current reference', async () => {
+  const view = await openApp(); const before = await savedView(view);
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [{ name: 'read-error.swc', size: 20,
+    arrayBuffer: async (): Promise<ArrayBuffer> => { throw new Error('SYNTHETIC_PRIVATE_READ_MARKER'); } } as File] } });
+  await view.findByText(/The local trace file could not be read/);
+  assert.equal(view.container.textContent?.includes('SYNTHETIC_PRIVATE_READ_MARKER'), false);
+  assert.deepEqual(await savedView(view), before);
+});
+
+test('replacing a local trace separates its observations and rejects another trace view, then restores the original file data', async () => {
+  const view = await openApp();
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
+  await view.findByText('Local trace opened. No file data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' })); const traceA = await savedView(view), id = traceA.selected!;
+  const csv = ['structure_id,measurement,value,unit,replicate,condition,time_point', `${id},synthetic marker,1,AU,subject-1,control,baseline`].join('\n');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(csv)] } });
+  await view.findByText('Accepted 1 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); const original = JSON.parse(await exportedBlobs.at(-1)!.text());
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile(localTraceFixture + '\n# different-original-bytes')] } });
+  await waitFor(async () => assert.notEqual((await savedView(view)).atlasId, traceA.atlasId));
+  const traceB = await savedView(view); assert.equal((view.getByRole('button', { name: 'Export JSON' }) as HTMLButtonElement).disabled, true);
+  fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [inputFile(JSON.stringify(traceA), 'trace-A-view.json')] } });
+  await view.findByRole('alert'); assert.equal((await savedView(view)).atlasId, traceB.atlasId);
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
+  await waitFor(async () => assert.equal((await savedView(view)).atlasId, traceA.atlasId));
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), original);
+});

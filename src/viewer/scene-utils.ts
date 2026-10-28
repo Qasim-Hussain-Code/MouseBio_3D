@@ -13,18 +13,22 @@ function finiteVector(vector: THREE.Vector3, label: string): void {
 }
 
 /**
- * Put a geometry's bounding-box centre at its local origin without moving its
- * resting world-space vertices. The clone protects other meshes sharing the
+ * Put a geometry's bounding-box centre at its local origin and compensate its
+ * local matrix to preserve resting world positions in exact arithmetic. Vertex
+ * storage rounds translated coordinates again, so finite-precision world
+ * positions can differ and additional display links can become coincident.
+ * The clone protects other objects sharing the
  * source geometry. The caller owns disposal of previousGeometry if appropriate.
- * Both ordinary TRS meshes and explicitly maintained local matrices are supported.
+ * Static meshes and line segments support ordinary TRS and explicitly maintained
+ * local matrices. This display preparation does not modify source records.
  */
-export function recenterMeshGeometry(mesh: THREE.Mesh<THREE.BufferGeometry>): {
+export function recenterRegionGeometry(mesh: THREE.Mesh<THREE.BufferGeometry> | THREE.LineSegments<THREE.BufferGeometry>): {
   center: THREE.Vector3;
   previousGeometry: THREE.BufferGeometry;
 } {
   const previousGeometry = mesh.geometry;
   if (mesh instanceof THREE.SkinnedMesh || (previousGeometry.morphAttributes.position?.length ?? 0) > 0) {
-    throw new Error('Recentering requires a static surface mesh without skinning or position morph targets.');
+    throw new Error('Recentering requires static geometry without skinning or position morph targets.');
   }
   if (!mesh.matrixWorldAutoUpdate) throw new Error('Recentering requires an automatically maintained world matrix.');
   const attribute = previousGeometry.getAttribute('position');
@@ -47,6 +51,14 @@ export function recenterMeshGeometry(mesh: THREE.Mesh<THREE.BufferGeometry>): {
   mesh.matrixWorldNeedsUpdate = true;
   mesh.updateWorldMatrix(true, false);
   return { center, previousGeometry };
+}
+
+/** Backward-compatible surface entry point; detail transforms retain the same preparation. */
+export function recenterMeshGeometry(mesh: THREE.Mesh<THREE.BufferGeometry>): {
+  center: THREE.Vector3;
+  previousGeometry: THREE.BufferGeometry;
+} {
+  return recenterRegionGeometry(mesh);
 }
 
 /** Camera and target use the viewer's common world frame; camera has no transformed parent. */

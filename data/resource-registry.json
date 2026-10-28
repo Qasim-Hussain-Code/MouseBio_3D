@@ -452,17 +452,26 @@
       },
       "license": {
         "identifier": "CC-BY-4.0",
-        "verifiedAt": "https://api.figshare.com/v2/articles/27766452",
+        "verifiedAt": "https://api.figshare.com/v2/articles/27766452/versions/1",
         "url": "https://creativecommons.org/licenses/by/4.0/",
-        "scope": "License declared by the identified Figshare version 1 deposit; no morphology body or header inspected.",
-        "redistribution": "deposit_declares_attribution_license_file_header_conflict_review_pending",
+        "scope": "Figshare version 1 declares CC BY 4.0. The acquired SWC header directs readers to project Terms-of-Use without spelling out an explicit license.",
+        "redistribution": "deferred_unresolved_deposit_and_header_project_terms",
         "separateNeuronBrowserTerms": {
           "identifier": "CC-BY-NC-4.0",
           "url": "https://creativecommons.org/licenses/by-nc/4.0/",
           "verifiedAt": "https://www.janelia.org/project-team/mouselight/neuronbrowser",
           "scope": "Official terms for material found or downloaded from the MouseLight database and NeuronBrowser.",
-          "note": "The broader Browser terms differ from the specific Figshare declaration. Do not transfer the Figshare license to Browser assets; inspect subsequently acquired deposit files for conflicting terms before import."
-        }
+          "note": "The official project Browser terms state CC BY-NC 4.0 and differ from the Figshare CC BY 4.0 declaration. The acquired file header refers to project Terms-of-Use. Applicable scope remains unresolved."
+        },
+        "headerTermsReference": {
+          "url": "https://mouselight.janelia.org",
+          "headerLine": 1,
+          "statement": "The original file requests consultation of project Terms-of-Use when referencing the reconstruction.",
+          "landingPageReadStatus": "Timed out during review; no TLS bypass attempted."
+        },
+        "conflictStatus": "unresolved_source_specific_declarations",
+        "assetImportDeferred": true,
+        "assetRedistributionDeferred": true
       },
       "coverage": "One reconstructed neuron; not a regional organ mesh, complete cellular atlas or observed synaptic-connectivity graph.",
       "methodology": "MouseLight single-neuron reconstruction from light microscopy of sparsely labelled brains; project sources describe Allen-reference registration.",
@@ -474,9 +483,9 @@
       "download": {
         "bytes": 1157661,
         "sha256": null,
-        "format": "SWC and JSON as declared by filenames and API media types; bodies uninspected",
-        "decision": "metadata_verified_body_header_coordinate_and_license_conflict_review_pending",
-        "assetsDownloaded": false,
+        "format": "The acquired SWC body contains valid seven-column numerical records; JSON remains metadata-only and undownloaded.",
+        "decision": "swc_acquired_and_assessed_import_and_redistribution_deferred_license_scope",
+        "assetsDownloaded": true,
         "files": [
           {
             "id": 50605332,
@@ -486,8 +495,11 @@
             "downloadUrl": "https://ndownloader.figshare.com/files/50605332",
             "repositorySuppliedMd5": "fcb1e32b3782c0bf8e5dd652cf1630e3",
             "repositoryComputedMd5": "fcb1e32b3782c0bf8e5dd652cf1630e3",
-            "sha256": null,
-            "bodyInspected": false
+            "sha256": "4a29cccabc630684ff35709b0a367b2582a4069b8da1f04eaa5ee5644b3cd6df",
+            "bodyInspected": true,
+            "localComputedMd5": "fcb1e32b3782c0bf8e5dd652cf1630e3",
+            "actualBytes": 321126,
+            "preservedUnchanged": true
           },
           {
             "id": 50605335,
@@ -506,9 +518,27 @@
           "stableEndpointStatus": 302,
           "redirectedStorageStatus": 403,
           "getAttempted": false,
-          "interpretation": "A redirected HEAD failure does not establish that ordinary GET fails; method-specific signed-storage behavior remains unresolved. Temporary signed URLs are not retained."
+          "interpretation": "The initial redirected HEAD failed, but that did not establish a GET failure. A subsequent bounded SWC GET succeeded. Temporary signed URLs are not retained.",
+          "reviewStage": "historical_initial_metadata_only"
         },
-        "nextAcquisition": {
+        "acquiredBytes": 321126,
+        "acquiredFiles": [
+          "AA1624.swc"
+        ],
+        "rawBodyRetainedInIgnoredStorage": true,
+        "bundledWithApplication": false,
+        "redistributed": false,
+        "boundedGet": {
+          "succeeded": true,
+          "maximumBodyBytes": 321126,
+          "actualBytes": 321126,
+          "repositoryMd5Verified": true,
+          "sha256": "4a29cccabc630684ff35709b0a367b2582a4069b8da1f04eaa5ee5644b3cd6df",
+          "originalBytesPreserved": true,
+          "tlsVerificationDisabled": false,
+          "signedRedirectUrlsRetained": false
+        },
+        "initialBoundedAcquisitionPlan": {
           "scope": "SWC only after resource accounting and rechecking version-specific metadata",
           "fileId": 50605332,
           "expectedBytes": 321126,
@@ -516,16 +546,20 @@
           "expectedRepositoryMd5": "fcb1e32b3782c0bf8e5dd652cf1630e3",
           "computeBodySha256": true,
           "preserveOriginalNodeIdsAndParents": true,
-          "checkFileHeaderLicenseAndCoordinatesBeforeImport": true
-        }
+          "checkFileHeaderLicenseAndCoordinatesBeforeImport": true,
+          "status": "completed_for_swc_only_json_not_acquired"
+        },
+        "nextAction": "Clarify conflicting source license scope before asset import or redistribution."
       },
       "limitations": [
-        "File metadata and repository MD5 values are verified as declarations; body accessibility, actual bytes, file headers and SHA-256 remain unverified.",
-        "Individual specimen, sex, age, cell type, physical coordinate units, CCF release and a file-specific transform remain unknown.",
-        "The Figshare CC BY 4.0 declaration differs from separate NeuronBrowser CC BY-NC 4.0 terms; file-header license review remains necessary before import.",
-        "A redirected HEAD 403 does not establish a GET failure; no morphology GET was attempted.",
-        "No source geometry is imported and no measured radii, complete cellular coverage, synaptic connectivity or functional connectivity is inferred.",
-        "Project-level Allen registration establishes no Digimouse transform or particular CCF release for AA1624."
+        "Only the SWC body has been acquired, preserved and checksum-verified locally; JSON remains undownloaded. The SWC is ignored and is not imported, bundled or redistributed by the application.",
+        "The header declares C57BL/6J strain and CCFv3.0 annotation space with axis strings. These declarations are not independent anatomical verification or an exact CCF package/date release.",
+        "Individual specimen, sex, age, cell type, physical coordinate units and a file-specific transform remain unknown.",
+        "Figshare v1 declares CC BY 4.0, while the file header refers to project Terms-of-Use and official NeuronBrowser terms state CC BY-NC 4.0. Import and asset redistribution are deferred pending clarification.",
+        "All 5665 recorded radii equal 1; this does not establish measured biological radius or physical units.",
+        "Two zero-length source edges remain unchanged. Numerical graph validity is not independent tracing accuracy, synaptic connectivity or functional connectivity.",
+        "No registration to Digimouse, EMA147, hindlimb or another application reference is established.",
+        "The initial redirected HEAD failure was followed by a successful bounded GET; the historical metadata-only review is preserved separately."
       ],
       "recordPublishedAt": "2024-11-19T22:35:39Z",
       "recordDoi": "10.25378/janelia.27766452.v1",
@@ -541,8 +575,102 @@
         "units": null,
         "ccfRelease": null,
         "individualFileTransform": null,
-        "registrationToDigimouse": null
-      }
+        "registrationToDigimouse": null,
+        "annotationSpaceDeclared": "CCFv3.0",
+        "sourceAxesDeclared": {
+          "x": "Anterior-Posterior",
+          "y": "Inferior-Superior",
+          "z": "Left-Right"
+        },
+        "ccfPackageVersion": null,
+        "ccfReleaseDate": null,
+        "anatomicalOrientationIndependentlyVerified": false,
+        "physicalCalibrationVerified": false,
+        "registrationToOtherApplicationReferences": null
+      },
+      "applicationImportStatus": "not_imported_or_redistributed_source_license_scope_unresolved",
+      "sourceHeaderDeclarations": {
+        "strain": {
+          "value": "C57BL/6J",
+          "headerLine": 5,
+          "independentlyVerified": false
+        },
+        "sampleDate": {
+          "sourceField": "Sample Date",
+          "sourceValue": "Thu, 23 Feb 2023 05:00:00 GMT",
+          "headerLine": 4,
+          "eventMeaning": null
+        },
+        "annotationSpace": {
+          "value": "CCFv3.0",
+          "headerLine": 8,
+          "exactPackageOrDateRelease": null
+        },
+        "axes": {
+          "sourceValues": {
+            "x": "Anterior-Posterior",
+            "y": "Inferior-Superior",
+            "z": "Left-Right"
+          },
+          "headerLine": 8,
+          "independentlyVerified": false
+        }
+      },
+      "bodyAssessment": {
+        "sevenColumnRecords": true,
+        "nodes": 5665,
+        "parentLinks": 5664,
+        "roots": 1,
+        "connectedComponents": 1,
+        "sourceIds": {
+          "minimum": 1,
+          "maximum": 5665,
+          "unique": 5665,
+          "strictlyIncreasing": true
+        },
+        "sourceTypeCodeCounts": {
+          "1": 1,
+          "2": 5442,
+          "3": 222
+        },
+        "typeCodeMeaningUsedToInferCellType": false,
+        "duplicateIds": 0,
+        "missingParents": 0,
+        "cycles": 0,
+        "nonfiniteCoordinateOrRadiusRecords": 0,
+        "zeroLengthEdges": 2,
+        "sourceEdgesRepairedOrRemoved": false,
+        "radius": {
+          "constantRecordedValue": 1.0,
+          "records": 5665,
+          "negativeRecords": 0,
+          "zeroRecords": 0,
+          "units": null,
+          "biologicalMeaning": null
+        },
+        "physicalUnits": null,
+        "anatomicalAccuracyIndependentlyReviewed": false,
+        "lineRepresentationStructurallySupportable": true,
+        "lineRepresentationLimit": "A separate unknown-unit source frame would preserve original coordinates and parent links. Display line width would not represent measured cell diameter; publication remains deferred."
+      },
+      "reviewStages": [
+        {
+          "stage": "initial_metadata_only",
+          "reviewedOn": "2026-10-28",
+          "morphologyBodiesAcquired": false,
+          "fileHeadersInspected": false,
+          "result": "Version 1 file metadata and license declarations recorded; HEAD did not establish GET failure."
+        },
+        {
+          "stage": "bounded_swc_body_assessment",
+          "reviewedOn": "2026-10-28",
+          "morphologyBodyAcquired": "AA1624.swc only",
+          "bytes": 321126,
+          "md5Verified": true,
+          "sha256": "4a29cccabc630684ff35709b0a367b2582a4069b8da1f04eaa5ee5644b3cd6df",
+          "result": "Original body remains ignored. File header and numerical records assessed; import and redistribution deferred over source-specific licensing conflict."
+        }
+      ]
     },
     {
       "id": "mouse_musculoskeletal_2021",

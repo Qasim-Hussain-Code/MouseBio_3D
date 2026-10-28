@@ -262,7 +262,7 @@ def web_files(root: Path, anatomy_asset: str, registered_assets: set[str] | None
 def verify_anatomy(source: list[ReleaseFile], web: list[ReleaseFile], asset: str, binding: dict) -> None:
     source_map = {record.name: record.data for record in source}
     web_map = {record.name: record.data for record in web}
-    required_source = {"LICENSE", "LICENSES.md", "README.md", "package.json", "scripts/check_publication.py",
+    required_source = {"LICENSE", "LICENSES.md", "package.json", "scripts/check_publication.py",
                        "public/THIRD_PARTY_NOTICES.txt", "public/atlas/LICENSE.md", "public/atlas/atlas.json", f"public/{asset}"}
     required_web = {"index.html", "THIRD_PARTY_NOTICES.txt", "atlas/LICENSE.md", "atlas/atlas.json", asset}
     if not required_source <= source_map.keys() or not required_web <= web_map.keys():

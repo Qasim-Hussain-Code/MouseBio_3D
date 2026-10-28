@@ -87,3 +87,7 @@
 .source-layer-actions select { padding: 7px; border: 1px solid #d4dfd1; border-radius: 4px; background: #fff; color: #24433e; font: inherit; max-width: 100%; }
 .source-layer-controls .source-layer-hint { font-size: 10px; }
 @media(max-width:600px) { .source-layer-options { grid-template-columns: 1fr; } .source-layer-actions label { width: 100%; } }
+
+.local-trace-input { margin: 12px 0; display: grid; gap: 7px; }
+.local-trace-input input[type=file] { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+.local-trace-input small { font-size: 10px; line-height: 1.5; color: #657c69; }

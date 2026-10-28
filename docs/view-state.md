@@ -2,7 +2,7 @@
 
 View-state files record display settings for an explicitly identified anatomical asset. They contain no experimental measurements, imported dataset metadata or user research-file paths. Saving or restoring a view does not publish data, contact a service or persist anything in browser storage.
 
-The canonical JSON document uses schema version `mousebio.view.v1` and binds the view to three values from the loaded atlas manifest: `atlasId`, the GLB `assetSha256`, and `coordinateFrameId`. All three must match exactly before any settings are accepted. A source atlas name alone is insufficient because a changed mesh or frame could invalidate structure associations and camera coordinates. This binding compares declared manifest values; it is not an independent cryptographic verification of the asset currently rendered in memory.
+The canonical JSON document uses schema version `mousebio.view.v1` and binds the view to three values from the loaded atlas manifest: `atlasId`, `assetSha256`, and `coordinateFrameId`. All three must match exactly before any settings are accepted. A source atlas name alone is insufficient because a changed mesh or frame could invalidate structure associations and camera coordinates. For bundled references, the view module compares declared manifest values; independent asset-byte checks occur during loading. For a local trace, the parser hashes a copied snapshot of the original file bytes and registers its immutable in-memory asset. View validation does not recreate or independently validate that source data.
 
 The format accepts earlier `mousebio.view.v1` files that omit only the viewer background field: an absent `background` is restored as `dark`, matching the earlier viewer setting. This narrow migration does not infer or replace atlas identity, asset checksums, coordinate frames or other required controls. Earlier experimental exports without those bindings or complete living controls are not supported. Unknown schema versions and explicitly invalid background values are rejected. Export always writes the canonical background value. Future migrations must be explicit and must preserve the meaning of anatomy and coordinates.
 
@@ -14,7 +14,15 @@ The camera pose records world-frame `position`, `target` and `up`, each as three
 
 Opacity values are finite numbers from zero to one. Selected, hidden and opacity identifiers must exist in the loaded atlas. Hidden IDs are unique; a selected structure may also be hidden so that inspector state can be restored. The module accepts maps that omit structures, in which case the application supplies its current defaults. The current interface saves the effective opacity of every structure to retain the visible state independently of those omissions. Clipping permits `off`, `x`, `y` or `z` and a finite position from zero to 100 percent. These are display axes and do not establish anatomical directions. Living speed is a finite display multiplier from 0.25 to four; it is not a physiological rate.
 
-The file does not include an animation phase, accumulated physiological time, experimental data, colour-overlay values, measurement selections, experimental condition selections or imported observations. Opening experimental or comparative mode through a saved view does not recreate the data previously used in that mode. A view-state file therefore reproduces the recorded settings and anatomy association, rather than an entire research session. The physiological animations remain illustrative.
+The file does not include an animation phase, accumulated physiological time, experimental data, colour-overlay values, measurement selections, experimental condition selections or imported observations. Opening experimental or comparative mode through a saved view does not recreate the data previously used in that mode. A view-state file therefore reproduces the recorded settings and anatomy association, rather than an entire research session. Available physiological animations remain illustrative; local traces have no implemented motion.
+
+## Local trace views
+
+A local SWC view binds to the exact SHA-256 of the original file bytes, including ignored comment headers and line endings. The generated atlas, frame and trace-record identifiers use that hash. Filenames are discarded, so renaming unchanged bytes preserves binding; changed headers can produce a different reference even when parsed coordinates agree.
+
+View files contain no trace sample rows, parent arrays or raw comments. Reopen the identical original file through **Open local SWC**, select the resulting reference, and then load its view. The application caches one local geometry asset; after another file replaces it or after reload, a saved view alone cannot recover the previous geometry. Observations remain in separate checksum-bound banks during the browser session, and loading a matching view does not replace those observations.
+
+Camera settings retain the same centered and presentation-rotated display frame used for the loaded lines. Unknown physical units and anatomical orientation remain unresolved. Opacity, line selection tolerance and background settings do not establish a measured radius, cell surface, source registration or physiological model. See [local morphology methods](local-morphology.md).
 
 ## Validation and serialization
 
@@ -32,7 +40,7 @@ On 2026-10-26, the focused WSL run passed all 15 view-state cases and two transl
 
 ## Reference selection and regional surfaces
 
-Each view file binds to one anatomical reference through its atlas identifier, asset checksum and coordinate-frame identifier. Select the matching reference before loading its view file. A file from the other reference is incompatible; source-label numbers and numerical coordinates must not be used to translate it.
+Each view file binds to one anatomical reference through its atlas identifier, asset checksum and coordinate-frame identifier. Select the matching reference before loading its view file. A file from any other reference is incompatible; source-label numbers and numerical coordinates must not be used to translate it.
 
 Optional finer regional surface selection is transient and is not serialized in a view file. Successfully loading a view restores the selected reference's base geometry. Experimental observations remain separate from view files and stay associated with their original reference in browser memory.
 

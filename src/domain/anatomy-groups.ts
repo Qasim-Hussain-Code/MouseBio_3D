@@ -1,5 +1,6 @@
 import type { Atlas } from './types';
 import { buildEma147Groups } from './ema147-groups';
+import { isLocalTraceAtlas } from './local-trace';
 
 /** Local display selections, not new anatomical identifiers or ontology assertions. */
 export interface AnatomyGroup {
@@ -117,6 +118,12 @@ function hindlimbGroups(atlas: Atlas): AnatomyGroupsResult {
  * no guessed identifiers or partial associations are returned.
  */
 export function buildAnatomyGroups(atlas: Atlas): AnatomyGroupsResult {
+  if (isLocalTraceAtlas(atlas)) return Object.freeze({ ok: true, groups: Object.freeze([
+    group('whole-mouse', 'Whole local trace', atlas.structures.map((region) => region.id),
+      'All parent-linked samples in the locally opened trace record.',
+      ['Units, biological identity and provenance remain unverified. This display group adds no surfaces, registration or physiological model.']),
+  ]), errors: Object.freeze([]) });
+
   if (atlas?.id === 'ema147-native-v1') return buildEma147Groups(atlas);
   if (atlas?.id === 'charles2016-hindlimb-v1') return hindlimbGroups(atlas);
   if (!atlas || typeof atlas.id !== 'string' || !Object.hasOwn(REFERENCES, atlas.id)) {

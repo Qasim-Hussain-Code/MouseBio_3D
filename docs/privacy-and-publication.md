@@ -45,6 +45,8 @@ Exit status zero means that no error or warning was found in the selected scope.
 
 The scanner bounds ordinary files at 8 MiB and historical inspection at 1,000 distinct blobs. Registered anatomical GLBs have a separate 80 MiB per-asset and 100 MiB combined bound, with at most 1 MiB of JSON metadata per GLB. Their exact bytes, hashes, source IDs, frame and license declarations must match the manifest and regional index from the same working-tree, staged or historical snapshot. Unregistered GLBs are rejected. An exceeded bound or another opaque binary produces a review warning. Binary geometry payloads require the separate provenance and numerical geometry checks. This pattern-based check is not a complete secret detector, a malware scanner or a substitute for reviewing the publication allowlist. It cannot guarantee that arbitrary binary data, encoded content or a previously unknown credential format is private-information free. Untracked files remain outside its scope until staged.
 
+The history option also inspects reachable commit objects and annotated-tag chains, including messages and tagger identity. Metadata inspection has its own 1,000-object bound and the ordinary 8 MiB per-object bound. Every historical tree receives local-only path and nonregular-mode checks before content deduplication. Reachable source history is distinct from reflogs, unreachable objects and server-side caches; this checker does not inspect or remove GitHub retained commit views.
+
 The publication-check tests use synthetic paths, addresses, tokens, Git repositories and binary fixtures. They verify value-free findings, explicit scope, binary-review warnings and unchanged history. Run them independently with:
 
 ```bash
@@ -64,6 +66,8 @@ python3 scripts/prepare_release.py --output .publication/reviewed-release
 ```
 
 The new output directory contains a plain `source/` snapshot, source and web ZIP archives, `release.json` and `SHA256SUMS`. The source ZIP uses a versioned project directory; the web ZIP places `index.html` at its root. The manifest records public artifact names, sizes, checksums, scientific asset binding and the bounded check scope. It does not include local paths, private Git identities or the development commit identifier.
+
+The project README is optional; license notices and required scientific-asset records remain mandatory. A present README remains part of the reviewed source allowlist. Local instructions remain excluded.
 
 The helper requires clean tracked source, no unreviewed nonignored files, a passing content scan, allowed regular files, matching anatomical manifest and GLB information, and storage and disk bounds. It does not copy Git history, follow symlinks, download dependencies, create commits or publish anything. Fixed archive timestamps and preserved Git executable permissions avoid distributing private filesystem timestamps while keeping setup scripts usable. Source attribution and license records remain in the snapshot.
 

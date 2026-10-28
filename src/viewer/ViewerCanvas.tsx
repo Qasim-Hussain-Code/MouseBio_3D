@@ -5,7 +5,10 @@ import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas
 import { defaultStructureOpacity } from '../domain/reference-display';
 import { RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
 import { loadAtlasScene } from './atlas-loader';
-import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, focusCameraOnRegions, isPointRetainedByClipPlane, recenterMeshGeometry, type CameraPose } from './scene-utils';
+import type { LocalTraceAsset } from '../domain/local-trace';
+import { disposeRegion, prepareRegionMaterial, regionLabelCenter, linePickingThreshold, nearestClippedLineIntersection, type RenderRegion } from './region-objects';
+import { renderDiagnostics, type ViewerDiagnostics } from './viewer-diagnostics';
+import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, focusCameraOnRegions, isPointRetainedByClipPlane, recenterRegionGeometry, type CameraPose } from './scene-utils';
 
 export type { CameraPose } from './scene-utils';
 export type ViewerSettings = {
@@ -28,7 +31,8 @@ type Props = {
   atlas: Atlas;
   settings: ViewerSettings;
   onSelect: (id: string) => void;
-  onReady?: (details: { meshes: number; triangles: number }) => void;
+  onReady?: (details: ViewerDiagnostics) => void;
+  localTrace?: LocalTraceAsset;
   onStatus?: (status: 'loading' | 'ready' | 'failed') => void;
   handle: React.RefObject<ViewerHandle | null>;
   cameraPose?: CameraPose;
@@ -44,18 +48,18 @@ const palette: Record<string, string> = {
   immune: '#937f9d', endocrine: '#bfaa6d', integumentary: '#8f9d9a',
 };
 
-export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus }: Props) {
+export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const latest = useRef({ settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady });
   latest.current = { settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady };
   const engine = useRef<{ apply: () => void; setPose: (pose: CameraPose) => void; setDetail: () => void } | null>(null);
-  const [status, setStatus] = useState('Loading licensed anatomical mesh');
+  const [status, setStatus] = useState('Loading reference geometry');
   const [failure, setFailure] = useState(false);
   const [label, setLabel] = useState<{ x: number; y: number; name: string } | null>(null);
 
   useEffect(() => {
     if (!host.current) return;
-    setStatus('Loading licensed anatomical mesh'); setFailure(false); setLabel(null);
+    setStatus('Loading reference geometry'); setFailure(false); setLabel(null);
     latest.current.onDetailStatus?.({ status: 'idle', structureId: null });
     onStatus?.('loading');
     const element = host.current;
@@ -95,7 +99,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     scene.add(display);
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
-    const meshes = new Map<string, THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>();
+    const meshes = new Map<string, RenderRegion>();
     const detailTargets = new Map<string, { mesh: THREE.Mesh<THREE.BufferGeometry>; sourceToLocal: THREE.Matrix4 }>();
     const processes = physiologyProcessesForAtlas(atlas.id);
     const cardiacRegions = new Set(processes.find((process) => process.id === 'cardiac-contraction')?.requiredStructures ?? []);
@@ -123,8 +127,10 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         mesh.material.depthWrite = opacity >= 0.95;
         mesh.renderOrder = opacity < 1 ? 2 : 0;
         mesh.material.color.set(current.colors[id] ?? structure.color ?? palette[structure.systems[0]] ?? '#9ba5a1');
-        mesh.material.emissive.set(id === current.selected ? '#315b54' : '#000000');
-        mesh.material.emissiveIntensity = id === current.selected ? 0.65 : 0;
+        if (mesh.material instanceof THREE.MeshStandardMaterial) {
+          mesh.material.emissive.set(id === current.selected ? '#315b54' : '#000000');
+          mesh.material.emissiveIntensity = id === current.selected ? 0.65 : 0;
+        }
         mesh.material.clippingPlanes = current.clipAxis === 'off' ? [] : [clip];
       }
       if (current.clipAxis !== 'off') clip.copy(createDisplayClipPlane(current.clipAxis, current.clipPosition, radius));
@@ -132,8 +138,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     };
     const detailController = new RegionDetailController(atlas, (id) => detailTargets.get(id), () => {
       dirty = true;
-      if (!disposed && loaded) latest.current.onReady?.({ meshes: meshes.size,
-        triangles: [...meshes.values()].reduce((total, mesh) => total + (mesh.geometry.index?.count ?? mesh.geometry.getAttribute('position').count) / 3, 0) });
+      if (!disposed && loaded) latest.current.onReady?.(renderDiagnostics([...meshes.values()]));
     }, (state) => {
       const requested = latest.current.detailAsset;
       if (!disposed && (requested ? state.structureId === requested.structureId && state.assetSha256 === requested.glbSha256 : state.status === 'idle'))
@@ -182,11 +187,11 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       },
     };
     const sourceAbort = new AbortController();
-    void loadAtlasScene(atlas, sourceAbort.signal).then((sourceScene) => {
+    void loadAtlasScene(atlas, sourceAbort.signal, fetch, localTrace).then((sourceScene) => {
       const gltf = { scene: sourceScene };
       if (disposed) {
         gltf.scene.traverse((object) => {
-          if (object instanceof THREE.Mesh) { object.geometry.dispose(); for (const material of [object.material].flat()) material.dispose(); }
+          if (object instanceof THREE.Mesh || object instanceof THREE.LineSegments) disposeRegion(object);
         });
         return;
       }
@@ -195,24 +200,23 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       gltf.scene.position.sub(sourceBounds.getCenter(new THREE.Vector3()));
       display.add(gltf.scene);
       gltf.scene.updateWorldMatrix(true, true);
-      let triangles = 0;
-      let sourceMeshCount = 0;
+      let sourceRegionCount = 0;
+      const traceFormat = atlas.assetFormat === 'local-trace-v1';
       gltf.scene.traverse((object) => {
-        if (!(object instanceof THREE.Mesh)) return;
-        sourceMeshCount++;
+        if (!(object instanceof THREE.Mesh) && !(object instanceof THREE.LineSegments)) return;
+        if (traceFormat !== (object instanceof THREE.LineSegments)) throw new Error('Unexpected render primitive for this reference.');
+        sourceRegionCount++;
         const structure = atlas.structures.find((entry) => entry.meshNode === object.name || entry.id === object.userData.structureId);
-        if (!structure) return;
-        const { previousGeometry } = recenterMeshGeometry(object);
-        previousGeometry.dispose();
-        for (const material of [object.material].flat()) material.dispose();
-        object.material = new THREE.MeshStandardMaterial({ roughness: 0.68, metalness: 0.02, side: THREE.DoubleSide });
-        object.userData.structureId = structure.id;
-        meshes.set(structure.id, object as THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>);
-        object.updateWorldMatrix(true, false);
-        detailTargets.set(structure.id, { mesh: object, sourceToLocal: object.matrixWorld.clone().invert().multiply(gltf.scene.matrixWorld) });
-        triangles += (object.geometry.index?.count ?? object.geometry.attributes.position.count) / 3;
+        if (!structure || meshes.has(structure.id)) throw new Error('Reference region identity is missing or duplicated.');
+        const { previousGeometry } = recenterRegionGeometry(object); previousGeometry.dispose();
+        const region = prepareRegionMaterial(object);
+        region.userData.structureId = structure.id;
+        meshes.set(structure.id, region);
+        region.updateWorldMatrix(true, false);
+        if (region instanceof THREE.Mesh) detailTargets.set(structure.id, { mesh: region,
+          sourceToLocal: region.matrixWorld.clone().invert().multiply(gltf.scene.matrixWorld) });
       });
-      if (meshes.size !== atlas.structures.length || sourceMeshCount !== atlas.structures.length) throw new Error(`Model metadata mismatch: ${meshes.size} mapped regions from ${sourceMeshCount} meshes; expected ${atlas.structures.length}.`);
+      if (meshes.size !== atlas.structures.length || sourceRegionCount !== atlas.structures.length) throw new Error('Reference geometry count differs from its metadata.');
       bounds.setFromObject(display);
       radius = bounds.getSize(new THREE.Vector3()).length() / 2;
       camera.near = radius / 2000;
@@ -226,7 +230,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       apply();
       setStatus('');
       onStatus?.('ready');
-      onReady?.({ meshes: meshes.size, triangles });
+      onReady?.(renderDiagnostics([...meshes.values()]));
       void detailController.request(latest.current.detailAsset, latest.current.settings.selected);
       } catch (error) {
         console.error('Anatomical geometry rejected', error);
@@ -240,7 +244,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       console.error('Anatomical asset failed to load', error);
       setFailure(true);
       onStatus?.('failed');
-      setStatus('The anatomical asset could not be loaded. Check the local server and the selected reference asset and provenance files.');
+      setStatus(atlas.assetFormat === 'local-trace-v1' ? 'The local trace could not be prepared for display. Check its source records and numeric range.' : 'The anatomical asset could not be loaded. Check the local server and the selected reference asset and provenance files.');
     });
     let pointerDown: { x: number; y: number } | null = null;
     const down = (event: PointerEvent) => { pointerDown = { x: event.clientX, y: event.clientY }; };
@@ -251,7 +255,19 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
       raycaster.setFromCamera(pointer, camera);
       const candidates = [...meshes.values()].filter((mesh) => mesh.visible && mesh.material.opacity > 0.15);
-      const hits = raycaster.intersectObjects(candidates, false).filter((hit) => latest.current.settings.clipAxis === 'off' || isPointRetainedByClipPlane(hit.point, clip));
+      raycaster.near = camera.near; raycaster.far = camera.far;
+      const activeClip = latest.current.settings.clipAxis === 'off' ? null : clip;
+      const hits: THREE.Intersection[] = raycaster.intersectObjects(candidates.filter((region) => region instanceof THREE.Mesh), false)
+        .filter((hit) => !activeClip || isPointRetainedByClipPlane(hit.point, activeClip));
+      const threshold = linePickingThreshold(camera, controls.target, rect.height);
+      if (threshold !== null) {
+        raycaster.params.Line.threshold = threshold;
+        for (const region of candidates) if (region instanceof THREE.LineSegments) {
+          region.updateWorldMatrix(true, false);
+          const hit = nearestClippedLineIntersection(region, raycaster, activeClip); if (hit) hits.push(hit);
+        }
+      }
+      hits.sort((left, right) => left.distance - right.distance);
       const hit = hits[0];
       if (hit) latest.current.onSelect(hit.object.userData.structureId);
     };
@@ -286,6 +302,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       if (current.living && current.playing && !document.hidden) elapsed += delta * current.speed;
       const physiology = evaluateIllustrativePhysiology(elapsed, { cardiac: current.cardiac, respiratory: current.respiratory });
       for (const [id, mesh] of meshes) {
+        if (!(mesh instanceof THREE.Mesh)) continue;
         const scale = !current.living ? 1 : cardiacRegions.has(id) ? physiology.cardiacScale : respiratoryRegions.has(id) ? physiology.respiratoryScale : 1;
         if (mesh.scale.x !== scale) { mesh.scale.setScalar(scale); dirty = true; }
       }
@@ -294,7 +311,9 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         dirty = false;
         const selected = meshes.get(current.selected ?? '');
         if (selected?.visible && current.labels) {
-          const point = selected.getWorldPosition(new THREE.Vector3()).project(camera);
+          const anchor = regionLabelCenter(selected);
+          if (!anchor) { setLabel(null); lastLabel = ""; return; }
+          const point = anchor.project(camera);
           const projected = { x: (point.x + 1) / 2 * element.clientWidth, y: (-point.y + 1) / 2 * element.clientHeight, name: atlas.structures.find((item) => item.id === current.selected)!.name };
           const signature = `${Math.round(projected.x)},${Math.round(projected.y)},${projected.name}`;
           if (signature !== lastLabel) { setLabel(point.z < 1 ? projected : null); lastLabel = signature; }
@@ -313,7 +332,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       renderer.domElement.removeEventListener('pointerup', up);
       renderer.domElement.removeEventListener('keydown', keydown);
       scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) { object.geometry.dispose(); for (const material of [object.material].flat()) material.dispose(); }
+        if (object instanceof THREE.Mesh || object instanceof THREE.LineSegments) disposeRegion(object);
       });
       renderer.dispose();
       renderer.forceContextLoss();

@@ -153,6 +153,25 @@ class ReleaseTests(unittest.TestCase):
                 prepare_release(root, Path(".publication/volume"))
             self.assertFalse((root / ".publication").exists())
 
+    def test_clean_source_without_readme_preserves_required_licenses_and_notices(self):
+        with fixture() as root:
+            git(root, "rm", "--quiet", "README.md")
+            git(root, "commit", "--quiet", "-m", "omit_fixture_guide")
+            self.assertEqual(git(root, "status", "--porcelain"), b"")
+            release = prepare_release(root, Path(".publication/without-guide"))
+            folder = root / ".publication/without-guide"
+            self.assertFalse((folder / "source/README.md").exists())
+            with zipfile.ZipFile(folder / release["artifacts"]["source"]["file"]) as zipped:
+                prefix = "MouseBio_3D-1.2.3/"
+                self.assertNotIn(prefix + "README.md", zipped.namelist())
+                for name in ("LICENSE", "LICENSES.md", "public/THIRD_PARTY_NOTICES.txt",
+                             "public/atlas/LICENSE.md", "public/atlas/atlas.json", "public/atlas/model.glb"):
+                    self.assertEqual(zipped.read(prefix + name), (root / name).read_bytes())
+            with zipfile.ZipFile(folder / release["artifacts"]["web"]["file"]) as zipped:
+                for name in ("THIRD_PARTY_NOTICES.txt", "atlas/LICENSE.md", "atlas/atlas.json", "atlas/model.glb"):
+                    self.assertEqual(zipped.read(name), (root / "public" / name).read_bytes())
+            self.assertEqual(git(root, "status", "--porcelain"), b"")
+
     def test_complete_archives_are_deterministic_bound_and_free_of_development_history(self):
         with fixture() as root:
             review = audit(root)
