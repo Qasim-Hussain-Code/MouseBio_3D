@@ -39,6 +39,7 @@ const volumeText = await readFile(new URL('../public/atlas-volume/atlas.json', i
 const hindlimbText = await readFile(new URL('../public/atlas-hindlimb/atlas.json', import.meta.url), 'utf8');
 const ema147Text = await readFile(new URL('../public/atlas-ema147/atlas.json', import.meta.url), 'utf8');
 const neuronText = await readFile(new URL('../public/atlas-neuron/atlas.json', import.meta.url), 'utf8');
+const neuronSamples = await readFile(new URL('../public/atlas-neuron/nmo130632-standardized.swc.txt', import.meta.url));
 
 const originalFetch = globalThis.fetch;
 const originalConsoleError = console.error;
@@ -59,7 +60,8 @@ beforeEach(() => {
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = String(input);
     requests.push(url);
-    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json', '/atlas-neuron/nmo130632-standardized.swc.txt'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    if (url === '/atlas-neuron/nmo130632-standardized.swc.txt') return new Response(neuronSamples);
     return new Response(url === '/atlas/atlas.json' ? atlasText : url === '/atlas-volume/atlas.json' ? volumeText : url === '/atlas-hindlimb/atlas.json' ? hindlimbText : url === '/atlas-neuron/atlas.json' ? neuronText : ema147Text, { status: 200, headers: { 'Content-Type': 'application/json' } });
   }) as typeof fetch;
   console.error = (...args: unknown[]) => {
@@ -1096,4 +1098,54 @@ test('bundled neuronal reference retains source limits, background and source-bo
   assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), originalData);
+});
+
+
+test('local sample navigation preserves source-bound views and observations without network reads', async () => {
+  const view = await openApp();
+  fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
+  await view.findByRole('heading', { name: 'Source sample explorer' });
+  fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const saved = await savedView(view), id = saved.selected!;
+  const csv = ['structure_id,measurement,value,unit,replicate,condition,time_point', `${id},synthetic marker,1,AU,subject-1,control,baseline`].join('\n');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(csv)] } });
+  await view.findByText('Accepted 1 measurements. No data transmitted.');
+  const explorer = within(view.getByRole('region', { name: 'Source sample explorer' }));
+  fireEvent.change(explorer.getByLabelText('Source sample ID'), { target: { value: '30' } });
+  fireEvent.click(explorer.getByRole('button', { name: 'Inspect sample' }));
+  assert.ok(explorer.getByRole('button', { name: 'Inspect child sample 40' }));
+  fireEvent.click(explorer.getByRole('button', { name: 'Inspect child sample 40' }));
+  assert.equal((explorer.getByLabelText('Source sample ID') as HTMLInputElement).value, '40');
+  assert.equal((explorer.getByRole('button', { name: 'Focus incident links' }) as HTMLButtonElement).disabled, true);
+  const beforeInvalid = await savedView(view);
+  fireEvent.change(explorer.getByLabelText('Source sample ID'), { target: { value: '999999' } });
+  fireEvent.click(explorer.getByRole('button', { name: 'Inspect sample' }));
+  assert.ok(explorer.getByRole('alert'));
+  assert.deepEqual(await savedView(view), beforeInvalid);
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  const data = JSON.parse(await exportedBlobs.at(-1)!.text());
+  assert.equal(data.measurements.length, 1);
+  assert.equal(data.measurements[0].structureId, id);
+  assert.equal(view.container.textContent?.includes('LOCAL_HEADER_PRIVATE_MARKER'), false);
+  assert.equal(JSON.stringify(await savedView(view)).includes('sampleId'), false);
+});
+
+test('bundled sample inspection reads only its checked local derivative and keeps sample selection out of views', async () => {
+  const view = await openApp(); expectedRequests.push('/atlas-neuron/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'neuromorpho-nmo130632-standardized-v1' } });
+  await view.findByRole('heading', { name: 'Source sample explorer' });
+  const explorer = within(view.getByRole('region', { name: 'Source sample explorer' }));
+  assert.equal(explorer.queryByLabelText('Source sample ID'), null);
+  const before = await savedView(view);
+  expectedRequests.push('/atlas-neuron/nmo130632-standardized.swc.txt');
+  fireEvent.click(explorer.getByRole('button', { name: 'Inspect source samples' }));
+  const input = await explorer.findByLabelText('Source sample ID');
+  fireEvent.change(input, { target: { value: '11650' } });
+  fireEvent.click(explorer.getByRole('button', { name: 'Inspect sample' }));
+  assert.equal((input as HTMLInputElement).value, '11650');
+  fireEvent.click(explorer.getByRole('button', { name: 'Inspect parent' }));
+  assert.notEqual((input as HTMLInputElement).value, '11650');
+  assert.deepEqual(await savedView(view), before);
+  assert.equal((explorer.getByRole('button', { name: 'Focus incident links' }) as HTMLButtonElement).disabled, true);
 });

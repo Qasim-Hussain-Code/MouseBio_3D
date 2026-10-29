@@ -8,7 +8,8 @@ import { loadAtlasScene } from './atlas-loader';
 import type { LocalTraceAsset } from '../domain/local-trace';
 import { disposeRegion, prepareRegionMaterial, regionLabelCenter, linePickingThreshold, nearestClippedLineIntersection, type RenderRegion } from './region-objects';
 import { renderDiagnostics, type ViewerDiagnostics } from './viewer-diagnostics';
-import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, focusCameraOnRegions, isPointRetainedByClipPlane, recenterRegionGeometry, type CameraPose } from './scene-utils';
+import { traceSampleFocusBounds } from './trace-sample-focus';
+import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, fitCameraToBounds, focusCameraOnRegions, isPointRetainedByClipPlane, recenterRegionGeometry, type CameraPose } from './scene-utils';
 
 export type { CameraPose } from './scene-utils';
 export type ViewerSettings = {
@@ -26,7 +27,7 @@ export type ViewerSettings = {
   labels: boolean;
   background: ViewBackground;
 };
-export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void };
+export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean };
 type Props = {
   atlas: Atlas;
   settings: ViewerSettings;
@@ -175,6 +176,24 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     handle.current = {
       reset,
       focusRegions,
+      focusTraceSample(sampleId) {
+        if (!loaded || atlas.structures.length !== 1
+            || (atlas.assetFormat !== 'local-trace-v1' && atlas.assetFormat !== 'swc-native-v1')) return false;
+        const current = latest.current.settings, id = atlas.structures[0].id;
+        if (current.hidden.includes(id) || (current.opacity[id] ?? defaultOpacity(id)) <= 0) return false;
+        const region = meshes.get(id);
+        if (!(region instanceof THREE.LineSegments)) return false;
+        region.updateWorldMatrix(true, false);
+        const plane = current.clipAxis === 'off' ? null : createDisplayClipPlane(current.clipAxis, current.clipPosition, radius);
+        const sampleBounds = traceSampleFocusBounds(region, sampleId, plane);
+        if (!sampleBounds || !fitCameraToBounds(camera, controls.target, sampleBounds)) return false;
+        const distance = camera.position.distanceTo(controls.target);
+        controls.minDistance = Math.min(controls.minDistance, distance * 0.9);
+        controls.maxDistance = Math.max(controls.maxDistance, distance * 1.1);
+        controls.update();
+        dirty = true;
+        return true;
+      },
       view(axis) {
         controls.target.set(0, 0, 0);
         camera.position.set(axis === 'x' ? radius * 3.3 : 0, axis === 'y' ? radius * 3.3 : 0, axis === 'z' ? radius * 3.3 : 0);

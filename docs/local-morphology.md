@@ -52,6 +52,10 @@ A saved view contains source binding, display settings and an optional camera po
 
 The application records source license and biological identity as unknown. Numeric validation does not verify provenance, permissions or scientific accuracy. Preserve the original source and its attribution and licensing information separately; opening it locally does not supply redistribution rights.
 
+## Inspect source samples
+
+Source sample explorer exposes original IDs, numeric fields, explicit parents and paginated children without adding experimental structure IDs or physical-unit claims. Focus incident links frames retained portions of the existing geometry. Inspection remains transient and observations stay separate. See [trace sample inspection](trace-sample-inspection.md) for navigation, graph categories, clipping, privacy and verification limits.
+
 ## Verification scope
 
 Parser checks, numerical scene checks and simulated DOM workflows provide software evidence. Synthetic fixtures used for these checks do not establish biological accuracy. These results are distinct from actual WebGL pixels, file dialogs, pointer selection, camera interaction, memory use and representative GPU performance. Systematic browser and hardware verification remains incomplete.

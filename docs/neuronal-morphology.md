@@ -42,6 +42,10 @@ The source reports 15 percent shrinkage and states that it is not corrected. The
 
 The original header's unitless SCALE 1.0 1.0 1.0 does not establish physical units. The generic SWC micrometre convention likewise does not independently verify this file's export history or calibration. Source and asset units remain unknown, their numeric scale is 1, and physical calibration and anatomical directions remain unverified. The metadata's pia-axis note explicitly refers to the original morphology file. It is not transferred to the standardized frame without a verified transformation. No overlay or coordinate matching to another anatomical reference is provided.
 
+## Inspect source samples
+
+Source sample explorer exposes original IDs, numeric fields, explicit parents and paginated children without adding experimental structure IDs or physical-unit claims. Focus incident links frames retained portions of the existing geometry. Inspection remains transient and observations stay separate. See [trace sample inspection](trace-sample-inspection.md) for navigation, graph categories, clipping, privacy and verification limits.
+
 ## Verification scope
 
 Preparation checks validate original and derived hashes, preserved numeric tokens, finite supported coordinates, explicit graph identities, parent completeness, acyclicity, bounded input and numerical diagnostics. Runtime and simulated DOM tests provide separate software evidence. They do not establish actual WebGL pixels, pointer selection, representative GPU performance or independent anatomical accuracy. Systematic browser interaction and hardware acceptance remain incomplete.

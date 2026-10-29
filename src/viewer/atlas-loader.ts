@@ -4,6 +4,7 @@ import type { LocalTraceAsset } from '../domain/local-trace';
 import { atlasAssetBytes, atlasAssetFormat, atlasAssetSha256 } from '../domain/atlas-asset';
 import { fetchBoundGlb } from './region-detail';
 import { fetchBoundAnatomyBytes } from './asset-fetch';
+import { loadSourceTraceAsset } from './source-trace-loader';
 
 /** Load one reviewed reference without assigning scale or registration to another. */
 export async function loadAtlasScene(atlas: Atlas, signal: AbortSignal, fetcher: typeof fetch = fetch, localTrace?: LocalTraceAsset): Promise<THREE.Group> {
@@ -17,15 +18,10 @@ export async function loadAtlasScene(atlas: Atlas, signal: AbortSignal, fetcher:
     return buildLocalTraceScene(atlas, localTrace);
   }
   if (format === 'swc-native-v1') {
-    const { isSourceTraceAtlas, parseSourceTrace } = await import('../domain/source-trace');
-    if (!isSourceTraceAtlas(atlas)) throw new Error('The neuronal source manifest does not match the reviewed reference.');
-    const content = await fetchBoundAnatomyBytes(atlas.assetUrl, bytes, hash, signal, 'txt', fetcher);
-    const result = await parseSourceTrace(content, atlas);
-    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-    if (!result.ok || !result.asset) throw new Error('The neuronal source data do not match the reviewed reference.');
+    const asset = await loadSourceTraceAsset(atlas, signal, fetcher);
     const { buildSourceTraceScene } = await import('./source-trace-scene');
     if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-    return buildSourceTraceScene(atlas, result.asset);
+    return buildSourceTraceScene(atlas, asset);
   }
   if (format === 'ply-native-v1') {
     const content = await fetchBoundAnatomyBytes(atlas.assetUrl, bytes, hash, signal, 'ply', fetcher);

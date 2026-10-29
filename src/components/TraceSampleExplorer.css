@@ -1,0 +1,10 @@
+.trace-sample-explorer details { margin: 12px 0; }
+.trace-sample-explorer summary { cursor: pointer; font-size: 11px; }
+.trace-sample-query { display: grid; gap: 7px; margin: 14px 0; }
+.trace-sample-query label { font-size: 11px; }
+.trace-sample-query input { min-width: 0; width: 100%; box-sizing: border-box; border: 1px solid #d4dfd1; border-radius: 5px; padding: 8px; color: #24433e; background: #fff; font: inherit; }
+.trace-sample-explorer .secondary-button { min-height: 32px; padding: 6px 9px; font-size: 10px; }
+.trace-sample-actions { display: flex; gap: 7px; flex-wrap: wrap; margin: 10px 0; }
+.trace-sample-record dd { overflow-wrap: anywhere; }
+.trace-child-list { display: flex; gap: 6px; flex-wrap: wrap; padding: 0; list-style: none; }
+.trace-sample-explorer h4 { font-size: 11px; margin: 15px 0 8px; }
