@@ -908,6 +908,234 @@
         "The source reports 15 percent shrinkage without correction. No correction is applied.",
         "Initial Float32 diagnostics exclude later display recentering and GPU arithmetic and do not estimate physical accuracy."
       ]
+    },
+    {
+      "id": "mousemapper-7fe04a9c-graph-patch0",
+      "title": "MouseMapper predicted regional nerve graph, patch 0",
+      "landingPage": "https://github.com/erturklab/mouseMapper/blob/7fe04a9ccf37664d76fe548ae226147c0023ceb7/graph_module/example_data/4x_graph/patch_volume_4X_0_pred/patch_volume_4X_0_pred.vtk",
+      "sourceRecord": {
+        "id": "mousemapper-7fe04a9c-graph-patch0",
+        "displayName": "MouseMapper regional nerve example",
+        "title": "MouseMapper graph_module example_data: patch_volume_4X_0_pred",
+        "citationLabel": "Kaltenecker et al., 2026; MouseMapper",
+        "citation": "Kaltenecker D, Horvath I, Al-Maskari R, et al. A deep-learning framework reveals whole-body perturbations at cell level. Nature. 2026;655:1016-1026. doi:10.1038/s41586-026-10535-2.",
+        "publicationYear": 2026,
+        "doi": "10.1038/s41586-026-10535-2",
+        "url": "https://github.com/erturklab/mouseMapper/blob/7fe04a9ccf37664d76fe548ae226147c0023ceb7/graph_module/example_data/4x_graph/patch_volume_4X_0_pred/patch_volume_4X_0_pred.vtk",
+        "downloadUrl": "https://media.githubusercontent.com/media/erturklab/mouseMapper/7fe04a9ccf37664d76fe548ae226147c0023ceb7/graph_module/example_data/4x_graph/patch_volume_4X_0_pred/patch_volume_4X_0_pred.vtk",
+        "license": "Apache-2.0",
+        "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+        "licenseSourceUrl": "https://github.com/erturklab/mouseMapper/blob/7fe04a9ccf37664d76fe548ae226147c0023ceb7/LICENSE",
+        "repositoryCommit": "7fe04a9ccf37664d76fe548ae226147c0023ceb7",
+        "sourceBytes": 60899,
+        "sourceSha256": "b35b59a1056d04e5992a0e463751ceb89a733d80837e66d951be810899ec3c27",
+        "attribution": "Kaltenecker D, Horvath I, Al-Maskari R, et al. A deep-learning framework reveals whole-body perturbations at cell level. Nature. 2026;655:1016-1026. doi:10.1038/s41586-026-10535-2. Example graph distributed by the MouseMapper authors in erturklab/mouseMapper under Apache License 2.0. Geometry-only adaptation by Qasim Hussain for MouseBio_3D.",
+        "modifications": [
+          "Converted original VTK points and ordered polyline indices to compact numeric JSON, preserving parsed numeric coordinates and source array order.",
+          "Omitted inconsistent radius attributes and VTK serialization headers; retained their record-count discrepancies in metadata.",
+          "No coordinate scaling, registration, point merging, repair, smoothing, radius-based surface generation or new link was applied."
+        ]
+      },
+      "license": {
+        "identifier": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0"
+      },
+      "applicationAsset": {
+        "atlasId": "mousemapper-nerve-patch0-v1",
+        "manifestPath": "public/atlas-nerve/atlas.json",
+        "assetPath": "public/atlas-nerve/mousemapper-patch0-lines.json",
+        "bytes": 55658,
+        "sha256": "e59fea98d4f41adab6149eee38e28ea6c3737dfa37013d5a2039e89c4c3ef0ce",
+        "bundled": true
+      },
+      "coordinateFrame": {
+        "id": "mousemapper-nerve-patch0-native-unknown-units-v1",
+        "sourceUnits": "unknown",
+        "assetUnits": "unknown",
+        "sourceToAssetScale": 1,
+        "unitsVerified": false,
+        "anatomicalOrientationVerified": false,
+        "physicalCalibrationVerified": false,
+        "registration": null,
+        "registrationToDigimouse": null,
+        "origin": "Source VTK origin; anatomical origin unverified",
+        "axes": {
+          "x": "native graph x; anatomical direction unverified",
+          "y": "native graph y; anatomical direction unverified",
+          "z": "native graph z; anatomical direction unverified"
+        }
+      },
+      "bodyAssessment": {
+        "assetBytes": 55658,
+        "assetSha256": "e59fea98d4f41adab6149eee38e28ea6c3737dfa37013d5a2039e89c4c3ef0ce",
+        "points": 1940,
+        "polylines": 84,
+        "segments": 1876,
+        "components": 64,
+        "isolatedPoints": 0,
+        "zeroLengthSegments": 0,
+        "float32CollapsedSegments": 0,
+        "boundsSourceUnits": [
+          [
+            1.0,
+            1.0,
+            101.0
+          ],
+          [
+            298.0,
+            298.0,
+            298.0
+          ]
+        ],
+        "displayBoundsSourceUnits": [
+          [
+            1.0,
+            1.0,
+            101.0
+          ],
+          [
+            298.0,
+            298.0,
+            298.0
+          ]
+        ],
+        "maxFloat32PositionError": 1.5136718729991117e-05
+      },
+      "limitations": [
+        "This is a predicted regional nerve-graph example, not complete adult peripheral nerve coverage.",
+        "The individual specimen, sex, age, diet, laterality and exact anatomical subregion remain unresolved.",
+        "Source physical units, anatomical orientation and calibration remain unverified; no metric conversion or accepted registration is supplied.",
+        "Source polyline cells and numerical components do not establish nerve, axon or cell counts, synapses or functional connectivity.",
+        "Source point and cell radius fields have inconsistent tuple counts and are omitted without invented associations; no radius sets line thickness or creates a surface.",
+        "Original source point order, polyline order and every consecutive link are retained without merging, repair, smoothing or missing-branch completion.",
+        "Initial Float32 diagnostics exclude later recentering and GPU arithmetic and do not estimate physical accuracy."
+      ]
+    },
+    {
+      "id": "schmid2021-zenodo5115640-mvn1",
+      "title": "Mouse cortical microvascular network MVN1",
+      "landingPage": "https://zenodo.org/records/5115640",
+      "sourceRecord": {
+        "id": "schmid2021-zenodo5115640-mvn1",
+        "displayName": "MVN1 cortical vascular source",
+        "title": "MVN1 sampled paths from the Schmid et al. 2021 baseline deposit",
+        "citationLabel": "Schmid et al., 2021; Blinder et al., 2013",
+        "citation": "Schmid F, Conti G, Jenny P, Weber B. Time-averaged simulations results for bi-phasic blood flow simulations in realistic microvascular networks for various single- and multi-capillary occlusion scenarios. Zenodo. 2021. Version 1. doi:10.5281/zenodo.5115640.",
+        "publicationYear": 2021,
+        "doi": "10.5281/zenodo.5115640",
+        "url": "https://zenodo.org/records/5115640",
+        "downloadUrl": "https://zenodo.org/api/records/5115640/files/SimulationResults_Baseline.tar.bz2/content",
+        "license": "CC-BY-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "sourceBytes": 23200621,
+        "sourceSha256": "40d8a729e8bc977e4121a633da162d1e49f2e71e343454a04e18cc541965c627",
+        "sourceMembers": [
+          {
+            "path": "SimulationResults_Baseline/MVN1/verticesDict_baseline.pkl",
+            "bytes": 1162408,
+            "sha256": "e4bbd7467ec7febc34ac0a18c3d58d0e9e57c0a2e341498b8b74b589cf0a837d"
+          },
+          {
+            "path": "SimulationResults_Baseline/MVN1/edgesDict_baseline.pkl",
+            "bytes": 38640900,
+            "sha256": "f931bf3c4215fe9d95c7edbacd7a179371e578bdc120776f4d0b1da9c6fbb11b"
+          }
+        ],
+        "referenceCitations": [
+          "Schmid F, Conti G, Jenny P, Weber B. Time-averaged simulations results for bi-phasic blood flow simulations in realistic microvascular networks for various single- and multi-capillary occlusion scenarios. Zenodo. 2021. Version 1. doi:10.5281/zenodo.5115640.",
+          "Schmid F, Conti G, Jenny P, Weber B. The severity of microstrokes depends on local vascular topology and baseline perfusion. eLife. 2021;10:e60208. doi:10.7554/eLife.60208.",
+          "Blinder P, Tsai PS, Kaufhold JP, Knutsen PM, Suhl H, Kleinfeld D. The cortical angiome: an interconnected vascular network with noncolumnar patterns of blood flow. Nature Neuroscience. 2013;16:889-897. doi:10.1038/nn.3426.",
+          "Schmid F, Tsai PS, Kleinfeld D, Jenny P, Weber B. Depth-dependent flow and pressure characteristics in cortical microvascular networks. PLoS Computational Biology. 2017;13:e1005392. doi:10.1371/journal.pcbi.1005392."
+        ],
+        "attribution": "Schmid F, Conti G, Jenny P, Weber B. Time-averaged simulations results for bi-phasic blood flow simulations in realistic microvascular networks for various single- and multi-capillary occlusion scenarios. Zenodo. 2021. Version 1. doi:10.5281/zenodo.5115640. Original geometry attributed to Blinder et al. 2013; model processing described by Schmid et al. 2017. Geometry-only adaptation by Qasim Hussain for MouseBio_3D, CC BY 4.0.",
+        "modifications": [
+          "Decoded only pinned numeric data through a bounded data-only interpreter without executing serialized callables or importing NumPy.",
+          "Retained every edge-local path point, original path order and original source topology identifiers. No endpoint merging, repair, smoothing, scaling or registration.",
+          "Omitted all simulated flow, pressure, hematocrit, effective diameters, model vessel categories and path-analysis fields from the distributed geometry."
+        ]
+      },
+      "license": {
+        "identifier": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "applicationAsset": {
+        "atlasId": "schmid2021-mvn1-v1",
+        "manifestPath": "public/atlas-vascular/atlas.json",
+        "assetPath": "public/atlas-vascular/schmid2021-mvn1-lines.json",
+        "bytes": 38356364,
+        "sha256": "8d9fb19e943a126562ab5a439d83590b5694d58b208f064a8140d556ed3e4652",
+        "bundled": true
+      },
+      "coordinateFrame": {
+        "id": "schmid2021-mvn1-source-micrometres-v1",
+        "sourceUnits": "micrometres",
+        "assetUnits": "micrometres",
+        "sourceToAssetScale": 1,
+        "unitsVerified": false,
+        "unitsStatus": "source-declared only",
+        "anatomicalOrientationVerified": false,
+        "physicalCalibrationVerified": false,
+        "registration": null,
+        "registrationToDigimouse": null,
+        "origin": "Source MVN1 numerical origin; anatomical origin unverified",
+        "axes": {
+          "x": "source x; anatomical direction unverified",
+          "y": "source y; anatomical direction unverified",
+          "z": "source z; anatomical direction unverified"
+        }
+      },
+      "bodyAssessment": {
+        "assetBytes": 38356364,
+        "assetSha256": "8d9fb19e943a126562ab5a439d83590b5694d58b208f064a8140d556ed3e4652",
+        "points": 575722,
+        "polylines": 12071,
+        "segments": 563651,
+        "components": 12071,
+        "isolatedPoints": 0,
+        "zeroLengthSegments": 62,
+        "float32CollapsedSegments": 0,
+        "boundsSourceUnits": [
+          [
+            823.0943331335808,
+            1211.7570171375833,
+            -69.22222222222223
+          ],
+          [
+            1952.3717350746267,
+            2365.284268548782,
+            1202.5
+          ]
+        ],
+        "displayBoundsSourceUnits": [
+          [
+            823.0943603515625,
+            1211.7569580078125,
+            -69.22222137451172
+          ],
+          [
+            1952.3717041015625,
+            2365.2841796875,
+            1202.5
+          ]
+        ],
+        "maxFloat32PositionError": 0.00012100254662072985,
+        "sourceGraphVertices": 9168,
+        "sourceGraphEdges": 12071,
+        "sourceGraphComponents": 1,
+        "sourceGraphCycleRank": 2904,
+        "sourceGraphSelfLinks": 0,
+        "sourceEndpointMismatchPaths": 1261
+      },
+      "limitations": [
+        "This is a regional cortical microvascular source, not a complete adult whole-body vascular network.",
+        "Sampled paths originate from mouse cortical reconstructions reused in a simulation deposit. Vessel labels and diameter distributions were modified for modelling; no diameter or simulation field sets display thickness or motion.",
+        "Individual specimen identity, sex, exact age and strain linkage remain unresolved and are not borrowed from a separate velocity-measurement cohort.",
+        "Micrometres are source-declared units. Independent calibration, anatomical direction and registration to other application references remain unverified.",
+        "The indexed rendering retains edge-local point records without merging coincident endpoints. Source connectivity and original vertex and edge IDs are retained separately; indexed path components differ from source topology components.",
+        "Path endpoint ordering differs from connectivity ordering in 1261 paths. Two endpoint pairs retain small source coordinate differences after allowing reversal. No repair, reorientation or flow direction is inferred.",
+        "All 62 zero-length source segments are retained. No missing branches, smoothing, vessel surfaces, calibrated diameters, synapses or physiological model are generated.",
+        "Initial Float32 diagnostics exclude later recentering and GPU arithmetic and do not establish physical accuracy."
+      ]
     }
   ]
 }

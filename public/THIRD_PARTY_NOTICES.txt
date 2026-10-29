@@ -171,3 +171,18 @@ NeuroMorpho.Org (RRID:SCR_002145). Source: https://neuromorpho.org/api/neuron/id
 Tecuatl C, Ljungquist B, Ascoli GA. Accelerating the continuous community sharing of digital neuromorphology data. FASEB Bioadv. 2024;6(7):207-221. doi:10.1096/fba.2024-00048.
 License: https://creativecommons.org/licenses/by/4.0/
 Numeric-only adaptation: Qasim Hussain, MouseBio_3D. Original contact and machine headers are omitted; source coordinates, sample IDs and parent links are retained. See atlas-neuron/LICENSE.md for attribution and processing.
+
+
+MouseMapper predicted regional nerve polyline derivative: Apache License 2.0.
+Source: erturklab/mouseMapper, commit 7fe04a9ccf37664d76fe548ae226147c0023ceb7, graph_module/example_data/4x_graph/patch_volume_4X_0_pred.
+Kaltenecker D, Horvath I, Al-Maskari R, et al. A deep-learning framework reveals whole-body perturbations at cell level. Nature. 2026;655:1016-1026. doi:10.1038/s41586-026-10535-2.
+License: https://www.apache.org/licenses/LICENSE-2.0
+Numeric-only adaptation: Qasim Hussain, MouseBio_3D. Original point and path order retained; inconsistent radius fields omitted. See atlas-nerve/LICENSE.md for the complete source license and modifications.
+
+
+MVN1 regional cortical vascular polyline derivative: CC BY 4.0.
+Schmid F, Conti G, Jenny P and Weber B, 2021. Dataset doi:10.5281/zenodo.5115640, version 1. Related study: doi:10.7554/eLife.60208.
+Original reconstruction: Blinder P, Tsai PS, Kaufhold JP, Knutsen PM, Suhl H and Kleinfeld D. The cortical angiome: an interconnected vascular network with noncolumnar patterns of blood flow. Nature Neuroscience. 2013;16:889-897. doi:10.1038/nn.3426.
+Simulation preprocessing: Schmid F, Tsai PS, Kleinfeld D, Jenny P and Weber B. Depth-dependent flow and pressure characteristics in cortical microvascular networks. PLoS Computational Biology. 2017;13:e1005392. doi:10.1371/journal.pcbi.1005392.
+License: https://creativecommons.org/licenses/by/4.0/
+Numeric-only adaptation: Qasim Hussain, MouseBio_3D. Source sampled paths and topology identities retained separately. Flow, pressure, hematocrit, effective diameters and model vessel categories omitted. See atlas-vascular/LICENSE.md for attribution and modifications.

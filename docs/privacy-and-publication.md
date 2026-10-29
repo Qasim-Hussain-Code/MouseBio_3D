@@ -75,3 +75,12 @@ The project README is optional; license notices and required scientific-asset re
 The helper requires clean tracked source, no unreviewed nonignored files, a passing content scan, allowed regular files, matching anatomical manifest and GLB information, and storage and disk bounds. It does not copy Git history, follow symlinks, download dependencies, create commits or publish anything. Fixed archive timestamps and preserved Git executable permissions avoid distributing private filesystem timestamps while keeping setup scripts usable. Source attribution and license records remain in the snapshot.
 
 Review the resulting source and web artifacts and preserve their checksums before publication. A clean package scan establishes the declared bounded checks, not a guarantee that arbitrary content contains no private information. The sanitized publication checkout requires its own identity and history review before its new commits are pushed.
+
+
+## Registered polyline data
+
+The MouseMapper regional nerve graph and MVN1 cortical vascular paths are separately registered numeric JSON assets. Their exact bytes, checksums, full source manifests, source identities, processing records, declared units, uncertainties and required licenses must match the reviewed converters. The nerve notice retains the complete original Apache 2.0 license. Vascular provenance retains the CC BY 4.0 deposit, original reconstruction and modelling citations. No simulation result or radius association is inferred from these records.
+
+Registered assets have an 80 MiB individual bound and a 160 MiB combined bound. The complete registered JSON text receives the ordinary value-free privacy scan, including when its source registration fails. Ordinary unrelated files retain the 8 MiB bound. Source and web packaging each have a 160 MiB bound; the overall project limit remains 10,000,000,000 bytes. These are bounded checks, not a guarantee against every possible private-information encoding.
+
+These checks do not change repository visibility. Incident-specific review notes and matched values remain local and are excluded from source publication.

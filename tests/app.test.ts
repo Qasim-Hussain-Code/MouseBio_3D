@@ -39,6 +39,8 @@ const volumeText = await readFile(new URL('../public/atlas-volume/atlas.json', i
 const hindlimbText = await readFile(new URL('../public/atlas-hindlimb/atlas.json', import.meta.url), 'utf8');
 const ema147Text = await readFile(new URL('../public/atlas-ema147/atlas.json', import.meta.url), 'utf8');
 const neuronText = await readFile(new URL('../public/atlas-neuron/atlas.json', import.meta.url), 'utf8');
+const nerveText = await readFile(new URL('../public/atlas-nerve/atlas.json', import.meta.url), 'utf8');
+const vascularText = await readFile(new URL('../public/atlas-vascular/atlas.json', import.meta.url), 'utf8');
 const neuronSamples = await readFile(new URL('../public/atlas-neuron/nmo130632-standardized.swc.txt', import.meta.url));
 
 const originalFetch = globalThis.fetch;
@@ -60,8 +62,10 @@ beforeEach(() => {
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = String(input);
     requests.push(url);
-    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json', '/atlas-neuron/nmo130632-standardized.swc.txt'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json', '/atlas-neuron/nmo130632-standardized.swc.txt', '/atlas-nerve/atlas.json', '/atlas-vascular/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
     if (url === '/atlas-neuron/nmo130632-standardized.swc.txt') return new Response(neuronSamples);
+    if (url === '/atlas-vascular/atlas.json') return new Response(vascularText);
+    if (url === '/atlas-nerve/atlas.json') return new Response(nerveText);
     return new Response(url === '/atlas/atlas.json' ? atlasText : url === '/atlas-volume/atlas.json' ? volumeText : url === '/atlas-hindlimb/atlas.json' ? hindlimbText : url === '/atlas-neuron/atlas.json' ? neuronText : ema147Text, { status: 200, headers: { 'Content-Type': 'application/json' } });
   }) as typeof fetch;
   console.error = (...args: unknown[]) => {
@@ -1148,4 +1152,67 @@ test('bundled sample inspection reads only its checked local derivative and keep
   assert.notEqual((input as HTMLInputElement).value, '11650');
   assert.deepEqual(await savedView(view), before);
   assert.equal((explorer.getByRole('button', { name: 'Focus incident links' }) as HTMLButtonElement).disabled, true);
+});
+
+test('Find anatomy opens exact vessel and nerve references and restores observations without changing white background', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
+  const panel = within(view.container.querySelector('.anatomy-coverage')! as HTMLElement);
+  assert.equal(panel.getByRole('button', { name: 'Show source choices' }).getAttribute('aria-expanded'), 'false');
+  fireEvent.click(panel.getByRole('button', { name: 'Blood vessels' }));
+  expectedRequests.push('/atlas-ema147/atlas.json');
+  fireEvent.click(panel.getByRole('button', { name: 'Show developmental vessel surfaces' }));
+  await waitFor(() => assert.equal((view.getByRole('combobox', { name: 'Anatomy reference' }) as HTMLSelectElement).value, 'ema147-native-v1'));
+  const vessels = await savedView(view);
+  assert.equal(vessels.background, 'white'); assert.deepEqual(vessels.hidden, []);
+  for (const id of [17307, 18415, 18601]) assert.equal(vessels.opacity[`ema147:EMAPA:${id}`], 1);
+  assert.equal(vessels.opacity['ema147:EMAPA:17525'], 0.08);
+  fireEvent.click(panel.getByRole('button', { name: 'Nerves' }));
+  fireEvent.change(panel.getByRole('combobox', { name: 'Surrounding source anatomy' }), { target: { value: 'hidden' } });
+  fireEvent.click(panel.getByRole('button', { name: 'Show developmental trigeminal nerve and ganglion' }));
+  const nerves = await savedView(view); assert.equal(nerves.hidden.length, 75);
+  for (const id of [16797, 17576]) { assert.equal(nerves.opacity[`ema147:EMAPA:${id}`], 1); assert.ok(!nerves.hidden.includes(`ema147:EMAPA:${id}`)); }
+  expectedRequests.push('/atlas-nerve/atlas.json');
+  fireEvent.click(panel.getByRole('button', { name: 'Nerves' }));
+  fireEvent.click(panel.getByRole('button', { name: 'Show predicted regional nerve graph' }));
+  await view.findByRole('heading', { name: 'Source polyline graph' });
+  const record = within(view.container.querySelector('[aria-labelledby="source-polyline-heading"]')! as HTMLElement);
+  assert.ok(record.getByText('1,940')); assert.ok(record.getByText('1,876'));
+  assert.equal(view.queryByRole('heading', { name: 'Source sample explorer' }), null);
+  assert.equal((await savedView(view)).background, 'white');
+  fireEvent.click(panel.getByRole('button', { name: 'Blood vessels' }));
+  expectedRequests.push('/atlas-vascular/atlas.json');
+  fireEvent.click(panel.getByRole('button', { name: 'Show cortical vessel network' }));
+  await waitFor(() => assert.equal((view.getByRole('combobox', { name: 'Anatomy reference' }) as HTMLSelectElement).value, 'schmid2021-mvn1-v1'));
+  const vascularRecord = within(view.container.querySelector('[aria-labelledby="source-polyline-heading"]')! as HTMLElement);
+  assert.ok(vascularRecord.getByText('575,722')); assert.ok(vascularRecord.getByText('563,651')); assert.ok(vascularRecord.getByText('2,904'));
+  assert.ok(vascularRecord.getByText('micrometres'));
+  assert.equal((await savedView(view)).background, 'white');
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), observations);
+  assert.equal((await savedView(view)).background, 'white');
+});
+
+test('a substituted coverage manifest leaves current reference, display and observations intact', async () => {
+  const view = await openApp(); fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  const before = await savedView(view), previous = globalThis.fetch;
+  const substituted = JSON.parse(vascularText); substituted.statistics.assetSha256 = 'a'.repeat(64);
+  expectedRequests.push('/atlas-vascular/atlas.json');
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    if (String(input) !== '/atlas-vascular/atlas.json') return previous(input);
+    requests.push(String(input)); return new Response(JSON.stringify(substituted));
+  }) as typeof fetch;
+  fireEvent.click(view.getByRole('button', { name: 'Blood vessels' }));
+  fireEvent.click(view.getByRole('button', { name: 'Show cortical vessel network' }));
+  await view.findByText(/The requested source anatomy could not be opened. The current reference and observations were retained/);
+  assert.deepEqual(await savedView(view), before);
+  assert.equal((view.getByRole('combobox', { name: 'Anatomy reference' }) as HTMLSelectElement).value, atlas.id);
 });

@@ -180,5 +180,65 @@
         "url": "https://creativecommons.org/licenses/by/4.0/"
       }
     ]
+  },
+  {
+    "id": "mousemapper-nerve-patch0-v1",
+    "title": "Nerve graph: MouseMapper regional prediction",
+    "manifestUrl": "/atlas-nerve/atlas.json",
+    "coordinateFrameId": "mousemapper-nerve-patch0-native-unknown-units-v1",
+    "assetSha256": "e59fea98d4f41adab6149eee38e28ea6c3737dfa37013d5a2039e89c4c3ef0ce",
+    "coverage": {
+      "regionCount": 1,
+      "systems": [
+        "nervous"
+      ],
+      "description": "Predicted regional mouse nerve graph with 1,940 source points and 84 polylines. Individual specimen and anatomical subregion are unresolved; no whole-body registration is supplied."
+    },
+    "processingResolution": {
+      "sourceVoxelSpacingMm": null,
+      "processingVoxelSpacingMm": null,
+      "method": "Geometry-only adaptation of the pinned MouseMapper VTK example, retaining all point records and ordered polyline indices",
+      "limitations": [
+        "Physical coordinate units and exact anatomical subregion are unknown.",
+        "Inconsistent source radius attributes are omitted; no measured thickness or nerve surface is generated.",
+        "This source graph does not supply complete adult peripheral nerves or accepted registration to another reference."
+      ]
+    },
+    "licenses": [
+      {
+        "identifier": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0"
+      }
+    ]
+  },
+  {
+    "id": "schmid2021-mvn1-v1",
+    "title": "Blood vessels: MVN1 cortical microvascular paths",
+    "manifestUrl": "/atlas-vascular/atlas.json",
+    "coordinateFrameId": "schmid2021-mvn1-source-micrometres-v1",
+    "assetSha256": "8d9fb19e943a126562ab5a439d83590b5694d58b208f064a8140d556ed3e4652",
+    "coverage": {
+      "regionCount": 1,
+      "systems": [
+        "cardiovascular"
+      ],
+      "description": "Separate regional mouse cortical microvascular source with 12,071 sampled vessel paths. Original source topology is retained separately from edge-local rendering points; no whole-body registration or blood-flow animation is supplied."
+    },
+    "processingResolution": {
+      "sourceVoxelSpacingMm": null,
+      "processingVoxelSpacingMm": null,
+      "method": "Geometry-only adaptation of pinned MVN1 sampled paths and original topology using a data-only decoder",
+      "limitations": [
+        "Source-declared micrometre coordinates have no independent physical calibration or anatomical registration.",
+        "Effective diameters, model vessel categories and simulated flow, pressure and hematocrit are omitted.",
+        "The network is regional cortex, not complete adult whole-body arteries, veins or capillaries."
+      ]
+    },
+    "licenses": [
+      {
+        "identifier": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    ]
   }
 ]

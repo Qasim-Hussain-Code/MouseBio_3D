@@ -23,8 +23,8 @@ import types
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-MAX_SOURCE_BYTES = 100 * 1024 * 1024
-MAX_WEB_BYTES = 100 * 1024 * 1024
+MAX_SOURCE_BYTES = 160 * 1024 * 1024
+MAX_WEB_BYTES = 160 * 1024 * 1024
 MAX_FILES = 5000
 MIN_FREE_RESERVE = 32 * 1024 * 1024
 ZIP_TIME = (1980, 1, 1, 0, 0, 0)

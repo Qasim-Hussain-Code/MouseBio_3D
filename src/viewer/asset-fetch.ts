@@ -1,13 +1,13 @@
 const MAX_BYTES = 80 * 1024 * 1024;
 
-export function isLocalAnatomyPath(value: unknown, extension: 'glb' | 'ply' | 'txt'): value is string {
+export function isLocalAnatomyPath(value: unknown, extension: 'glb' | 'ply' | 'txt' | 'json'): value is string {
   return typeof value === 'string' && new RegExp(`^/[A-Za-z0-9_./-]+\\.${extension}$`).test(value)
     && !value.startsWith('//') && value.slice(1).split('/').every((part) => part !== '' && part !== '.' && part !== '..');
 }
 
 /** Read one bounded same-origin asset, with no external redirects or research payload. */
 export async function fetchBoundAnatomyBytes(url: string, expectedBytes: number, expectedHash: string,
-  signal: AbortSignal, extension: 'glb' | 'ply' | 'txt', fetcher: typeof fetch = fetch): Promise<ArrayBuffer> {
+  signal: AbortSignal, extension: 'glb' | 'ply' | 'txt' | 'json', fetcher: typeof fetch = fetch): Promise<ArrayBuffer> {
   if (!isLocalAnatomyPath(url, extension) || !Number.isSafeInteger(expectedBytes) || expectedBytes < 28 || expectedBytes > MAX_BYTES
       || !/^[a-f0-9]{64}$/.test(expectedHash)) throw new Error('Invalid local anatomical asset binding.');
   if (signal.aborted) throw new DOMException('Aborted', 'AbortError');

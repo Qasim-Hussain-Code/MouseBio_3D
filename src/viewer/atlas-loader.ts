@@ -23,6 +23,17 @@ export async function loadAtlasScene(atlas: Atlas, signal: AbortSignal, fetcher:
     if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
     return buildSourceTraceScene(atlas, asset);
   }
+  if (format === 'polyline-native-v1') {
+    const { isSourcePolylineAtlas, parseSourcePolyline } = await import('../domain/source-polyline');
+    if (!isSourcePolylineAtlas(atlas)) throw new Error('The source polyline manifest does not match the reviewed reference.');
+    const content = await fetchBoundAnatomyBytes(atlas.assetUrl, bytes, hash, signal, 'json', fetcher);
+    const result = await parseSourcePolyline(content, atlas);
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (!result.ok || !result.asset) throw new Error('The source polyline geometry could not be verified.');
+    const { buildSourcePolylineScene } = await import('./source-polyline-scene');
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    return buildSourcePolylineScene(atlas, result.asset);
+  }
   if (format === 'ply-native-v1') {
     const content = await fetchBoundAnatomyBytes(atlas.assetUrl, bytes, hash, signal, 'ply', fetcher);
     const { parseNativePly } = await import('./native-ply');

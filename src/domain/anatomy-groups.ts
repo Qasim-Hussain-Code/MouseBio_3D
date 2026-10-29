@@ -2,6 +2,7 @@ import type { Atlas } from './types';
 import { buildEma147Groups } from './ema147-groups';
 import { isLocalTraceAtlas } from './local-trace';
 import { isSourceTraceAtlas } from './source-trace';
+import { isSourcePolylineAtlas } from './source-polyline';
 
 /** Local display selections, not new anatomical identifiers or ontology assertions. */
 export interface AnatomyGroup {
@@ -130,6 +131,13 @@ export function buildAnatomyGroups(atlas: Atlas): AnatomyGroupsResult {
       'The source samples and explicit parent links of NeuroMorpho.Org NMO_130632.',
       ['This separate reconstruction is not registered to a whole-body reference. Physical units remain unverified.',
         'Graph components do not establish cell counts; radius fields do not create measured surfaces.']),
+  ]), errors: Object.freeze([]) });
+
+  if (isSourcePolylineAtlas(atlas)) return Object.freeze({ ok: true, groups: Object.freeze([
+    group('whole-mouse', 'Complete source graph', atlas.structures.map((region) => region.id),
+      'Every polyline in this separately identified source graph.',
+      ['This regional graph is not whole-body anatomy and has no accepted registration to another reference.',
+        'Polyline cells, line width and numerical components do not establish cell counts, measured surfaces or physiology.']),
   ]), errors: Object.freeze([]) });
 
   if (atlas?.id === 'ema147-native-v1') return buildEma147Groups(atlas);

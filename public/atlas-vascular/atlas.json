@@ -1,0 +1,162 @@
+{
+  "id": "schmid2021-mvn1-v1",
+  "title": "Mouse cortical microvascular network MVN1",
+  "assetFormat": "polyline-native-v1",
+  "assetUrl": "/atlas-vascular/schmid2021-mvn1-lines.json",
+  "coordinateFrame": {
+    "id": "schmid2021-mvn1-source-micrometres-v1",
+    "sourceUnits": "micrometres",
+    "assetUnits": "micrometres",
+    "sourceToAssetScale": 1,
+    "unitsVerified": false,
+    "unitsStatus": "source-declared only",
+    "anatomicalOrientationVerified": false,
+    "physicalCalibrationVerified": false,
+    "registration": null,
+    "registrationToDigimouse": null,
+    "origin": "Source MVN1 numerical origin; anatomical origin unverified",
+    "axes": {
+      "x": "source x; anatomical direction unverified",
+      "y": "source y; anatomical direction unverified",
+      "z": "source z; anatomical direction unverified"
+    }
+  },
+  "source": {
+    "id": "schmid2021-zenodo5115640-mvn1",
+    "displayName": "MVN1 cortical vascular source",
+    "title": "MVN1 sampled paths from the Schmid et al. 2021 baseline deposit",
+    "citationLabel": "Schmid et al., 2021; Blinder et al., 2013",
+    "citation": "Schmid F, Conti G, Jenny P, Weber B. Time-averaged simulations results for bi-phasic blood flow simulations in realistic microvascular networks for various single- and multi-capillary occlusion scenarios. Zenodo. 2021. Version 1. doi:10.5281/zenodo.5115640.",
+    "publicationYear": 2021,
+    "doi": "10.5281/zenodo.5115640",
+    "url": "https://zenodo.org/records/5115640",
+    "downloadUrl": "https://zenodo.org/api/records/5115640/files/SimulationResults_Baseline.tar.bz2/content",
+    "license": "CC-BY-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceBytes": 23200621,
+    "sourceSha256": "40d8a729e8bc977e4121a633da162d1e49f2e71e343454a04e18cc541965c627",
+    "sourceMembers": [
+      {
+        "path": "SimulationResults_Baseline/MVN1/verticesDict_baseline.pkl",
+        "bytes": 1162408,
+        "sha256": "e4bbd7467ec7febc34ac0a18c3d58d0e9e57c0a2e341498b8b74b589cf0a837d"
+      },
+      {
+        "path": "SimulationResults_Baseline/MVN1/edgesDict_baseline.pkl",
+        "bytes": 38640900,
+        "sha256": "f931bf3c4215fe9d95c7edbacd7a179371e578bdc120776f4d0b1da9c6fbb11b"
+      }
+    ],
+    "referenceCitations": [
+      "Schmid F, Conti G, Jenny P, Weber B. Time-averaged simulations results for bi-phasic blood flow simulations in realistic microvascular networks for various single- and multi-capillary occlusion scenarios. Zenodo. 2021. Version 1. doi:10.5281/zenodo.5115640.",
+      "Schmid F, Conti G, Jenny P, Weber B. The severity of microstrokes depends on local vascular topology and baseline perfusion. eLife. 2021;10:e60208. doi:10.7554/eLife.60208.",
+      "Blinder P, Tsai PS, Kaufhold JP, Knutsen PM, Suhl H, Kleinfeld D. The cortical angiome: an interconnected vascular network with noncolumnar patterns of blood flow. Nature Neuroscience. 2013;16:889-897. doi:10.1038/nn.3426.",
+      "Schmid F, Tsai PS, Kleinfeld D, Jenny P, Weber B. Depth-dependent flow and pressure characteristics in cortical microvascular networks. PLoS Computational Biology. 2017;13:e1005392. doi:10.1371/journal.pcbi.1005392."
+    ],
+    "attribution": "Schmid F, Conti G, Jenny P, Weber B. Time-averaged simulations results for bi-phasic blood flow simulations in realistic microvascular networks for various single- and multi-capillary occlusion scenarios. Zenodo. 2021. Version 1. doi:10.5281/zenodo.5115640. Original geometry attributed to Blinder et al. 2013; model processing described by Schmid et al. 2017. Geometry-only adaptation by Qasim Hussain for MouseBio_3D, CC BY 4.0.",
+    "modifications": [
+      "Decoded only pinned numeric data through a bounded data-only interpreter without executing serialized callables or importing NumPy.",
+      "Retained every edge-local path point, original path order and original source topology identifiers. No endpoint merging, repair, smoothing, scaling or registration.",
+      "Omitted all simulated flow, pressure, hematocrit, effective diameters, model vessel categories and path-analysis fields from the distributed geometry."
+    ]
+  },
+  "specimen": {
+    "sex": "unknown",
+    "scope": "regional mouse cortical microvascular reconstruction reused in a simulation deposit",
+    "description": "Individual specimen identity, exact age, sex and strain linkage are unresolved for the MVN1 file.",
+    "sourceReference": "https://zenodo.org/records/5115640"
+  },
+  "structures": [
+    {
+      "id": "schmid2021-mvn1:network",
+      "name": "MVN1 cortical microvascular paths",
+      "sourceLabel": "MVN1",
+      "meshNode": "region_MVN1",
+      "systems": [
+        "cardiovascular"
+      ],
+      "defaultOpacity": 1,
+      "color": "#c75e62",
+      "description": "One independently selectable source record preserving 12071 sampled vessel paths and their original topology metadata.",
+      "limitations": [
+        "This is a regional cortical microvascular source, not a complete adult whole-body vascular network.",
+        "Sampled paths originate from mouse cortical reconstructions reused in a simulation deposit. Vessel labels and diameter distributions were modified for modelling; no diameter or simulation field sets display thickness or motion.",
+        "Individual specimen identity, sex, exact age and strain linkage remain unresolved and are not borrowed from a separate velocity-measurement cohort.",
+        "Micrometres are source-declared units. Independent calibration, anatomical direction and registration to other application references remain unverified.",
+        "The indexed rendering retains edge-local point records without merging coincident endpoints. Source connectivity and original vertex and edge IDs are retained separately; indexed path components differ from source topology components.",
+        "Path endpoint ordering differs from connectivity ordering in 1261 paths. Two endpoint pairs retain small source coordinate differences after allowing reversal. No repair, reorientation or flow direction is inferred.",
+        "All 62 zero-length source segments are retained. No missing branches, smoothing, vessel surfaces, calibrated diameters, synapses or physiological model are generated.",
+        "Initial Float32 diagnostics exclude later recentering and GPU arithmetic and do not establish physical accuracy."
+      ]
+    }
+  ],
+  "statistics": {
+    "assetBytes": 38356364,
+    "assetSha256": "8d9fb19e943a126562ab5a439d83590b5694d58b208f064a8140d556ed3e4652",
+    "points": 575722,
+    "polylines": 12071,
+    "segments": 563651,
+    "components": 12071,
+    "isolatedPoints": 0,
+    "zeroLengthSegments": 62,
+    "float32CollapsedSegments": 0,
+    "boundsSourceUnits": [
+      [
+        823.0943331335808,
+        1211.7570171375833,
+        -69.22222222222223
+      ],
+      [
+        1952.3717350746267,
+        2365.284268548782,
+        1202.5
+      ]
+    ],
+    "displayBoundsSourceUnits": [
+      [
+        823.0943603515625,
+        1211.7569580078125,
+        -69.22222137451172
+      ],
+      [
+        1952.3717041015625,
+        2365.2841796875,
+        1202.5
+      ]
+    ],
+    "maxFloat32PositionError": 0.00012100254662072985,
+    "sourceGraphVertices": 9168,
+    "sourceGraphEdges": 12071,
+    "sourceGraphComponents": 1,
+    "sourceGraphCycleRank": 2904,
+    "sourceGraphSelfLinks": 0,
+    "sourceEndpointMismatchPaths": 1261
+  },
+  "processing": {
+    "sourceToAssetScale": 1,
+    "coordinateConversion": false,
+    "pointRemoval": false,
+    "pathRepair": false,
+    "smoothing": false,
+    "registration": false,
+    "radiusUsed": false,
+    "positionStorage": "float32 for display only",
+    "sourcePointOrderPreserved": true,
+    "sourcePathOrderPreserved": true,
+    "sourceConnectivityPreserved": true,
+    "endpointMerging": false,
+    "simulatedFieldsDistributed": false,
+    "serializedCallablesExecuted": false
+  },
+  "sourceAttributesOmitted": [],
+  "limitations": [
+    "This is a regional cortical microvascular source, not a complete adult whole-body vascular network.",
+    "Sampled paths originate from mouse cortical reconstructions reused in a simulation deposit. Vessel labels and diameter distributions were modified for modelling; no diameter or simulation field sets display thickness or motion.",
+    "Individual specimen identity, sex, exact age and strain linkage remain unresolved and are not borrowed from a separate velocity-measurement cohort.",
+    "Micrometres are source-declared units. Independent calibration, anatomical direction and registration to other application references remain unverified.",
+    "The indexed rendering retains edge-local point records without merging coincident endpoints. Source connectivity and original vertex and edge IDs are retained separately; indexed path components differ from source topology components.",
+    "Path endpoint ordering differs from connectivity ordering in 1261 paths. Two endpoint pairs retain small source coordinate differences after allowing reversal. No repair, reorientation or flow direction is inferred.",
+    "All 62 zero-length source segments are retained. No missing branches, smoothing, vessel surfaces, calibrated diameters, synapses or physiological model are generated.",
+    "Initial Float32 diagnostics exclude later recentering and GPU arithmetic and do not establish physical accuracy."
+  ]
+}

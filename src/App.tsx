@@ -29,6 +29,10 @@ import { LocalTraceRecord } from './components/LocalTraceRecord';
 import { SourceTraceRecord } from './components/SourceTraceRecord';
 import { TraceSampleExplorer } from './components/TraceSampleExplorer';
 import { isSourceTraceAtlas } from './domain/source-trace';
+import { AnatomyCoverage } from './components/AnatomyCoverage';
+import { isSourcePolylineAtlas } from './domain/source-polyline';
+import { SourcePolylineRecord } from './components/SourcePolylineRecord';
+import { coverageRequests, resolveCoverageTarget, type AnatomyCoverageTopicId, type AnatomyCoverageRequest, type AnatomyCoverageTarget } from './domain/anatomy-coverage';
 
 const referenceCatalog = buildReferenceCatalog(referenceCatalogData);
 
@@ -266,10 +270,25 @@ export default function App() {
       if (sequence === traceImportSequence.current) { setTraceLoading(false); if (traceFileInput.current) traceFileInput.current.value = ''; }
     }
   };
-  const switchReference = async (id: string) => {
+  const applyCoverageTarget = (loaded: Atlas, target: AnatomyCoverageTarget, context: 'hidden' | 'faded') => {
+    const members = new Set(target.structureIds);
+    setHidden(context === 'hidden' ? loaded.structures.filter((region) => !members.has(region.id)).map((region) => region.id) : []);
+    setOpacity(Object.fromEntries(loaded.structures.map((region) => [region.id, members.has(region.id) ? 1 : Math.min(defaultStructureOpacity(region), 0.08)])));
+    setSelected(target.structureIds[0]); setActiveGroup(target.groupId); setQuery(''); setNavigatorTab('structures');
+    setFineEnabled(false); setDetailLevel('fine-020'); setDetailStatus({ status: 'idle', structureId: null }); setClipAxis('off'); isolation.current = null;
+    pendingGroupFocus.current = { atlasId: loaded.id, ids: target.structureIds };
+    if (loaded === atlas && viewerState.primary === 'ready' && viewer.current) {
+      viewer.current.focusRegions(target.structureIds); pendingGroupFocus.current = null;
+    }
+  };
+  const openCoverage = (request: AnatomyCoverageRequest, context: 'hidden' | 'faded') => {
+    if (!coverageRequests(request.topicId).some((candidate) => candidate === request)) return;
+    void switchReference(request.referenceId, request.topicId, context);
+  };
+  const switchReference = async (id: string, coverageTopic?: AnatomyCoverageTopicId, context: 'hidden' | 'faded' = 'faded') => {
     const next = getReference(referenceCatalog.catalog, id);
     const cachedTrace = localTrace?.atlas.id === id ? localTrace : null;
-    if ((!next && !cachedTrace) || id === atlas?.id) return;
+    if ((!next && !cachedTrace) || (id === atlas?.id && !coverageTopic)) return;
     traceImportSequence.current++; setTraceLoading(false); setTraceError('');
     const sequence = ++referenceSequence.current;
     referenceRequest.current?.abort();
@@ -278,7 +297,8 @@ export default function App() {
     dataImportSequence.current++; viewImportSequence.current++;
     try {
       let loaded: Atlas;
-      if (cachedTrace) loaded = cachedTrace.atlas;
+      if (id === atlas?.id && coverageTopic) loaded = atlas;
+      else if (cachedTrace) loaded = cachedTrace.atlas;
       else {
         const response = await fetch(next!.manifestUrl, { signal: abort.signal });
         if (!response.ok) throw new Error('The selected reference could not be loaded.');
@@ -286,11 +306,16 @@ export default function App() {
         if (!validateReferenceAtlas(next!, loaded).ok) throw new Error('Reference binding mismatch.');
       }
       if (sequence !== referenceSequence.current || abort.signal.aborted) return;
-      const restored = adoptReference(loaded);
-      setNotice(restored ? 'Reference switched. Its local observations were restored.' : 'Reference switched. Previous observations remain in this browser session.');
+      const coverage = coverageTopic ? resolveCoverageTarget(loaded, coverageTopic) : null;
+      if (coverage && (!coverage.ok || !coverage.target)) throw new Error('The requested anatomy is unavailable in this source.');
+      const restored = loaded === atlas ? false : adoptReference(loaded);
+      if (coverage?.target) {
+        applyCoverageTarget(loaded, coverage.target, context);
+        setNotice('Source anatomy opened. Other references retain their observations and coordinate frames.');
+      } else setNotice(restored ? 'Reference switched. Its local observations were restored.' : 'Reference switched. Previous observations remain in this browser session.');
     } catch (error) {
       if (sequence === referenceSequence.current && !abort.signal.aborted)
-        setReferenceError(error instanceof Error ? error.message : 'Reference switch failed.');
+        setReferenceError(coverageTopic ? 'The requested source anatomy could not be opened. The current reference and observations were retained.' : error instanceof Error ? error.message : 'Reference switch failed.');
     } finally { if (sequence === referenceSequence.current) setReferenceLoading(false); }
   };
   const isolate = () => {
@@ -368,6 +393,8 @@ export default function App() {
   const activeTrace = localTrace?.atlas === atlas ? localTrace : undefined;
   const sourceTrace = isSourceTraceAtlas(atlas);
   const parentLinkedTrace = !!activeTrace || sourceTrace;
+  const sourcePolyline = isSourcePolylineAtlas(atlas);
+  const lineReference = parentLinkedTrace || sourcePolyline;
   const hasBodyEnvelope = atlas.structures.some((structure) => structure.id === 'digimouse:1' || structure.id === 'digimouse-volume:1');
   const viewerFailed = viewerState.primary === 'failed' || (mode === 'comparative' && viewerState.secondary === 'failed');
   return <div className="app-shell">
@@ -398,7 +425,7 @@ export default function App() {
         </div>) : SYSTEMS.map((system) => {
           const structures = atlas.structures.filter((structure) => structure.systems.includes(system.id));
           const shown = structures.some((structure) => !hidden.includes(structure.id));
-          return <label key={system.id} className={`system-row ${structures.length ? '' : 'unavailable'}`}><input type="checkbox" checked={structures.length > 0 && shown} disabled={!structures.length} onChange={() => { isolation.current = null; setActiveGroup(''); pendingGroupFocus.current = null; setHidden((current) => shown ? [...new Set([...current, ...structures.map((structure) => structure.id)])] : current.filter((id) => !structures.some((structure) => structure.id === id))); }} /><span>{system.name}</span><small>{structures.length || (represented === 0 ? 'Unclassified' : 'No mesh')}</small></label>;
+          return <label key={system.id} className={`system-row ${structures.length ? '' : 'unavailable'}`}><input type="checkbox" checked={structures.length > 0 && shown} disabled={!structures.length} onChange={() => { isolation.current = null; setActiveGroup(''); pendingGroupFocus.current = null; setHidden((current) => shown ? [...new Set([...current, ...structures.map((structure) => structure.id)])] : current.filter((id) => !structures.some((structure) => structure.id === id))); }} /><span>{system.name}</span><small>{structures.length || (represented === 0 ? 'Unclassified' : 'Not represented')}</small></label>;
         })}
         {navigatorTab === 'structures' && !atlas.structures.some((structure) => `${structure.name} ${structure.id} ${structure.sourceLabel}`.toLowerCase().includes(query.toLowerCase())) && <p className="empty-small">No matching source region. Missing anatomy is not generated.</p>}
       </div>
@@ -408,8 +435,10 @@ export default function App() {
     <main className="workspace">
       <div className="workspace-heading"><div><span className="eyebrow">{MODES.find((item) => item.id === mode)?.label.toUpperCase()} WORKSPACE</span><h2>{mode === 'anatomical' ? 'Anatomical reference' : mode === 'living' ? availableMotion.length ? 'Physiology in motion' : 'Physiology availability' : mode === 'experimental' ? 'Map your observations' : 'Compare experimental states'}</h2></div><div className="view-file-actions"><input ref={viewFileInput} type="file" className="view-file-input" accept=".json,application/json" aria-label="Restore view state" onChange={(event) => void restoreView(event.target.files?.[0])} /><button className="secondary-button save-view" onClick={() => viewFileInput.current?.click()} title="Load view settings"><Icon name="upload" size={15} /><span>Load view</span></button><button className="secondary-button save-view" onClick={exportView} title="Save view settings"><Icon name="download" size={15} /><span>Save view</span></button></div></div>
       <button className="structure-details-shortcut secondary-button" aria-controls="structure-inspector" onClick={() => { inspector.current?.scrollIntoView({ block: 'start' }); inspector.current?.focus({ preventScroll: true }); }}><Icon name="info" size={15} /> Structure details{selectedStructure ? `: ${selectedStructure.name}` : ''}</button>
+      <AnatomyCoverage referenceId={atlas.id} busy={referenceLoading || traceLoading} onOpen={openCoverage} />
       {viewError && <p className="view-import-error" role="alert">View settings unchanged. {viewError}</p>}
       {(atlas.assetFormat === 'ply-native-v1' || parentLinkedTrace) && <p className="view-import-error" role="status">Native source coordinates. Physical units are unknown; no calibrated measurements or cross-reference registration are available.</p>}
+        {sourcePolyline && <p className="view-import-error" role="status">Source graph coordinates. Physical calibration, anatomical direction and registration remain unverified.</p>}
       <div className="anatomy-group-bar"><label>Isolate a source group<select aria-label="Source anatomy group" value={selectedGroup ? activeGroup : ''} disabled={!anatomyGroups?.ok} onChange={(event) => { const group = anatomyGroups?.groups.find((entry) => entry.id === event.target.value); if (group) exploreGroup(group); }}><option value="" disabled>Current view</option>{anatomyGroups?.groups.map((group) => <option key={group.id} value={group.id}>{group.title} ({group.structureIds.length})</option>)}</select></label><button className="secondary-button" disabled={visibleCount === 0 || viewerState.primary !== 'ready'} onClick={() => focusRegions(atlas.structures.filter((structure) => !hidden.includes(structure.id) && (opacity[structure.id] ?? defaultStructureOpacity(structure)) > 0).map((structure) => structure.id))}><Icon name="focus" size={15} /> Fit visible regions</button>{selectedGroup && <details className="group-limitations"><summary>Group limits</summary><p>{selectedGroup.description}</p><ul>{selectedGroup.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul></details>}</div>
       {anatomyGroups?.ok && <SourceLayerControls key={atlas.id} groups={anatomyGroups.groups} onApply={applySourceLayers} />}
       {(mode === 'experimental' || mode === 'comparative') && <div className="data-toolbar">
@@ -439,7 +468,7 @@ export default function App() {
         {rows.length > 0 && <><p className="dataset-source">{metadata.sourceReference ? `Declared source: ${metadata.sourceReference}` : 'Source reference not supplied.'}</p><DatasetDetails metadata={metadata} onChange={setMetadata} /></>}
         {mode === 'comparative' && <p className="comparison-note">Both panels use the same selected reference geometry. Only imported measurements change. Condition labels do not generate anatomical differences.</p>}
       </div>}
-      <footer className="workspace-footer"><span><span className={`status-dot ${viewerFailed ? 'status-failed' : ''}`} /> {viewerFailed ? '3D viewer unavailable' : diagnostics ? diagnostics.traces ? `${diagnostics.traces} trace · ${diagnostics.samples.toLocaleString()} samples · ${diagnostics.segments.toLocaleString()} parent links` : `${diagnostics.meshes} meshes loaded · ${diagnostics.triangles.toLocaleString()} triangles` : 'Loading anatomy'}</span><span>Source-derived geometry · no expert review</span></footer>
+      <footer className="workspace-footer"><span><span className={`status-dot ${viewerFailed ? 'status-failed' : ''}`} /> {viewerFailed ? '3D viewer unavailable' : diagnostics ? diagnostics.traces ? sourcePolyline ? `${diagnostics.traces} line reference · ${diagnostics.samples.toLocaleString()} source points · ${diagnostics.segments.toLocaleString()} polyline segments` : `${diagnostics.traces} trace · ${diagnostics.samples.toLocaleString()} samples · ${diagnostics.segments.toLocaleString()} parent links` : `${diagnostics.meshes} meshes loaded · ${diagnostics.triangles.toLocaleString()} triangles` : 'Loading anatomy'}</span><span>Source-derived geometry · no expert review</span></footer>
     </main>
 
     <aside className="inspector panel" id="structure-inspector" ref={inspector} tabIndex={-1}><div className="panel-heading"><span className="eyebrow">STRUCTURE INSPECTOR</span><Icon name="focus" size={16} /></div>{selectedStructure ? <>
@@ -448,11 +477,12 @@ export default function App() {
       {activeTrace && <LocalTraceRecord asset={activeTrace} />}
       {sourceTrace && <SourceTraceRecord atlas={atlas} />}
       {parentLinkedTrace && <TraceSampleExplorer key={atlas.id} atlas={atlas} localTrace={activeTrace} viewerReady={viewerState.primary === 'ready'} onFocusSample={(sampleId) => viewer.current?.focusTraceSample(sampleId) ?? false} />}
-      {!parentLinkedTrace && <SurfaceDetail baseSpacing={reference?.processingResolution.processingVoxelSpacingMm?.[0]} levels={selectedLevels} levelId={detailLevel} asset={availableDetail} enabled={fineActive} comparative={mode === 'comparative'} viewerFailed={viewerFailed} status={detailStatus} onLevelChange={(id) => { setDetailLevel(id); setDetailStatus({ status: 'idle', structureId: null }); }} onEnabledChange={(enabled) => { setFineEnabled(enabled); setDetailStatus({ status: 'idle', structureId: null }); }} />}
+      {sourcePolyline && <SourcePolylineRecord atlas={atlas} />}
+      {!lineReference && <SurfaceDetail baseSpacing={reference?.processingResolution.processingVoxelSpacingMm?.[0]} levels={selectedLevels} levelId={detailLevel} asset={availableDetail} enabled={fineActive} comparative={mode === 'comparative'} viewerFailed={viewerFailed} status={detailStatus} onLevelChange={(id) => { setDetailLevel(id); setDetailStatus({ status: 'idle', structureId: null }); }} onEnabledChange={(enabled) => { setFineEnabled(enabled); setDetailStatus({ status: 'idle', structureId: null }); }} />}
       <div className="inspector-actions"><button className="primary-button" onClick={() => viewer.current?.focus()}><Icon name="focus" size={15} /> Focus</button><button className="secondary-button" onClick={isolate}>{isolation.current ? 'Restore' : 'Isolate'}</button><button className="icon-button" aria-label={`${hidden.includes(selectedStructure.id) ? 'Show' : 'Hide'} selected structure`} onClick={() => toggleHidden(selectedStructure.id)}><Icon name={hidden.includes(selectedStructure.id) ? 'hidden' : 'eye'} size={17} /></button></div>
       <div className="opacity-control"><label htmlFor="structure-opacity">Opacity <strong>{Math.round((opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100)}%</strong></label><input id="structure-opacity" type="range" min="0" max="100" value={(opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100} onChange={(event) => { setActiveGroup(''); pendingGroupFocus.current = null; setOpacity({ ...opacity, [selectedStructure.id]: +event.target.value / 100 }); }} /></div>
       <NativeSurfaceRecord atlas={atlas} structureId={selectedStructure.id} />
-      <section className="inspector-section"><h3>Source annotation</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>{parentLinkedTrace ? 'Traced samples and parent links' : 'Source segmented region'}</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
+      <section className="inspector-section"><h3>Source annotation</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>{parentLinkedTrace ? 'Traced samples and parent links' : sourcePolyline ? 'Source points and polylines' : 'Source segmented region'}</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
       {ontologyCandidate && <OntologyContext candidate={ontologyCandidate} onDownload={() => download('ontology-candidates.json', JSON.stringify(ontologyCandidateData, null, 2))} />}
       {mode === 'living' && <section className="inspector-section"><h3>Motion model</h3><p>{selectedMotion?.limitations[0] ?? 'No physiological animation is implemented for this region.'}</p>{selectedMotion && <span className="status-tag">Illustrative classification</span>}</section>}
       {(mode === 'experimental' || mode === 'comparative') && <section className="inspector-section"><h3>Mapped observations</h3>{selectedSummaries.length ? <><p className="muted compact">Mean and sample standard deviation, in {first?.unit}. No inferential statistics.</p>{selectedSummaries.map((group) => <div className="measurement-card" key={group.condition}><span>{group.condition} <small>n = {group.n}</small></span><strong>{format(group.mean)} <small>{group.unit}</small></strong><p>SD {format(group.sd)} · {group.timePoint}</p></div>)}{comparison && <div className="comparison-result">{comparison.ok ? <><span>Mean B minus mean A</span><strong>{format(comparison.difference)} {first?.unit}</strong></> : comparison.errors.map((error) => <p key={error.code}>{error.message}</p>)}{comparison.warnings.map((warning) => <p key={warning.code}>{warning.message}</p>)}</div>}</> : <p>No observations match this structure and the selected series.</p>}</section>}

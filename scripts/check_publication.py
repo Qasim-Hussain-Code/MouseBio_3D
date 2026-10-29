@@ -16,7 +16,7 @@ MAX_FILE_BYTES = 8 * 1024 * 1024
 MAX_HISTORY_BLOBS = 1000
 MAX_GLB_JSON_BYTES = 1024 * 1024
 MAX_REGISTERED_GLB_BYTES = 80 * 1024 * 1024
-MAX_REGISTERED_TOTAL_BYTES = 100 * 1024 * 1024
+MAX_REGISTERED_TOTAL_BYTES = 160 * 1024 * 1024
 MAX_PLY_HEADER_BYTES = 16 * 1024
 EMA147_ARCHIVE_SHA256 = "efd5df6df9b69cf21a62d1f4245ecc5419ee4e5c4c72635f444ce3fba5b7971c"
 EMA147_MODEL_INFO_SHA256 = "cf37ac2de4f7ce79cfeb912dda70257ee06a561511ef54a18a7d89fa69cbeb21"
@@ -67,6 +67,112 @@ NEURON_FRAME_ID = "neuromorpho-nmo130632-standardized-unknown-units-v1"
 NEURON_SOURCE_SHA256 = "a8340628eb02051416ad0607e72b60cba9241eb34c9be10b0c7df01771b5cfce"
 NEURON_ASSET_SHA256 = "0dd36d6518aacd6338d16c76318d6ed0fd24419a0551417fdf639a8323c6ede5"
 NEURON_ASSET_BYTES = 424092
+
+
+# Each source remains independently pinned; its preparation module is imported
+# only when the corresponding manifest occurs in the selected snapshot.
+POLYLINE_SOURCES = {
+    "public/atlas-vascular/atlas.json": {
+        "module": "prepare_vascular", "assetPath": "public/atlas-vascular/schmid2021-mvn1-lines.json",
+        "licensePath": "public/atlas-vascular/LICENSE.md", "bytes": 38356364,
+        "sha256": "8d9fb19e943a126562ab5a439d83590b5694d58b208f064a8140d556ed3e4652",
+        "atlasId": "schmid2021-mvn1-v1", "coordinateFrameId": "schmid2021-mvn1-source-micrometres-v1",
+        "sourceId": "schmid2021-zenodo5115640-mvn1", "sourceHashField": "sourceSha256",
+        "sourceSha256": "40d8a729e8bc977e4121a633da162d1e49f2e71e343454a04e18cc541965c627",
+        "license": "CC-BY-4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "requiredAttribution": (b"Schmid", b"Conti", b"Jenny", b"Weber", b"Blinder", b"10.5281/zenodo.5115640", b"10.1038/nn.3426", b"10.1371/journal.pcbi.1005392", b"creativecommons.org/licenses/by/4.0"),
+    },
+    "public/atlas-nerve/atlas.json": {
+        "module": "prepare_mousemapper_nerve", "assetPath": "public/atlas-nerve/mousemapper-patch0-lines.json",
+        "licensePath": "public/atlas-nerve/LICENSE.md", "bytes": 55658,
+        "sha256": "e59fea98d4f41adab6149eee38e28ea6c3737dfa37013d5a2039e89c4c3ef0ce",
+        "atlasId": "mousemapper-nerve-patch0-v1", "coordinateFrameId": "mousemapper-nerve-patch0-native-unknown-units-v1",
+        "sourceId": "mousemapper-7fe04a9c-graph-patch0", "sourceHashField": "sourceSha256",
+        "sourceSha256": "b35b59a1056d04e5992a0e463751ceb89a733d80837e66d951be810899ec3c27",
+        "license": "Apache-2.0", "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+        "requiredAttribution": (b"Kaltenecker", b"Horvath", b"Al-Maskari", b"10.1038/s41586-026-10535-2",
+                                b"7fe04a9ccf37664d76fe548ae226147c0023ceb7", b"2290", b"145"),
+        "fullApacheGitBlob": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+    },
+}
+POLYLINE_TEXT_PATHS = {"public/atlas-nerve/mousemapper-patch0-lines.json",
+                       "public/atlas-vascular/schmid2021-mvn1-lines.json"}
+
+
+def is_registered_text_path(path: str, binding: dict | None = None) -> bool:
+    return (path.lower().endswith(".swc.txt") or path in POLYLINE_TEXT_PATHS
+            or binding is not None and binding.get("format") in {"swc-native-v1", "polyline-native-v1"})
+
+
+def asset_scan_limit(path: str, bindings: dict) -> int:
+    # Known registered-text paths retain the complete bounded privacy scan even
+    # if their manifest/source registration failed and the registry is empty.
+    return MAX_REGISTERED_GLB_BYTES if path in bindings or is_registered_text_path(path) else MAX_FILE_BYTES
+
+
+def reviewed_polyline_manifest(data: bytes, manifest_path: str) -> dict:
+    spec = POLYLINE_SOURCES.get(manifest_path)
+    if (not spec or len(data) != spec["bytes"] or len(data) > MAX_REGISTERED_GLB_BYTES
+            or hashlib.sha256(data).hexdigest() != spec["sha256"]):
+        raise ValueError("Polyline derivative differs from its reviewed source")
+    try:
+        from importlib import import_module
+        module = import_module(spec["module"])
+        expected = module.make_manifest(data)
+    except (ImportError, AttributeError):
+        raise ValueError("Polyline source validation support is missing") from None
+    source = expected.get("source", {})
+    if (expected.get("assetFormat") != "polyline-native-v1" or expected.get("id") != spec["atlasId"]
+            or expected.get("assetUrl") != spec["assetPath"].removeprefix("public")
+            or expected.get("coordinateFrame", {}).get("id") != spec["coordinateFrameId"]
+            or source.get("id") != spec["sourceId"] or source.get(spec["sourceHashField"]) != spec["sourceSha256"]
+            or source.get("license") != spec["license"] or source.get("licenseUrl") != spec["licenseUrl"]
+            or expected.get("statistics", {}).get("assetBytes") != spec["bytes"]
+            or expected.get("statistics", {}).get("assetSha256") != spec["sha256"]):
+        raise ValueError("Polyline preparation record differs from its pinned source")
+    return expected
+
+
+def polyline_binding(expected: dict, manifest_path: str) -> dict:
+    spec = POLYLINE_SOURCES[manifest_path]
+    return {"format": "polyline-native-v1", "bytes": spec["bytes"], "sha256": spec["sha256"],
+            "sourceSha256": spec["sourceSha256"], "sourceId": spec["sourceId"],
+            "ids": [entry["id"] for entry in expected["structures"]], "atlasId": spec["atlasId"],
+            "coordinateFrameId": spec["coordinateFrameId"], "statistics": expected["statistics"],
+            "manifestPath": manifest_path, "licensePath": spec["licensePath"]}
+
+
+def register_polyline(manifest: dict, manifest_path: str, read, registry: dict[str, dict]) -> None:
+    spec = POLYLINE_SOURCES[manifest_path]
+    data = read(spec["assetPath"], MAX_REGISTERED_GLB_BYTES)
+    if data is None:
+        raise ValueError("Registered polyline derivative is missing")
+    expected = reviewed_polyline_manifest(data, manifest_path)
+    # All scientific sections, processing flags, omitted fields and narrative
+    # provenance are pinned together. Extra fields cannot grant new claims.
+    if json.dumps(manifest, sort_keys=True, allow_nan=False) != json.dumps(expected, sort_keys=True, allow_nan=False):
+        raise ValueError("Polyline source metadata or scientific limitations differ")
+    notice = read(spec["licensePath"], MAX_GLB_JSON_BYTES)
+    if not notice or any(token not in notice for token in spec["requiredAttribution"]):
+        raise ValueError("Registered polyline attribution is missing")
+    if spec.get("fullApacheGitBlob"):
+        license_match = re.search(rb"```text\n(.*?)\n```", notice, re.S)
+        license_body = license_match.group(1) if license_match else b""
+        if len(license_body) != 11357 or hashlib.sha1(f"blob {len(license_body)}\0".encode() + license_body).hexdigest() != spec["fullApacheGitBlob"]:
+            raise ValueError("The complete original Apache license must be preserved")
+    if spec["assetPath"] in registry:
+        raise ValueError("Repeated polyline asset path")
+    registry[spec["assetPath"]] = polyline_binding(expected, manifest_path)
+
+
+def inspect_registered_polyline(data: bytes, binding: dict) -> bytes:
+    manifest_path = binding.get("manifestPath")
+    expected = reviewed_polyline_manifest(data, manifest_path)
+    if binding != polyline_binding(expected, manifest_path):
+        raise ValueError("Polyline asset differs from its reviewed binding")
+    # Numeric JSON is still ordinary text. Its complete body, not a summary or
+    # embedded header, is returned to the privacy scanner.
+    return data
 
 
 def reviewed_neuron_manifest(data: bytes) -> dict:
@@ -426,6 +532,10 @@ def anatomy_registry(read) -> dict[str, dict]:
     raw = read(neuron_path, MAX_GLB_JSON_BYTES)
     if raw is not None:
         register_neuromorpho(json.loads(raw), read, registry)
+    for manifest_path in POLYLINE_SOURCES:
+        raw = read(manifest_path, MAX_GLB_JSON_BYTES)
+        if raw is not None:
+            register_polyline(json.loads(raw), manifest_path, read, registry)
     detail_path = "public/atlas-volume/detail-index.json"
     raw = read(detail_path, MAX_GLB_JSON_BYTES)
     if raw is not None:
@@ -552,6 +662,8 @@ def inspect_registered_asset(data: bytes, binding: dict) -> bytes:
         return inspect_registered_ply(data, binding)
     if binding.get("format") == "swc-native-v1":
         return inspect_registered_source_trace(data, binding)
+    if binding.get("format") == "polyline-native-v1":
+        return inspect_registered_polyline(data, binding)
     raise ValueError("Unsupported registered anatomical asset format")
 
 
@@ -587,7 +699,9 @@ def scan_text(text: str, path: str, scope: str) -> list[dict]:
         if count:
             findings.append({"path": safe_path(path), "scope": scope, "type": kind, "count": count, "severity": severity})
 
-    contacts = EMAIL.findall(text)
+    # Every email candidate requires @. This exact precondition avoids costly
+    # failed matches across large numeric JSON while inspecting the entire text.
+    contacts = EMAIL.findall(text) if "@" in text else []
     private = [value for value in contacts if not synthetic_domain(value.rsplit("@", 1)[1])
                and not value.lower().endswith("@users.noreply.github.com")]
     attribution = path in ATTRIBUTION_PATHS or path.startswith("data/provenance/")
@@ -669,7 +783,7 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
     def inspect(data: bytes, path: str, location: str, bindings: dict | None = None) -> None:
         nonlocal inspected, opaque, registered
         selected_registry = registry if bindings is None else bindings
-        registered_text = path.lower().endswith(".swc.txt") or selected_registry.get(path, {}).get("format") == "swc-native-v1"
+        registered_text = is_registered_text_path(path, selected_registry.get(path))
         if path.lower().endswith((".glb", ".ply")) or registered_text:
             try:
                 if path not in selected_registry:
@@ -683,9 +797,9 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
                 findings.append({"path": safe_path(path), "scope": location, "type": "unregistered-or-invalid-anatomy-asset", "count": 1, "severity": "error"})
             if not registered_text:
                 return
-            # SWC text receives the ordinary complete text/privacy inspection
+            # Registered text receives the complete bounded text/privacy inspection
             # below, including when its source registration was rejected.
-        if len(data) > MAX_FILE_BYTES:
+        if len(data) > (MAX_REGISTERED_GLB_BYTES if registered_text else MAX_FILE_BYTES):
             findings.append({"path": safe_path(path), "scope": location, "type": "file-exceeds-scan-bound", "count": 1, "severity": "warning"})
             return
         matches, text_checked = inspect_content(data, path, location)
@@ -708,7 +822,7 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
             continue
         if scope == "staged":
             size = int(git(root, "cat-file", "-s", oid))
-            if size > (MAX_REGISTERED_GLB_BYTES if path in registry else MAX_FILE_BYTES):
+            if size > asset_scan_limit(path, registry):
                 findings.append({"path": safe_path(path), "scope": scope, "type": "file-exceeds-scan-bound", "count": 1, "severity": "warning"})
                 continue
             inspect(git(root, "cat-file", "blob", oid), path, scope)
@@ -717,7 +831,7 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
             if not file.is_file() or file.is_symlink():
                 findings.append({"path": safe_path(path), "scope": scope, "type": "missing-or-symlink-input", "count": 1, "severity": "warning"})
                 continue
-            if file.stat().st_size > (MAX_REGISTERED_GLB_BYTES if path in registry else MAX_FILE_BYTES):
+            if file.stat().st_size > asset_scan_limit(path, registry):
                 findings.append({"path": safe_path(path), "scope": scope, "type": "file-exceeds-scan-bound", "count": 1, "severity": "warning"})
                 continue
             inspect(file.read_bytes(), path, scope)
@@ -818,7 +932,7 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
                     continue
                 historical_blobs += 1
                 size = int(git(root, "cat-file", "-s", oid))
-                if size > (MAX_REGISTERED_GLB_BYTES if path in history_registry else MAX_FILE_BYTES):
+                if size > asset_scan_limit(path, history_registry):
                     findings.append({"path": safe_path(path), "scope": "history", "type": "file-exceeds-scan-bound", "count": 1, "severity": "warning"})
                     continue
                 inspect(git(root, "cat-file", "blob", oid), path, "history", history_registry)

@@ -35,8 +35,8 @@ def get(path: str) -> tuple[bytes, str]:
     with urlopen(destination, timeout=20) as response:
         if response.status != 200:
             raise AssertionError(f"Unexpected HTTP status {response.status} for {path}")
-        body = response.read(32 * 1024 * 1024 + 1)
-        if len(body) > 32 * 1024 * 1024:
+        body = response.read(80 * 1024 * 1024 + 1)
+        if len(body) > 80 * 1024 * 1024:
             raise AssertionError("Unexpectedly large production asset")
         return body, response.headers.get_content_type()
 
@@ -131,6 +131,20 @@ class ProductionDistributionTests(unittest.TestCase):
         for name in ('atlas.json', 'LICENSE.md'):
             data, _ = get(f'/atlas-neuron/{name}')
             self.assertEqual(data, (ROOT/'public/atlas-neuron'/name).read_bytes())
+
+
+    def test_polyline_sources_and_distinct_attribution_match_reviewed_derivatives(self):
+        registry = anatomy_registry(lambda path, limit: (ROOT/path).read_bytes() if (ROOT/path).is_file() else None)
+        for folder, filename in (("atlas-nerve", "mousemapper-patch0-lines.json"), ("atlas-vascular", "schmid2021-mvn1-lines.json")):
+            path = f"public/{folder}/{filename}"
+            with self.subTest(path=path):
+                data, mime = get(path.removeprefix("public"))
+                self.assertEqual(mime, "application/json")
+                self.assertEqual(inspect_registered_asset(data, registry[path]), data)
+                self.assertEqual(data, (ROOT/path).read_bytes())
+                for name in ("atlas.json", "LICENSE.md"):
+                    data, _ = get(f"/{folder}/{name}")
+                    self.assertEqual(data, (ROOT/"public"/folder/name).read_bytes())
 
 
 if __name__ == "__main__":

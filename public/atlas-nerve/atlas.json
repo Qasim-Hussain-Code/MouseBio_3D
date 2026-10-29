@@ -1,0 +1,158 @@
+{
+  "id": "mousemapper-nerve-patch0-v1",
+  "title": "MouseMapper predicted regional nerve graph, patch 0",
+  "assetFormat": "polyline-native-v1",
+  "assetUrl": "/atlas-nerve/mousemapper-patch0-lines.json",
+  "coordinateFrame": {
+    "id": "mousemapper-nerve-patch0-native-unknown-units-v1",
+    "sourceUnits": "unknown",
+    "assetUnits": "unknown",
+    "sourceToAssetScale": 1,
+    "unitsVerified": false,
+    "anatomicalOrientationVerified": false,
+    "physicalCalibrationVerified": false,
+    "registration": null,
+    "registrationToDigimouse": null,
+    "origin": "Source VTK origin; anatomical origin unverified",
+    "axes": {
+      "x": "native graph x; anatomical direction unverified",
+      "y": "native graph y; anatomical direction unverified",
+      "z": "native graph z; anatomical direction unverified"
+    }
+  },
+  "source": {
+    "id": "mousemapper-7fe04a9c-graph-patch0",
+    "displayName": "MouseMapper regional nerve example",
+    "title": "MouseMapper graph_module example_data: patch_volume_4X_0_pred",
+    "citationLabel": "Kaltenecker et al., 2026; MouseMapper",
+    "citation": "Kaltenecker D, Horvath I, Al-Maskari R, et al. A deep-learning framework reveals whole-body perturbations at cell level. Nature. 2026;655:1016-1026. doi:10.1038/s41586-026-10535-2.",
+    "publicationYear": 2026,
+    "doi": "10.1038/s41586-026-10535-2",
+    "url": "https://github.com/erturklab/mouseMapper/blob/7fe04a9ccf37664d76fe548ae226147c0023ceb7/graph_module/example_data/4x_graph/patch_volume_4X_0_pred/patch_volume_4X_0_pred.vtk",
+    "downloadUrl": "https://media.githubusercontent.com/media/erturklab/mouseMapper/7fe04a9ccf37664d76fe548ae226147c0023ceb7/graph_module/example_data/4x_graph/patch_volume_4X_0_pred/patch_volume_4X_0_pred.vtk",
+    "license": "Apache-2.0",
+    "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+    "licenseSourceUrl": "https://github.com/erturklab/mouseMapper/blob/7fe04a9ccf37664d76fe548ae226147c0023ceb7/LICENSE",
+    "repositoryCommit": "7fe04a9ccf37664d76fe548ae226147c0023ceb7",
+    "sourceBytes": 60899,
+    "sourceSha256": "b35b59a1056d04e5992a0e463751ceb89a733d80837e66d951be810899ec3c27",
+    "attribution": "Kaltenecker D, Horvath I, Al-Maskari R, et al. A deep-learning framework reveals whole-body perturbations at cell level. Nature. 2026;655:1016-1026. doi:10.1038/s41586-026-10535-2. Example graph distributed by the MouseMapper authors in erturklab/mouseMapper under Apache License 2.0. Geometry-only adaptation by Qasim Hussain for MouseBio_3D.",
+    "modifications": [
+      "Converted original VTK points and ordered polyline indices to compact numeric JSON, preserving parsed numeric coordinates and source array order.",
+      "Omitted inconsistent radius attributes and VTK serialization headers; retained their record-count discrepancies in metadata.",
+      "No coordinate scaling, registration, point merging, repair, smoothing, radius-based surface generation or new link was applied."
+    ]
+  },
+  "specimen": {
+    "sex": "unknown",
+    "scope": "regional predicted nerve graph; individual specimen and anatomical subregion unresolved",
+    "description": "Mouse nerve context is declared by the repository and associated publication. Individual specimen characteristics and exact patch location are not established by the file.",
+    "sourceReference": "https://github.com/erturklab/mouseMapper/blob/7fe04a9ccf37664d76fe548ae226147c0023ceb7/graph_module/example_data/4x_graph/patch_volume_4X_0_pred/patch_volume_4X_0_pred.vtk"
+  },
+  "sourceDeclarations": {
+    "species": "mouse",
+    "representation": "predicted regional nerve graph",
+    "anatomicalSubregion": null,
+    "individualSpecimen": null,
+    "diet": null,
+    "laterality": null,
+    "interpretation": "Project context and source filenames are declarations, not independent anatomical review or a file-specific specimen assignment."
+  },
+  "structures": [
+    {
+      "id": "mousemapper-nerve:patch0",
+      "name": "Predicted regional nerve graph, patch 0",
+      "sourceLabel": "patch_volume_4X_0_pred",
+      "meshNode": "region_mousemapper_patch0",
+      "systems": [
+        "nervous"
+      ],
+      "description": "One selectable source graph record preserving its complete point and polyline inventory.",
+      "defaultOpacity": 1,
+      "color": "#937047",
+      "limitations": [
+        "This is a predicted regional nerve-graph example, not complete adult peripheral nerve coverage.",
+        "The individual specimen, sex, age, diet, laterality and exact anatomical subregion remain unresolved.",
+        "Source physical units, anatomical orientation and calibration remain unverified; no metric conversion or accepted registration is supplied.",
+        "Source polyline cells and numerical components do not establish nerve, axon or cell counts, synapses or functional connectivity.",
+        "Source point and cell radius fields have inconsistent tuple counts and are omitted without invented associations; no radius sets line thickness or creates a surface.",
+        "Original source point order, polyline order and every consecutive link are retained without merging, repair, smoothing or missing-branch completion.",
+        "Initial Float32 diagnostics exclude later recentering and GPU arithmetic and do not estimate physical accuracy."
+      ]
+    }
+  ],
+  "statistics": {
+    "assetBytes": 55658,
+    "assetSha256": "e59fea98d4f41adab6149eee38e28ea6c3737dfa37013d5a2039e89c4c3ef0ce",
+    "points": 1940,
+    "polylines": 84,
+    "segments": 1876,
+    "components": 64,
+    "isolatedPoints": 0,
+    "zeroLengthSegments": 0,
+    "float32CollapsedSegments": 0,
+    "boundsSourceUnits": [
+      [
+        1.0,
+        1.0,
+        101.0
+      ],
+      [
+        298.0,
+        298.0,
+        298.0
+      ]
+    ],
+    "displayBoundsSourceUnits": [
+      [
+        1.0,
+        1.0,
+        101.0
+      ],
+      [
+        298.0,
+        298.0,
+        298.0
+      ]
+    ],
+    "maxFloat32PositionError": 1.5136718729991117e-05
+  },
+  "processing": {
+    "sourceToAssetScale": 1,
+    "coordinateConversion": false,
+    "pointRemoval": false,
+    "pathRepair": false,
+    "smoothing": false,
+    "registration": false,
+    "radiusUsed": false,
+    "positionStorage": "float32 for display only",
+    "sourcePointOrderPreserved": true,
+    "sourcePathOrderPreserved": true,
+    "sourceConnectivityPreserved": true
+  },
+  "sourceAttributesOmitted": [
+    {
+      "association": "POINT_DATA",
+      "declaredRecords": 1940,
+      "field": "radius",
+      "components": 1,
+      "tuples": 2290
+    },
+    {
+      "association": "CELL_DATA",
+      "declaredRecords": 84,
+      "field": "radius",
+      "components": 1,
+      "tuples": 145
+    }
+  ],
+  "limitations": [
+    "This is a predicted regional nerve-graph example, not complete adult peripheral nerve coverage.",
+    "The individual specimen, sex, age, diet, laterality and exact anatomical subregion remain unresolved.",
+    "Source physical units, anatomical orientation and calibration remain unverified; no metric conversion or accepted registration is supplied.",
+    "Source polyline cells and numerical components do not establish nerve, axon or cell counts, synapses or functional connectivity.",
+    "Source point and cell radius fields have inconsistent tuple counts and are omitted without invented associations; no radius sets line thickness or creates a surface.",
+    "Original source point order, polyline order and every consecutive link are retained without merging, repair, smoothing or missing-branch completion.",
+    "Initial Float32 diagnostics exclude later recentering and GPU arithmetic and do not estimate physical accuracy."
+  ]
+}

@@ -30,7 +30,7 @@ test('bundled neuronal loader binds same-origin bytes and renders parent lines w
   disposeRegion(line);
   const catalog = buildReferenceCatalog(JSON.parse(await readFile(new URL('../data/anatomy-references.json', import.meta.url), 'utf8')));
   assert.equal(catalog.ok, true);
-  assert.equal(catalog.catalog.length, 5);
+  assert.equal(catalog.catalog.length, 7);
   assert.equal(validateReferenceAtlas(catalog.catalog.find((entry) => entry.id === atlas.id)!, atlas).ok, true);
 });
 

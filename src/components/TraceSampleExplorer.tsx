@@ -19,7 +19,7 @@ export function TraceSampleExplorer({ atlas, localTrace, viewerReady, onFocusSam
   const [loadedSource, setLoadedSource] = useState<SourceTraceAsset | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
-  const [query, setQuery] = useState('');
+  const [queryDraft, setQueryDraft] = useState<{ index: TraceInspectionIndex; value: string } | null>(null);
   const [queryError, setQueryError] = useState('');
   const [focusStatus, setFocusStatus] = useState('');
   const [selection, setSelection] = useState<Selection | null>(null);
@@ -30,6 +30,10 @@ export function TraceSampleExplorer({ atlas, localTrace, viewerReady, onFocusSam
   const asset = local ?? (loadedSource?.atlas === atlas ? loadedSource : null);
   const checked = useMemo(() => asset ? createTraceInspection(asset) : null, [asset]);
   const index = checked?.ok ? checked.index : undefined;
+  // Bind the input draft to its source index synchronously. A post-load effect
+  // must not overwrite a query entered immediately after records appear.
+  const query = queryDraft && queryDraft.index === index ? queryDraft.value : index ? String(index.firstSampleId) : '';
+  const setQuery = (value: string) => setQueryDraft(index ? { index, value } : null);
   const selected = index ? selection?.index === index ? selection : { index, sampleId: index.firstSampleId, childOffset: 0 } : null;
   const inspected = useMemo(() => selected ? inspectTraceSample(selected.index, selected.sampleId, selected.childOffset) : null,
     [selected?.index, selected?.sampleId, selected?.childOffset]);
@@ -39,10 +43,10 @@ export function TraceSampleExplorer({ atlas, localTrace, viewerReady, onFocusSam
     epoch.current++;
     pending.current?.abort(); pending.current = null;
     setLoadedSource(null); setLoading(false); setLoadError(''); setSelection(null);
-    setQuery(''); setQueryError(''); setFocusStatus('');
+    setQueryDraft(null); setQueryError(''); setFocusStatus('');
     return () => { epoch.current++; pending.current?.abort(); pending.current = null; };
   }, [atlas, localTrace]);
-  useEffect(() => { setQuery(index ? String(index.firstSampleId) : ''); setQueryError(''); setFocusStatus(''); }, [index]);
+  useEffect(() => { setQueryError(''); setFocusStatus(''); }, [index]);
 
   if (!local && !bundled) return null;
   const openSource = async () => {
