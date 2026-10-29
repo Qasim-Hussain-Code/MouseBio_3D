@@ -163,3 +163,11 @@ Mouse adult gross anatomy ontology terms and labels: Mouse Genome Informatics, T
 Source license: https://www.informatics.jax.org/mgihome/other/copyright.shtml
 Term records: https://www.ebi.ac.uk/ols4/ontologies/ma
 The registry preserves Digimouse attribution and does not establish exact or expert-reviewed anatomical mappings.
+
+
+NeuroMorpho.Org NMO_130632 numeric SWC derivative is licensed CC BY 4.0.
+Scala F, Kobak D, Shan S, et al. Layer 4 of mouse neocortex differs in cell types and circuit organization between sensory areas. Nature Communications. 2019;10:4174. doi:10.1038/s41467-019-12058-z.
+NeuroMorpho.Org (RRID:SCR_002145). Source: https://neuromorpho.org/api/neuron/id/130632
+Tecuatl C, Ljungquist B, Ascoli GA. Accelerating the continuous community sharing of digital neuromorphology data. FASEB Bioadv. 2024;6(7):207-221. doi:10.1096/fba.2024-00048.
+License: https://creativecommons.org/licenses/by/4.0/
+Numeric-only adaptation: Qasim Hussain, MouseBio_3D. Original contact and machine headers are omitted; source coordinates, sample IDs and parent links are retained. See atlas-neuron/LICENSE.md for attribution and processing.

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { isLocalTraceAsset, type LocalTraceAsset } from '../domain/local-trace';
+import { isLocalTraceAsset, type LocalTraceAsset, type LocalTraceNode } from '../domain/local-trace';
 import type { Atlas } from '../domain/types';
 
 function requireCondition(value: unknown, message: string): asserts value {
@@ -26,20 +26,28 @@ export function buildLocalTraceScene(atlas: Atlas, asset: LocalTraceAsset): THRE
     && frame.physicalCalibrationVerified === false && frame.registration === null && frame.registrationToDigimouse === null
     && natural(statistics.assetBytes) && statistics.assetBytes > 0 && atlas.structures.length === 1,
   'The local trace source binding or unknown coordinate frame is inconsistent.');
+  requireCondition(atlas.structures[0].id === `local-trace:${digest}:record`, 'The local trace record identity is inconsistent.');
+  return buildParentLinkedTraceScene(atlas, asset.nodes);
+}
+
+/** Geometry preparation shared by source-specific parser guards; this is not an import or identity validator. */
+export function buildParentLinkedTraceScene(atlas: Atlas, nodes: readonly LocalTraceNode[]): THREE.Group {
+  const statistics = atlas.statistics;
+  requireCondition(atlas.structures.length === 1, 'A parent-linked trace must have one selectable source record.');
   const structure = atlas.structures[0];
-  requireCondition(structure.id === `local-trace:${digest}:record` && typeof structure.meshNode === 'string' && structure.meshNode.length > 0
-    && natural(statistics.samples) && statistics.samples === asset.nodes.length && asset.nodes.length > 0
+  requireCondition(typeof structure.meshNode === 'string' && structure.meshNode.length > 0
+    && natural(statistics.samples) && statistics.samples === nodes.length && nodes.length > 0
     && natural(statistics.parentLinks) && statistics.parentLinks > 0 && natural(statistics.roots) && statistics.roots > 0
     && statistics.components === statistics.roots && natural(statistics.zeroLengthEdges) && natural(statistics.float32CollapsedEdges)
     && natural(statistics.isolatedSamples),
   'The local trace region or sample statistics are inconsistent.');
 
-  const sourcePositions = new Float32Array(asset.nodes.length * 3);
+  const sourcePositions = new Float32Array(nodes.length * 3);
   const sourceBounds = new THREE.Box3();
   const sourcePoint = new THREE.Vector3();
   const nodeIndices = new Map<number, number>();
   let maximumError = 0;
-  for (const [index, node] of asset.nodes.entries()) {
+  for (const [index, node] of nodes.entries()) {
     requireCondition(node.length === 7 && node.every(Number.isFinite) && Number.isSafeInteger(node[0])
       && Number.isSafeInteger(node[6]) && !nodeIndices.has(node[0]), 'Local trace sample identity or coordinates are invalid.');
     nodeIndices.set(node[0], index);
@@ -55,11 +63,11 @@ export function buildLocalTraceScene(atlas: Atlas, asset: LocalTraceAsset): THRE
     'The local trace source-coordinate or serialization diagnostics are inconsistent.');
 
   const sourceIndices = new Uint32Array(statistics.parentLinks * 2);
-  const referenced = new Uint8Array(asset.nodes.length);
+  const referenced = new Uint8Array(nodes.length);
   const renderBounds = new THREE.Box3();
   const first = new THREE.Vector3(), second = new THREE.Vector3();
   let parentLinks = 0, roots = 0, zeroLengthEdges = 0, float32CollapsedEdges = 0;
-  for (const [childIndex, child] of asset.nodes.entries()) {
+  for (const [childIndex, child] of nodes.entries()) {
     if (child[6] === -1) { roots++; continue; }
     const parentIndex = nodeIndices.get(child[6]);
     requireCondition(parentIndex !== undefined && parentIndex !== childIndex && parentLinks < statistics.parentLinks,
@@ -67,7 +75,7 @@ export function buildLocalTraceScene(atlas: Atlas, asset: LocalTraceAsset): THRE
     // Each source child->parent relation appears once, in source child-row order.
     sourceIndices[parentLinks * 2] = childIndex; sourceIndices[parentLinks * 2 + 1] = parentIndex;
     referenced[childIndex] = 1; referenced[parentIndex] = 1;
-    const parent = asset.nodes[parentIndex];
+    const parent = nodes[parentIndex];
     const sourceCoincident = child[2] === parent[2] && child[3] === parent[3] && child[4] === parent[4];
     if (sourceCoincident) zeroLengthEdges++;
     first.fromArray(sourcePositions, childIndex * 3); second.fromArray(sourcePositions, parentIndex * 3);
@@ -80,11 +88,11 @@ export function buildLocalTraceScene(atlas: Atlas, asset: LocalTraceAsset): THRE
     && sameBounds(statistics.displayBoundsSourceUnits, renderBounds),
   'The local trace parent-link or rendered-coordinate diagnostics are inconsistent.');
   const displayedSamples = referenced.reduce((total, value) => total + value, 0);
-  requireCondition(statistics.isolatedSamples === asset.nodes.length - displayedSamples,
+  requireCondition(statistics.isolatedSamples === nodes.length - displayedSamples,
     'The local trace isolated-sample count is inconsistent.');
   const positions = new Float32Array(displayedSamples * 3), indices = new Uint32Array(sourceIndices.length);
-  const sourceToVertex = new Uint32Array(asset.nodes.length), vertexSourceIds: number[] = [];
-  for (const [sourceIndex, node] of asset.nodes.entries()) if (referenced[sourceIndex]) {
+  const sourceToVertex = new Uint32Array(nodes.length), vertexSourceIds: number[] = [];
+  for (const [sourceIndex, node] of nodes.entries()) if (referenced[sourceIndex]) {
     const vertexIndex = vertexSourceIds.length;
     positions.set(sourcePositions.subarray(sourceIndex * 3, sourceIndex * 3 + 3), vertexIndex * 3);
     sourceToVertex[sourceIndex] = vertexIndex; vertexSourceIds.push(node[0]);
@@ -110,8 +118,8 @@ export function buildLocalTraceScene(atlas: Atlas, asset: LocalTraceAsset): THRE
     material = new THREE.LineBasicMaterial();
     const line = new THREE.LineSegments(geometry, material);
     line.name = structure.meshNode;
-    line.userData = { structureId: structure.id, sourceSampleCount: asset.nodes.length, sourceParentLinks: parentLinks,
-      isolatedSourceSamples: asset.nodes.length - displayedSamples, vertexSourceIds: Object.freeze(vertexSourceIds) };
+    line.userData = { structureId: structure.id, sourceSampleCount: nodes.length, sourceParentLinks: parentLinks,
+      isolatedSourceSamples: nodes.length - displayedSamples, vertexSourceIds: Object.freeze(vertexSourceIds) };
     const scene = new THREE.Group();
     scene.add(line);
     return scene;

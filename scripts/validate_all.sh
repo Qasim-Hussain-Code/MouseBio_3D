@@ -11,6 +11,8 @@ python3 scripts/test_hindlimb_geometry.py
 python3 scripts/test_ema147_geometry.py
 python3 scripts/test_publication.py
 python3 scripts/test_registered_anatomy.py
+python3 scripts/test_neuromorpho.py
+python3 scripts/test_neuromorpho_publication.py
 python3 scripts/test_release.py
 python3 scripts/check_publication.py
 python3 scripts/resource_usage.py

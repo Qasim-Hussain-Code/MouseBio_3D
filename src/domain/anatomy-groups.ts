@@ -1,6 +1,7 @@
 import type { Atlas } from './types';
 import { buildEma147Groups } from './ema147-groups';
 import { isLocalTraceAtlas } from './local-trace';
+import { isSourceTraceAtlas } from './source-trace';
 
 /** Local display selections, not new anatomical identifiers or ontology assertions. */
 export interface AnatomyGroup {
@@ -122,6 +123,13 @@ export function buildAnatomyGroups(atlas: Atlas): AnatomyGroupsResult {
     group('whole-mouse', 'Whole local trace', atlas.structures.map((region) => region.id),
       'All parent-linked samples in the locally opened trace record.',
       ['Units, biological identity and provenance remain unverified. This display group adds no surfaces, registration or physiological model.']),
+  ]), errors: Object.freeze([]) });
+
+  if (isSourceTraceAtlas(atlas)) return Object.freeze({ ok: true, groups: Object.freeze([
+    group('whole-mouse', 'Whole neuronal source trace', atlas.structures.map((region) => region.id),
+      'The source samples and explicit parent links of NeuroMorpho.Org NMO_130632.',
+      ['This separate reconstruction is not registered to a whole-body reference. Physical units remain unverified.',
+        'Graph components do not establish cell counts; radius fields do not create measured surfaces.']),
   ]), errors: Object.freeze([]) });
 
   if (atlas?.id === 'ema147-native-v1') return buildEma147Groups(atlas);

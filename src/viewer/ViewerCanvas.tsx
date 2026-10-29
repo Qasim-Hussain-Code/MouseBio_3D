@@ -201,7 +201,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       display.add(gltf.scene);
       gltf.scene.updateWorldMatrix(true, true);
       let sourceRegionCount = 0;
-      const traceFormat = atlas.assetFormat === 'local-trace-v1';
+      const traceFormat = atlas.assetFormat === 'local-trace-v1' || atlas.assetFormat === 'swc-native-v1';
       gltf.scene.traverse((object) => {
         if (!(object instanceof THREE.Mesh) && !(object instanceof THREE.LineSegments)) return;
         if (traceFormat !== (object instanceof THREE.LineSegments)) throw new Error('Unexpected render primitive for this reference.');

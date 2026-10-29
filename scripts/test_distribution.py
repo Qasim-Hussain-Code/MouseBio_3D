@@ -119,6 +119,19 @@ class ProductionDistributionTests(unittest.TestCase):
             data,_ = get(f'/atlas-ema147/{name}')
             self.assertEqual(data,(ROOT/'public/atlas-ema147'/name).read_bytes())
 
+    def test_neuronal_source_and_attribution_match_reviewed_numeric_derivative(self):
+        registry = anatomy_registry(lambda path, limit: (ROOT/path).read_bytes() if (ROOT/path).is_file() else None)
+        path = 'public/atlas-neuron/nmo130632-standardized.swc.txt'
+        self.assertIn(path, registry)
+        data, mime = get(path.removeprefix('public'))
+        self.assertNotEqual(mime, 'text/html')
+        inspect_registered_asset(data, registry[path])
+        self.assertEqual(data, (ROOT/path).read_bytes())
+        self.assertNotIn(b'#', data)
+        for name in ('atlas.json', 'LICENSE.md'):
+            data, _ = get(f'/atlas-neuron/{name}')
+            self.assertEqual(data, (ROOT/'public/atlas-neuron'/name).read_bytes())
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)

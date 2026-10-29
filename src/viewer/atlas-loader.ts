@@ -16,6 +16,17 @@ export async function loadAtlasScene(atlas: Atlas, signal: AbortSignal, fetcher:
     if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
     return buildLocalTraceScene(atlas, localTrace);
   }
+  if (format === 'swc-native-v1') {
+    const { isSourceTraceAtlas, parseSourceTrace } = await import('../domain/source-trace');
+    if (!isSourceTraceAtlas(atlas)) throw new Error('The neuronal source manifest does not match the reviewed reference.');
+    const content = await fetchBoundAnatomyBytes(atlas.assetUrl, bytes, hash, signal, 'txt', fetcher);
+    const result = await parseSourceTrace(content, atlas);
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (!result.ok || !result.asset) throw new Error('The neuronal source data do not match the reviewed reference.');
+    const { buildSourceTraceScene } = await import('./source-trace-scene');
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    return buildSourceTraceScene(atlas, result.asset);
+  }
   if (format === 'ply-native-v1') {
     const content = await fetchBoundAnatomyBytes(atlas.assetUrl, bytes, hash, signal, 'ply', fetcher);
     const { parseNativePly } = await import('./native-ply');

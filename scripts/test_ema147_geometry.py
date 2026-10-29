@@ -84,6 +84,7 @@ class Ema147GeometryTests(unittest.TestCase):
         self.assertEqual(atlas['statistics']['closedManifoldSourceRegions'],23)
         self.assertEqual(atlas['processing']['normalFallbackVertices'],0)
 
+    @unittest.skipUnless(ARCHIVE.is_file(), 'Ignored original EMA147 archive is unavailable; source triangle comparison not executed.')
     def test_every_original_triangle_and_winding_is_retained(self):
         self.assertEqual(hashlib.sha256(ARCHIVE.read_bytes()).hexdigest(),ARCHIVE_SHA256)
         with zipfile.ZipFile(ARCHIVE) as source:

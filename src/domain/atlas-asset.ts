@@ -1,11 +1,11 @@
 import type { Atlas } from './types';
 
-export type AtlasAssetFormat = 'glb' | 'ply-native-v1' | 'local-trace-v1';
+export type AtlasAssetFormat = 'glb' | 'ply-native-v1' | 'local-trace-v1' | 'swc-native-v1';
 
 /** A format declaration never supplies a physical unit or registration. */
 export function atlasAssetFormat(atlas: Atlas): AtlasAssetFormat | null {
   return atlas.assetFormat === undefined || atlas.assetFormat === 'glb' ? 'glb'
-    : atlas.assetFormat === 'ply-native-v1' ? 'ply-native-v1' : atlas.assetFormat === 'local-trace-v1' ? 'local-trace-v1' : null;
+    : atlas.assetFormat === 'ply-native-v1' ? 'ply-native-v1' : atlas.assetFormat === 'local-trace-v1' ? 'local-trace-v1' : atlas.assetFormat === 'swc-native-v1' ? 'swc-native-v1' : null;
 }
 
 export function atlasAssetSha256(atlas: Atlas): string | null {

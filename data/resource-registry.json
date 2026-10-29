@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "reviewedOn": "2026-10-25",
-  "updatedOn": "2026-10-28",
+  "updatedOn": "2026-10-29",
   "notes": "Resource evaluation is distinct from imported asset provenance. Null denotes unknown or not applicable, as explained by each record. Dataset-specific licenses take precedence over general website descriptions.",
   "resources": [
     {
@@ -767,6 +767,146 @@
         "No source geometry was downloaded or incorporated",
         "Different specimen and unknown frame preclude assumed anatomical overlay",
         "Noncommercial terms do not provide an unrestricted commercial redistribution grant"
+      ]
+    },
+    {
+      "id": "neuromorpho_nmo130632_standardized",
+      "title": "NeuroMorpho.Org NMO_130632 standardized mouse neuronal reconstruction",
+      "origin": "Scala and collaborators; NeuroMorpho.Org Tolias archive",
+      "landingPage": "https://neuromorpho.org/api/neuron/id/130632",
+      "verifiedOn": "2026-10-29",
+      "publication": {
+        "doi": "10.1038/s41467-019-12058-z",
+        "year": 2019,
+        "citation": "Scala F, Kobak D, Shan S, et al. Layer 4 of mouse neocortex differs in cell types and circuit organization between sensory areas. Nature Communications. 2019;10:4174. doi:10.1038/s41467-019-12058-z."
+      },
+      "requiredAttribution": [
+        "Scala F, Kobak D, Shan S, et al. Layer 4 of mouse neocortex differs in cell types and circuit organization between sensory areas. Nature Communications. 2019;10:4174. doi:10.1038/s41467-019-12058-z.",
+        "NeuroMorpho.Org (RRID:SCR_002145).",
+        "Tecuatl C, Ljungquist B, Ascoli GA. Accelerating the continuous community sharing of digital neuromorphology data. FASEB Bioadv. 2024;6(7):207-221. doi:10.1096/fba.2024-00048."
+      ],
+      "license": {
+        "identifier": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "verifiedAt": "https://neuromorpho.org/useterm.jsp",
+        "redistribution": "permitted_with_attribution_and_modifications",
+        "scope": "The NeuroMorpho.Org terms apply CC BY 4.0 to downloaded material and request the original paper, NeuroMorpho.Org RRID:SCR_002145 and Tecuatl et al. (2024)."
+      },
+      "sourceRecord": {
+        "id": "NMO_130632",
+        "archive": "Tolias",
+        "reconstructionName": "2016-01-06-slice-D-cell-7-rotated",
+        "metadataUrl": "https://neuromorpho.org/api/neuron/id/130632",
+        "metadataSha256": "e33e82af3ee5abf870f39d168cb151b6b87823c49eb368e1e7bdb596e9b2c7f9",
+        "relatedOriginalDatasetDoi": "10.5281/zenodo.3336165",
+        "relatedOriginalDatasetUrl": "https://zenodo.org/records/3336165",
+        "originalStudyArchiveDownloaded": false,
+        "originalToStandardizedTransformVerified": false
+      },
+      "coverage": "One independent source reconstruction record with 11,650 sample rows and 11,649 declared parent links; no whole-brain cellular coverage, reconstructed cell surface or accepted anatomical overlay.",
+      "methodology": "Source-declared in vitro biocytin neuronal reconstruction. The standardized SWC numeric records are retained without sample removal, graph repair, unit conversion or shrinkage correction.",
+      "specimen": {
+        "species": "mouse, source declared",
+        "sex": null,
+        "age": null,
+        "strain": null,
+        "mass_g": null,
+        "count": null,
+        "sourceDeclaredStage": "adult",
+        "sourceDeclaredRegion": [
+          "neocortex",
+          "occipital",
+          "primary visual",
+          "layer 4"
+        ],
+        "sourceSexText": "Male/Female",
+        "sourceAgeRangeDays": [
+          50,
+          330
+        ],
+        "interpretation": "Source categories and ranges do not identify individual sex or exact age; these declarations are not independently verified."
+      },
+      "resolution": null,
+      "download": {
+        "url": "https://neuromorpho.org/dableFiles/tolias/CNG%20version/2016-01-06-slice-D-cell-7-rotated.CNG.swc",
+        "format": "NeuroMorpho.Org standardized SWC",
+        "bytes": 448329,
+        "sha256": "a8340628eb02051416ad0607e72b60cba9241eb34c9be10b0c7df01771b5cfce",
+        "decision": "original_retained_ignored_numeric_adaptation_bundled",
+        "assetsDownloaded": true,
+        "originalBytesUnchanged": true,
+        "originalHeaderContainsContactAndMachineMetadata": true,
+        "originalHeaderDistributed": false,
+        "privateMatchedValuesRecordedHere": false
+      },
+      "applicationAsset": {
+        "atlasId": "neuromorpho-nmo130632-standardized-v1",
+        "structureId": "neuromorpho:130632",
+        "manifestPath": "public/atlas-neuron/atlas.json",
+        "assetPath": "public/atlas-neuron/nmo130632-standardized.swc.txt",
+        "bytes": 424092,
+        "sha256": "0dd36d6518aacd6338d16c76318d6ed0fd24419a0551417fdf639a8323c6ede5",
+        "format": "swc-native-v1",
+        "bundled": true,
+        "modifications": [
+          "Removed all original comment headers and blank lines from the distributable adaptation.",
+          "Retained numeric token spelling, original row order, sample IDs and parent IDs; normalized field separators and LF line endings.",
+          "Retained original numeric coordinates, radii and type codes without repair, unit conversion or shrinkage correction."
+        ],
+        "licenseNotice": "public/atlas-neuron/LICENSE.md",
+        "methods": "docs/neuronal-morphology.md"
+      },
+      "coordinateFrame": {
+        "id": "neuromorpho-nmo130632-standardized-unknown-units-v1",
+        "sourceUnits": null,
+        "assetUnits": null,
+        "sourceToAssetScale": 1,
+        "anatomicalOrientationIndependentlyVerified": false,
+        "physicalCalibrationVerified": false,
+        "registrationToOtherApplicationReferences": null,
+        "originalFilePiaAxisNoteTransferredToStandardizedFrame": false
+      },
+      "bodyAssessment": {
+        "nodes": 11650,
+        "parentLinks": 11649,
+        "roots": 1,
+        "connectedComponents": 1,
+        "isolatedSamples": 0,
+        "sourceTypeCodeCounts": {
+          "1": 3,
+          "2": 10394,
+          "3": 1253
+        },
+        "duplicateIds": 0,
+        "missingParents": 0,
+        "cycles": 0,
+        "zeroLengthEdges": 0,
+        "initialFloat32CollapsedEdges": 0,
+        "maximumInitialFloat32PositionErrorSourceUnits": 1.464843751364242e-05,
+        "initialFloat32DiagnosticsBoundTotalDisplayError": false,
+        "radius": {
+          "minimumRecordedValue": 0.035,
+          "maximumRecordedValue": 8.321,
+          "units": null,
+          "independentlyValidatedPhysicalMeaning": null,
+          "usedForDisplayThickness": false
+        },
+        "reportedShrinkagePercent": 15,
+        "sourceShrinkageCorrected": false,
+        "applicationShrinkageCorrection": false,
+        "biologicalAccuracyIndependentlyReviewed": false,
+        "browserRenderingVerified": false
+      },
+      "applicationImportStatus": "numeric_only_centerline_reference_bundled_separate_unknown_unit_frame",
+      "limitations": [
+        "This is one source reconstruction record, not whole-brain cellular coverage or a measured cell surface.",
+        "Source physical units, anatomical axes and independent calibration remain unverified; no physical unit conversion is applied.",
+        "No original-to-standardized transform or registration to another application reference is verified.",
+        "Source radii and type codes remain numeric metadata; line width is a display setting, not a calibrated diameter.",
+        "Parent links and numerical graph components do not establish synapses, biological connectivity, cell counts or physiological validation.",
+        "Source sex Male/Female and age range 50 to 330 days do not establish individual sex or exact age. Strain and mass remain unknown.",
+        "The source reports 15 percent shrinkage without correction. No correction is applied.",
+        "Initial Float32 diagnostics exclude later display recentering and GPU arithmetic and do not estimate physical accuracy."
       ]
     }
   ]

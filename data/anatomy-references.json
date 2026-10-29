@@ -100,7 +100,10 @@
     "assetSha256": "6cd797bb8b09c80760c3a4c0fa1a682b880aaabccba0e0a6663f7e936abdee63",
     "coverage": {
       "regionCount": 44,
-      "systems": ["muscular", "skeletal"],
+      "systems": [
+        "muscular",
+        "skeletal"
+      ],
       "description": "Right hindlimb and pelvis from one adult female C57BL/6 specimen. This regional reference is separate from the whole-body Digimouse models."
     },
     "processingResolution": {
@@ -114,7 +117,10 @@
       ]
     },
     "licenses": [
-      {"identifier": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/"}
+      {
+        "identifier": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      }
     ]
   },
   {
@@ -139,7 +145,40 @@
       ]
     },
     "licenses": [
-      {"identifier": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/"}
+      {
+        "identifier": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    ]
+  },
+  {
+    "id": "neuromorpho-nmo130632-standardized-v1",
+    "title": "Neuron: NMO_130632 trace",
+    "manifestUrl": "/atlas-neuron/atlas.json",
+    "coordinateFrameId": "neuromorpho-nmo130632-standardized-unknown-units-v1",
+    "assetSha256": "0dd36d6518aacd6338d16c76318d6ed0fd24419a0551417fdf639a8323c6ede5",
+    "coverage": {
+      "regionCount": 1,
+      "systems": [
+        "nervous"
+      ],
+      "description": "Source-declared adult mouse V1 layer 4 neuronal reconstruction, NMO_130632. Separate parent-linked trace with unknown physical units; no whole-body registration or complete cellular coverage."
+    },
+    "processingResolution": {
+      "sourceVoxelSpacingMm": null,
+      "processingVoxelSpacingMm": null,
+      "method": "Numeric SWC sample records and parent links retained from the standardized source; comment headers omitted",
+      "limitations": [
+        "Physical coordinate units and anatomical orientation remain unverified.",
+        "No accepted registration connects this trace to another reference.",
+        "Radius and source type fields do not establish measured cell surfaces, synapses or physiology."
+      ]
+    },
+    "licenses": [
+      {
+        "identifier": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      }
     ]
   }
 ]

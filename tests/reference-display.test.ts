@@ -9,7 +9,7 @@ import { physiologyProcessesForAtlas } from '../src/domain/physiology';
 test('shipped reference declarations bind each actual manifest without merging inventories', async () => {
   const catalog = buildReferenceCatalog(JSON.parse(await readFile(new URL('../data/anatomy-references.json', import.meta.url), 'utf8')));
   assert.equal(catalog.ok, true, catalog.errors.join(' '));
-  assert.equal(catalog.catalog.length, 4);
+  assert.equal(catalog.catalog.length, 5);
   for (const entry of catalog.catalog) {
     const atlas = JSON.parse(await readFile(new URL(`../public${entry.manifestUrl}`, import.meta.url), 'utf8')) as Atlas;
     assert.deepEqual(validateReferenceAtlas(entry, atlas), { ok: true, errors: [] });

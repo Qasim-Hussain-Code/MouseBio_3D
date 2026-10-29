@@ -59,6 +59,65 @@ PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY----
 ASSIGNMENT = re.compile(r"(?im)^\s*(?:export\s+)?[\"']?(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password|aws_secret_access_key)[\"']?\s*[:=]\s*[\"']?([^\s\"'#]{8,})")
 URL = re.compile(r"https?://[^\s<>\"']+")
 ATTRIBUTION_PATHS = {"public/THIRD_PARTY_NOTICES.txt", "public/atlas/LICENSE.md", "public/atlas-volume/LICENSE.md", "public/atlas-hindlimb/LICENSE.md", "public/atlas-ema147/LICENSE.md"}
+NEURON_ASSET_PATH = "public/atlas-neuron/nmo130632-standardized.swc.txt"
+NEURON_MANIFEST_PATH = "public/atlas-neuron/atlas.json"
+NEURON_LICENSE_PATH = "public/atlas-neuron/LICENSE.md"
+NEURON_ATLAS_ID = "neuromorpho-nmo130632-standardized-v1"
+NEURON_FRAME_ID = "neuromorpho-nmo130632-standardized-unknown-units-v1"
+NEURON_SOURCE_SHA256 = "a8340628eb02051416ad0607e72b60cba9241eb34c9be10b0c7df01771b5cfce"
+NEURON_ASSET_SHA256 = "0dd36d6518aacd6338d16c76318d6ed0fd24419a0551417fdf639a8323c6ede5"
+NEURON_ASSET_BYTES = 424092
+
+
+def reviewed_neuron_manifest(data: bytes) -> dict:
+    """Recompute the approved derivative's source record without its private header."""
+    if len(data) != NEURON_ASSET_BYTES or hashlib.sha256(data).hexdigest() != NEURON_ASSET_SHA256:
+        raise ValueError("Neuronal source derivative differs from the approved numeric records")
+    try:
+        # Older snapshots without this source do not need its preparation helper.
+        from prepare_neuromorpho import make_manifest
+    except ImportError:
+        raise ValueError("Neuronal source validation support is missing") from None
+    return make_manifest(data)
+
+
+def register_neuromorpho(manifest: dict, read, registry: dict[str, dict]) -> None:
+    data = read(NEURON_ASSET_PATH, 2 * 1024 * 1024)
+    if data is None:
+        raise ValueError("Registered neuronal source derivative is missing")
+    expected = reviewed_neuron_manifest(data)
+    # The source's ambiguous specimen claims, unverified units, processing and
+    # parent graph are reviewed together. A file header cannot grant metadata.
+    keys = ("id", "assetFormat", "assetUrl", "source", "coordinateFrame", "specimen",
+            "sourceDeclarations", "structures", "statistics", "processing", "limitations")
+    if any(key not in manifest or json.dumps(manifest[key], sort_keys=True) != json.dumps(expected[key], sort_keys=True)
+           for key in keys):
+        raise ValueError("Neuronal source, license, graph or unknown coordinate frame is not registered")
+    notice = read(NEURON_LICENSE_PATH, MAX_GLB_JSON_BYTES)
+    required_attribution = (b"creativecommons.org/licenses/by/4.0", b"130632", b"Scala", b"Tecuatl",
+                            b"RRID:SCR_002145", b"10.1038/s41467-019-12058-z", b"10.1096/fba.2024-00048")
+    if not notice or any(value not in notice for value in required_attribution):
+        raise ValueError("Registered neuronal source attribution is missing")
+    if NEURON_ASSET_PATH in registry:
+        raise ValueError("Repeated neuronal source asset path")
+    registry[NEURON_ASSET_PATH] = {
+        "format": "swc-native-v1", "bytes": NEURON_ASSET_BYTES, "sha256": NEURON_ASSET_SHA256,
+        "sourceSha256": NEURON_SOURCE_SHA256, "ids": ["neuromorpho:130632"], "atlasId": NEURON_ATLAS_ID,
+        "coordinateFrameId": NEURON_FRAME_ID, "statistics": expected["statistics"],
+        "manifestPath": NEURON_MANIFEST_PATH, "licensePath": NEURON_LICENSE_PATH,
+    }
+
+
+def inspect_registered_source_trace(data: bytes, binding: dict) -> bytes:
+    if (binding.get("bytes") != NEURON_ASSET_BYTES or binding.get("sha256") != NEURON_ASSET_SHA256
+            or binding.get("sourceSha256") != NEURON_SOURCE_SHA256
+            or binding.get("ids") != ["neuromorpho:130632"] or binding.get("atlasId") != NEURON_ATLAS_ID
+            or binding.get("coordinateFrameId") != NEURON_FRAME_ID
+            or binding.get("manifestPath") != NEURON_MANIFEST_PATH or binding.get("licensePath") != NEURON_LICENSE_PATH
+            or reviewed_neuron_manifest(data)["statistics"] != binding.get("statistics")):
+        raise ValueError("Neuronal source asset differs from its approved binding")
+    # The entire body is ordinary text. Registration grants no privacy exemption.
+    return data
 
 
 def anatomy_asset_path(url: str, folder: str, suffix: str = ".glb") -> str:
@@ -363,6 +422,10 @@ def anatomy_registry(read) -> dict[str, dict]:
     raw = read(ema147_path, MAX_GLB_JSON_BYTES)
     if raw is not None:
         register_ema147(json.loads(raw), read, registry)
+    neuron_path = "public/atlas-neuron/atlas.json"
+    raw = read(neuron_path, MAX_GLB_JSON_BYTES)
+    if raw is not None:
+        register_neuromorpho(json.loads(raw), read, registry)
     detail_path = "public/atlas-volume/detail-index.json"
     raw = read(detail_path, MAX_GLB_JSON_BYTES)
     if raw is not None:
@@ -487,6 +550,8 @@ def inspect_registered_asset(data: bytes, binding: dict) -> bytes:
         return inspect_registered_glb(data, binding)
     if binding.get("format") == "ply-native-v1":
         return inspect_registered_ply(data, binding)
+    if binding.get("format") == "swc-native-v1":
+        return inspect_registered_source_trace(data, binding)
     raise ValueError("Unsupported registered anatomical asset format")
 
 
@@ -604,17 +669,22 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
     def inspect(data: bytes, path: str, location: str, bindings: dict | None = None) -> None:
         nonlocal inspected, opaque, registered
         selected_registry = registry if bindings is None else bindings
-        if path.lower().endswith((".glb", ".ply")):
+        registered_text = path.lower().endswith(".swc.txt") or selected_registry.get(path, {}).get("format") == "swc-native-v1"
+        if path.lower().endswith((".glb", ".ply")) or registered_text:
             try:
                 if path not in selected_registry:
                     raise ValueError("Unregistered anatomical asset")
                 metadata = inspect_registered_asset(data, selected_registry[path])
-                findings.extend(scan_text(metadata.decode("utf-8"), path, location))
-                inspected += 1
+                if not registered_text:
+                    findings.extend(scan_text(metadata.decode("utf-8"), path, location))
+                    inspected += 1
                 registered += 1
             except (ValueError, TypeError, KeyError, AttributeError, UnicodeError):
                 findings.append({"path": safe_path(path), "scope": location, "type": "unregistered-or-invalid-anatomy-asset", "count": 1, "severity": "error"})
-            return
+            if not registered_text:
+                return
+            # SWC text receives the ordinary complete text/privacy inspection
+            # below, including when its source registration was rejected.
         if len(data) > MAX_FILE_BYTES:
             findings.append({"path": safe_path(path), "scope": location, "type": "file-exceeds-scan-bound", "count": 1, "severity": "warning"})
             return

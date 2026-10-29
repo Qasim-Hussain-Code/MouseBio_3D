@@ -38,6 +38,7 @@ const atlas = JSON.parse(atlasText) as Atlas;
 const volumeText = await readFile(new URL('../public/atlas-volume/atlas.json', import.meta.url), 'utf8');
 const hindlimbText = await readFile(new URL('../public/atlas-hindlimb/atlas.json', import.meta.url), 'utf8');
 const ema147Text = await readFile(new URL('../public/atlas-ema147/atlas.json', import.meta.url), 'utf8');
+const neuronText = await readFile(new URL('../public/atlas-neuron/atlas.json', import.meta.url), 'utf8');
 
 const originalFetch = globalThis.fetch;
 const originalConsoleError = console.error;
@@ -58,8 +59,8 @@ beforeEach(() => {
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = String(input);
     requests.push(url);
-    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
-    return new Response(url === '/atlas/atlas.json' ? atlasText : url === '/atlas-volume/atlas.json' ? volumeText : url === '/atlas-hindlimb/atlas.json' ? hindlimbText : ema147Text, { status: 200, headers: { 'Content-Type': 'application/json' } });
+    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    return new Response(url === '/atlas/atlas.json' ? atlasText : url === '/atlas-volume/atlas.json' ? volumeText : url === '/atlas-hindlimb/atlas.json' ? hindlimbText : url === '/atlas-neuron/atlas.json' ? neuronText : ema147Text, { status: 200, headers: { 'Content-Type': 'application/json' } });
   }) as typeof fetch;
   console.error = (...args: unknown[]) => {
     if (typeof args[0] === 'string' && /^THREE\.WebGLRenderer: (?:THREE\.WebGLRenderer: )?Error creating WebGL context/.test(args[0])) {
@@ -1051,4 +1052,48 @@ test('replacing a local trace separates its observations and rejects another tra
   fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
   await waitFor(async () => assert.equal((await savedView(view)).atlasId, traceA.atlasId));
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), original);
+});
+
+
+test('bundled neuronal reference retains source limits, background and source-bound observations and views', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  const originalData = JSON.parse(await exportedBlobs.at(-1)!.text());
+  expectedRequests.push('/atlas-neuron/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'neuromorpho-nmo130632-standardized-v1' } });
+  await view.findByRole('heading', { name: 'Neuronal source trace' });
+  assert.ok(view.getByText('11,650')); assert.ok(view.getByText('11,649'));
+  assert.ok(view.getByText('Traced samples and parent links'));
+  assert.equal(view.queryByRole('checkbox', { name: 'Finer selected surface' }), null);
+  assert.equal(view.getByRole('button', { name: 'White background' }).getAttribute('aria-pressed'), 'true');
+  assert.equal((view.getByRole('button', { name: 'Export JSON' }) as HTMLButtonElement).disabled, true);
+  const saved = await savedView(view);
+  assert.equal(saved.atlasId, 'neuromorpho-nmo130632-standardized-v1');
+  assert.equal(saved.coordinateFrameId, 'neuromorpho-nmo130632-standardized-unknown-units-v1');
+  assert.equal(saved.assetSha256, '0dd36d6518aacd6338d16c76318d6ed0fd24419a0551417fdf639a8323c6ede5');
+  assert.equal(saved.background, 'white');
+  const serialized = JSON.stringify(saved);
+  assert.equal(serialized.includes('synthetic signal'), false);
+  assert.equal(serialized.includes('parentLinks'), false);
+  assert.equal(Object.hasOwn(saved, 'nodes'), false);
+  fireEvent.click(view.getByRole('button', { name: 'Dark background' }));
+  fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [inputFile(JSON.stringify(saved), 'neuron-view.json')] } });
+  await view.findByText('View settings restored.');
+  assert.deepEqual(await savedView(view), saved);
+  fireEvent.click(view.getByRole('button', { name: 'Compare' }));
+  assert.equal((await savedView(view)).atlasId, saved.atlasId);
+  fireEvent.click(view.getByRole('button', { name: 'Living' }));
+  assert.ok(view.getByText('No physiological motion is available for this reference.'));
+  assert.equal(view.queryByRole('button', { name: 'Pause physiology' }), null);
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
+  assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), originalData);
 });
