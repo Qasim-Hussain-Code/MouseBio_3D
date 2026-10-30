@@ -66,3 +66,17 @@ for (const [folder, filename, points, paths, segments] of [
     await assert.rejects(loadAtlasScene(structuredClone(original), new AbortController().signal, (async () => new Response(changed)) as typeof fetch), /checksum/);
   });
 }
+
+test('explicit path inspection can reuse a still-live parser-owned source without pinning an extra strong copy', async () => {
+  const { loadSourcePolylineAsset } = await import('../src/viewer/source-polyline-loader');
+  const atlas = JSON.parse(await readFile(new URL('../public/atlas-nerve/atlas.json', import.meta.url), 'utf8')) as Atlas;
+  const bytes = await readFile(new URL('../public/atlas-nerve/mousemapper-patch0-lines.json', import.meta.url));
+  let reads = 0; const fetcher = (async () => { reads++; return new Response(bytes); }) as typeof fetch;
+  const first = await loadSourcePolylineAsset(atlas, new AbortController().signal, fetcher);
+  const second = await loadSourcePolylineAsset(atlas, new AbortController().signal, fetcher);
+  assert.equal(second, first); assert.equal(reads, 1);
+  const controller = new AbortController(); controller.abort();
+  await assert.rejects(loadSourcePolylineAsset(atlas, controller.signal, fetcher), { name: 'AbortError' }); assert.equal(reads, 1);
+  const separate = await loadSourcePolylineAsset(structuredClone(atlas), new AbortController().signal, fetcher);
+  assert.notEqual(separate, first); assert.equal(reads, 2);
+});

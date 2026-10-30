@@ -1,0 +1,8 @@
+.polyline-point-table { max-width: 100%; overflow-x: auto; margin: 10px 0; }
+.polyline-point-table table { width: 100%; border-collapse: collapse; font-size: 10px; font-variant-numeric: tabular-nums; }
+.polyline-point-table th, .polyline-point-table td { text-align: left; padding: 6px; border-bottom: 1px solid #dce4d6; }
+.polyline-point-table th { color: #476446; font-weight: 500; }
+.source-polyline-explorer h4 { font-size: 12px; color: #294d40; margin-top: 16px; }
+.polyline-vertex-record { border-left: 2px solid #c7d7bf; padding-left: 10px; margin-top: 14px; }
+.polyline-vertex-record ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.polyline-endpoint { margin: 8px 0; }

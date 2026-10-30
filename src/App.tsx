@@ -32,6 +32,7 @@ import { isSourceTraceAtlas } from './domain/source-trace';
 import { AnatomyCoverage } from './components/AnatomyCoverage';
 import { isSourcePolylineAtlas } from './domain/source-polyline';
 import { SourcePolylineRecord } from './components/SourcePolylineRecord';
+import { SourcePolylineExplorer } from './components/SourcePolylineExplorer';
 import { coverageRequests, resolveCoverageTarget, type AnatomyCoverageTopicId, type AnatomyCoverageRequest, type AnatomyCoverageTarget } from './domain/anatomy-coverage';
 
 const referenceCatalog = buildReferenceCatalog(referenceCatalogData);
@@ -477,7 +478,7 @@ export default function App() {
       {activeTrace && <LocalTraceRecord asset={activeTrace} />}
       {sourceTrace && <SourceTraceRecord atlas={atlas} />}
       {parentLinkedTrace && <TraceSampleExplorer key={atlas.id} atlas={atlas} localTrace={activeTrace} viewerReady={viewerState.primary === 'ready'} onFocusSample={(sampleId) => viewer.current?.focusTraceSample(sampleId) ?? false} />}
-      {sourcePolyline && <SourcePolylineRecord atlas={atlas} />}
+      {sourcePolyline && <><SourcePolylineExplorer key={atlas.id} atlas={atlas} viewerReady={viewerState.primary === 'ready'} onFocusPath={(row) => viewer.current?.focusPolylinePath(row) ?? false} /><SourcePolylineRecord atlas={atlas} /></>}
       {!lineReference && <SurfaceDetail baseSpacing={reference?.processingResolution.processingVoxelSpacingMm?.[0]} levels={selectedLevels} levelId={detailLevel} asset={availableDetail} enabled={fineActive} comparative={mode === 'comparative'} viewerFailed={viewerFailed} status={detailStatus} onLevelChange={(id) => { setDetailLevel(id); setDetailStatus({ status: 'idle', structureId: null }); }} onEnabledChange={(enabled) => { setFineEnabled(enabled); setDetailStatus({ status: 'idle', structureId: null }); }} />}
       <div className="inspector-actions"><button className="primary-button" onClick={() => viewer.current?.focus()}><Icon name="focus" size={15} /> Focus</button><button className="secondary-button" onClick={isolate}>{isolation.current ? 'Restore' : 'Isolate'}</button><button className="icon-button" aria-label={`${hidden.includes(selectedStructure.id) ? 'Show' : 'Hide'} selected structure`} onClick={() => toggleHidden(selectedStructure.id)}><Icon name={hidden.includes(selectedStructure.id) ? 'hidden' : 'eye'} size={17} /></button></div>
       <div className="opacity-control"><label htmlFor="structure-opacity">Opacity <strong>{Math.round((opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100)}%</strong></label><input id="structure-opacity" type="range" min="0" max="100" value={(opacity[selectedStructure.id] ?? defaultStructureOpacity(selectedStructure)) * 100} onChange={(event) => { setActiveGroup(''); pendingGroupFocus.current = null; setOpacity({ ...opacity, [selectedStructure.id]: +event.target.value / 100 }); }} /></div>

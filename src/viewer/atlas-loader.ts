@@ -5,6 +5,7 @@ import { atlasAssetBytes, atlasAssetFormat, atlasAssetSha256 } from '../domain/a
 import { fetchBoundGlb } from './region-detail';
 import { fetchBoundAnatomyBytes } from './asset-fetch';
 import { loadSourceTraceAsset } from './source-trace-loader';
+import { loadSourcePolylineAsset } from './source-polyline-loader';
 
 /** Load one reviewed reference without assigning scale or registration to another. */
 export async function loadAtlasScene(atlas: Atlas, signal: AbortSignal, fetcher: typeof fetch = fetch, localTrace?: LocalTraceAsset): Promise<THREE.Group> {
@@ -24,15 +25,10 @@ export async function loadAtlasScene(atlas: Atlas, signal: AbortSignal, fetcher:
     return buildSourceTraceScene(atlas, asset);
   }
   if (format === 'polyline-native-v1') {
-    const { isSourcePolylineAtlas, parseSourcePolyline } = await import('../domain/source-polyline');
-    if (!isSourcePolylineAtlas(atlas)) throw new Error('The source polyline manifest does not match the reviewed reference.');
-    const content = await fetchBoundAnatomyBytes(atlas.assetUrl, bytes, hash, signal, 'json', fetcher);
-    const result = await parseSourcePolyline(content, atlas);
-    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-    if (!result.ok || !result.asset) throw new Error('The source polyline geometry could not be verified.');
+    const asset = await loadSourcePolylineAsset(atlas, signal, fetcher);
     const { buildSourcePolylineScene } = await import('./source-polyline-scene');
     if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-    return buildSourcePolylineScene(atlas, result.asset);
+    return buildSourcePolylineScene(atlas, asset);
   }
   if (format === 'ply-native-v1') {
     const content = await fetchBoundAnatomyBytes(atlas.assetUrl, bytes, hash, signal, 'ply', fetcher);

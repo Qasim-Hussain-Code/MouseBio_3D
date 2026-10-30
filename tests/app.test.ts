@@ -41,6 +41,7 @@ const ema147Text = await readFile(new URL('../public/atlas-ema147/atlas.json', i
 const neuronText = await readFile(new URL('../public/atlas-neuron/atlas.json', import.meta.url), 'utf8');
 const nerveText = await readFile(new URL('../public/atlas-nerve/atlas.json', import.meta.url), 'utf8');
 const vascularText = await readFile(new URL('../public/atlas-vascular/atlas.json', import.meta.url), 'utf8');
+const nervePaths = await readFile(new URL('../public/atlas-nerve/mousemapper-patch0-lines.json', import.meta.url));
 const neuronSamples = await readFile(new URL('../public/atlas-neuron/nmo130632-standardized.swc.txt', import.meta.url));
 
 const originalFetch = globalThis.fetch;
@@ -62,7 +63,8 @@ beforeEach(() => {
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = String(input);
     requests.push(url);
-    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json', '/atlas-neuron/nmo130632-standardized.swc.txt', '/atlas-nerve/atlas.json', '/atlas-vascular/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json', '/atlas-neuron/nmo130632-standardized.swc.txt', '/atlas-nerve/atlas.json', '/atlas-vascular/atlas.json', '/atlas-nerve/mousemapper-patch0-lines.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    if (url === '/atlas-nerve/mousemapper-patch0-lines.json') return new Response(nervePaths);
     if (url === '/atlas-neuron/nmo130632-standardized.swc.txt') return new Response(neuronSamples);
     if (url === '/atlas-vascular/atlas.json') return new Response(vascularText);
     if (url === '/atlas-nerve/atlas.json') return new Response(nerveText);
@@ -1215,4 +1217,20 @@ test('a substituted coverage manifest leaves current reference, display and obse
   await view.findByText(/The requested source anatomy could not be opened. The current reference and observations were retained/);
   assert.deepEqual(await savedView(view), before);
   assert.equal((view.getByRole('combobox', { name: 'Anatomy reference' }) as HTMLSelectElement).value, atlas.id);
+});
+
+test('source path navigation keeps white background, observations and saved views separate from graph records', async () => {
+  const view = await openApp(); fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } }); await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'White background' })); fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
+  expectedRequests.push('/atlas-nerve/atlas.json'); fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'mousemapper-nerve-patch0-v1' } });
+  await view.findByRole('heading', { name: 'Source path explorer' }); const before = await savedView(view);
+  expectedRequests.push('/atlas-nerve/mousemapper-patch0-lines.json'); fireEvent.click(view.getByRole('button', { name: 'Inspect source paths' }));
+  await view.findByRole('textbox', { name: 'Source path ID' }); fireEvent.click(view.getByRole('button', { name: 'Next path' }));
+  const after = await savedView(view); assert.deepEqual(after, before); assert.equal(after.background, 'white');
+  for (const key of ['sourceGraph', 'sourcePointIndex', 'pathId', 'pathRowIndex']) assert.equal(JSON.stringify(after).includes(key), false);
+  assert.equal((view.getByRole('button', { name: 'Focus source path' }) as HTMLButtonElement).disabled, true);
+  expectedRequests.push('/atlas/atlas.json'); fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } }); await view.findByText('17 visible regions');
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), observations);
+  assert.equal((await savedView(view)).background, 'white'); assert.equal(view.queryByRole('heading', { name: 'Source path explorer' }), null);
 });
