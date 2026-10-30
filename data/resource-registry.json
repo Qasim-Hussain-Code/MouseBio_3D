@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "reviewedOn": "2026-10-25",
-  "updatedOn": "2026-10-29",
+  "updatedOn": "2026-10-30",
   "notes": "Resource evaluation is distinct from imported asset provenance. Null denotes unknown or not applicable, as explained by each record. Dataset-specific licenses take precedence over general website descriptions.",
   "resources": [
     {
@@ -1135,6 +1135,39 @@
         "Path endpoint ordering differs from connectivity ordering in 1261 paths. Two endpoint pairs retain small source coordinate differences after allowing reversal. No repair, reorientation or flow direction is inferred.",
         "All 62 zero-length source segments are retained. No missing branches, smoothing, vessel surfaces, calibrated diameters, synapses or physiological model are generated.",
         "Initial Float32 diagnostics exclude later recentering and GPU arithmetic and do not establish physical accuracy."
+      ]
+    },
+    {
+      "id": "bondarenko2004-apical",
+      "title": "Bondarenko 2004 mouse apical ventricular-myocyte equation model",
+      "landingPage": "https://models.physiomeproject.org/exposure/b0b1820b1376263e16c6086ca64d513e/bondarenko_szigeti_bett_kim_rasmusson_2004_apical.cellml/view",
+      "publication": {
+        "doi": "10.1152/ajpheart.00185.2003",
+        "year": 2004,
+        "authors": [
+          "V. E. Bondarenko",
+          "G. P. Szigeti",
+          "G. C. L. Bett",
+          "S. J. Kim",
+          "R. L. Rasmusson"
+        ]
+      },
+      "license": {
+        "identifier": "CC-BY-3.0",
+        "verifiedAt": "https://models.physiomeproject.org/exposure/b0b1820b1376263e16c6086ca64d513e/bondarenko_szigeti_bett_kim_rasmusson_2004_apical.cellml/license_citation",
+        "url": "https://creativecommons.org/licenses/by/3.0/",
+        "redistribution": "permitted_with_attribution_and_modification_notice"
+      },
+      "coverage": "Independent parameterized apical mouse ventricular-cell electrical and calcium-handling model; no spatial geometry or anatomical registration.",
+      "decision": "closed_equation_adaptation_with_separate_explicit_mathematical_variant",
+      "manifest": "public/models/bondarenko-apical/manifest.json",
+      "methods": "docs/cardiac-cell-model.md",
+      "sourceRevision": "94d9d4f47495d86fec040f5439c7e3a4ffccb611",
+      "limitations": [
+        "Source temperature 298 K; no body-temperature conversion or individual-animal validation.",
+        "Archived sodium-channel transition has a negative off-diagonal generator entry and produces out-of-range states in the executed protocol.",
+        "Optional balanced-transition substitution is computationally inferred and lacks independent physiological validation.",
+        "No contraction mechanics, blood flow, nerve propagation, spatial cell anatomy or accepted cross-reference registration."
       ]
     }
   ]

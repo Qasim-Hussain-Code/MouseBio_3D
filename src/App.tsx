@@ -33,7 +33,11 @@ import { AnatomyCoverage } from './components/AnatomyCoverage';
 import { isSourcePolylineAtlas } from './domain/source-polyline';
 import { SourcePolylineRecord } from './components/SourcePolylineRecord';
 import { SourcePolylineExplorer } from './components/SourcePolylineExplorer';
-import { coverageRequests, resolveCoverageTarget, type AnatomyCoverageTopicId, type AnatomyCoverageRequest, type AnatomyCoverageTarget } from './domain/anatomy-coverage';
+import { PrototypeStart } from './components/PrototypeStart';
+import { CardiacCellPanel } from './components/CardiacCellPanel';
+import { getPrototypeStarter, resolvePrototypeStarter } from './domain/prototype-starters';
+import { createPrototypeExample } from './domain/prototype-example';
+import { coverageRequests, resolveCoverageTarget, type AnatomyCoverageTopicId, type AnatomyCoverageRequest } from './domain/anatomy-coverage';
 
 const referenceCatalog = buildReferenceCatalog(referenceCatalogData);
 
@@ -102,6 +106,8 @@ export default function App() {
   const [cardiac, setCardiac] = useState(true);
   const [respiratory, setRespiratory] = useState(true);
   const [methods, setMethods] = useState(false);
+  const [startOpen,setStartOpen]=useState(false);
+  const [startError,setStartError]=useState('');
   const [diagnostics, setDiagnostics] = useState<ViewerDiagnostics | null>(null);
   const [viewerState, setViewerState] = useState<Record<string, 'loading' | 'ready' | 'failed'>>({ primary: 'loading', secondary: 'loading' });
   const [rows, setRows] = useState<ExperimentalMeasurement[]>([]);
@@ -122,6 +128,8 @@ export default function App() {
   const referenceSequence = useRef(0);
   const traceImportSequence = useRef(0);
   const dataImportSequence = useRef(0);
+  const dataImportPending=useRef(0);
+  const [dataImportBusy,setDataImportBusy]=useState(false);
   const viewImportSequence = useRef(0);
   const viewer = useRef<ViewerHandle | null>(null);
   const compareViewer = useRef<ViewerHandle | null>(null);
@@ -238,7 +246,7 @@ export default function App() {
         { rows: current.rows, metadata: current.metadata }, loaded);
       if (!switched.ok || !switched.data) throw new Error(switched.errors.join(' '));
       experimentalBank.current = switched.bank;
-      dataImportSequence.current++; viewImportSequence.current++;
+      dataImportSequence.current++; dataImportPending.current=0; setDataImportBusy(false); viewImportSequence.current++;
       setRows(switched.data.rows); setMetadata(switched.data.metadata); setAtlas(loaded);
       setActiveGroup('whole-mouse'); pendingGroupFocus.current = null;
       setSelected(initialReferenceSelection(loaded)); setHidden([]); setOpacity(referenceOpacity(loaded));
@@ -251,7 +259,7 @@ export default function App() {
     if (!file) return;
     const sequence = ++traceImportSequence.current;
     referenceSequence.current++; referenceRequest.current?.abort();
-    dataImportSequence.current++; viewImportSequence.current++;
+    dataImportSequence.current++; dataImportPending.current=0; setDataImportBusy(false); viewImportSequence.current++;
     setReferenceLoading(false); setTraceLoading(true); setTraceError(''); setReferenceError(''); setViewError('');
     try {
       if (!Number.isSafeInteger(file.size) || file.size <= 0 || file.size > MAX_LOCAL_TRACE_BYTES) throw new Error('Local SWC files must fit the 2 MiB input limit.');
@@ -271,11 +279,11 @@ export default function App() {
       if (sequence === traceImportSequence.current) { setTraceLoading(false); if (traceFileInput.current) traceFileInput.current.value = ''; }
     }
   };
-  const applyCoverageTarget = (loaded: Atlas, target: AnatomyCoverageTarget, context: 'hidden' | 'faded') => {
+  const applyCoverageTarget = (loaded: Atlas, target: AnatomyGroup, context: 'hidden' | 'faded') => {
     const members = new Set(target.structureIds);
     setHidden(context === 'hidden' ? loaded.structures.filter((region) => !members.has(region.id)).map((region) => region.id) : []);
     setOpacity(Object.fromEntries(loaded.structures.map((region) => [region.id, members.has(region.id) ? 1 : Math.min(defaultStructureOpacity(region), 0.08)])));
-    setSelected(target.structureIds[0]); setActiveGroup(target.groupId); setQuery(''); setNavigatorTab('structures');
+    setSelected(target.structureIds[0]); setActiveGroup(target.id); setQuery(''); setNavigatorTab('structures');
     setFineEnabled(false); setDetailLevel('fine-020'); setDetailStatus({ status: 'idle', structureId: null }); setClipAxis('off'); isolation.current = null;
     pendingGroupFocus.current = { atlasId: loaded.id, ids: target.structureIds };
     if (loaded === atlas && viewerState.primary === 'ready' && viewer.current) {
@@ -286,19 +294,19 @@ export default function App() {
     if (!coverageRequests(request.topicId).some((candidate) => candidate === request)) return;
     void switchReference(request.referenceId, request.topicId, context);
   };
-  const switchReference = async (id: string, coverageTopic?: AnatomyCoverageTopicId, context: 'hidden' | 'faded' = 'faded') => {
+  const switchReference = async (id: string, coverageTopic?: AnatomyCoverageTopicId, context: 'hidden' | 'faded' = 'faded', starterId?: string) => {
     const next = getReference(referenceCatalog.catalog, id);
     const cachedTrace = localTrace?.atlas.id === id ? localTrace : null;
-    if ((!next && !cachedTrace) || (id === atlas?.id && !coverageTopic)) return;
+    if ((!next && !cachedTrace) || (id === atlas?.id && !coverageTopic && !starterId)) return;
     traceImportSequence.current++; setTraceLoading(false); setTraceError('');
     const sequence = ++referenceSequence.current;
     referenceRequest.current?.abort();
     const abort = new AbortController(); referenceRequest.current = abort;
-    setReferenceLoading(true); setReferenceError('');
-    dataImportSequence.current++; viewImportSequence.current++;
+    setReferenceLoading(true); setReferenceError(''); setStartError('');
+    dataImportSequence.current++; dataImportPending.current=0; setDataImportBusy(false); viewImportSequence.current++;
     try {
       let loaded: Atlas;
-      if (id === atlas?.id && coverageTopic) loaded = atlas;
+      if (id === atlas?.id && (coverageTopic || starterId)) loaded = atlas;
       else if (cachedTrace) loaded = cachedTrace.atlas;
       else {
         const response = await fetch(next!.manifestUrl, { signal: abort.signal });
@@ -309,15 +317,33 @@ export default function App() {
       if (sequence !== referenceSequence.current || abort.signal.aborted) return;
       const coverage = coverageTopic ? resolveCoverageTarget(loaded, coverageTopic) : null;
       if (coverage && (!coverage.ok || !coverage.target)) throw new Error('The requested anatomy is unavailable in this source.');
+      const starter=starterId ? resolvePrototypeStarter(loaded,starterId):null;
+      if(starter && (!starter.ok || !starter.target))throw new Error('The starting view does not match the reviewed source.');
       const restored = loaded === atlas ? false : adoptReference(loaded);
+      if(starter?.target){applyCoverageTarget(loaded,starter.target,'hidden');setMode('anatomical');setStartOpen(false);setNotice('Starting view opened in its source coordinate frame.');return;}
       if (coverage?.target) {
         applyCoverageTarget(loaded, coverage.target, context);
         setNotice('Source anatomy opened. Other references retain their observations and coordinate frames.');
       } else setNotice(restored ? 'Reference switched. Its local observations were restored.' : 'Reference switched. Previous observations remain in this browser session.');
     } catch (error) {
-      if (sequence === referenceSequence.current && !abort.signal.aborted)
+      if (sequence === referenceSequence.current && !abort.signal.aborted && starterId)setStartError('The starting view could not be opened. The current reference and observations were retained.');
+      else if (sequence === referenceSequence.current && !abort.signal.aborted)
         setReferenceError(coverageTopic ? 'The requested source anatomy could not be opened. The current reference and observations were retained.' : error instanceof Error ? error.message : 'Reference switch failed.');
     } finally { if (sequence === referenceSequence.current) setReferenceLoading(false); }
+  };
+  const openStarter=(id:string)=>{const starter=getPrototypeStarter(id);if(starter)void switchReference(starter.referenceId,undefined,'hidden',id);};
+  const tryExample=()=>{
+    const current=currentData.current;
+    if(current.rows.length || dataImportPending.current || referenceLoading || traceLoading){setNotice('Existing observations or an active import must be cleared before loading a fictional example.');return;}
+    const example=createPrototypeExample(current.atlas);
+    if(!example.ok || !example.data){setNotice('The fictional example is unavailable for this reference.');return;}
+    dataImportSequence.current++; dataImportPending.current=0; setDataImportBusy(false);setRows(example.data.rows);setMetadata(example.data.metadata);
+    currentData.current={...current,rows:example.data.rows,metadata:example.data.metadata};
+    setImportResult(null);setSeries('');setConditionA('control-example');setConditionB('treatment-example');setMode('comparative');setFineEnabled(false);
+    const targets=[...new Set(example.data.rows.map(row=>row.structureId))],members=new Set(targets);
+    if(current.atlas){setHidden(current.atlas.structures.filter(region=>!members.has(region.id)).map(region=>region.id));setOpacity(Object.fromEntries(current.atlas.structures.map(region=>[region.id,members.has(region.id)?1:defaultStructureOpacity(region)])));}
+    setSelected(targets[0]??null);setClipAxis('off');setActiveGroup('');isolation.current=null;focusRegions(targets);
+    setNotice('Fictional software example loaded. These values are not experimental observations.');
   };
   const isolate = () => {
     if (!atlas || !selected) return;
@@ -334,9 +360,10 @@ export default function App() {
   };
   const importFile = async (file: File | undefined) => {
     if (!file || !atlas) return;
-    const sequence = ++dataImportSequence.current;
+    const sequence = ++dataImportSequence.current; dataImportPending.current=0; setDataImportBusy(false);
     if (fileInput.current) fileInput.current.value = '';
     if (file.size > 5 * 1024 * 1024) { setImportResult({ ok: false, rows: [], errors: [{ code: 'file-size', message: 'Maximum file size is 5 MiB.' }], warnings: [] }); return; }
+    dataImportPending.current=sequence;setDataImportBusy(true);
     try {
       const text = await file.text();
       if (sequence !== dataImportSequence.current) return;
@@ -348,7 +375,7 @@ export default function App() {
         setSeries(''); setConditionA(''); setConditionB('');
         setNotice(`Imported ${result.rows.length} observations locally.`);
       }
-    } catch { if (sequence === dataImportSequence.current) setImportResult({ ok: false, rows: [], errors: [{ code: 'file-read', message: 'The local file could not be read.' }], warnings: [] }); }
+    } catch { if (sequence === dataImportSequence.current) setImportResult({ ok: false, rows: [], errors: [{ code: 'file-read', message: 'The local file could not be read.' }], warnings: [] }); } finally {if(dataImportPending.current===sequence){dataImportPending.current=0;setDataImportBusy(false);}}
     if (sequence === dataImportSequence.current && fileInput.current) fileInput.current.value = '';
   };
   const exportDataset = () => {
@@ -402,7 +429,7 @@ export default function App() {
     <header className="app-header">
       <a className="brand" href="/" aria-label="MouseBio_3D home"><span className="brand-mark"><Icon name="layers" size={25} /></span><span><strong>MouseBio<span className="brand-suffix">_3D</span></strong><small>DIGITAL MOUSE LABORATORY</small></span></a>
       <nav className="mode-nav" aria-label="Exploration mode">{MODES.map((item) => <button key={item.id} className={mode === item.id ? 'active' : ''} aria-pressed={mode === item.id} onClick={() => { setMode(item.id); if (item.id === 'comparative') setFineEnabled(false); }}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
-      <div className="header-actions"><span className="local-badge"><Icon name="lock" size={13} /> Local session</span><button className="icon-button" onClick={() => setMethods(true)} title="Methods, sources and limitations" aria-label="Methods, sources and limitations"><Icon name="info" /></button></div>
+      <div className="header-actions"><button className="secondary-button" onClick={()=>{setStartError('');setStartOpen(true);}}>Start here</button><span className="local-badge"><Icon name="lock" size={13} /> Local session</span><button className="icon-button" onClick={() => setMethods(true)} title="Methods, sources and limitations" aria-label="Methods, sources and limitations"><Icon name="info" /></button></div>
     </header>
 
     <aside className="navigator panel">
@@ -434,7 +461,7 @@ export default function App() {
     </aside>
 
     <main className="workspace">
-      <div className="workspace-heading"><div><span className="eyebrow">{MODES.find((item) => item.id === mode)?.label.toUpperCase()} WORKSPACE</span><h2>{mode === 'anatomical' ? 'Anatomical reference' : mode === 'living' ? availableMotion.length ? 'Physiology in motion' : 'Physiology availability' : mode === 'experimental' ? 'Map your observations' : 'Compare experimental states'}</h2></div><div className="view-file-actions"><input ref={viewFileInput} type="file" className="view-file-input" accept=".json,application/json" aria-label="Restore view state" onChange={(event) => void restoreView(event.target.files?.[0])} /><button className="secondary-button save-view" onClick={() => viewFileInput.current?.click()} title="Load view settings"><Icon name="upload" size={15} /><span>Load view</span></button><button className="secondary-button save-view" onClick={exportView} title="Save view settings"><Icon name="download" size={15} /><span>Save view</span></button></div></div>
+      <div className="workspace-heading"><div><span className="eyebrow">{MODES.find((item) => item.id === mode)?.label.toUpperCase()} WORKSPACE</span><h2>{mode === 'anatomical' ? 'Anatomical reference' : mode === 'living' ? 'Physiology workspace' : mode === 'experimental' ? 'Map your observations' : 'Compare experimental states'}</h2></div><div className="view-file-actions"><input ref={viewFileInput} type="file" className="view-file-input" accept=".json,application/json" aria-label="Restore view state" onChange={(event) => void restoreView(event.target.files?.[0])} /><button className="secondary-button save-view" onClick={() => viewFileInput.current?.click()} title="Load view settings"><Icon name="upload" size={15} /><span>Load view</span></button><button className="secondary-button save-view" onClick={exportView} title="Save view settings"><Icon name="download" size={15} /><span>Save view</span></button></div></div>
       <button className="structure-details-shortcut secondary-button" aria-controls="structure-inspector" onClick={() => { inspector.current?.scrollIntoView({ block: 'start' }); inspector.current?.focus({ preventScroll: true }); }}><Icon name="info" size={15} /> Structure details{selectedStructure ? `: ${selectedStructure.name}` : ''}</button>
       <AnatomyCoverage referenceId={atlas.id} busy={referenceLoading || traceLoading} onOpen={openCoverage} />
       {viewError && <p className="view-import-error" role="alert">View settings unchanged. {viewError}</p>}
@@ -461,9 +488,10 @@ export default function App() {
         {mode === 'living' && availableMotion.length > 0 && <span className="illustrative-label">ILLUSTRATIVE MOTION · NOT A VALIDATED SIMULATION</span>}
       </section>
       <div className="section-bar"><Icon name="layers" size={18} /><div><strong>Virtual section</strong><small>Surface clipping, without tissue reconstruction</small></div><select aria-label="Section axis" value={clipAxis} onChange={(event) => setClipAxis(event.target.value as typeof clipAxis)}><option value="off">No section</option><option value="x">Display X</option><option value="y">Display Y</option><option value="z">Display Z</option></select><input type="range" aria-label="Section position" min="0" max="100" value={clipPosition} disabled={clipAxis === 'off'} onChange={(event) => setClipPosition(+event.target.value)} /><span>{clipPosition}%</span></div>
-      {mode === 'living' && (availableMotion.length > 0 ? <div className="living-panel"><div className="living-controls"><button className="play-button" aria-label={playing ? 'Pause physiology' : 'Play physiology'} onClick={() => setPlaying(!playing)}><Icon name={playing ? 'pause' : 'play'} size={17} /></button><div><strong>Educational playback</strong><small>Arbitrary display timing and amplitude</small></div><label className="speed-control">Speed<select value={speed} onChange={(event) => setSpeed(+event.target.value)} aria-label="Playback speed">{[...new Set([0.25, 0.5, 1, 2, 4, speed])].sort((a, b) => a - b).map((value) => <option key={value} value={value}>{value}x</option>)}</select></label></div><div className="process-options"><label><input type="checkbox" checked={cardiac && hasCardiacMotion} disabled={!hasCardiacMotion} onChange={() => setCardiac(!cardiac)} /> Cardiac contraction</label><label><input type="checkbox" checked={respiratory && hasRespiratoryMotion} disabled={!hasRespiratoryMotion} onChange={() => setRespiratory(!respiratory)} /> Respiratory motion</label><span>Vessel circulation: no source geometry</span></div></div> : <div className="living-panel"><p>No physiological motion is available for this reference.</p></div>)}
-      {(mode === 'experimental' || mode === 'comparative') && <div className="data-panel"><div className="data-panel-heading"><div><strong>{rows.length ? metadata.title || 'Local experimental dataset' : 'Connect measurements to anatomy'}</strong><p>{rows.length ? `${rows.length} observations · ${new Set(rows.map((row) => row.replicate)).size} biological subject IDs · ${summaries.length} groups` : 'Import CSV or JSON with explicit structure IDs, units and biological replicates.'}</p></div>{rows.length > 0 && <button className="text-button" onClick={() => { dataImportSequence.current++; setRows([]); setImportResult(null); setMetadata({ origin: 'user-data' }); }}>Clear local data</button>}</div>
-        <div className="import-actions"><input ref={fileInput} id="dataset-file" type="file" accept=".csv,.json,text/csv,application/json" aria-label="Import experimental dataset" onChange={(event) => void importFile(event.target.files?.[0])} /><button className="primary-button" onClick={() => fileInput.current?.click()}><Icon name="upload" size={15} /> Import dataset</button><button className="secondary-button" onClick={() => download('mousebio-template.csv', exportExperimentalCsv([]), 'text/csv')}>CSV template</button><button className="secondary-button" disabled={!rows.length} onClick={exportDataset}><Icon name="download" size={15} /> Export JSON</button><span className="privacy-note"><Icon name="lock" size={13} /> Files stay in this browser session</span></div>
+      {mode === 'living' && (availableMotion.length > 0 ? <div className="living-panel"><div className="living-controls"><button className="play-button" aria-label={playing ? 'Pause physiology' : 'Play physiology'} onClick={() => setPlaying(!playing)}><Icon name={playing ? 'pause' : 'play'} size={17} /></button><div><strong>Educational playback</strong><small>Arbitrary display timing and amplitude</small></div><label className="speed-control">Speed<select value={speed} onChange={(event) => setSpeed(+event.target.value)} aria-label="Playback speed">{[...new Set([0.25, 0.5, 1, 2, 4, speed])].sort((a, b) => a - b).map((value) => <option key={value} value={value}>{value}x</option>)}</select></label></div><div className="process-options"><label><input type="checkbox" checked={cardiac && hasCardiacMotion} disabled={!hasCardiacMotion} onChange={() => setCardiac(!cardiac)} /> Cardiac contraction</label><label><input type="checkbox" checked={respiratory && hasRespiratoryMotion} disabled={!hasRespiratoryMotion} onChange={() => setRespiratory(!respiratory)} /> Respiratory motion</label><span>No blood-flow simulation is implemented for this reference</span></div></div> : <div className="living-panel"><p>No physiological motion is available for this reference.</p></div>)}
+      <CardiacCellPanel active={mode==='living'} />
+      {(mode === 'experimental' || mode === 'comparative') && <div className="data-panel"><div className="data-panel-heading"><div><strong>{rows.length ? metadata.title || 'Local experimental dataset' : 'Connect measurements to anatomy'}</strong><p>{rows.length ? `${rows.length} observations · ${new Set(rows.map((row) => row.replicate)).size} biological subject IDs · ${summaries.length} groups` : 'Import CSV or JSON with explicit structure IDs, units and biological replicates.'}</p></div>{rows.length > 0 && <button className="text-button" onClick={() => { dataImportSequence.current++; dataImportPending.current=0; setDataImportBusy(false); setRows([]); setImportResult(null); setMetadata({ origin: 'user-data' }); }}>Clear local data</button>}</div>
+        <div className="import-actions"><input ref={fileInput} id="dataset-file" type="file" accept=".csv,.json,text/csv,application/json" aria-label="Import experimental dataset" onChange={(event) => void importFile(event.target.files?.[0])} /><button className="primary-button" onClick={() => fileInput.current?.click()}><Icon name="upload" size={15} /> Import dataset</button><button className="secondary-button" onClick={() => download('mousebio-template.csv', exportExperimentalCsv([]), 'text/csv')}>CSV template</button><button className="secondary-button" disabled={!rows.length} onClick={exportDataset}><Icon name="download" size={15} /> Export JSON</button>{!rows.length&&<button className="secondary-button" disabled={referenceLoading||traceLoading||dataImportBusy} onClick={tryExample}>Try synthetic comparison</button>}<span className="privacy-note"><Icon name="lock" size={13} /> Files stay in this browser session</span></div>
         {importResult && <div className={`import-result ${importResult.ok ? 'success' : 'invalid'}`} role="status">{importResult.ok ? `Accepted ${importResult.rows.length} measurements. No data transmitted.` : <><strong>Import rejected. Existing observations are retained.</strong><ul>{importResult.errors.slice(0, 6).map((error, index) => <li key={index}>{error.row ? `Row ${error.row}: ` : ''}{error.message}</li>)}</ul>{importResult.errors.length > 6 && <span>{importResult.errors.length - 6} additional errors. Correct these rows and reimport.</span>}</>}{importResult.warnings.map((warning, index) => <p key={index}>{warning.message}</p>)}</div>}
         {!rows.length && <p className="schema-hint"><code>structure_id, measurement, value, unit, replicate, condition, time_point</code><br />Use IDs from this reference, such as <code>{initialReferenceSelection(atlas)}</code>. One row per biological subject, structure, measurement, condition and time point. Maximum 5 MiB. Observations stay attached to their original reference.</p>}
         {rows.length > 0 && <><p className="dataset-source">{metadata.sourceReference ? `Declared source: ${metadata.sourceReference}` : 'Source reference not supplied.'}</p><DatasetDetails metadata={metadata} onChange={setMetadata} /></>}
@@ -490,7 +518,8 @@ export default function App() {
       <section className="inspector-section provenance-section"><h3>Scientific provenance</h3><div className="source-reference"><span>01</span><div><strong>{referenceSummary.source.citationLabel}</strong><p>{referenceSummary.source.title}</p>{sourceLink && <a href={sourceLink} target="_blank" rel="noreferrer">View publication ↗</a>}</div></div><div className="license-line">Anatomical geometry {referenceSummary.source.licenseUrl ? <a href={referenceSummary.source.licenseUrl} target="_blank" rel="noreferrer">{referenceSummary.source.license}</a> : <span>{referenceSummary.source.license}</span>}</div><button className="text-button" onClick={() => download('mousebio-reference-manifest.json', JSON.stringify(atlas, null, 2))}>Download provenance manifest <Icon name="download" size={13} /></button></section>
       <div className="scientific-note"><Icon name="info" size={17} /><p>Source coverage is limited. Anatomical orientation and physical calibration need independent verification.</p></div>
     </> : <p>Select a region in the viewer or anatomical inventory.</p>}</aside>
+    <PrototypeStart open={startOpen} busy={referenceLoading||traceLoading} error={startError} onClose={()=>setStartOpen(false)} onOpen={openStarter} onPhysiology={()=>{setMode('living');setStartOpen(false);}} />
     {notice && <div className="toast" role="status">{notice}</div>}
-    <dialog ref={dialog} className="methods-dialog" onCancel={() => setMethods(false)} onClick={(event) => { if (event.target === event.currentTarget) setMethods(false); }}><div className="dialog-header"><span className="eyebrow">METHODS AND PROVENANCE</span><button className="icon-button" onClick={() => setMethods(false)} aria-label="Close methods"><Icon name="close" /></button></div><h2>A source-grounded starting point</h2><p>MouseBio_3D is an incremental digital laboratory mouse maintained by Qasim Hussain. The active reference contains {atlas.structures.length} source regions. Each reference retains its own source identifiers and coordinate frame. Switching references does not register their anatomies.</p><div className="method-stats"><div><strong>{atlas.structures.length}</strong><span>source regions</span></div><div><strong>{SYSTEMS.length}</strong><span>system categories</span></div><div><strong>{referenceSummary.specimen.count}</strong><span>declared specimens</span></div></div><h3>Declared specimen</h3><p>{referenceSummary.specimen.description}</p><dl><dt>Species</dt><dd>{referenceSummary.specimen.scientificName}</dd><dt>Sex</dt><dd>{referenceSummary.specimen.sex}</dd><dt>Strain</dt><dd>{referenceSummary.specimen.strain}</dd><dt>Age</dt><dd>{referenceSummary.specimen.age}</dd><dt>Mass</dt><dd>{referenceSummary.specimen.mass}</dd><dt>Coverage</dt><dd>{referenceSummary.specimen.scope}</dd></dl><h3>What the data support</h3><ul>{atlas.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul><p>Magnification changes the view only. No tissue, cellular, vessel or peripheral nerve detail has been generated. Motion is illustrative surface deformation with arbitrary display periods. Experimental comparisons use your imported observations on identical reference geometry.</p><h3>Coordinates and transformations</h3><p>Declared source units: {typeof atlas.coordinateFrame.sourceUnits === 'string' ? atlas.coordinateFrame.sourceUnits : 'Unknown'}. Declared asset units: {typeof atlas.coordinateFrame.assetUnits === 'string' ? atlas.coordinateFrame.assetUnits : 'Unknown'}. The viewer centers the object and rotates it 90 degrees about display Z for presentation. Anatomical axis labels, calibrated measurements and spatial registration remain disabled.</p><h3>Sources and licenses</h3><p>{referenceSummary.source.citationLabel}. {sourceLink && <a href={sourceLink} target="_blank" rel="noreferrer">Publication</a>} {referenceSummary.source.licenseUrl && <a href={referenceSummary.source.licenseUrl} target="_blank" rel="noreferrer">{referenceSummary.source.license}</a>}</p><p>Declared anatomical license: {referenceSummary.source.license}. {referenceSummary.source.attribution} Original source code is MIT; original documentation is CC BY 4.0. Automated geometry checks are not independent anatomical review.</p><p className="privacy-method"><Icon name="lock" size={16} /> Imported research files stay in memory on this device. Reloading clears them. No analytics, remote data service or automatic upload is used.</p><button className="primary-button" onClick={() => setMethods(false)}>Return to laboratory <Icon name="arrow" size={15} /></button></dialog>
+    <dialog ref={dialog} className="methods-dialog" onCancel={() => setMethods(false)} onClick={(event) => { if (event.target === event.currentTarget) setMethods(false); }}><div className="dialog-header"><span className="eyebrow">METHODS AND PROVENANCE</span><button className="icon-button" onClick={() => setMethods(false)} aria-label="Close methods"><Icon name="close" /></button></div><h2>A source-grounded starting point</h2><p>MouseBio_3D is an incremental digital laboratory mouse maintained by Qasim Hussain. The active reference contains {atlas.structures.length} source regions. Each reference retains its own source identifiers and coordinate frame. Switching references does not register their anatomies.</p><div className="method-stats"><div><strong>{atlas.structures.length}</strong><span>source regions</span></div><div><strong>{SYSTEMS.length}</strong><span>system categories</span></div><div><strong>{referenceSummary.specimen.count}</strong><span>declared specimens</span></div></div><h3>Declared specimen</h3><p>{referenceSummary.specimen.description}</p><dl><dt>Species</dt><dd>{referenceSummary.specimen.scientificName}</dd><dt>Sex</dt><dd>{referenceSummary.specimen.sex}</dd><dt>Strain</dt><dd>{referenceSummary.specimen.strain}</dd><dt>Age</dt><dd>{referenceSummary.specimen.age}</dd><dt>Mass</dt><dd>{referenceSummary.specimen.mass}</dd><dt>Coverage</dt><dd>{referenceSummary.specimen.scope}</dd></dl><h3>What the data support</h3><ul>{atlas.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul><p>Magnification changes the view only. Available cellular traces, regional vessel graphs and nerve sources retain their stated scope. No microscopic geometry is generated by zoom. Surface motion is illustrative; the independent cardiac cell model in Living has its own equation variant, protocol and limitations. Experimental comparisons use your imported observations on identical reference geometry.</p><h3>Coordinates and transformations</h3><p>Declared source units: {typeof atlas.coordinateFrame.sourceUnits === 'string' ? atlas.coordinateFrame.sourceUnits : 'Unknown'}. Declared asset units: {typeof atlas.coordinateFrame.assetUnits === 'string' ? atlas.coordinateFrame.assetUnits : 'Unknown'}. The viewer centers the object and rotates it 90 degrees about display Z for presentation. Anatomical axis labels, calibrated measurements and spatial registration remain disabled.</p><h3>Sources and licenses</h3><p>{referenceSummary.source.citationLabel}. {sourceLink && <a href={sourceLink} target="_blank" rel="noreferrer">Publication</a>} {referenceSummary.source.licenseUrl && <a href={referenceSummary.source.licenseUrl} target="_blank" rel="noreferrer">{referenceSummary.source.license}</a>}</p><p>Declared anatomical license: {referenceSummary.source.license}. {referenceSummary.source.attribution} Original source code is MIT; original documentation is CC BY 4.0. Automated geometry checks are not independent anatomical review.</p><p className="privacy-method"><Icon name="lock" size={16} /> Imported research files stay in memory on this device. Reloading clears them. No analytics, remote data service or automatic upload is used.</p><button className="primary-button" onClick={() => setMethods(false)}>Return to laboratory <Icon name="arrow" size={15} /></button></dialog>
   </div>;
 }

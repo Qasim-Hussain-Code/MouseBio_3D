@@ -7,3 +7,6 @@ import './components/AnatomyCoverage.css';
 import './components/SourcePolylineExplorer.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
+
+import './components/PrototypeStart.css';
+import './components/CardiacCellPanel.css';

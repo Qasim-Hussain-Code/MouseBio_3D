@@ -58,6 +58,67 @@ def fixture():
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_cellular_model_metadata_license_and_module_are_bound(self):
+        original=Path(__file__).resolve().parents[1]
+        names=('public/models/bondarenko-apical/manifest.json','public/models/bondarenko-apical/LICENSE.md','src/models/bondarenko-apical.ts')
+        for tamper in (None,'notice','module'):
+            with self.subTest(tamper=tamper), fixture() as root:
+                for name in names:
+                    path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes((original/name).read_bytes())
+                git(root,'add','.');git(root,'commit','--quiet','-m','add_cell_fixture')
+                shutil.copytree(root/'public/models',root/'dist/models')
+                if tamper=='notice':(root/'dist/models/bondarenko-apical/LICENSE.md').write_bytes(b'Changed notice')
+                if tamper=='module':
+                    (root/names[-1]).write_bytes(b'Changed module')
+                    git(root,'add','.');git(root,'commit','--quiet','-m','change_cell_fixture')
+                if tamper is None:prepare_release(root,Path('.publication/cell'))
+                else:
+                    with self.assertRaises(ReleaseError):prepare_release(root,Path('.publication/cell'))
+
+
+    def test_only_exact_reviewed_launcher_is_included(self):
+        with fixture() as root:
+            launcher=b"# Synthetic launcher fixture.\n"
+            (root/'scripts/serve_prototype.py').write_bytes(launcher)
+            git(root,'add','.');git(root,'commit','--quiet','-m','add_launcher_fixture')
+            (root/'dist/serve_prototype.py').write_bytes(launcher)
+            release=prepare_release(root,Path('.publication/launcher'))
+            with zipfile.ZipFile(root/'.publication/launcher'/release['artifacts']['web']['file']) as archive:
+                self.assertEqual(archive.read('serve_prototype.py'),launcher)
+            with zipfile.ZipFile(root/'.publication/launcher'/release['artifacts']['source']['file']) as archive:
+                self.assertEqual(archive.read('MouseBio_3D-1.2.3/scripts/serve_prototype.py'),launcher)
+
+    def test_ignored_or_untracked_launcher_cannot_become_reviewed_web_input(self):
+        for ignored in (False, True):
+            with self.subTest(ignored=ignored), fixture() as root:
+                if ignored:
+                    ignore=root/'.gitignore'
+                    ignore.write_text(ignore.read_text()+'/scripts/serve_prototype.py\n')
+                    git(root,'add','.gitignore');git(root,'commit','--quiet','-m','ignore_launcher_fixture')
+                launcher=b"# Untracked synthetic launcher fixture.\n"
+                (root/'scripts/serve_prototype.py').write_bytes(launcher)
+                (root/'dist/serve_prototype.py').write_bytes(launcher)
+                reason='unreviewed_prototype_launcher' if ignored else 'working_tree_not_clean'
+                if ignored:self.assertEqual(git(root,'status','--porcelain'),b'')
+                with self.assertRaisesRegex(ReleaseError,reason):
+                    prepare_release(root,Path('.publication/untracked-launcher'))
+                self.assertFalse((root/'.publication').exists())
+
+    def test_missing_or_changed_launcher_is_rejected(self):
+        for body in (None,b"# Changed fixture\n"):
+            with self.subTest(body=body), fixture() as root:
+                (root/'scripts/serve_prototype.py').write_bytes(b"# Reviewed fixture\n")
+                git(root,'add','.');git(root,'commit','--quiet','-m','add_launcher_fixture')
+                if body is not None:(root/'dist/serve_prototype.py').write_bytes(body)
+                with self.assertRaisesRegex(ReleaseError,'prototype_launcher_missing_or_mismatched'):
+                    prepare_release(root,Path('.publication/mismatch'))
+
+    def test_unreviewed_web_python_is_rejected(self):
+        for name in ('serve_prototype.py','other.py'):
+            with self.subTest(name=name), fixture() as root:
+                (root/'dist'/name).write_bytes(b"# Unreviewed fixture\n")
+                with self.assertRaises(ReleaseError):prepare_release(root,Path('.publication/unreviewed'))
+
     def test_native_ply_and_its_attribution_are_preserved_in_both_archives(self):
         with fixture() as root:
             files = ema147_fixture_files()

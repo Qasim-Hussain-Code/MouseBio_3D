@@ -17,5 +17,7 @@ python3 scripts/test_mousemapper_nerve.py
 python3 scripts/test_vascular.py
 python3 scripts/test_polyline_publication.py
 python3 scripts/test_release.py
+python3 scripts/test_serve_prototype.py
+python3 scripts/test_bondarenko.py
 python3 scripts/check_publication.py
 python3 scripts/resource_usage.py

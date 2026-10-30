@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "mousebio.cellular-model.v1",
+  "id": "bondarenko2004-apical-v1",
+  "title": "Bondarenko 2004 mouse apical ventricular-myocyte model",
+  "classification": "source-parameterized-cellular-model",
+  "species": "Mus musculus",
+  "scope": "One parameterized apical ventricular myocyte, without anatomical registration or contraction mechanics.",
+  "source": {
+    "citation": "Bondarenko VE, Szigeti GP, Bett GCL, Kim SJ, Rasmusson RL. Computer model of action potential of mouse ventricular myocytes. Am J Physiol Heart Circ Physiol. 2004;287:H1378-H1403. doi:10.1152/ajpheart.00185.2003.",
+    "repositoryCitation": "Lloyd CM, Lawson JR, Hunter PJ, Nielsen PF. The CellML Model Repository. Bioinformatics. 2008;24(18):2122-2123. doi:10.1093/bioinformatics/btn390.",
+    "cellmlCredits": [
+      "Catherine Lloyd",
+      "Penny J Noble",
+      "James R Lawson"
+    ],
+    "exposure": "https://models.physiomeproject.org/exposure/b0b1820b1376263e16c6086ca64d513e",
+    "revision": "94d9d4f47495d86fec040f5439c7e3a4ffccb611",
+    "license": "CC-BY-3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+    "licenseEvidenceUrl": "https://models.physiomeproject.org/exposure/b0b1820b1376263e16c6086ca64d513e/bondarenko_szigeti_bett_kim_rasmusson_2004_apical.cellml/license_citation",
+    "accessDate": "2026-10-30",
+    "cellml": {
+      "url": "https://models.physiomeproject.org/workspace/bondarenko_szigeti_bett_kim_rasmusson_2004/rawfile/94d9d4f47495d86fec040f5439c7e3a4ffccb611/bondarenko_szigeti_bett_kim_rasmusson_2004_apical.cellml",
+      "bytes": 180679,
+      "sha256": "65dafa8b5a00b9fe98ab70ba453afe321c06e41bf9a01fb31b7e689732cb4176"
+    },
+    "generatedC": {
+      "url": "https://models.physiomeproject.org/exposure/b0b1820b1376263e16c6086ca64d513e/bondarenko_szigeti_bett_kim_rasmusson_2004_apical.cellml/@@cellml_codegen/C/raw",
+      "bytes": 41257,
+      "sha256": "421aacd776c15bdab78c85c36df791fd27e07872af9297764168e0f9f35a525c"
+    }
+  },
+  "adaptation": {
+    "file": "src/models/bondarenko-apical.ts",
+    "bytes": 25153,
+    "sha256": "055d314f5f05d3fbe1cea5be1505ddc8d1c01ca97dcd5def50d091b9519dcee9",
+    "method": "Closed-subset translation of explicit numeric assignments, preserving order, arithmetic grouping, initial values and source stimulus inequalities; no downloaded code is executed.",
+    "modifications": [
+      "C arrays and math functions translated to Float64Array and JavaScript Math.",
+      "Fixed buffer and aliasing guards added.",
+      "Source contact metadata, editor headers and unrelated model variants omitted.",
+      "No equation, parameter, temperature correction or singularity regularization added."
+    ]
+  },
+  "counts": {
+    "states": 41,
+    "algebraic": 71,
+    "constants": 73
+  },
+  "outputs": {
+    "time": {
+      "unit": "millisecond"
+    },
+    "Vm": {
+      "stateIndex": 0,
+      "unit": "millivolt"
+    },
+    "Cai": {
+      "stateIndex": 1,
+      "unit": "micromolar"
+    },
+    "Cass": {
+      "stateIndex": 2,
+      "unit": "micromolar"
+    }
+  },
+  "sourceProtocol": {
+    "stimulusStartMs": 20,
+    "stimulusEndMs": 100000,
+    "periodMs": 71.43,
+    "durationMs": 0.5,
+    "amplitudePaPerPf": -80,
+    "temperatureK": 298,
+    "initialVmMillivolt": -82.4202,
+    "initialCaiMicromolar": 0.115001,
+    "initialCassMicromolar": 0.115001,
+    "stimulusAlgebraicIndex": 0
+  },
+  "validation": {
+    "sourceReported": "The repository curator reports that the apical CellML runs in OpenCell and COR to reproduce action-potential traces from Figure 16 of the publication.",
+    "independentApplicationValidation": false,
+    "solverIncluded": true,
+    "equationModuleStandaloneSolver": false,
+    "integration": {
+      "file": "src/domain/cardiac-cell.ts",
+      "method": "Dormand-Prince 5(4)",
+      "variants": [
+        "archived-source",
+        "balanced-transition"
+      ],
+      "transitionModification": "Optional IC_Na2 influx substitution: gamma_Na4 * C_Na2 instead of gamma_Na4 * IC_Na2. Computational inference, not independently physiologically validated."
+    },
+    "sourceGeneratedPythonReference": {
+      "method": "VODE BDF",
+      "absoluteTolerance": 1e-06,
+      "relativeTolerance": 1e-06,
+      "maximumStepMs": 1
+    }
+  },
+  "limitations": [
+    "Outputs are model predictions, not observed physiology or validation of the selected anatomical specimen.",
+    "The source temperature is 298 K; no conversion to body temperature is supplied.",
+    "An apical single-cell action-potential model does not simulate contraction, organ motion, whole-heart conduction, vessel flow or whole-body physiology.",
+    "No accepted spatial registration to anatomical meshes, vessel paths or nerve paths is supplied.",
+    "The source has stiff dynamics and stimulus discontinuities; solver and protocol convergence must be checked independently.",
+    "The generated Python template uses a 0-10 ms output interval before the 20 ms first stimulus; it is not a paced reference trace.",
+    "Removable rate-expression singularities are retained exactly and may produce nonfinite output at special voltages."
+  ]
+}

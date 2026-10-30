@@ -338,7 +338,7 @@ test('four modes expose honest availability and retain pause, speed and process-
   const view = await openApp();
   assert.equal(view.getByRole('button', { name: 'Anatomy' }).getAttribute('aria-pressed'), 'true');
   fireEvent.click(view.getByRole('button', { name: 'Living' }));
-  assert.ok(view.getByRole('heading', { name: 'Physiology in motion' }));
+  assert.ok(view.getByRole('heading', { name: 'Physiology workspace' }));
   assert.ok(view.getByText('ILLUSTRATIVE MOTION · NOT A VALIDATED SIMULATION'));
   fireEvent.click(view.getByRole('button', { name: 'Pause physiology' }));
   assert.ok(view.getByRole('button', { name: 'Play physiology' }));
@@ -348,7 +348,7 @@ test('four modes expose honest availability and retain pause, speed and process-
   const cardiac = view.getByRole('checkbox', { name: 'Cardiac contraction' }) as HTMLInputElement;
   fireEvent.click(cardiac);
   assert.equal(cardiac.checked, false);
-  assert.ok(view.getByText('Vessel circulation: no source geometry'));
+  assert.ok(view.getByText('No blood-flow simulation is implemented for this reference'));
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   assert.ok(view.getByRole('heading', { name: 'Map your observations' }));
   assert.ok(view.getByRole('button', { name: 'Import dataset' }));
@@ -446,7 +446,7 @@ test('saved views restore complete display settings, retain private observations
   const toRestore: ViewStateDocument = { ...saved, living: { ...saved.living, speed: 1.125 } };
   fireEvent.change(restoreInput, { target: { files: [inputFile(JSON.stringify(toRestore), 'saved-view.json')] } });
   await view.findByText('View settings restored.');
-  assert.ok(view.getByRole('heading', { name: 'Physiology in motion' }));
+  assert.ok(view.getByRole('heading', { name: 'Physiology workspace' }));
   assert.ok(within(view.container.querySelector('.inspector') as HTMLElement).getByRole('heading', { name: 'Bladder' }));
   assert.ok(view.getByRole('button', { name: 'Show Brain' }));
   assert.equal((view.getByRole('slider', { name: /^Opacity/ }) as HTMLInputElement).value, '37');
@@ -1233,4 +1233,122 @@ test('source path navigation keeps white background, observations and saved view
   expectedRequests.push('/atlas/atlas.json'); fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } }); await view.findByText('17 visible regions');
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), observations);
   assert.equal((await savedView(view)).background, 'white'); assert.equal(view.queryByRole('heading', { name: 'Source path explorer' }), null);
+});
+
+test('guided views validate exact source selection and preserve background and observation banks',async()=>{
+  const view=await openApp();
+  fireEvent.click(view.getByRole('button',{name:'Experiment'}));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'),{target:{files:[inputFile(syntheticCsv)]}});
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button',{name:'White background'}));
+  fireEvent.click(view.getByRole('button',{name:'Start here'}));
+  const guide=within(view.getByRole('dialog',{name:'Start with the available science'}));
+  assert.equal(guide.getAllByRole('button',{name:/^Open /}).length,9);
+  fireEvent.click(guide.getByRole('button',{name:'Open developmental vessel surfaces'}));
+  expectedRequests.push('/atlas-ema147/atlas.json');
+  await waitFor(()=>assert.equal((view.getByLabelText('Anatomy reference') as HTMLSelectElement).value,'ema147-native-v1'));
+  assert.equal(view.queryByRole('dialog',{name:'Start with the available science'}),null);
+  const saved=await savedView(view);
+  assert.equal(saved.background,'white');assert.equal(saved.mode,'anatomical');assert.equal(77-saved.hidden.length,3);
+  fireEvent.change(view.getByLabelText('Anatomy reference'),{target:{value:atlas.id}});expectedRequests.push('/atlas/atlas.json');
+  await view.findByText('Reference switched. Its local observations were restored.');
+  fireEvent.click(view.getByRole('button',{name:'Experiment'}));assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
+});
+test('failed guided source read retains the guide, current source, data and display',async()=>{
+  const view=await openApp();const previous=await savedView(view);
+  const fetchBefore=globalThis.fetch;
+  globalThis.fetch=(async(input:RequestInfo|URL)=>{if(String(input)==='/atlas-ema147/atlas.json'){requests.push(String(input));return new Response('{}');}return fetchBefore(input);}) as typeof fetch;
+  fireEvent.click(view.getByRole('button',{name:'Start here'}));
+  fireEvent.click(view.getByRole('button',{name:'Open developmental trigeminal nerve and ganglion'}));expectedRequests.push('/atlas-ema147/atlas.json');
+  await view.findByText('The starting view could not be opened. The current reference and observations were retained.');
+  fireEvent.click(view.getByRole('button',{name:'Close guide'}));assert.deepEqual(await savedView(view),previous);
+});
+test('fictional comparison is explicit, labeled, exportable and cannot replace current observations',async()=>{
+  const view=await openApp();fireEvent.click(view.getByRole('button',{name:'Compare'}));
+  assert.equal(view.queryByText('Synthetic example data. These values are not experimental observations.'),null);
+  fireEvent.click(view.getByRole('button',{name:'Try synthetic comparison'}));
+  assert.ok(view.getByText('Synthetic example data. These values are not experimental observations.'));
+  assert.equal((view.getByLabelText('Condition A') as HTMLSelectElement).value,'control-example');
+  assert.equal((view.getByLabelText('Condition B') as HTMLSelectElement).value,'treatment-example');
+  assert.equal(view.queryByRole('button',{name:'Try synthetic comparison'}),null);
+  fireEvent.click(view.getByRole('button',{name:'Export JSON'}));const exported=JSON.parse(await exportedBlobs.at(-1)!.text());
+  assert.equal(exported.dataset.origin,'synthetic-example');assert.equal(exported.measurements.length,24);
+  fireEvent.click(view.getByRole('button',{name:'Clear local data'}));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'),{target:{files:[inputFile(syntheticCsv)]}});
+  await view.findByText('Accepted 8 measurements. No data transmitted.');assert.equal(view.queryByRole('button',{name:'Try synthetic comparison'}),null);
+});
+test('fictional comparison cannot displace an in-flight research import',async()=>{
+  const view=await openApp();fireEvent.click(view.getByRole('button',{name:'Experiment'}));const pending=deferredInputFile('pending.csv');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'),{target:{files:[pending.file]}});
+  fireEvent.click(view.getByRole('button',{name:'Try synthetic comparison'}));
+  assert.equal(view.queryByText('Synthetic example data. These values are not experimental observations.'),null);
+  await completeRead(pending,syntheticCsv);assert.ok(view.getByText('Accepted 8 measurements. No data transmitted.'));
+});
+test('cardiac workspace remains independent of anatomy and reports unavailable worker without losing data',async()=>{
+  const view=await openApp();fireEvent.click(view.getByRole('button',{name:'Living'}));
+  assert.ok(view.getByRole('heading',{name:'Mouse ventricular electrophysiology'}));
+  assert.equal((view.getByLabelText('Cardiac equation variant') as HTMLSelectElement).value,'balanced-transition');
+  assert.ok(view.getByText(/computationally inferred and has no independent physiological validation/));
+  fireEvent.click(view.getByRole('button',{name:'Run cell simulation'}));
+  assert.ok(view.getByText('A local Web Worker is required to run this model.'));
+  assert.equal((await savedView(view)).atlasId,atlas.id);
+});
+
+test('cell worker cancellation discards late results and exports complete independent model provenance',async()=>{
+  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'Worker');
+  const workers:MockWorker[]=[];
+  class MockWorker {
+    onmessage:((event:{data:unknown})=>void)|null=null;onerror:(()=>void)|null=null;terminated=false;request:unknown;
+    constructor(){workers.push(this);}postMessage(value:unknown){this.request=value;}terminate(){this.terminated=true;}
+  }
+  Object.defineProperty(globalThis,'Worker',{value:MockWorker,configurable:true});
+  try {
+    const {simulateCardiacCell}=await import('../src/domain/cardiac-cell');const result=simulateCardiacCell({durationMs:1});
+    const view=await openApp();fireEvent.click(view.getByRole('button',{name:'Living'}));
+    fireEvent.click(view.getByRole('button',{name:'Run cell simulation'}));
+    assert.deepEqual(workers[0].request,{type:'run',options:{variant:'balanced-transition',durationMs:250,pacingPeriodMs:71.43}});
+    fireEvent.click(view.getByRole('button',{name:'Cancel simulation'}));assert.equal(workers[0].terminated,true);
+    await act(async()=>workers[0].onmessage?.({data:{type:'result',result}}));
+    assert.equal(view.queryByLabelText('Cardiac simulation result'),null);
+    fireEvent.click(view.getByRole('button',{name:'Run cell simulation'}));
+    await act(async()=>workers[1].onmessage?.({data:{type:'progress',progress:{fraction:0.5}}}));
+    assert.equal((view.getByLabelText('Cell simulation progress') as HTMLProgressElement).value,0.5);
+    await act(async()=>workers[1].onmessage?.({data:{type:'result',result}}));
+    assert.equal(view.getAllByRole('img',{name:/against model time/}).length,3);
+    fireEvent.click(view.getByRole('button',{name:'Export result and provenance'}));
+    assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()),result);
+    fireEvent.click(view.getByRole('button',{name:'Run cell simulation'}));
+    fireEvent.click(view.getByRole('button',{name:'Anatomy'}));assert.equal(workers[2].terminated,true);
+    assert.equal(view.queryByLabelText('Cardiac simulation result'),null);
+    fireEvent.click(view.getByRole('button',{name:'Living'}));assert.ok(view.getByLabelText('Cardiac simulation result'));
+    assert.equal((await savedView(view)).atlasId,atlas.id);
+  } finally {if(descriptor)Object.defineProperty(globalThis,'Worker',descriptor);else Reflect.deleteProperty(globalThis,'Worker');}
+});
+
+test('fictional comparison reveals its mapped regions after a brain-only view and clears a canceled import guard',async()=>{
+  const view=await openApp();fireEvent.click(view.getByRole('button',{name:'Experiment'}));
+  const pending=deferredInputFile('never-finishes-until-after-switch.csv');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'),{target:{files:[pending.file]}});
+  assert.equal((view.getByRole('button',{name:'Try synthetic comparison'}) as HTMLButtonElement).disabled,true);
+  fireEvent.click(view.getByRole('button',{name:'Start here'}));
+  fireEvent.click(view.getByRole('button',{name:'Open six brain regions'}));expectedRequests.push('/atlas-volume/atlas.json');
+  await waitFor(()=>assert.equal((view.getByLabelText('Anatomy reference') as HTMLSelectElement).value,'digimouse-volume-040-v1'));
+  fireEvent.click(view.getByRole('button',{name:'Compare'}));
+  assert.equal((view.getByRole('button',{name:'Try synthetic comparison'}) as HTMLButtonElement).disabled,false);
+  fireEvent.click(view.getByRole('button',{name:'Try synthetic comparison'}));
+  fireEvent.click(view.getByRole('button',{name:'Export JSON'}));const dataset=JSON.parse(await exportedBlobs.at(-1)!.text());
+  const saved=await savedView(view);const targets=[...new Set<string>(dataset.measurements.map((row:{structureId:string})=>row.structureId))];
+  assert.equal(targets.length,2);assert.ok(saved.selected && targets.includes(saved.selected));assert.equal(saved.clipAxis,'off');
+  for(const target of targets){assert.ok(!saved.hidden.includes(target));assert.equal(saved.opacity[target as string],1);}
+  await completeRead(pending,syntheticCsv);assert.ok(view.getByText('Synthetic example data. These values are not experimental observations.'));
+  assert.equal(view.queryByText('Accepted 8 measurements. No data transmitted.'),null);
+});
+
+test('a rejected newer file cancels an older pending read without leaving the example button disabled',async()=>{
+  const view=await openApp();fireEvent.click(view.getByRole('button',{name:'Experiment'}));const pending=deferredInputFile('older-pending.csv');
+  const input=view.getByLabelText('Import experimental dataset');fireEvent.change(input,{target:{files:[pending.file]}});
+  fireEvent.change(input,{target:{files:[inputFile('', 'too-large.csv',5*1024*1024+1)]}});
+  assert.equal((view.getByRole('button',{name:'Try synthetic comparison'}) as HTMLButtonElement).disabled,false);
+  fireEvent.click(view.getByRole('button',{name:'Try synthetic comparison'}));await completeRead(pending,syntheticCsv);
+  assert.ok(view.getByText('Synthetic example data. These values are not experimental observations.'));assert.equal(view.queryByText('Accepted 8 measurements. No data transmitted.'),null);
 });

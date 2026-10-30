@@ -250,13 +250,49 @@ def web_files(root: Path, anatomy_asset: str, registered_assets: set[str] | None
             if name.casefold() in seen:
                 raise ReleaseError("ambiguous_archive_path")
             seen.add(name.casefold())
-            if name != anatomy_asset and name not in (registered_assets or set()) and path.suffix.lower() not in WEB_TYPES:
+            if name != anatomy_asset and name not in (registered_assets or set()) and name != "serve_prototype.py" and path.suffix.lower() not in WEB_TYPES:
                 raise ReleaseError("unreviewed_web_file_type")
             total += info.st_size
             if total > MAX_WEB_BYTES or len(files) >= MAX_FILES:
                 raise ReleaseError("web_distribution_exceeds_bound")
             files.append(ReleaseFile(name, read_regular(distribution, name, MAX_WEB_BYTES)))
     return sorted(files, key=lambda record: record.name)
+
+
+def verify_prototype_launcher(source: list[ReleaseFile], web: list[ReleaseFile]) -> None:
+    """Only the launcher in the collected tracked source may enter the web ZIP."""
+    reviewed = next((record for record in source if record.name == "scripts/serve_prototype.py"), None)
+    bundled = next((record for record in web if record.name == "serve_prototype.py"), None)
+    if reviewed is None:
+        if bundled is not None:
+            raise ReleaseError("unreviewed_prototype_launcher")
+    elif bundled is None or not reviewed.data or bundled.data != reviewed.data:
+        raise ReleaseError("prototype_launcher_missing_or_mismatched")
+
+
+def verify_cellular_model(source: list[ReleaseFile], web: list[ReleaseFile]) -> None:
+    source_map = {record.name: record.data for record in source}
+    web_map = {record.name: record.data for record in web}
+    manifest_name = "models/bondarenko-apical/manifest.json"
+    notice_name = "models/bondarenko-apical/LICENSE.md"
+    module_name = "src/models/bondarenko-apical.ts"
+    if not any(name in source_map for name in ("public/"+manifest_name,"public/"+notice_name,module_name)) and not any(name in web_map for name in (manifest_name,notice_name)):
+        return
+    try:
+        for name in (manifest_name, notice_name):
+            if not source_map["public/"+name] or source_map["public/"+name] != web_map[name]:
+                raise ReleaseError("cellular_model_source_web_mismatch")
+        manifest = json.loads(source_map["public/"+manifest_name])
+        module = source_map[module_name]
+        if (manifest["schemaVersion"] != "mousebio.cellular-model.v1"
+                or manifest["id"] != "bondarenko2004-apical-v1"
+                or manifest["source"]["license"] != "CC-BY-3.0"
+                or manifest["adaptation"]["file"] != module_name
+                or manifest["adaptation"]["bytes"] != len(module)
+                or manifest["adaptation"]["sha256"] != hashlib.sha256(module).hexdigest()):
+            raise ReleaseError("cellular_model_adaptation_mismatch")
+    except (KeyError, TypeError, ValueError) as error:
+        raise ReleaseError("cellular_model_binding_invalid") from error
 
 
 def verify_anatomy(source: list[ReleaseFile], web: list[ReleaseFile], asset: str, binding: dict) -> None:
@@ -360,6 +396,8 @@ def prepare_release(root: Path, output: Path) -> dict:
             raise ReleaseError("source_snapshot_exceeds_bound")
         source.append(ReleaseFile(name, data, mode))
     web = web_files(root, asset, {path.removeprefix("public/") for path in registry})
+    verify_prototype_launcher(source, web)
+    verify_cellular_model(source, web)
     verify_anatomy(source, web, asset, anatomy)
     verify_registered_assets(source, web, registry, checker)
     inspect_records(source, checker, registry)

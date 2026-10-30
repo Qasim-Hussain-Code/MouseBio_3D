@@ -133,6 +133,12 @@ class ProductionDistributionTests(unittest.TestCase):
             self.assertEqual(data, (ROOT/'public/atlas-neuron'/name).read_bytes())
 
 
+    def test_cellular_model_notice_and_manifest_match_reviewed_source(self):
+        for name in ('manifest.json','LICENSE.md'):
+            body,mime=get('/models/bondarenko-apical/'+name)
+            self.assertNotEqual(mime,'text/html')
+            self.assertEqual(body,(ROOT/'public/models/bondarenko-apical'/name).read_bytes())
+
     def test_polyline_sources_and_distinct_attribution_match_reviewed_derivatives(self):
         registry = anatomy_registry(lambda path, limit: (ROOT/path).read_bytes() if (ROOT/path).is_file() else None)
         for folder, filename in (("atlas-nerve", "mousemapper-patch0-lines.json"), ("atlas-vascular", "schmid2021-mvn1-lines.json")):
