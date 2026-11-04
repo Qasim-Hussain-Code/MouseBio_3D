@@ -1,0 +1,26 @@
+.circuit-options{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:12px;border-top:1px solid #e5ebdc;padding-top:12px;font-size:11px;color:#536f5a}
+.circuit-options label{display:flex;align-items:center;gap:6px}
+.circuit-options .text-button{margin-left:auto}
+.circuit-note{flex-basis:100%;margin:0;font-size:10px;line-height:1.6;color:#6d8064}
+.circuit-legend{position:absolute;left:16px;top:106px;z-index:4;display:grid;gap:3px;padding:8px 10px;border-radius:6px;border:1px solid #6d8d7b55;background:#1f3332df;color:#d9e8d9;font-size:10px;backdrop-filter:blur(6px);pointer-events:none}
+.circuit-legend>strong{font-size:9px;letter-spacing:.6px}
+.circuit-legend span{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.circuit-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+.circuit-legend small{font-size:8px;color:#a9c0b7;max-width:150px;white-space:normal;line-height:1.5}
+.viewport[data-background=white] .circuit-legend{background:#fffffff0;color:#365849;border-color:#cbdac8}
+.viewport[data-background=white] .circuit-legend small{color:#5d7554}
+.circuit-label{position:absolute;left:17px;bottom:192px;z-index:2;max-width:260px;font-size:8px;letter-spacing:.8px;line-height:1.7;color:#adc5b2}
+.viewport[data-background=white] .circuit-label{color:#5d7554}
+.circuit-connections ul{list-style:none;margin:0;padding:0}
+.circuit-connections li{padding:10px 0;border-top:1px solid #e6ece0}
+.circuit-connections li strong{display:block;font-size:12px;font-weight:600;color:#355a46}
+.circuit-connections li p{font-size:11px;line-height:1.65;margin:6px 0;color:#62775f}
+.circuit-connections .circuit-inference{color:#7a5a2e}
+.circuit-connections .status-tag{margin-top:2px}
+.circuit-references{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px;font-size:10px}
+.circuit-connections li[data-kind=systemic-arterial] strong,.circuit-connections li[data-kind=pulmonary-venous] strong{border-left:3px solid #e2474f;padding-left:7px}
+.circuit-connections li[data-kind=systemic-venous] strong,.circuit-connections li[data-kind=pulmonary-arterial] strong{border-left:3px solid #4f7fe0;padding-left:7px}
+.circuit-connections li[data-kind=hepatic-portal] strong{border-left:3px solid #8a63d2;padding-left:7px}
+.circuit-connections li[data-kind=neural-efferent] strong{border-left:3px solid #d9ac2c;padding-left:7px}
+.circuit-connections li[data-kind=neural-afferent] strong{border-left:3px solid #39b3a5;padding-left:7px}
+@media(max-width:600px){.circuit-legend{left:10px;top:92px;font-size:9px;padding:6px 8px}.circuit-label{bottom:228px;left:12px;font-size:7px;max-width:150px}}

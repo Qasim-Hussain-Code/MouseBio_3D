@@ -195,6 +195,7 @@ test('regional female hindlimb uses its own anatomy, source groups, observations
   assert.equal(view.queryByRole('button', { name: 'Organs visibility preset' }), null);
   assert.ok(view.getByText('No finer surface is bundled for this region.'));
   assert.ok(view.getAllByText('charles2016-hindlimb:0').length > 0);
+  showTab(view, 'Layers');
   fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'bones' } });
   assert.ok(view.getByText('6 visible regions'));
   fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'muscles' } });
@@ -228,12 +229,13 @@ test('EMA147 retains unknown units, conflicting age estimates and source-bound o
   await view.findByText('77 visible regions');
   assert.ok(view.getByText(/^Native source coordinates/));
   assert.ok(view.getByText('TS23'));
+  showTab(view, 'Source evidence');
   assert.ok(view.getByRole('link', { name: 'E15.0 (estimated)' }));
   assert.ok(view.getByRole('link', { name: '14.5 dpc' }));
   assert.ok(view.getByText('Unknown · Unknown · Unknown'));
-  fireEvent.click(view.getByRole('button', { name: /Systems 14/ }));
-  assert.ok(view.getByText(/Anatomical system classifications are not reviewed/));
-  fireEvent.click(view.getByRole('button', { name: /Structures 77/ }));
+  showTab(view, 'Layers');
+  assert.ok(view.getByText(/^No system classifications are assigned to this source/));
+  assert.ok(view.getByText(/77 source regions have no system classification/));
   fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'vessels' } });
   assert.ok(view.getByText('3 visible regions'));
   const nativeView = await savedView(view);
@@ -276,6 +278,16 @@ async function completeRead(pending: ReturnType<typeof deferredInputFile>, text:
   await act(async () => { pending.resolve(text); await pending.read; });
 }
 
+/** Navigator tabs: Structures, Layers, Sources. Inspector tabs: Structure, Observations, Source evidence. */
+function showTab(view: Awaited<ReturnType<typeof openApp>>, name: string) {
+  fireEvent.click(view.getByRole('tab', { name }));
+}
+
+/** The selection toolbar uses a 0 to 1 display opacity scale. */
+function selectionOpacity(view: Awaited<ReturnType<typeof openApp>>) {
+  return view.getByRole('slider', { name: 'Display opacity of selected structure or source record' }) as HTMLInputElement;
+}
+
 async function savedView(view: Awaited<ReturnType<typeof openApp>>): Promise<ViewStateDocument> {
   fireEvent.click(view.getByRole('button', { name: 'Save view' }));
   assert.equal(downloads.at(-1)?.name, 'mousebio-view.json');
@@ -306,28 +318,32 @@ test('anatomical inventory stays usable after WebGL failure, including selection
   fireEvent.click(view.getByRole('button', { name: /Bladder.*digimouse:4/ }));
   const inspector = within(view.container.querySelector('.inspector') as HTMLElement);
   assert.ok(inspector.getByRole('heading', { name: 'Bladder' }));
-  const opacity = inspector.getByRole('slider', { name: /^Opacity/ }) as HTMLInputElement;
+  const opacity = selectionOpacity(view);
   fireEvent.change(opacity, { target: { value: '0' } });
   assert.equal(opacity.value, '0');
   assert.ok(view.getByText('16 visible regions'));
-  fireEvent.change(opacity, { target: { value: '40' } });
-  fireEvent.click(inspector.getByRole('button', { name: 'Hide selected structure' }));
+  fireEvent.change(opacity, { target: { value: '0.4' } });
+  fireEvent.click(view.getByRole('button', { name: 'Hide selected structure or source record' }));
   assert.ok(view.getByText('16 visible regions'));
-  fireEvent.click(inspector.getByRole('button', { name: 'Show selected structure' }));
+  fireEvent.click(view.getByRole('button', { name: 'Show selected structure or source record' }));
   assert.ok(view.getByText('17 visible regions'));
   fireEvent.change(search, { target: { value: '' } });
   fireEvent.click(view.getByRole('button', { name: 'Hide Brain' }));
   assert.ok(view.getByText('16 visible regions'));
-  fireEvent.click(inspector.getByRole('button', { name: 'Isolate' }));
+  fireEvent.click(view.getByRole('button', { name: 'Isolate selected structure or source record' }));
   assert.ok(view.getByText('1 visible region'));
-  fireEvent.click(inspector.getByRole('button', { name: 'Restore' }));
+  fireEvent.click(view.getByRole('button', { name: 'Restore other structures or source records' }));
   assert.ok(view.getByText('16 visible regions'));
   assert.ok(view.getByRole('button', { name: 'Show Brain' }));
-  fireEvent.click(view.getByRole('button', { name: /^Systems/ }));
-  assert.equal((view.getByRole('checkbox', { name: /Arterial and venous/ }) as HTMLInputElement).disabled, true);
-  assert.equal((view.getByRole('checkbox', { name: /Sensory organs/ }) as HTMLInputElement).disabled, true);
-  const cardiovascular = view.getByRole('checkbox', { name: /Cardiovascular/ }) as HTMLInputElement;
-  assert.equal(cardiovascular.disabled, false);
+  showTab(view, 'Layers');
+  // Unrepresented categories are listed without a control rather than offered as empty layers.
+  assert.equal(view.queryByRole('checkbox', { name: /Arterial and venous/ }), null);
+  assert.equal(view.queryByRole('checkbox', { name: /Sensory organs/ }), null);
+  const missing = within(view.container.querySelector('.system-layers-missing') as HTMLElement);
+  assert.ok(missing.getByText('Arterial and venous'));
+  assert.ok(missing.getByText('Sensory organs'));
+  const cardiovascular = view.getByRole('checkbox', { name: 'Cardiovascular visibility' }) as HTMLInputElement;
+  assert.equal(cardiovascular.checked, true);
   fireEvent.click(cardiovascular);
   assert.equal(cardiovascular.checked, false);
   fireEvent.click(view.getByRole('button', { name: 'Show all' }));
@@ -348,7 +364,7 @@ test('four modes expose honest availability and retain pause, speed and process-
   const cardiac = view.getByRole('checkbox', { name: 'Cardiac contraction' }) as HTMLInputElement;
   fireEvent.click(cardiac);
   assert.equal(cardiac.checked, false);
-  assert.ok(view.getByText('No blood-flow simulation is implemented for this reference'));
+  assert.ok(view.getByText('Schematic tracers show route order only. No blood-flow simulation is implemented for this reference'));
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   assert.ok(view.getByRole('heading', { name: 'Map your observations' }));
   assert.ok(view.getByRole('button', { name: 'Import dataset' }));
@@ -414,7 +430,7 @@ test('saved views restore complete display settings, retain private observations
   await view.findByText('Accepted 8 measurements. No data transmitted.');
   fireEvent.click(view.getByRole('button', { name: /Bladder.*digimouse:4/ }));
   fireEvent.click(view.getByRole('button', { name: 'Hide Brain' }));
-  fireEvent.change(view.getByRole('slider', { name: /^Opacity/ }), { target: { value: '37' } });
+  fireEvent.change(selectionOpacity(view), { target: { value: '0.37' } });
   fireEvent.change(view.getByRole('combobox', { name: 'Section axis' }), { target: { value: 'z' } });
   fireEvent.change(view.getByRole('slider', { name: 'Section position' }), { target: { value: '67' } });
   fireEvent.click(view.getByRole('button', { name: 'Toggle selected structure label' }));
@@ -429,7 +445,7 @@ test('saved views restore complete display settings, retain private observations
   assert.equal(saved.coordinateFrameId, atlas.coordinateFrame.id);
   assert.equal(saved.selected, 'digimouse:4');
   assert.deepEqual(saved.hidden, ['digimouse:2']);
-  assert.equal(saved.opacity['digimouse:1'], 0.1);
+  assert.equal(saved.opacity['digimouse:1'], 0.22);
   assert.equal(saved.opacity['digimouse:4'], 0.37);
   assert.equal(saved.opacity['digimouse:3'], 1);
   assert.equal(Object.keys(saved.opacity).length, 17);
@@ -449,7 +465,7 @@ test('saved views restore complete display settings, retain private observations
   assert.ok(view.getByRole('heading', { name: 'Physiology workspace' }));
   assert.ok(within(view.container.querySelector('.inspector') as HTMLElement).getByRole('heading', { name: 'Bladder' }));
   assert.ok(view.getByRole('button', { name: 'Show Brain' }));
-  assert.equal((view.getByRole('slider', { name: /^Opacity/ }) as HTMLInputElement).value, '37');
+  assert.equal(selectionOpacity(view).value, '0.37');
   assert.equal((view.getByRole('combobox', { name: 'Section axis' }) as HTMLSelectElement).value, 'z');
   assert.equal((view.getByRole('slider', { name: 'Section position' }) as HTMLInputElement).value, '67');
   assert.equal(view.getByRole('button', { name: 'Toggle selected structure label' }).getAttribute('aria-pressed'), 'false');
@@ -583,6 +599,7 @@ test('declared dataset provenance and synthetic origin persist across comparison
 
 test('ontology candidates expose limited evidence without inventing mappings or including research observations', async () => {
   const view = await openApp();
+  showTab(view, 'Source evidence');
   let context = within(view.container.querySelector('.ontology-context') as HTMLElement);
   const heartTerm = context.getByRole('link', { name: /MA:0000072/ });
   assert.equal(heartTerm.getAttribute('href'), 'https://www.informatics.jax.org/vocab/gxd/ma_ontology/MA%3A0000072');
@@ -643,7 +660,7 @@ test('viewer background follows every mode, restores saved white and defaults le
   await view.findByText('Accepted 8 measurements. No data transmitted.');
   fireEvent.click(view.getByRole('button', { name: /Bladder.*digimouse:4/ }));
   fireEvent.click(view.getByRole('button', { name: 'Hide Brain' }));
-  fireEvent.change(view.getByRole('slider', { name: /^Opacity/ }), { target: { value: '37' } });
+  fireEvent.change(selectionOpacity(view), { target: { value: '0.37' } });
   const before = await savedView(view);
   assert.equal(before.background, 'dark');
   fireEvent.click(view.getByRole('button', { name: 'White background' }));
@@ -679,8 +696,8 @@ test('organs visibility preset preserves selection, background and data while th
   fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
   await view.findByText('Accepted 8 measurements. No data transmitted.');
   fireEvent.click(view.getByRole('button', { name: /Kidney, region 7.*digimouse:7/ }));
-  fireEvent.change(view.getByRole('slider', { name: /^Opacity/ }), { target: { value: '20' } });
-  fireEvent.click(view.getByRole('button', { name: 'Isolate' }));
+  fireEvent.change(selectionOpacity(view), { target: { value: '0.2' } });
+  fireEvent.click(view.getByRole('button', { name: 'Isolate selected structure or source record' }));
   fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.change(view.getByRole('combobox', { name: 'Section axis' }), { target: { value: 'x' } });
   fireEvent.change(view.getByRole('slider', { name: 'Section position' }), { target: { value: '61' } });
@@ -688,22 +705,23 @@ test('organs visibility preset preserves selection, background and data while th
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   const observationsBefore = JSON.parse(await exportedBlobs.at(-1)!.text());
 
+  showTab(view, 'Layers');
   fireEvent.click(view.getByRole('button', { name: 'Organs visibility preset' }));
   const expectedOpacity = Object.fromEntries(atlas.structures.map((structure) => [structure.id,
     structure.id === 'digimouse:1' ? 0.06 : structure.id === 'digimouse:13' ? 0.14 : 1]));
   assert.deepEqual(await savedView(view), { ...before, hidden: [], opacity: expectedOpacity });
-  assert.ok(view.getByRole('button', { name: 'Isolate' }));
+  assert.ok(view.getByRole('button', { name: 'Isolate selected structure or source record' }));
   assert.ok(view.getByText('17 visible regions'));
   assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), observationsBefore);
-  const shortcut = view.getByRole('button', { name: 'Structure details: Kidney, region 7' });
-  assert.equal(shortcut.getAttribute('aria-controls'), 'structure-inspector');
+  assert.equal(view.getByRole('button', { name: 'Details' }).getAttribute('aria-controls'), 'structure-inspector');
+  const shortcut = view.getByRole('button', { name: 'Open details for selected structure or source record' });
   fireEvent.click(shortcut);
   assert.equal(document.activeElement, view.container.querySelector('#structure-inspector'));
   fireEvent.click(view.getByRole('button', { name: 'Show all' }));
   const shown = await savedView(view);
-  assert.equal(shown.opacity['digimouse:1'], 0.1);
+  assert.equal(shown.opacity['digimouse:1'], 0.22);
   assert.equal(shown.opacity['digimouse:13'], 1);
   assert.equal(shown.selected, 'digimouse:7');
   assert.equal(shown.background, 'white');
@@ -826,6 +844,7 @@ test('source groups isolate existing regions while retaining research data and b
   await view.findByText('Accepted 8 measurements. No data transmitted.');
   fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.change(view.getByRole('combobox', { name: 'Section axis' }), { target: { value: 'z' } });
+  showTab(view, 'Layers');
   fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'brain' } });
   assert.ok(view.getByText('1 visible region'));
   const brain = await savedView(view);
@@ -844,7 +863,9 @@ test('source groups isolate existing regions while retaining research data and b
   fireEvent.click(view.getByRole('button', { name: 'Show all' }));
   assert.ok(view.getByText('17 visible regions'));
   assert.equal((view.getByRole('combobox', { name: 'Source anatomy group' }) as HTMLSelectElement).value, 'whole-mouse');
+  showTab(view, 'Structures');
   fireEvent.click(view.getByRole('button', { name: 'Hide Brain' }));
+  showTab(view, 'Layers');
   assert.equal((view.getByRole('combobox', { name: 'Source anatomy group' }) as HTMLSelectElement).value, '');
 });
 
@@ -852,6 +873,7 @@ test('volume brain and head groups retain their own IDs across modes and view re
   const view = await openApp(); expectedRequests.push('/atlas-volume/atlas.json');
   fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
   await view.findByText('21 visible regions');
+  showTab(view, 'Layers');
   fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'brain' } });
   assert.ok(view.getByText('6 visible regions'));
   const brain = await savedView(view);
@@ -880,6 +902,7 @@ test('native source inspection follows selection without inferring index matches
   await view.findByText('77 visible regions');
   fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.click(view.getByRole('button', { name: /optic stalk.*ema147:EMAPA:16678/i }));
+  showTab(view, 'Source evidence');
   let record = within(view.getByRole('region', { name: 'Native surface record' }));
   assert.ok(record.getByText('Surfaces/EMAPA16678_optic_stalk.stl'));
   assert.ok(record.getByText('EMAPA:16678'));
@@ -893,6 +916,7 @@ test('native source inspection follows selection without inferring index matches
   assert.ok(record.getByText('EMAPA:16979'));
   assert.ok(record.getByText('No exact anatomy-index match'));
   assert.equal(record.queryByText('Label 39 in source index'), null);
+  showTab(view, 'Layers');
   fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'reference' } });
   record = within(view.getByRole('region', { name: 'Native surface record' }));
   assert.ok(record.getByText('Surfaces/reference.stl'));
@@ -918,6 +942,7 @@ test('source layers preserve observations, background and saved display across f
   fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
+  showTab(view, 'Layers');
   fireEvent.click(view.getByText('Compose source layers'));
   const controls = within(view.container.querySelector('.source-layer-controls')! as HTMLElement);
   const apply = () => fireEvent.click(controls.getByRole('button', { name: 'Apply source layers' }));
@@ -958,9 +983,11 @@ function pendingTraceFile() {
 test('local SWC remains in memory, supports source-bound observations and views, and switches without trace requests', async () => {
   const view = await openApp();
   fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  showTab(view, 'Sources');
   fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
   await view.findByText('Local trace opened. No file data transmitted.');
   assert.ok(view.getByText('1 visible region'));
+  showTab(view, 'Source evidence');
   const record = within(view.getByRole('region', { name: 'Local trace record' }));
   assert.ok(record.getByText('Samples stored')); assert.ok(record.getByText('Isolated samples'));
   assert.equal(view.queryByText('local-private-label.swc'), null);
@@ -997,6 +1024,7 @@ test('local SWC remains in memory, supports source-bound observations and views,
 
 test('invalid and oversized SWC imports retain the current local geometry, view and observations', async () => {
   const view = await openApp();
+  showTab(view, 'Sources');
   fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
   await view.findByText('Local trace opened. No file data transmitted.');
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
@@ -1071,6 +1099,7 @@ test('bundled neuronal reference retains source limits, background and source-bo
   await view.findByText('Accepted 8 measurements. No data transmitted.');
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   const originalData = JSON.parse(await exportedBlobs.at(-1)!.text());
+  showTab(view, 'Source evidence');
   expectedRequests.push('/atlas-neuron/atlas.json');
   fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'neuromorpho-nmo130632-standardized-v1' } });
   await view.findByRole('heading', { name: 'Neuronal source trace' });
@@ -1164,6 +1193,7 @@ test('Find anatomy opens exact vessel and nerve references and restores observat
   fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
+  showTab(view, 'Sources'); showTab(view, 'Source evidence');
   const panel = within(view.container.querySelector('.anatomy-coverage')! as HTMLElement);
   assert.equal(panel.getByRole('button', { name: 'Show source choices' }).getAttribute('aria-expanded'), 'false');
   fireEvent.click(panel.getByRole('button', { name: 'Blood vessels' }));
@@ -1174,12 +1204,14 @@ test('Find anatomy opens exact vessel and nerve references and restores observat
   assert.equal(vessels.background, 'white'); assert.deepEqual(vessels.hidden, []);
   for (const id of [17307, 18415, 18601]) assert.equal(vessels.opacity[`ema147:EMAPA:${id}`], 1);
   assert.equal(vessels.opacity['ema147:EMAPA:17525'], 0.08);
+  showTab(view, 'Sources');
   fireEvent.click(panel.getByRole('button', { name: 'Nerves' }));
   fireEvent.change(panel.getByRole('combobox', { name: 'Surrounding source anatomy' }), { target: { value: 'hidden' } });
   fireEvent.click(panel.getByRole('button', { name: 'Show developmental trigeminal nerve and ganglion' }));
   const nerves = await savedView(view); assert.equal(nerves.hidden.length, 75);
   for (const id of [16797, 17576]) { assert.equal(nerves.opacity[`ema147:EMAPA:${id}`], 1); assert.ok(!nerves.hidden.includes(`ema147:EMAPA:${id}`)); }
   expectedRequests.push('/atlas-nerve/atlas.json');
+  showTab(view, 'Sources');
   fireEvent.click(panel.getByRole('button', { name: 'Nerves' }));
   fireEvent.click(panel.getByRole('button', { name: 'Show predicted regional nerve graph' }));
   await view.findByRole('heading', { name: 'Source polyline graph' });
@@ -1187,6 +1219,7 @@ test('Find anatomy opens exact vessel and nerve references and restores observat
   assert.ok(record.getByText('1,940')); assert.ok(record.getByText('1,876'));
   assert.equal(view.queryByRole('heading', { name: 'Source sample explorer' }), null);
   assert.equal((await savedView(view)).background, 'white');
+  showTab(view, 'Sources');
   fireEvent.click(panel.getByRole('button', { name: 'Blood vessels' }));
   expectedRequests.push('/atlas-vascular/atlas.json');
   fireEvent.click(panel.getByRole('button', { name: 'Show cortical vessel network' }));
@@ -1212,6 +1245,7 @@ test('a substituted coverage manifest leaves current reference, display and obse
     if (String(input) !== '/atlas-vascular/atlas.json') return previous(input);
     requests.push(String(input)); return new Response(JSON.stringify(substituted));
   }) as typeof fetch;
+  showTab(view, 'Sources');
   fireEvent.click(view.getByRole('button', { name: 'Blood vessels' }));
   fireEvent.click(view.getByRole('button', { name: 'Show cortical vessel network' }));
   await view.findByText(/The requested source anatomy could not be opened. The current reference and observations were retained/);
@@ -1351,4 +1385,54 @@ test('a rejected newer file cancels an older pending read without leaving the ex
   assert.equal((view.getByRole('button',{name:'Try synthetic comparison'}) as HTMLButtonElement).disabled,false);
   fireEvent.click(view.getByRole('button',{name:'Try synthetic comparison'}));await completeRead(pending,syntheticCsv);
   assert.ok(view.getByText('Synthetic example data. These values are not experimental observations.'));assert.equal(view.queryByText('Accepted 8 measurements. No data transmitted.'),null);
+});
+
+test('Living schematic routes are labelled, filterable, exportable and limited to bound references', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'Living' }));
+  const options = within(view.getByRole('group', { name: 'Schematic circulation and nerve routes' }));
+  const circulation = options.getByRole('checkbox', { name: 'Blood circulation routes' }) as HTMLInputElement;
+  const neural = options.getByRole('checkbox', { name: 'Nerve signalling routes' }) as HTMLInputElement;
+  assert.equal(circulation.checked, true); assert.equal(neural.checked, true);
+  assert.equal((options.getByRole('checkbox', { name: 'Selected region only' }) as HTMLInputElement).checked, false);
+  assert.ok(options.getByText(/^30 schematic connectors between existing source regions.*3 routes are omitted/));
+  assert.ok(view.getByText('SCHEMATIC ROUTES · CONNECTORS ARE NOT VESSEL OR NERVE GEOMETRY'));
+  const legend = within(view.getByRole('note', { name: 'Schematic route legend' }));
+  for (const label of ['Oxygen-rich blood', 'Oxygen-poor blood', 'Hepatic portal blood', 'Efferent nerve signal']) assert.ok(legend.getByText(label));
+  // The tetrahedral reference has no eye surface, so no afferent route is bound.
+  assert.equal(legend.queryByText('Afferent nerve signal'), null);
+
+  fireEvent.click(view.getByRole('button', { name: /Kidney, region 7.*digimouse:7/ }));
+  const routes = within(view.getByRole('region', { name: 'Schematic routes' }));
+  assert.ok(routes.getByText('Receives oxygen-rich blood from Heart'));
+  assert.ok(routes.getByText('Sends oxygen-poor blood to Heart'));
+  assert.equal(routes.getAllByText('Educational simplification').length, 2);
+  assert.equal(routes.getAllByRole('link', { name: 'Section 20.5 Circulatory Pathways' })[0].getAttribute('href'),
+    'https://openstax.org/books/anatomy-and-physiology-2e/pages/20-5-circulatory-pathways');
+  fireEvent.click(view.getByRole('button', { name: /Brain.*digimouse:2/ }));
+  assert.ok(view.getAllByText(/^Binding inference: Vagal brain-stem nuclei are assigned to the aggregate source Brain region/).length > 0);
+
+  const before = await savedView(view);
+  fireEvent.click(circulation); fireEvent.click(neural);
+  assert.equal(view.queryByRole('note', { name: 'Schematic route legend' }), null);
+  assert.equal(view.queryByText('SCHEMATIC ROUTES · CONNECTORS ARE NOT VESSEL OR NERVE GEOMETRY'), null);
+  // Route layers are display choices and are not written into view files.
+  assert.deepEqual(await savedView(view), before);
+  assert.equal(JSON.stringify(before).includes('circuit'), false);
+
+  fireEvent.click(options.getByRole('button', { name: 'Download route table' }));
+  assert.equal(downloads.at(-1)?.name, 'mousebio-schematic-circuits.json');
+  const table = JSON.parse(await exportedBlobs.at(-1)!.text());
+  assert.equal(table.schemaVersion, 'mousebio.schematic-circuits.v1');
+  assert.equal(table.atlasId, atlas.id); assert.equal(table.coordinateFrameId, atlas.coordinateFrame.id);
+  assert.equal(table.connectorsAreAnatomicalGeometry, false);
+  assert.equal(table.classification, 'illustrative'); assert.equal(table.evidence, 'educational-simplification');
+  assert.equal(table.edges.length, 30); assert.equal(table.omittedRoutes.length, 3);
+  assert.ok(table.limitations.length > 0 && table.references.length === 4);
+
+  expectedRequests.push('/atlas-hindlimb/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'charles2016-hindlimb-v1' } });
+  await view.findByText('44 visible regions');
+  assert.equal(view.queryByRole('group', { name: 'Schematic circulation and nerve routes' }), null);
+  assert.equal(view.queryByRole('region', { name: 'Schematic routes' }), null);
 });

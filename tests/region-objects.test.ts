@@ -28,10 +28,12 @@ test('material preparation retains surface settings and gives lines a distinct d
   const mesh = new THREE.Mesh(meshGeometry, [oldMeshMaterial, oldMeshMaterial]);
   const preparedMesh = prepareRegionMaterial(mesh);
   assert.equal(preparedMesh, mesh);
-  assert.ok(preparedMesh instanceof THREE.Mesh && preparedMesh.material instanceof THREE.MeshStandardMaterial);
-  assert.equal(preparedMesh.material.roughness, 0.68);
-  assert.equal(preparedMesh.material.metalness, 0.02);
+  assert.ok(preparedMesh instanceof THREE.Mesh && preparedMesh.material instanceof THREE.MeshPhysicalMaterial);
+  assert.equal(preparedMesh.material.roughness, 0.52);
+  assert.equal(preparedMesh.material.metalness, 0);
+  assert.equal(preparedMesh.material.clearcoat, 0.22);
   assert.equal(preparedMesh.material.side, THREE.DoubleSide);
+  assert.ok(preparedMesh.material.userData.surfaceShading, 'display shading uniforms are installed');
   assert.equal(preparedMesh.geometry, meshGeometry);
   assert.equal(oldMeshDisposals, 1);
 

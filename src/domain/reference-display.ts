@@ -4,7 +4,7 @@ import type { Atlas, Structure } from './types';
 export function defaultStructureOpacity(structure: Structure): number {
   return typeof structure.defaultOpacity === 'number' && Number.isFinite(structure.defaultOpacity)
     && structure.defaultOpacity >= 0 && structure.defaultOpacity <= 1 ? structure.defaultOpacity
-    : structure.id === 'digimouse:1' ? 0.1 : 1;
+    : structure.id === 'digimouse:1' ? 0.22 : 1;
 }
 
 export function referenceOpacity(atlas: Atlas, organs = false): Record<string, number> {

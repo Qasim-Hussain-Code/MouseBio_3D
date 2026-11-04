@@ -96,15 +96,33 @@ export class RegionDetailController {
   private abort?: AbortController;
   private key = '';
   private disposed = false;
-  private active?: { target: RegionDetailTarget; coarse: THREE.BufferGeometry; fine: THREE.BufferGeometry };
+  private active?: { structureId: string; target: RegionDetailTarget; coarse: THREE.BufferGeometry; fine: THREE.BufferGeometry };
+  /**
+   * `prepare` may return a display replacement for a loaded fine geometry, for
+   * example a smoothed copy; the loaded geometry is then disposed.
+   */
   constructor(private atlas: Atlas, private target: (id: string) => RegionDetailTarget | undefined,
     private changed: () => void, private status: (status: RegionDetailStatus) => void,
-    private loader = loadRegionDetailGeometry) {}
+    private loader = loadRegionDetailGeometry,
+    private prepare: (geometry: THREE.BufferGeometry, signal: AbortSignal) => THREE.BufferGeometry | Promise<THREE.BufferGeometry> = (geometry) => geometry) {}
   private restore() {
     if (this.active) {
       this.active.target.mesh.geometry = this.active.coarse;
       this.active.fine.dispose(); this.active = undefined; this.changed();
     }
+  }
+  /** The region currently displaying a fine surface, if any. */
+  activeStructureId(): string | null { return this.active?.structureId ?? null; }
+  /** Change the geometry restored when the fine surface is released, without touching the fine surface. */
+  setCoarse(structureId: string, geometry: THREE.BufferGeometry): boolean {
+    if (!this.active || this.active.structureId !== structureId) return false;
+    this.active.coarse = geometry;
+    return true;
+  }
+  /** Load the asset again even when it is already displayed, for example after the preparation changed. */
+  async reload(asset: RegionDetailAsset | undefined | null, selected: string | null) {
+    this.key = '';
+    return this.request(asset, selected);
   }
   async request(asset: RegionDetailAsset | undefined | null, selected: string | null) {
     const key = asset && asset.structureId === selected ? `${asset.atlasId}:${asset.structureId}:${asset.glbSha256}` : '';
@@ -123,10 +141,13 @@ export class RegionDetailController {
       fine = await this.loader(asset, this.atlas, abort.signal);
       if (this.disposed || sequence !== this.sequence || abort.signal.aborted) { fine.dispose(); return; }
       fine.applyMatrix4(target.sourceToLocal);
+      const prepared = await this.prepare(fine, abort.signal);
+      if (this.disposed || sequence !== this.sequence || abort.signal.aborted) { fine.dispose(); if (prepared !== fine) prepared.dispose(); return; }
+      if (prepared !== fine) { fine.dispose(); fine = prepared; }
       fine.computeBoundingBox(); fine.computeBoundingSphere();
       const coarse = target.mesh.geometry;
       target.mesh.geometry = fine;
-      this.active = { target, coarse, fine };
+      this.active = { structureId: asset.structureId, target, coarse, fine };
       fine = undefined;
       this.changed();
       this.status({ status: 'ready', structureId: asset.structureId, assetSha256: asset.glbSha256, triangles: asset.geometry.triangles,

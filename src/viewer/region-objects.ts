@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { installSurfaceShading, SURFACE_PRESENTATION } from './surface-shading';
 
 export type RenderLine = THREE.LineSegments<THREE.BufferGeometry, THREE.LineBasicMaterial>;
 export type RenderRegion = THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial> | RenderLine;
@@ -8,13 +9,21 @@ function disposeMaterials(material: THREE.Material | THREE.Material[]): void {
   for (const value of new Set([material].flat())) value.dispose();
 }
 
-/** Replace display materials only. Line width is a presentation setting, not a source radius. */
+/**
+ * Replace display materials only. Line width is a presentation setting, not a
+ * source radius; surface roughness and clearcoat are display conventions, not
+ * measured tissue optics.
+ */
 export function prepareRegionMaterial(region: SourceRegion): RenderRegion {
   const previous = region.material;
   if (region instanceof THREE.LineSegments) {
     region.material = new THREE.LineBasicMaterial({ linewidth: 1 });
   } else {
-    region.material = new THREE.MeshStandardMaterial({ roughness: 0.68, metalness: 0.02, side: THREE.DoubleSide });
+    const material = new THREE.MeshPhysicalMaterial({ roughness: SURFACE_PRESENTATION.roughness, metalness: SURFACE_PRESENTATION.metalness,
+      clearcoat: SURFACE_PRESENTATION.clearcoat, clearcoatRoughness: SURFACE_PRESENTATION.clearcoatRoughness,
+      envMapIntensity: SURFACE_PRESENTATION.envMapIntensity, side: THREE.DoubleSide });
+    installSurfaceShading(material);
+    region.material = material;
   }
   disposeMaterials(previous);
   return region as RenderRegion;

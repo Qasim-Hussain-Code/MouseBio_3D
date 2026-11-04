@@ -1,6 +1,14 @@
+import { createPathSignalOverlay, type PathSignalOverlay } from './path-signal-overlay';
+import { createLivingCircuitOverlay, type LivingCircuitOverlay } from './living-circuit-overlay';
+import { buildLivingCircuits } from '../domain/living-circuits';
+import type { PathSignalDisplay } from './path-signal-display';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { surfaceShadingOf, SURFACE_PRESENTATION } from './surface-shading';
+import { smoothingOptionsFor, smoothSurfaceGeometries } from './surface-smoothing';
+import type { SurfaceDisplay } from '../domain/display-smoothing';
 import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas, type ViewBackground } from '../domain';
 import { defaultStructureOpacity } from '../domain/reference-display';
 import { RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
@@ -10,6 +18,7 @@ import { disposeRegion, prepareRegionMaterial, regionLabelCenter, linePickingThr
 import { renderDiagnostics, type ViewerDiagnostics } from './viewer-diagnostics';
 import { traceSampleFocusBounds } from './trace-sample-focus';
 import { sourcePolylinePathBounds } from './polyline-focus';
+import { panViewerCamera, viewerNavigationKey, zoomViewerCamera } from './viewer-navigation';
 import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, fitCameraToBounds, focusCameraOnRegions, isPointRetainedByClipPlane, recenterRegionGeometry, type CameraPose } from './scene-utils';
 
 export type { CameraPose } from './scene-utils';
@@ -24,13 +33,20 @@ export type ViewerSettings = {
   speed: number;
   cardiac: boolean;
   respiratory: boolean;
+  /** Schematic route layers in Living; absent means none are displayed. */
+  circuits?: { circulation: boolean; neural: boolean; selectionOnly: boolean };
   colors: Record<string, string>;
   labels: boolean;
   background: ViewBackground;
+  /** Slow orbit around the target until the user takes over. Display only. */
+  autoRotate?: boolean;
+  /** Smoothed display copies of voxel-derived surfaces, or the source surfaces. Defaults to smoothed. */
+  surfaceDisplay?: SurfaceDisplay;
 };
-export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean };
+export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean };
 type Props = {
   atlas: Atlas;
+  pathSignal?:PathSignalDisplay;
   settings: ViewerSettings;
   onSelect: (id: string) => void;
   onReady?: (details: ViewerDiagnostics) => void;
@@ -42,6 +58,8 @@ type Props = {
   title?: string;
   detailAsset?: RegionDetailAsset | null;
   onDetailStatus?: (status: RegionDetailStatus) => void;
+  /** The user started a pointer interaction while the view was rotating automatically. */
+  onAutoRotateEnd?: () => void;
 };
 
 const palette: Record<string, string> = {
@@ -50,10 +68,10 @@ const palette: Record<string, string> = {
   immune: '#937f9d', endocrine: '#bfaa6d', integumentary: '#8f9d9a',
 };
 
-export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace }: Props) {
+export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace, pathSignal, onAutoRotateEnd }: Props) {
   const host = useRef<HTMLDivElement>(null);
-  const latest = useRef({ settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady });
-  latest.current = { settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady };
+  const latest = useRef({ pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd });
+  latest.current = { pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd };
   const engine = useRef<{ apply: () => void; setPose: (pose: CameraPose) => void; setDetail: () => void } | null>(null);
   const [status, setStatus] = useState('Loading reference geometry');
   const [failure, setFailure] = useState(false);
@@ -79,23 +97,42 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.localClippingEnabled = true;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.setClearColor(latest.current.settings.background === 'white' ? '#ffffff' : '#111d23', 1);
+    // Neutral tone mapping keeps region hues close to their declared display colours.
+    renderer.toneMapping = THREE.NeutralToneMapping;
+    renderer.toneMappingExposure = 1;
+    // The page paints the background; the canvas stays transparent.
+    renderer.setClearColor('#000000', 0);
     renderer.domElement.setAttribute('aria-label', title ?? 'Interactive anatomical source model');
     renderer.domElement.setAttribute('role', 'img');
     renderer.domElement.setAttribute('tabindex', '0');
+    renderer.domElement.setAttribute('aria-description', 'Arrow keys pan the view. Plus and minus zoom. Home resets the view. F focuses the selected source record.');
     element.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
-    scene.add(new THREE.HemisphereLight('#e3f5f4', '#343e46', 2.7));
-    const key = new THREE.DirectionalLight('#fff1da', 3.0);
-    key.position.set(-2, 4, 6);
+    // Image-based studio lighting with a warm key, cool fill and back rim. Light
+    // directions are display choices in the display frame, not anatomical axes.
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
+    scene.environment = environment;
+    scene.environmentIntensity = 0.7;
+    scene.add(new THREE.HemisphereLight('#dfe9ea', '#2b333a', 1.1));
+    const key = new THREE.DirectionalLight('#fff4e4', 2.4);
+    key.position.set(-2.5, 4, 5.5);
     scene.add(key);
-    const fill = new THREE.DirectionalLight('#92c6ce', 1.5);
-    fill.position.set(3, -2, -4);
+    const fill = new THREE.DirectionalLight('#9fc3cc', 0.7);
+    fill.position.set(3, -1, -3);
     scene.add(fill);
+    const rim = new THREE.DirectionalLight('#ffffff', 1.1);
+    rim.position.set(1.5, 2.5, -5);
+    scene.add(rim);
     const camera = new THREE.PerspectiveCamera(36, 1, 0.00001, 100);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = false;
     controls.enablePan = true;
+    controls.autoRotateSpeed = 1.2;
+    controls.addEventListener('start', () => {
+      if (controls.autoRotate) { controls.autoRotate = false; latest.current.onAutoRotateEnd?.(); }
+    });
     const display = new THREE.Group();
     display.rotation.z = DISPLAY_ROTATION_Z;
     scene.add(display);
@@ -103,6 +140,20 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     const pointer = new THREE.Vector2();
     const meshes = new Map<string, RenderRegion>();
     const detailTargets = new Map<string, { mesh: THREE.Mesh<THREE.BufferGeometry>; sourceToLocal: THREE.Matrix4 }>();
+    // Voxel-derived references keep both the source surface and its smoothed display copy.
+    const surfaceCopies = new Map<string, { source: THREE.BufferGeometry; smoothed: THREE.BufferGeometry }>();
+    const smoothingOptions = smoothingOptionsFor(atlas);
+    const smoothedDisplay = () => smoothingOptions !== null && latest.current.settings.surfaceDisplay !== 'source';
+    let lastSurfaceDisplay: SurfaceDisplay | undefined;
+    /** Run with every base surface temporarily showing its source geometry. */
+    const withSourceSurfaces = <T,>(run: () => T): T => {
+      const swapped: [THREE.Mesh, THREE.BufferGeometry][] = [];
+      for (const [id, copies] of surfaceCopies) {
+        const mesh = meshes.get(id);
+        if (mesh instanceof THREE.Mesh && mesh.geometry === copies.smoothed) { swapped.push([mesh, mesh.geometry]); mesh.geometry = copies.source; }
+      }
+      try { return run(); } finally { for (const [mesh, geometry] of swapped) mesh.geometry = geometry; }
+    };
     const processes = physiologyProcessesForAtlas(atlas.id);
     const cardiacRegions = new Set(processes.find((process) => process.id === 'cardiac-contraction')?.requiredStructures ?? []);
     const respiratoryRegions = new Set(processes.find((process) => process.id === 'respiratory-movement')?.requiredStructures ?? []);
@@ -115,11 +166,36 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let syncing = false;
     let loaded = false;
     let lastLabel = '';
+    let pathOverlay:PathSignalOverlay|null=null,pathOverlayKey='',lastPathSignal:PathSignalDisplay|undefined,signalElapsedMs=0;
+    const syncPathSignal=()=>{
+      const requested=latest.current.pathSignal,current=latest.current.settings;
+      const signal=current.living&&requested?.referenceId===atlas.id?requested:undefined;
+      const region=atlas.structures.length===1?meshes.get(atlas.structures[0].id):undefined;
+      const key=signal&&region instanceof THREE.LineSegments?`${signal.kind}/${signal.pathRowIndex}/${current.clipAxis}/${current.clipPosition}/${region.visible}/${current.opacity[atlas.structures[0].id]??1}/${region.geometry.drawRange.start}/${region.geometry.drawRange.count}`:'';
+      const modelChanged=!signal||!lastPathSignal||signal.kind!==lastPathSignal.kind||signal.pathRowIndex!==lastPathSignal.pathRowIndex||signal.kind==='flow'&&lastPathSignal.kind==='flow'&&(signal.transitMs!==lastPathSignal.transitMs||signal.direction!==lastPathSignal.direction)||signal.kind==='activity'&&lastPathSignal.kind==='activity'&&signal.result!==lastPathSignal.result;
+      if(modelChanged)signalElapsedMs=0;
+      if(key!==pathOverlayKey){pathOverlay?.dispose();pathOverlay=null;pathOverlayKey=key;if(signal&&region instanceof THREE.LineSegments){region.updateWorldMatrix(true,false);pathOverlay=createPathSignalOverlay(region,signal.pathRowIndex);}}
+      lastPathSignal=signal;
+    };
+
+    const circuits = buildLivingCircuits(atlas);
+    let circuitOverlay: LivingCircuitOverlay | null = null, circuitOverlayFailed = false;
+    // Anchors are computed once, after the source regions are loaded and recentered.
+    const syncCircuits = () => {
+      const current = latest.current.settings, layers = current.circuits;
+      const wanted = loaded && current.living && circuits.ok && !!layers && (layers.circulation || layers.neural);
+      if (wanted && !circuitOverlay && !circuitOverlayFailed) {
+        // Anchors are source vertices even while smoothed display copies are shown.
+        circuitOverlay = withSourceSurfaces(() => createLivingCircuitOverlay(circuits.edges, meshes));
+        if (circuitOverlay) scene.add(circuitOverlay.group); else circuitOverlayFailed = true;
+      }
+      if (circuitOverlay && circuitOverlay.group.visible !== wanted) { circuitOverlay.group.visible = wanted; dirty = true; }
+    };
+
     const clip = new THREE.Plane();
-    const defaultOpacity = (id: string) => defaultStructureOpacity(atlas.structures.find((structure) => structure.id === id)!);
+    const defaultOpacity =(id: string) => defaultStructureOpacity(atlas.structures.find((structure) => structure.id === id)!);
     const apply = () => {
       const current = latest.current.settings;
-      renderer.setClearColor(current.background === 'white' ? '#ffffff' : '#111d23', 1);
       for (const [id, mesh] of meshes) {
         const structure = atlas.structures.find((item) => item.id === id)!;
         const opacity = current.opacity[id] ?? defaultOpacity(id);
@@ -129,13 +205,16 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         mesh.material.depthWrite = opacity >= 0.95;
         mesh.renderOrder = opacity < 1 ? 2 : 0;
         mesh.material.color.set(current.colors[id] ?? structure.color ?? palette[structure.systems[0]] ?? '#9ba5a1');
-        if (mesh.material instanceof THREE.MeshStandardMaterial) {
-          mesh.material.emissive.set(id === current.selected ? '#315b54' : '#000000');
-          mesh.material.emissiveIntensity = id === current.selected ? 0.65 : 0;
+        const shading = surfaceShadingOf(mesh.material);
+        if (shading) {
+          shading.uRim.value = id === current.selected ? 1 : 0;
+          // A translucent envelope fades where it faces the camera and keeps its silhouette.
+          shading.uGhost.value = opacity < 1 && structure.systems.includes('integumentary') ? SURFACE_PRESENTATION.ghostStrength : 0;
         }
         mesh.material.clippingPlanes = current.clipAxis === 'off' ? [] : [clip];
       }
       if (current.clipAxis !== 'off') clip.copy(createDisplayClipPlane(current.clipAxis, current.clipPosition, radius));
+      applySurfaceDisplay();
       dirty = true;
     };
     const detailController = new RegionDetailController(atlas, (id) => detailTargets.get(id), () => {
@@ -145,7 +224,21 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       const requested = latest.current.detailAsset;
       if (!disposed && (requested ? state.structureId === requested.structureId && state.assetSha256 === requested.glbSha256 : state.status === 'idle'))
         latest.current.onDetailStatus?.(state);
-    });
+    }, undefined, async (geometry, signal) => smoothingOptions && smoothedDisplay() ? (await smoothSurfaceGeometries([geometry], smoothingOptions, signal))[0] : geometry);
+    /** Show the smoothed or source copy of each base surface; a displayed fine surface is reloaded instead. */
+    function applySurfaceDisplay() {
+      const wanted: SurfaceDisplay = smoothedDisplay() ? 'smoothed' : 'source';
+      const changed = lastSurfaceDisplay !== undefined && lastSurfaceDisplay !== wanted;
+      lastSurfaceDisplay = wanted;
+      for (const [id, copies] of surfaceCopies) {
+        const mesh = meshes.get(id);
+        if (!(mesh instanceof THREE.Mesh)) continue;
+        const geometry = wanted === 'smoothed' ? copies.smoothed : copies.source;
+        if (detailController.activeStructureId() === id) detailController.setCoarse(id, geometry);
+        else if (mesh.geometry !== geometry) mesh.geometry = geometry;
+      }
+      if (changed && loaded && detailController.activeStructureId()) void detailController.reload(latest.current.detailAsset, latest.current.settings.selected);
+    }
     const announcePose = () => {
       dirty = true;
       if (!syncing && loaded) latest.current.onCameraChange?.(captureCameraPose(camera, controls.target));
@@ -162,7 +255,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     const reset = () => {
       controls.target.set(0, 0, 0);
       camera.up.set(0, 1, 0);
-      camera.position.set(radius * 0.25, radius * 0.7, radius * 3.1);
+      // A raised three-quarter display pose; the display axes carry no anatomical direction.
+      camera.position.set(radius * 1.35, radius * 1.05, radius * 2.55);
       controls.update();
       dirty = true;
     };
@@ -177,6 +271,14 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     handle.current = {
       reset,
       focusRegions,
+      zoom(factor) {
+        if (!loaded || !zoomViewerCamera(camera, controls.target, factor, controls.minDistance, controls.maxDistance)) return false;
+        controls.update(); dirty = true; return true;
+      },
+      pan(dx, dy) {
+        if (!loaded || !panViewerCamera(camera, controls.target, dx, dy)) return false;
+        controls.update(); dirty = true; return true;
+      },
       focusPolylinePath(pathRowIndex) {
         if (!loaded || atlas.assetFormat !== 'polyline-native-v1' || atlas.structures.length !== 1) return false;
         const current = latest.current.settings, id = atlas.structures[0].id;
@@ -221,7 +323,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       },
     };
     const sourceAbort = new AbortController();
-    void loadAtlasScene(atlas, sourceAbort.signal, fetch, localTrace).then((sourceScene) => {
+    void loadAtlasScene(atlas, sourceAbort.signal, fetch, localTrace).then(async (sourceScene) => {
       const gltf = { scene: sourceScene };
       if (disposed) {
         gltf.scene.traverse((object) => {
@@ -251,6 +353,17 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
           sourceToLocal: region.matrixWorld.clone().invert().multiply(gltf.scene.matrixWorld) });
       });
       if (meshes.size !== atlas.structures.length || sourceRegionCount !== atlas.structures.length) throw new Error('Reference geometry count differs from its metadata.');
+      if (smoothingOptions) {
+        // Display copies are prepared off the main thread where possible; the source surfaces stay in memory.
+        setStatus('Preparing display surfaces');
+        const surfaces = [...meshes].filter((entry): entry is [string, THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>] => entry[1] instanceof THREE.Mesh);
+        const smoothed = await smoothSurfaceGeometries(surfaces.map(([, mesh]) => mesh.geometry), smoothingOptions, sourceAbort.signal);
+        if (disposed) { smoothed.forEach((geometry) => geometry.dispose()); return; }
+        surfaces.forEach(([id, mesh], slot) => {
+          surfaceCopies.set(id, { source: mesh.geometry, smoothed: smoothed[slot] });
+          if (smoothedDisplay()) mesh.geometry = smoothed[slot];
+        });
+      }
       bounds.setFromObject(display);
       radius = bounds.getSize(new THREE.Vector3()).length() / 2;
       camera.near = radius / 2000;
@@ -306,15 +419,13 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       if (hit) latest.current.onSelect(hit.object.userData.structureId);
     };
     const keydown = (event: KeyboardEvent) => {
-      if (event.key === 'Home') { event.preventDefault(); reset(); }
-      if (event.key.toLowerCase() === 'f') handle.current?.focus();
-      const offset = event.key === 'ArrowLeft' ? -0.1 : event.key === 'ArrowRight' ? 0.1 : 0;
-      if (offset) {
-        event.preventDefault();
-        const delta = camera.position.clone().sub(controls.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), offset);
-        camera.position.copy(controls.target).add(delta);
-        controls.update();
-      }
+      if (event.target !== renderer.domElement || event.defaultPrevented || !loaded) return;
+      const command = viewerNavigationKey(event); if (!command) return;
+      event.preventDefault();
+      if (command.kind === 'reset') reset();
+      else if (command.kind === 'focus') handle.current?.focus();
+      else if (command.kind === 'zoom') handle.current?.zoom(command.factor);
+      else handle.current?.pan(command.dx, command.dy);
     };
     renderer.domElement.addEventListener('pointerdown', down);
     renderer.domElement.addEventListener('pointerup', up);
@@ -333,8 +444,36 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       const delta = Math.min(Math.max((timestamp - lastFrame) / 1000, 0), 0.1);
       lastFrame = timestamp;
       const current = latest.current.settings;
+      if (controls.autoRotate !== !!current.autoRotate) controls.autoRotate = !!current.autoRotate;
+      if (controls.autoRotate && loaded && !document.hidden) {
+        // Automatic rotation does not report poses; the last pose is announced when the user takes over.
+        syncing = true; controls.update(delta); syncing = false; dirty = true;
+      }
       if (current.living && current.playing && !document.hidden) elapsed += delta * current.speed;
       const physiology = evaluateIllustrativePhysiology(elapsed, { cardiac: current.cardiac, respiratory: current.respiratory });
+      syncPathSignal();
+      const signal=lastPathSignal;
+      if(signal&&pathOverlay){
+        if(signal.playing&&!document.hidden)signalElapsedMs+=delta*1000*signal.playbackRate;
+        if(signal.kind==='flow')pathOverlay.updateFlow(signal.transitMs===null?0:signalElapsedMs/signal.transitMs,signal.direction);
+        else{
+          const modelTime=(signalElapsedMs/1000)%signal.result.parameters.duration;
+          const frames=signal.result.snapshots,left=Math.min(frames.length-2,Math.floor(modelTime));const fraction=modelTime-frames[left].time;
+          const values=frames[left].v.map((value,index)=>value+(frames[left+1].v[index]-value)*fraction);
+          pathOverlay.updateActivity(values,-2.2,2.2);
+        }
+        dirty=true;
+      }
+      if(atlas.structures.length===1){const region=meshes.get(atlas.structures[0].id);if(region instanceof THREE.LineSegments){const normal=current.opacity[atlas.structures[0].id]??defaultOpacity(atlas.structures[0].id);const desired=pathOverlay?Math.min(normal,.18):normal;if(region.material.opacity!==desired){region.material.opacity=desired;dirty=true;}}}
+      syncCircuits();
+      if (circuitOverlay?.group.visible && current.circuits) {
+        // The shared illustrative clock applies pause and speed to the routes as well.
+        const routeFrame = circuitOverlay.update({ timeS: elapsed, circulation: current.circuits.circulation, neural: current.circuits.neural,
+          selectedId: current.selected, selectionOnly: current.circuits.selectionOnly, isVisible: (id) => !!meshes.get(id)?.visible,
+          clippingPlanes: current.clipAxis === 'off' ? [] : [clip] });
+        if (routeFrame.changed) dirty = true;
+      }
+
       for (const [id, mesh] of meshes) {
         if (!(mesh instanceof THREE.Mesh)) continue;
         const scale = !current.living ? 1 : cardiacRegions.has(id) ? physiology.cardiacScale : respiratoryRegions.has(id) ? physiology.respiratoryScale : 1;
@@ -358,6 +497,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     return () => {
       disposed = true;
       sourceAbort.abort();
+      pathOverlay?.dispose();
+      circuitOverlay?.dispose();
       detailController.dispose();
       cancelAnimationFrame(frame);
       observer.disconnect();
@@ -368,6 +509,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh || object instanceof THREE.LineSegments) disposeRegion(object);
       });
+      for (const copies of surfaceCopies.values()) { copies.source.dispose(); copies.smoothed.dispose(); }
+      environment.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       renderer.domElement.remove();

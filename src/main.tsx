@@ -10,3 +10,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><
 
 import './components/PrototypeStart.css';
 import './components/CardiacCellPanel.css';
+
+import './components/SelectionTools.css';
+import './components/SystemLayers.css';
+import './components/Workbench.css';
+
+import './components/SourceSignalPanel.css';
+import './components/LivingCircuits.css';

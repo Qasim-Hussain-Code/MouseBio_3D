@@ -1,0 +1,51 @@
+.selection-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line, #dce3d9);
+  border-radius: 7px;
+  background: var(--paper, #f9faf6);
+  color: var(--ink, #233735);
+}
+
+.selection-tools__identity { flex: 1 1 170px; min-width: 0; }
+.selection-tools__name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; line-height: 1.4; }
+.selection-tools__source { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 7px; min-width: 0; margin-top: 3px; font-size: 10px; }
+.selection-tools__source > span:first-child { color: #64776e; white-space: nowrap; }
+.selection-tools__source code { font-size: 10px; overflow-wrap: anywhere; min-width: 0; }
+.selection-tools__state { border-radius: 3px; padding: 1px 5px; background: #e8eee4; color: #46634f; font-size: 9px; }
+.selection-tools__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.selection-tools__actions button {
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid #d7e1d1;
+  border-radius: 4px;
+  background: #fff;
+  color: #345b49;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.selection-tools__actions .selection-tools__details { background: #eaf0e5; border-color: #cfddc7; }
+.selection-tools__actions button:hover { background: #edf3e9; }
+.selection-tools__actions button:focus-visible,
+.selection-tools__opacity input:focus-visible { outline: 2px solid var(--teal, #27685b); outline-offset: 3px; }
+.selection-tools__opacity { display: grid; grid-template-columns: auto minmax(64px, 110px) 34px; align-items: center; gap: 8px; min-width: 0; }
+.selection-tools__opacity label { font-size: 10px; }
+.selection-tools__opacity input[type="range"] { width: 100%; min-width: 0; min-height: 30px; margin: 0; accent-color: var(--teal, #27685b); cursor: pointer; }
+.selection-tools__opacity output { text-align: right; font-size: 10px; font-variant-numeric: tabular-nums; }
+.selection-tools--empty { padding-block: 10px; }
+.selection-tools--empty p { margin: 0; color: #64776e; font-size: 11px; }
+
+@media (max-width: 600px) {
+  .selection-tools { gap: 9px; padding: 10px; }
+  .selection-tools__identity { flex-basis: 100%; }
+  .selection-tools__actions { flex: 1 1 100%; }
+  .selection-tools__actions button { flex: 1 1 auto; min-height: 38px; }
+  .selection-tools__opacity { flex: 1 1 100%; grid-template-columns: auto minmax(60px, 1fr) 34px; }
+}
