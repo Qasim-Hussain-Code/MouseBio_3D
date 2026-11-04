@@ -9,6 +9,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { surfaceShadingOf, SURFACE_PRESENTATION } from './surface-shading';
 import { smoothingOptionsFor, smoothSurfaceGeometries } from './surface-smoothing';
 import type { SurfaceDisplay } from '../domain/display-smoothing';
+import { displayColour, type ColourScheme } from '../domain/tissue-palette';
+import { layoutLabels, leaderEnd, type LabelCandidate, type PlacedLabel } from './label-layout';
 import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas, type ViewBackground } from '../domain';
 import { defaultStructureOpacity } from '../domain/reference-display';
 import { RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
@@ -42,6 +44,10 @@ export type ViewerSettings = {
   autoRotate?: boolean;
   /** Smoothed display copies of voxel-derived surfaces, or the source surfaces. Defaults to smoothed. */
   surfaceDisplay?: SurfaceDisplay;
+  /** Tissue-like display colours or the manifest colours. Defaults to tissue. */
+  colourScheme?: ColourScheme;
+  /** Label every displayed region without overlaps, in addition to the selected label. */
+  allLabels?: boolean;
 };
 export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean };
 type Props = {
@@ -62,12 +68,6 @@ type Props = {
   onAutoRotateEnd?: () => void;
 };
 
-const palette: Record<string, string> = {
-  skeletal: '#e9dfc7', muscular: '#a36f6b', nervous: '#d2ac62', cardiovascular: '#c35e65',
-  respiratory: '#b9bbd0', digestive: '#b98156', urinary: '#b97f73', reproductive: '#d4ad83',
-  immune: '#937f9d', endocrine: '#bfaa6d', integumentary: '#8f9d9a',
-};
-
 export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace, pathSignal, onAutoRotateEnd }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const latest = useRef({ pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd });
@@ -76,10 +76,11 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
   const [status, setStatus] = useState('Loading reference geometry');
   const [failure, setFailure] = useState(false);
   const [label, setLabel] = useState<{ x: number; y: number; name: string } | null>(null);
+  const [labelSet, setLabelSet] = useState<{ labels: PlacedLabel[]; width: number; height: number }>({ labels: [], width: 0, height: 0 });
 
   useEffect(() => {
     if (!host.current) return;
-    setStatus('Loading reference geometry'); setFailure(false); setLabel(null);
+    setStatus('Loading reference geometry'); setFailure(false); setLabel(null); setLabelSet({ labels: [], width: 0, height: 0 });
     latest.current.onDetailStatus?.({ status: 'idle', structureId: null });
     onStatus?.('loading');
     const element = host.current;
@@ -166,6 +167,29 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let syncing = false;
     let loaded = false;
     let lastLabel = '';
+    let lastLabelSet = '', lastLabelSetAt = 0;
+    /** Place a label for every displayed region; refreshed at most about twenty times per second. */
+    const syncAllLabels = (current: ViewerSettings, timestamp: number) => {
+      if (!current.allLabels) { if (lastLabelSet) { lastLabelSet = ''; setLabelSet({ labels: [], width: 0, height: 0 }); } return; }
+      if (timestamp - lastLabelSetAt < 50) return;
+      lastLabelSetAt = timestamp;
+      const width = element.clientWidth, height = element.clientHeight;
+      const candidates: LabelCandidate[] = [];
+      for (const [id, mesh] of meshes) {
+        if (!mesh.visible) continue;
+        const selected = id === current.selected;
+        if (!selected && (current.opacity[id] ?? defaultOpacity(id)) < 0.3) continue;
+        const anchor = regionLabelCenter(mesh); if (!anchor) continue;
+        const point = anchor.project(camera);
+        const structure = atlas.structures.find((item) => item.id === id)!;
+        // Larger displayed regions are placed first; the selection always comes first.
+        const extent = mesh.geometry.boundingSphere?.radius ?? 0;
+        candidates.push({ id, name: structure.name, x: (point.x + 1) / 2 * width, y: (-point.y + 1) / 2 * height, depth: point.z, priority: selected ? Number.MAX_SAFE_INTEGER : extent * mesh.scale.x });
+      }
+      const labels = layoutLabels(candidates, { width, height });
+      const signature = `${width}x${height}|${labels.map((item) => `${item.id}:${item.left},${item.top}`).join('|')}`;
+      if (signature !== lastLabelSet) { lastLabelSet = signature; setLabelSet({ labels, width, height }); }
+    };
     let pathOverlay:PathSignalOverlay|null=null,pathOverlayKey='',lastPathSignal:PathSignalDisplay|undefined,signalElapsedMs=0;
     const syncPathSignal=()=>{
       const requested=latest.current.pathSignal,current=latest.current.settings;
@@ -204,7 +228,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         mesh.material.transparent = opacity < 1;
         mesh.material.depthWrite = opacity >= 0.95;
         mesh.renderOrder = opacity < 1 ? 2 : 0;
-        mesh.material.color.set(current.colors[id] ?? structure.color ?? palette[structure.systems[0]] ?? '#9ba5a1');
+        mesh.material.color.set(current.colors[id] ?? displayColour(structure, current.colourScheme ?? 'tissue'));
         const shading = surfaceShadingOf(mesh.material);
         if (shading) {
           shading.uRim.value = id === current.selected ? 1 : 0;
@@ -482,8 +506,9 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       if (dirty && !document.hidden) {
         renderer.render(scene, camera);
         dirty = false;
+        syncAllLabels(current, timestamp);
         const selected = meshes.get(current.selected ?? '');
-        if (selected?.visible && current.labels) {
+        if (selected?.visible && current.labels && !current.allLabels) {
           const anchor = regionLabelCenter(selected);
           if (!anchor) { setLabel(null); lastLabel = ""; return; }
           const point = anchor.project(camera);
@@ -525,5 +550,12 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
   return <div className="viewer-canvas" ref={host} data-background={settings.background}>
     {status && <div className={`viewer-status ${failure ? 'error' : ''}`} role="status">{!failure && <span className="loading-ring" />}{status}</div>}
     {label && !status && <div className="model-label" style={{ left: label.x, top: label.y }}>{label.name}</div>}
+    {labelSet.labels.length > 0 && !status && <>
+      <svg className="label-leaders" width={labelSet.width} height={labelSet.height} aria-hidden="true">
+        {labelSet.labels.map((item) => { const end = leaderEnd(item); return <line key={item.id} x1={item.anchorX} y1={item.anchorY} x2={end.x} y2={end.y} />; })}
+      </svg>
+      {labelSet.labels.map((item) => <div key={item.id} className={`model-label model-label--placed ${item.id === settings.selected ? 'is-selected' : ''}`}
+        style={{ left: item.left, top: item.top, width: item.width, height: item.height }}>{item.name}</div>)}
+    </>}
   </div>;
 }
