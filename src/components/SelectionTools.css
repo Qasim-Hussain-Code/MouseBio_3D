@@ -22,17 +22,17 @@
 .selection-tools__actions button {
   min-height: 34px;
   padding: 7px 10px;
-  border: 1px solid #d7e1d1;
+  border: 1px solid #d4dcd9;
   border-radius: 4px;
   background: #fff;
-  color: #345b49;
+  color: #2f4a46;
   font: inherit;
   font-size: 11px;
   line-height: 1.2;
   cursor: pointer;
 }
-.selection-tools__actions .selection-tools__details { background: #eaf0e5; border-color: #cfddc7; }
-.selection-tools__actions button:hover { background: #edf3e9; }
+.selection-tools__actions .selection-tools__details { background: #e9efed; border-color: #c9d6d1; }
+.selection-tools__actions button:hover { background: #eef2f0; }
 .selection-tools__actions button:focus-visible,
 .selection-tools__opacity input:focus-visible { outline: 2px solid var(--teal, #27685b); outline-offset: 3px; }
 .selection-tools__opacity { display: grid; grid-template-columns: auto minmax(64px, 110px) 34px; align-items: center; gap: 8px; min-width: 0; }
