@@ -10,8 +10,8 @@ import tempfile
 import unittest
 import zipfile
 
-from prepare_release import ReleaseError, prepare_release, relative_name
-from check_publication import audit
+from prepare_release import ReleaseError, asset_binding, prepare_release, relative_name, source_allowed
+from check_publication import anatomy_registry, audit
 from test_registered_anatomy import ema147_fixture_files, hindlimb_fixture_files, volume_fixture_files
 
 
@@ -330,6 +330,20 @@ class ReleaseTests(unittest.TestCase):
                 prepare_release(root, Path(".publication/release"))
             self.assertFalse((root / ".publication").exists())
 
+
+
+class RepositoryTreeTests(unittest.TestCase):
+    def test_every_tracked_path_of_this_repository_may_be_released(self):
+        root = Path(__file__).resolve().parents[1]
+        listed = subprocess.run(["git", "-C", str(root), "ls-files", "-z"], capture_output=True)
+        if listed.returncode:
+            self.skipTest("Not a Git checkout")
+        names = [name for name in listed.stdout.decode().split("\0") if name and name != "README.md"]
+        asset, _ = asset_binding((root / "public/atlas/atlas.json").read_bytes())
+        tracked = set(names)
+        registry = anatomy_registry(lambda path, limit: (root / path).read_bytes() if path in tracked else None)
+        rejected = [name for name in names if not source_allowed(name, asset, set(registry))]
+        self.assertEqual(rejected, [])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

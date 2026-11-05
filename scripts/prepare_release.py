@@ -34,7 +34,7 @@ ROOT_FILES = {".gitattributes", ".gitignore", ".npmrc", "LICENSE", "LICENSES.md"
 SOURCE_TYPES = {
     "src": {".ts", ".tsx", ".js", ".jsx", ".css", ".json", ".html", ".svg"},
     "tests": {".ts", ".tsx", ".js", ".mjs", ".py"},
-    "scripts": {".py", ".sh", ".mjs", ".js"},
+    "scripts": {".py", ".sh", ".mjs", ".js", ".ts"},
     "docs": {".md", ".txt", ".json"},
     "data": {".json", ".txt", ".md", ".html"},
     "public": {".json", ".txt", ".md", ".html", ".css", ".svg"},
