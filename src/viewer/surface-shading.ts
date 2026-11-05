@@ -27,6 +27,19 @@ export const SURFACE_PRESENTATION = Object.freeze({
   rimColor: '#f3c98c',
 });
 
+/**
+ * The body surface of a reference is shown as skin: a softer, less glossy
+ * response with a pale sheen at grazing angles. These are display values, not
+ * measured optical properties of skin.
+ */
+export const SKIN_PRESENTATION = Object.freeze({
+  roughness: 0.62,
+  clearcoat: 0.08,
+  sheen: 0.55,
+  sheenRoughness: 0.5,
+  sheenColor: '#ffe2d4',
+});
+
 const SHADING_KEY = 'mousebio-surface-shading-v1';
 
 /** Install the shading uniforms on a physically based material. Returns the uniforms for later updates. */

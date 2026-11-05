@@ -1,4 +1,5 @@
 import type { Atlas, Structure } from './types';
+import { bodySurfaceIdFor } from './display-pose';
 
 /** Source metadata controls display only, never quantitative measurements. */
 export function defaultStructureOpacity(structure: Structure): number {
@@ -7,10 +8,29 @@ export function defaultStructureOpacity(structure: Structure): number {
     : structure.id === 'digimouse:1' ? 0.22 : 1;
 }
 
+/** Opacity of the body surface shown as skin when a reference opens or Show all is used. */
+export const SKIN_OPACITY = 1;
+/** At or above this opacity the body surface is treated as covering the regions inside it. */
+export const OPAQUE_SKIN = 0.95;
+
+/**
+ * Initial display opacity. The body surface of a reference is shown as opaque
+ * skin; the Organs preset makes it and the skeleton translucent. Other regions
+ * keep their source defaults.
+ */
 export function referenceOpacity(atlas: Atlas, organs = false): Record<string, number> {
+  const skin = bodySurfaceIdFor(atlas);
   return Object.fromEntries(atlas.structures.map((structure) => [structure.id,
-    organs && (structure.id === 'digimouse:1' || structure.id === 'digimouse-volume:1') ? 0.06
-      : organs && structure.systems.includes('skeletal') ? 0.14 : defaultStructureOpacity(structure)]));
+    organs && structure.id === skin ? 0.06
+      : organs && structure.systems.includes('skeletal') ? 0.14
+        : structure.id === skin ? SKIN_OPACITY : defaultStructureOpacity(structure)]));
+}
+
+/** The see-through skin opacity used when the inside of the body is to be shown. */
+export function seeThroughSkinOpacity(atlas: Atlas): number | null {
+  const skin = bodySurfaceIdFor(atlas);
+  const structure = skin ? atlas.structures.find((entry) => entry.id === skin) : undefined;
+  return structure ? defaultStructureOpacity(structure) : null;
 }
 
 export function initialReferenceSelection(atlas: Atlas): string | null {

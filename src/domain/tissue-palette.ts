@@ -14,14 +14,14 @@ export type ColourScheme = 'tissue' | 'source';
 export const SYSTEM_COLOURS: Readonly<Record<SystemId, string>> = Object.freeze({
   skeletal: '#e9e2d2', muscular: '#9c4d47', nervous: '#d6b7b3', cardiovascular: '#a7343b', 'arterial-venous': '#b8343a',
   respiratory: '#d4877f', digestive: '#c98a73', urinary: '#8f3b3b', reproductive: '#d8c4c8', endocrine: '#e0b86d',
-  lymphatic: '#7a4a66', immune: '#937f9d', integumentary: '#d9c6b3', sensory: '#cfd9de',
+  lymphatic: '#7a4a66', immune: '#937f9d', integumentary: '#e3b5a4', sensory: '#cfd9de',
 });
 
 /** Ordered so that specific labels match before generic words such as "gland" or "muscle". */
 const TISSUE_COLOURS: readonly (readonly [RegExp, string])[] = Object.freeze([
   [/\badrenal\b/, '#e0b86d'],
   [/lachrymal|lacrimal|harderian/, '#d7b3a4'],
-  [/\bskin\b|body envelope|residual tissue|inside skin/, '#d9c6b3'],
+  [/\bskin\b|body envelope|residual tissue|inside skin/, '#e3b5a4'],
   [/\bskeleton\b|\bbone\b|\bskull\b|vertebra|\bfemur\b|\btibia\b|\bfibula\b|\bpelvis\b|fabella|\bpatella\b|\bfoot\b/, '#e9e2d2'],
   [/\bheart\b|ventric|atri/, '#a7343b'],
   [/\blung/, '#d4877f'],

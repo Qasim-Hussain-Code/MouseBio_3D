@@ -7,7 +7,7 @@ import type { Atlas } from '../src/domain/types';
 const atlas = JSON.parse(readFileSync(new URL('../public/atlas/atlas.json', import.meta.url), 'utf8')) as Atlas;
 const state: ViewState = {
   mode: 'anatomical', selected: null, hidden: [], opacity: {}, clipAxis: 'off', clipPosition: 50,
-  labels: true, background: 'dark', living: { playing: false, speed: 1, cardiac: true, respiratory: true },
+  labels: true, background: 'white', living: { playing: false, speed: 1, cardiac: true, respiratory: true },
 };
 
 test('translated camera poses must remain finite in the renderer Float32 coordinate range', () => {

@@ -186,7 +186,6 @@ test('regional female hindlimb uses its own anatomy, source groups, observations
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
   await view.findByText('Accepted 8 measurements. No data transmitted.');
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   expectedRequests.push('/atlas-hindlimb/atlas.json');
   fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'charles2016-hindlimb-v1' } });
   await view.findByText('44 visible regions');
@@ -643,51 +642,86 @@ test('ontology candidates expose limited evidence without inventing mappings or 
   assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
 });
 
-test('viewer background follows every mode, restores saved white and defaults legacy files to dark without changing observations', async () => {
+test('the viewer keeps one white background in every mode and loads earlier dark or unspecified view files as white without changing observations', async () => {
   const view = await openApp();
-  const assertBackground = (expected: 'dark' | 'white', expectedCanvasCount = 1) => {
-    assert.equal(view.getByRole('region', { name: 'Anatomical viewer' }).getAttribute('data-background'), expected);
-    const choices = within(view.getByRole('group', { name: 'Viewer background' }));
-    assert.equal(choices.getByRole('button', { name: 'Dark background' }).getAttribute('aria-pressed'), String(expected === 'dark'));
-    assert.equal(choices.getByRole('button', { name: 'White background' }).getAttribute('aria-pressed'), String(expected === 'white'));
-    const canvases = [...view.container.querySelectorAll('.viewer-canvas')];
-    assert.equal(canvases.length, expectedCanvasCount);
-    assert.ok(canvases.every((canvas) => canvas.getAttribute('data-background') === expected));
+  const assertWhite = (expectedCanvasCount = 1) => {
+    assert.equal(view.queryByRole('group', { name: 'Viewer background' }), null);
+    assert.equal(view.queryByRole('button', { name: 'Dark background' }), null);
+    assert.equal(view.getByRole('region', { name: 'Anatomical viewer' }).hasAttribute('data-background'), false);
+    assert.equal(view.container.querySelectorAll('.viewer-canvas').length, expectedCanvasCount);
   };
-  assertBackground('dark');
+  assertWhite();
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
   await view.findByText('Accepted 8 measurements. No data transmitted.');
   fireEvent.click(view.getByRole('button', { name: /Bladder.*digimouse:4/ }));
   fireEvent.click(view.getByRole('button', { name: 'Hide Brain' }));
   fireEvent.change(selectionOpacity(view), { target: { value: '0.37' } });
-  const before = await savedView(view);
-  assert.equal(before.background, 'dark');
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
-  assertBackground('white');
   const white = await savedView(view);
-  assert.deepEqual({ ...white, background: 'dark' }, before);
+  assert.equal(white.background, 'white');
   for (const mode of ['Living', 'Compare', 'Anatomy', 'Experiment']) {
     fireEvent.click(view.getByRole('button', { name: mode }));
-    assertBackground('white', mode === 'Compare' ? 2 : 1);
+    assertWhite(mode === 'Compare' ? 2 : 1);
   }
   assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
   assert.deepEqual([...view.container.querySelectorAll('.measurement-card strong')].map((element) => element.textContent?.trim()), ['2 AU', '6 AU']);
   assert.deepEqual(await savedView(view), white);
 
-  fireEvent.click(view.getByRole('button', { name: 'Dark background' }));
-  assertBackground('dark');
   const input = view.getByLabelText('Restore view state');
-  fireEvent.change(input, { target: { files: [inputFile(JSON.stringify(white), 'white-view.json')] } });
-  await waitFor(() => assertBackground('white'));
-  assert.deepEqual(await savedView(view), white);
+  const labelToggle = view.getByRole('button', { name: 'Toggle selected structure label' });
+  const restoreAs = async (document: Record<string, unknown>, name: string) => {
+    fireEvent.click(labelToggle);
+    assert.equal(labelToggle.getAttribute('aria-pressed'), String(!white.labels));
+    fireEvent.change(input, { target: { files: [inputFile(JSON.stringify(document), name)] } });
+    await waitFor(() => assert.equal(labelToggle.getAttribute('aria-pressed'), String(white.labels)));
+    assertWhite();
+    assert.deepEqual(await savedView(view), white);
+  };
+  await restoreAs({ ...white, background: 'dark' }, 'dark-view.json');
   const legacy: Partial<ViewStateDocument> = { ...white };
   delete legacy.background;
-  fireEvent.change(input, { target: { files: [inputFile(JSON.stringify(legacy), 'legacy-view.json')] } });
-  await waitFor(() => assertBackground('dark'));
-  assert.deepEqual(await savedView(view), { ...white, background: 'dark' });
+  await restoreAs(legacy, 'legacy-view.json');
+  fireEvent.change(input, { target: { files: [inputFile(JSON.stringify({ ...white, background: 'black' }), 'invalid-view.json')] } });
+  await view.findByText(/View settings unchanged\. .*background must be white/);
   assert.ok(view.getByText('8 observations · 4 biological subject IDs · 4 groups'));
   assert.ok(view.getByRole('button', { name: 'Show Brain' }));
+});
+
+test('the body surface opens as opaque skin, becomes see-through for enclosed selections and data modes, and Show all restores it', async () => {
+  const view = await openApp();
+  const skin = () => view.getByRole('slider', { name: 'Skin opacity' }) as HTMLInputElement;
+  assert.equal(skin().value, '100');
+  assert.equal((await savedView(view)).opacity['digimouse:1'], 1);
+  fireEvent.click(view.getByRole('button', { name: /Body envelope.*digimouse:1/ }));
+  assert.equal(skin().value, '100');
+  fireEvent.click(view.getByRole('button', { name: /Liver.*digimouse:12/ }));
+  assert.equal(skin().value, '22');
+  assert.ok(view.getByText('Skin made see-through to show the selected region.'));
+  fireEvent.change(skin(), { target: { value: '0' } });
+  assert.equal((await savedView(view)).opacity['digimouse:1'], 0);
+  fireEvent.change(skin(), { target: { value: '100' } });
+  fireEvent.click(view.getByRole('button', { name: 'Hide Body envelope / residual tissue' }));
+  fireEvent.click(view.getByRole('button', { name: /Heart.*digimouse:3/ }));
+  assert.equal(skin().value, '100');
+  assert.ok((await savedView(view)).hidden.includes('digimouse:1'));
+  fireEvent.change(skin(), { target: { value: '60' } });
+  assert.equal((await savedView(view)).hidden.includes('digimouse:1'), false);
+  fireEvent.click(view.getByRole('button', { name: 'Show all' }));
+  assert.equal(skin().value, '100');
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  assert.equal(skin().value, '22');
+  fireEvent.click(view.getByRole('button', { name: 'Anatomy' }));
+  assert.equal(skin().value, '22');
+  expectedRequests.push('/atlas-hindlimb/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'charles2016-hindlimb-v1' } });
+  await view.findByText('44 visible regions');
+  assert.equal(view.queryByRole('slider', { name: 'Skin opacity' }), null);
+  expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
+  await view.findByText('21 visible regions');
+  assert.equal(skin().value, '100');
+  fireEvent.click(view.getByRole('button', { name: /Kidneys.*digimouse-volume:19/ }));
+  assert.equal(skin().value, '6');
 });
 
 test('organs visibility preset preserves selection, background and data while the details shortcut focuses its inspector', async () => {
@@ -698,7 +732,6 @@ test('organs visibility preset preserves selection, background and data while th
   fireEvent.click(view.getByRole('button', { name: /Kidney, region 7.*digimouse:7/ }));
   fireEvent.change(selectionOpacity(view), { target: { value: '0.2' } });
   fireEvent.click(view.getByRole('button', { name: 'Isolate selected structure or source record' }));
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.change(view.getByRole('combobox', { name: 'Section axis' }), { target: { value: 'x' } });
   fireEvent.change(view.getByRole('slider', { name: 'Section position' }), { target: { value: '61' } });
   const before = await savedView(view);
@@ -721,7 +754,7 @@ test('organs visibility preset preserves selection, background and data while th
   assert.equal(document.activeElement, view.container.querySelector('#structure-inspector'));
   fireEvent.click(view.getByRole('button', { name: 'Show all' }));
   const shown = await savedView(view);
-  assert.equal(shown.opacity['digimouse:1'], 0.22);
+  assert.equal(shown.opacity['digimouse:1'], 1);
   assert.equal(shown.opacity['digimouse:13'], 1);
   assert.equal(shown.selected, 'digimouse:7');
   assert.equal(shown.background, 'white');
@@ -732,7 +765,6 @@ test('switching references isolates observations and restores each source-bound 
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
   await view.findByText('Accepted 8 measurements. No data transmitted.');
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   expectedRequests.push('/atlas-volume/atlas.json');
   fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'digimouse-volume-040-v1' } });
   await view.findByText('21 visible regions');
@@ -834,7 +866,7 @@ test('reads started during a delayed reference switch are canceled when the new 
   await completeRead(pendingView, JSON.stringify({ ...priorView, background: 'white' }));
   assert.ok((view.getByRole('button', { name: 'Export JSON' }) as HTMLButtonElement).disabled);
   assert.equal((await savedView(view)).atlasId, 'digimouse-volume-040-v1');
-  assert.equal((await savedView(view)).background, 'dark');
+  assert.equal((await savedView(view)).background, 'white');
 });
 
 test('source groups isolate existing regions while retaining research data and background', async () => {
@@ -842,7 +874,6 @@ test('source groups isolate existing regions while retaining research data and b
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
   await view.findByText('Accepted 8 measurements. No data transmitted.');
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.change(view.getByRole('combobox', { name: 'Section axis' }), { target: { value: 'z' } });
   showTab(view, 'Layers');
   fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'brain' } });
@@ -900,7 +931,6 @@ test('native source inspection follows selection without inferring index matches
   const view = await openApp(); expectedRequests.push('/atlas-ema147/atlas.json');
   fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'ema147-native-v1' } });
   await view.findByText('77 visible regions');
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.click(view.getByRole('button', { name: /optic stalk.*ema147:EMAPA:16678/i }));
   showTab(view, 'Source evidence');
   let record = within(view.getByRole('region', { name: 'Native surface record' }));
@@ -939,7 +969,6 @@ test('source layers preserve observations, background and saved display across f
   const csv = syntheticCsv.replaceAll('digimouse:3', 'ema147:EMAPA:16098').replaceAll('digimouse:4', 'ema147:EMAPA:16105');
   fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(csv)] } });
   await view.findByText('Accepted 8 measurements. No data transmitted.');
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
   showTab(view, 'Layers');
@@ -982,7 +1011,6 @@ function pendingTraceFile() {
 
 test('local SWC remains in memory, supports source-bound observations and views, and switches without trace requests', async () => {
   const view = await openApp();
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   showTab(view, 'Sources');
   fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
   await view.findByText('Local trace opened. No file data transmitted.');
@@ -1093,7 +1121,6 @@ test('replacing a local trace separates its observations and rejects another tra
 
 test('bundled neuronal reference retains source limits, background and source-bound observations and views', async () => {
   const view = await openApp();
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
   await view.findByText('Accepted 8 measurements. No data transmitted.');
@@ -1106,7 +1133,7 @@ test('bundled neuronal reference retains source limits, background and source-bo
   assert.ok(view.getByText('11,650')); assert.ok(view.getByText('11,649'));
   assert.ok(view.getByText('Traced samples and parent links'));
   assert.equal(view.queryByRole('checkbox', { name: 'Finer selected surface' }), null);
-  assert.equal(view.getByRole('button', { name: 'White background' }).getAttribute('aria-pressed'), 'true');
+  assert.equal(view.queryByRole('group', { name: 'Viewer background' }), null);
   assert.equal((view.getByRole('button', { name: 'Export JSON' }) as HTMLButtonElement).disabled, true);
   const saved = await savedView(view);
   assert.equal(saved.atlasId, 'neuromorpho-nmo130632-standardized-v1');
@@ -1117,7 +1144,6 @@ test('bundled neuronal reference retains source limits, background and source-bo
   assert.equal(serialized.includes('synthetic signal'), false);
   assert.equal(serialized.includes('parentLinks'), false);
   assert.equal(Object.hasOwn(saved, 'nodes'), false);
-  fireEvent.click(view.getByRole('button', { name: 'Dark background' }));
   fireEvent.change(view.getByLabelText('Restore view state'), { target: { files: [inputFile(JSON.stringify(saved), 'neuron-view.json')] } });
   await view.findByText('View settings restored.');
   assert.deepEqual(await savedView(view), saved);
@@ -1140,7 +1166,6 @@ test('local sample navigation preserves source-bound views and observations with
   const view = await openApp();
   fireEvent.change(view.getByLabelText('Open local SWC trace'), { target: { files: [traceFile()] } });
   await view.findByRole('heading', { name: 'Source sample explorer' });
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   const saved = await savedView(view), id = saved.selected!;
   const csv = ['structure_id,measurement,value,unit,replicate,condition,time_point', `${id},synthetic marker,1,AU,subject-1,control,baseline`].join('\n');
@@ -1190,7 +1215,6 @@ test('Find anatomy opens exact vessel and nerve references and restores observat
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
   await view.findByText('Accepted 8 measurements. No data transmitted.');
-  fireEvent.click(view.getByRole('button', { name: 'White background' }));
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
   showTab(view, 'Sources'); showTab(view, 'Source evidence');
@@ -1237,7 +1261,7 @@ test('Find anatomy opens exact vessel and nerve references and restores observat
 });
 
 test('a substituted coverage manifest leaves current reference, display and observations intact', async () => {
-  const view = await openApp(); fireEvent.click(view.getByRole('button', { name: 'White background' }));
+  const view = await openApp();
   const before = await savedView(view), previous = globalThis.fetch;
   const substituted = JSON.parse(vascularText); substituted.statistics.assetSha256 = 'a'.repeat(64);
   expectedRequests.push('/atlas-vascular/atlas.json');
@@ -1256,7 +1280,7 @@ test('a substituted coverage manifest leaves current reference, display and obse
 test('source path navigation keeps white background, observations and saved views separate from graph records', async () => {
   const view = await openApp(); fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
   fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } }); await view.findByText('Accepted 8 measurements. No data transmitted.');
-  fireEvent.click(view.getByRole('button', { name: 'White background' })); fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
+  fireEvent.click(view.getByRole('button', { name: 'Export JSON' })); const observations = JSON.parse(await exportedBlobs.at(-1)!.text());
   expectedRequests.push('/atlas-nerve/atlas.json'); fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'mousemapper-nerve-patch0-v1' } });
   await view.findByRole('heading', { name: 'Source path explorer' }); const before = await savedView(view);
   expectedRequests.push('/atlas-nerve/mousemapper-patch0-lines.json'); fireEvent.click(view.getByRole('button', { name: 'Inspect source paths' }));
@@ -1274,7 +1298,6 @@ test('guided views validate exact source selection and preserve background and o
   fireEvent.click(view.getByRole('button',{name:'Experiment'}));
   fireEvent.change(view.getByLabelText('Import experimental dataset'),{target:{files:[inputFile(syntheticCsv)]}});
   await view.findByText('Accepted 8 measurements. No data transmitted.');
-  fireEvent.click(view.getByRole('button',{name:'White background'}));
   fireEvent.click(view.getByRole('button',{name:'Start here'}));
   const guide=within(view.getByRole('dialog',{name:'Start with the available science'}));
   assert.equal(guide.getAllByRole('button',{name:/^Open /}).length,9);

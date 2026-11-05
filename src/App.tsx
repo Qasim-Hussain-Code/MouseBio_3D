@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import {
   SYSTEMS, physiologyProcessesForAtlas, MAX_VIEW_STATE_BYTES, compareConditions, exportExperimentalCsv, exportExperimentalJson, exportViewState, parseViewState, parseExperimentalCsv,
   parseExperimentalJson, summarizeMeasurements, type Atlas, type DatasetMetadata,
-  type ExperimentalMeasurement, type ExplorationMode, type ImportResult, type MeasurementSummary, type ViewBackground,
+  type ExperimentalMeasurement, type ExplorationMode, type ImportResult, type MeasurementSummary,
 } from './domain';
 import type { CameraPose, ViewerHandle, ViewerSettings } from './viewer/ViewerCanvas';
 import { measurementColors } from './domain/visualization';
@@ -12,7 +12,8 @@ import { getOntologyCandidate, parseOntologyCandidates } from './domain/ontology
 import ontologyCandidateData from '../data/ontology-candidates.json';
 import { version as appVersion } from '../package.json';
 import { buildReferenceCatalog, getReference, validateReferenceAtlas, createExperimentalBank, switchAtlasExperimentalData } from './domain/atlas-catalog';
-import { defaultStructureOpacity, initialReferenceSelection, referenceOpacity } from './domain/reference-display';
+import { defaultStructureOpacity, initialReferenceSelection, OPAQUE_SKIN, referenceOpacity, seeThroughSkinOpacity } from './domain/reference-display';
+import { bodySurfaceIdFor } from './domain/display-pose';
 import referenceCatalogData from '../data/anatomy-references.json';
 import detailIndexData from '../public/atlas-volume/detail-index.json';
 import { buildRegionDetailAssets, type RegionDetailStatus } from './viewer/region-detail-registry';
@@ -118,7 +119,6 @@ export default function App() {
   const [focusOnSelection,setFocusOnSelection]=useState(false);
   const [dataPanelOpen,setDataPanelOpen]=useState(true);
   const [pathSignal,setPathSignal]=useState<PathSignalDisplay|null>(null);
-  const [background, setBackground] = useState<ViewBackground>('dark');
   const [clipAxis, setClipAxis] = useState<'off' | 'x' | 'y' | 'z'>('off');
   const [clipPosition, setClipPosition] = useState(50);
   const [playing, setPlaying] = useState(true);
@@ -234,10 +234,20 @@ export default function App() {
     structureId: selected, measurement: first.measurement, unit: first.unit, timePoint: first.timePoint,
     conditionA: activeA, conditionB: activeB,
   }) : null;
-  const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, background, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels };
+  const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels };
   const toggleHidden = (id: string) => { isolation.current = null; setActiveGroup(''); pendingGroupFocus.current = null; setHidden((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); };
+  /** Make opaque skin see-through so that regions inside the body can be seen. Returns whether it changed. */
+  const peelSkin = () => {
+    const skin = atlas ? bodySurfaceIdFor(atlas) : null, seeThrough = atlas ? seeThroughSkinOpacity(atlas) : null;
+    if (!atlas || !skin || seeThrough === null || hidden.includes(skin)) return false;
+    const skinStructure = atlas.structures.find((structure) => structure.id === skin)!;
+    if ((opacity[skin] ?? defaultStructureOpacity(skinStructure)) < OPAQUE_SKIN) return false;
+    setOpacity((previous) => ({ ...previous, [skin]: seeThrough }));
+    return true;
+  };
   const select = (id: string) => {
     if(!atlas?.structures.some(region=>region.id===id))return;
+    if(id!==bodySurfaceIdFor(atlas)&&peelSkin())setNotice('Skin made see-through to show the selected region.');
     setSelected(id);setHidden(previous=>previous.filter(value=>value!==id));
     if((opacity[id]??1)===0)setOpacity(previous=>({...previous,[id]:1}));
     setFineEnabled(false);setDetailLevel('fine-020');setDetailStatus({status:'idle',structureId:null});
@@ -444,7 +454,7 @@ export default function App() {
     if (!atlas) return;
     try {
       const effectiveOpacity = Object.fromEntries(atlas.structures.map((structure) => [structure.id, opacity[structure.id] ?? defaultStructureOpacity(structure)]));
-      download('mousebio-view.json', exportViewState({ mode, selected, hidden, opacity: effectiveOpacity, clipAxis, clipPosition, labels, background, ...(cameraPose ? { cameraPose } : {}), living: { playing, speed, cardiac, respiratory } }, atlas));
+      download('mousebio-view.json', exportViewState({ mode, selected, hidden, opacity: effectiveOpacity, clipAxis, clipPosition, labels, background: 'white', ...(cameraPose ? { cameraPose } : {}), living: { playing, speed, cardiac, respiratory } }, atlas));
       setNotice('View state exported.');
     } catch (error) { setViewError(error instanceof Error ? error.message : 'The view could not be exported.'); }
   };
@@ -463,7 +473,7 @@ export default function App() {
       setDetailLevel('fine-020');
       setActiveGroup(''); pendingGroupFocus.current = null;
       setMode(state.mode); setSelected(state.selected); setHidden(state.hidden); setOpacity(state.opacity);
-      setClipAxis(state.clipAxis); setClipPosition(state.clipPosition); setLabels(state.labels); setBackground(state.background);
+      setClipAxis(state.clipAxis); setClipPosition(state.clipPosition); setLabels(state.labels);
       setPlaying(state.living.playing); setSpeed(state.living.speed); setCardiac(state.living.cardiac); setRespiratory(state.living.respiratory);
       if (state.cameraPose) setCameraPose(state.cameraPose);
       isolation.current = null;
@@ -480,13 +490,15 @@ export default function App() {
   const parentLinkedTrace = !!activeTrace || sourceTrace;
   const sourcePolyline = isSourcePolylineAtlas(atlas);
   const lineReference = parentLinkedTrace || sourcePolyline;
-  const hasBodyEnvelope = atlas.structures.some((structure) => structure.id === 'digimouse:1' || structure.id === 'digimouse-volume:1');
+  const skinId = bodySurfaceIdFor(atlas);
+  const hasBodyEnvelope = !!skinId;
+  const skinOpacity = skinId ? opacity[skinId] ?? defaultStructureOpacity(atlas.structures.find((structure) => structure.id === skinId)!) : 0;
   const smoothing = smoothingOptionsFor(atlas);
   const viewerFailed = viewerState.primary === 'failed' || (mode === 'comparative' && viewerState.secondary === 'failed');
   return <div className={`app-shell workbench mode-${mode} ${inspectorOpen?'inspector-open':''} ${navigatorOpen?'navigator-open':''}`}>
     <header className="app-header">
       <a className="brand" href="/" aria-label="MouseBio_3D home"><span className="brand-mark"><Icon name="layers" size={25} /></span><span><strong>MouseBio<span className="brand-suffix">_3D</span></strong><small>DIGITAL MOUSE LABORATORY</small></span></a>
-      <nav className="mode-nav" aria-label="Exploration mode">{MODES.map((item) => <button key={item.id} className={mode === item.id ? 'active' : ''} aria-pressed={mode === item.id} onClick={() => { setMode(item.id); if (item.id === 'comparative') setFineEnabled(false); }}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
+      <nav className="mode-nav" aria-label="Exploration mode">{MODES.map((item) => <button key={item.id} className={mode === item.id ? 'active' : ''} aria-pressed={mode === item.id} onClick={() => { setMode(item.id); if (item.id === 'comparative') setFineEnabled(false); if (item.id !== 'anatomical') peelSkin(); }}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
       <div className="header-actions"><button className="secondary-button" onClick={()=>{setStartError('');setStartOpen(true);}}>Start here</button><span className="local-badge"><Icon name="lock" size={13} /> Local session</span><button className="icon-button" onClick={() => setMethods(true)} title="Methods, sources and limitations" aria-label="Methods, sources and limitations"><Icon name="info" /></button></div>
     </header>
 
@@ -546,10 +558,9 @@ export default function App() {
       </div>}
       {rows.length > 0 && metadata.origin === 'synthetic-example' && (mode === 'experimental' || mode === 'comparative') && <p className="synthetic-banner" role="status">Synthetic example data. These values are not experimental observations.</p>}
       {mode === 'comparative' && rows.length > 0 && (conditions.length < 2 || activeA === activeB) && <p className="view-import-error" role="status">Choose two distinct conditions in this measurement series.</p>}
-      <div className="viewer-stage"><section className={`viewport ${mode === 'comparative' ? 'comparison-viewport' : ''}`} aria-label="Anatomical viewer" data-background={background}>
-        <div className="viewport-top"><span className="viewport-breadcrumb">{referenceSummary.source.displayName.toUpperCase()} <span>/</span> {mode === 'comparative' ? 'SYNCHRONIZED REFERENCE' : referenceSummary.specimen.scope.toUpperCase()}</span><div className="viewport-top-actions"><span className="viewport-chip"><span /> {atlas.structures.length} source regions</span><div className="background-switch" role="group" aria-label="Viewer background"><button aria-label="Dark background" aria-pressed={background === 'dark'} onClick={() => setBackground('dark')}><span className="background-swatch swatch-dark" />Dark</button><button aria-label="White background" aria-pressed={background === 'white'} onClick={() => setBackground('white')}><span className="background-swatch swatch-white" />White</button></div></div></div>
+      <div className="viewer-stage"><section className={`viewport ${mode === 'comparative' ? 'comparison-viewport' : ''}`} aria-label="Anatomical viewer">
+        <div className="viewport-top"><span className="viewport-breadcrumb">{referenceSummary.source.displayName.toUpperCase()} <span>/</span> {mode === 'comparative' ? 'SYNCHRONIZED REFERENCE' : referenceSummary.specimen.scope.toUpperCase()}</span><div className="viewport-top-actions"><span className="viewport-chip"><span /> {atlas.structures.length} source regions</span>{skinId&&<label className="skin-control" title="Opacity of the body surface shown as skin; display only">Skin <input type="range" min="0" max="100" aria-label="Skin opacity" value={Math.round(skinOpacity*100)} onChange={event=>{const value=+event.target.value/100;setOpacity(previous=>({...previous,[skinId]:value}));if(value>0)setHidden(previous=>previous.filter(id=>id!==skinId));setActiveGroup('');}}/><span>{Math.round(skinOpacity*100)}%</span></label>}</div></div>
         <details className="scene-display"><summary>Display controls</summary>
-          {hasBodyEnvelope&&<label>Body envelope <input type="range" min="0" max="100" aria-label="Body envelope opacity" value={(opacity[atlas.id==='digimouse-tessellated-v1'?'digimouse:1':'digimouse-volume:1']??0.22)*100} onChange={event=>{const id=atlas.id==='digimouse-tessellated-v1'?'digimouse:1':'digimouse-volume:1';setOpacity(previous=>({...previous,[id]:+event.target.value/100}));if(+event.target.value>0)setHidden(previous=>previous.filter(value=>value!==id));setActiveGroup('');}}/></label>}
           <label><input type="checkbox" checked={focusOnSelection} onChange={event=>setFocusOnSelection(event.target.checked)}/> Focus on selection</label>
           <label><input type="checkbox" checked={autoRotate} disabled={mode==='comparative'} onChange={event=>setAutoRotate(event.target.checked)}/> Auto-rotate</label>
           {smoothing&&<label title={`Taubin smoothing, ${smoothing.iterations} iterations; removes the processing-grid staircase and adds no resolution`}><input type="checkbox" checked={surfaceDisplay==='smoothed'} onChange={event=>setSurfaceDisplay(event.target.checked?'smoothed':'source')}/> Smooth voxel surfaces (display only)</label>}

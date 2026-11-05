@@ -7,7 +7,8 @@ export const MAX_VIEW_STATE_BYTES = 1024 * 1024;
 
 export type ViewVector3 = Vector3Tuple;
 export type ViewCameraPose = CameraPose;
-export type ViewBackground = 'dark' | 'white';
+/** The viewer has a single white background. Earlier files may record the retired dark background. */
+export type ViewBackground = 'white';
 
 /** Display settings only. Research observations never belong in this record. */
 export interface ViewState {
@@ -94,8 +95,9 @@ function validateSettings(input: unknown, atlas: Atlas, document: boolean): View
   const errors: string[] = [];
   if (!plainRecord(input)) return { ok: false, errors: ['View state must be an object.'] };
   allowedFields(input, document ? [...SETTINGS_FIELDS, ...BINDING_FIELDS] : SETTINGS_FIELDS, 'View state', errors);
-  // Earlier v1 documents predate the background control. Only that absent field
-  // is migrated; source binding and every other required field remain strict.
+  // Earlier v1 documents predate the background control or record the retired
+  // dark background. Only that field is migrated; source binding and every other
+  // required field remain strict.
   requiredFields(input, SETTINGS_FIELDS.filter((field) => field !== 'cameraPose'
     && !(document && field === 'background')), 'View state', errors);
   let expected: ReturnType<typeof binding>;
@@ -135,8 +137,8 @@ function validateSettings(input: unknown, atlas: Atlas, document: boolean): View
   if (!['off', 'x', 'y', 'z'].includes(input.clipAxis as string)) errors.push('clipAxis must be off, x, y or z.');
   if (!finiteInRange(input.clipPosition, 0, 100)) errors.push('clipPosition must be a finite percentage between 0 and 100.');
   if (typeof input.labels !== 'boolean') errors.push('labels must be a boolean.');
-  const background = document && !owns(input, 'background') ? 'dark' : input.background;
-  if (background !== 'dark' && background !== 'white') errors.push('background must be dark or white.');
+  const background = document && (!owns(input, 'background') || input.background === 'dark') ? 'white' : input.background;
+  if (background !== 'white') errors.push(document ? 'background must be white; earlier files may record dark.' : 'background must be white.');
   if (owns(input, 'cameraPose')) validCameraPose(input.cameraPose, errors);
   if (!plainRecord(input.living)) errors.push('living must contain the physiological display controls.');
   else {

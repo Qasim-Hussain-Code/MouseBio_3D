@@ -16,7 +16,7 @@ const atlas: Atlas = {
 };
 const state: ViewState = {
   mode: 'living', selected: 'fixture:2', hidden: ['fixture:3'], opacity: { 'fixture:1': 0.1, 'fixture:2': 0.75, 'fixture:3': 1 },
-  clipAxis: 'x', clipPosition: 42, labels: true, background: 'dark',
+  clipAxis: 'x', clipPosition: 42, labels: true, background: 'white',
   cameraPose: { position: [1, 2, 3], target: [0, 0, 0], up: [0, 0, 1] },
   living: { playing: false, speed: 0.5, cardiac: true, respiratory: false },
 };
@@ -56,8 +56,8 @@ test('all four modes and continuous supported display speeds round trip', () => 
   }
 });
 
-test('dark and white backgrounds round trip in every mode without changing anatomy or adding observations', () => {
-  for (const background of ['dark', 'white'] as const) {
+test('the white background round trips in every mode without changing anatomy or adding observations', () => {
+  for (const background of ['white'] as const) {
     for (const mode of ['anatomical', 'living', 'experimental', 'comparative'] as const) {
       const input: ViewState = { ...state, mode, background };
       const before = structuredClone(input);
@@ -75,7 +75,7 @@ test('dark and white backgrounds round trip in every mode without changing anato
   }
 });
 
-test('earlier bound v1 documents without a background migrate to canonical dark views', () => {
+test('earlier bound v1 documents without a background or with the retired dark background load as white views', () => {
   const legacy = saved();
   delete legacy.background;
   const original = structuredClone(legacy);
@@ -83,9 +83,13 @@ test('earlier bound v1 documents without a background migrate to canonical dark 
   assert.equal(result.ok, true);
   assert.deepEqual(result.state, state);
   assert.deepEqual(legacy, original);
+  const dark = parse({ ...saved(), background: 'dark' });
+  assert.equal(dark.ok, true);
+  assert.deepEqual(dark.state, state);
+  assert.throws(() => exportViewState({ ...state, background: 'dark' } as unknown as ViewState, atlas), /background must be white/);
   const canonical = JSON.parse(exportViewState(result.state!, atlas));
   assert.equal(canonical.schemaVersion, VIEW_STATE_SCHEMA_VERSION);
-  assert.equal(canonical.background, 'dark');
+  assert.equal(canonical.background, 'white');
   for (const [field, value] of [['atlasId', 'other-atlas'], ['assetSha256', 'b'.repeat(64)], ['coordinateFrameId', 'other-frame']]) {
     const invalid = parse({ ...legacy, [field]: value });
     assert.equal(invalid.ok, false, field);

@@ -6,13 +6,15 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { surfaceShadingOf, SURFACE_PRESENTATION } from './surface-shading';
+import { surfaceShadingOf, SURFACE_PRESENTATION, SKIN_PRESENTATION } from './surface-shading';
+import { createContactShadow, type ContactShadow } from './contact-shadow';
+import { bodySurfaceIdFor, displayPostureFor } from '../domain/display-pose';
 import { smoothingOptionsFor, smoothSurfaceGeometries } from './surface-smoothing';
 import type { SurfaceDisplay } from '../domain/display-smoothing';
 import { displayColour, type ColourScheme } from '../domain/tissue-palette';
 import { layoutLabels, leaderEnd, type LabelCandidate, type PlacedLabel } from './label-layout';
-import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas, type ViewBackground } from '../domain';
-import { defaultStructureOpacity } from '../domain/reference-display';
+import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas } from '../domain';
+import { defaultStructureOpacity, OPAQUE_SKIN } from '../domain/reference-display';
 import { RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
 import { loadAtlasScene } from './atlas-loader';
 import type { LocalTraceAsset } from '../domain/local-trace';
@@ -39,7 +41,6 @@ export type ViewerSettings = {
   circuits?: { circulation: boolean; neural: boolean; selectionOnly: boolean };
   colors: Record<string, string>;
   labels: boolean;
-  background: ViewBackground;
   /** Slow orbit around the target until the user takes over. Display only. */
   autoRotate?: boolean;
   /** Smoothed display copies of voxel-derived surfaces, or the source surfaces. Defaults to smoothed. */
@@ -101,7 +102,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     // Neutral tone mapping keeps region hues close to their declared display colours.
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 1;
-    // The page paints the background; the canvas stays transparent.
+    // The page paints the white background; the canvas stays transparent.
     renderer.setClearColor('#000000', 0);
     renderer.domElement.setAttribute('aria-label', title ?? 'Interactive anatomical source model');
     renderer.domElement.setAttribute('role', 'img');
@@ -127,6 +128,10 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     rim.position.set(1.5, 2.5, -5);
     scene.add(rim);
     const camera = new THREE.PerspectiveCamera(36, 1, 0.00001, 100);
+    // A reference with an inferred dorsal direction orbits about it, like a turntable.
+    const posture = displayPostureFor(atlas);
+    const skinId = bodySurfaceIdFor(atlas);
+    if (posture) camera.up.set(...posture.up);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = false;
     controls.enablePan = true;
@@ -136,6 +141,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     });
     const display = new THREE.Group();
     display.rotation.z = DISPLAY_ROTATION_Z;
+    // Nothing is drawn until the camera has been placed for the loaded regions.
+    display.visible = false;
     scene.add(display);
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
@@ -168,6 +175,12 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let loaded = false;
     let lastLabel = '';
     let lastLabelSet = '', lastLabelSetAt = 0;
+    let shadow: ContactShadow | null = null, shadowDirty = true;
+    /** True when the opaque body surface covers the regions inside it. */
+    const skinCovers = (current: ViewerSettings) => {
+      const skin = skinId ? meshes.get(skinId) : undefined;
+      return !!skin?.visible && (current.opacity[skinId!] ?? defaultOpacity(skinId!)) >= OPAQUE_SKIN;
+    };
     /** Place a label for every displayed region; refreshed at most about twenty times per second. */
     const syncAllLabels = (current: ViewerSettings, timestamp: number) => {
       if (!current.allLabels) { if (lastLabelSet) { lastLabelSet = ''; setLabelSet({ labels: [], width: 0, height: 0 }); } return; }
@@ -175,8 +188,9 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       lastLabelSetAt = timestamp;
       const width = element.clientWidth, height = element.clientHeight;
       const candidates: LabelCandidate[] = [];
+      const covered = skinCovers(current);
       for (const [id, mesh] of meshes) {
-        if (!mesh.visible) continue;
+        if (!mesh.visible || (covered && id !== skinId)) continue;
         const selected = id === current.selected;
         if (!selected && (current.opacity[id] ?? defaultOpacity(id)) < 0.3) continue;
         const anchor = regionLabelCenter(mesh); if (!anchor) continue;
@@ -239,11 +253,12 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       }
       if (current.clipAxis !== 'off') clip.copy(createDisplayClipPlane(current.clipAxis, current.clipPosition, radius));
       applySurfaceDisplay();
-      dirty = true;
+      dirty = true; shadowDirty = true;
     };
     const detailController = new RegionDetailController(atlas, (id) => detailTargets.get(id), () => {
       dirty = true;
       if (!disposed && loaded) latest.current.onReady?.(renderDiagnostics([...meshes.values()]));
+      shadowDirty = true;
     }, (state) => {
       const requested = latest.current.detailAsset;
       if (!disposed && (requested ? state.structureId === requested.structureId && state.assetSha256 === requested.glbSha256 : state.status === 'idle'))
@@ -278,9 +293,15 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     engine.current = { apply, setPose, setDetail: () => { if (loaded) void detailController.request(latest.current.detailAsset, latest.current.settings.selected); } };
     const reset = () => {
       controls.target.set(0, 0, 0);
-      camera.up.set(0, 1, 0);
-      // A raised three-quarter display pose; the display axes carry no anatomical direction.
-      camera.position.set(radius * 1.35, radius * 1.05, radius * 2.55);
+      if (posture) {
+        // A raised lateral view with the inferred dorsal side up.
+        camera.up.set(...posture.up);
+        camera.position.set(...posture.view).multiplyScalar(radius * posture.distance);
+      } else {
+        camera.up.set(0, 1, 0);
+        // A raised three-quarter display pose; the display axes carry no anatomical direction.
+        camera.position.set(radius * 1.35, radius * 1.05, radius * 2.55);
+      }
       controls.update();
       dirty = true;
     };
@@ -370,6 +391,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         if (!structure || meshes.has(structure.id)) throw new Error('Reference region identity is missing or duplicated.');
         const { previousGeometry } = recenterRegionGeometry(object); previousGeometry.dispose();
         const region = prepareRegionMaterial(object);
+        if (structure.id === skinId && region.material instanceof THREE.MeshPhysicalMaterial) Object.assign(region.material, SKIN_PRESENTATION, { sheenColor: new THREE.Color(SKIN_PRESENTATION.sheenColor) });
         region.userData.structureId = structure.id;
         meshes.set(structure.id, region);
         region.updateWorldMatrix(true, false);
@@ -395,6 +417,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       camera.updateProjectionMatrix();
       controls.minDistance = radius * 0.07;
       controls.maxDistance = radius * 12;
+      if (posture) { shadow = createContactShadow(bounds); if (shadow) scene.add(shadow.group); }
+      display.visible = true;
       loaded = true;
       if (latest.current.cameraPose) setPose(latest.current.cameraPose);
       else reset();
@@ -504,11 +528,12 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         if (mesh.scale.x !== scale) { mesh.scale.setScalar(scale); dirty = true; }
       }
       if (dirty && !document.hidden) {
+        if (shadow && shadowDirty) { shadow.render(renderer, scene, current.clipAxis === 'off' ? [] : [clip]); shadowDirty = false; }
         renderer.render(scene, camera);
         dirty = false;
         syncAllLabels(current, timestamp);
         const selected = meshes.get(current.selected ?? '');
-        if (selected?.visible && current.labels && !current.allLabels) {
+        if (selected?.visible && current.labels && !current.allLabels && !(skinCovers(current) && current.selected !== skinId)) {
           const anchor = regionLabelCenter(selected);
           if (!anchor) { setLabel(null); lastLabel = ""; return; }
           const point = anchor.project(camera);
@@ -524,6 +549,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       sourceAbort.abort();
       pathOverlay?.dispose();
       circuitOverlay?.dispose();
+      shadow?.dispose();
       detailController.dispose();
       cancelAnimationFrame(frame);
       observer.disconnect();
@@ -547,7 +573,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
   useEffect(() => { engine.current?.apply(); }, [settings]);
   useEffect(() => { if (cameraPose) engine.current?.setPose(cameraPose); }, [cameraPose]);
   useLayoutEffect(() => { engine.current?.setDetail(); }, [detailAsset, settings.selected]);
-  return <div className="viewer-canvas" ref={host} data-background={settings.background}>
+  return <div className="viewer-canvas" ref={host}>
     {status && <div className={`viewer-status ${failure ? 'error' : ''}`} role="status">{!failure && <span className="loading-ring" />}{status}</div>}
     {label && !status && <div className="model-label" style={{ left: label.x, top: label.y }}>{label.name}</div>}
     {labelSet.labels.length > 0 && !status && <>
