@@ -5,7 +5,7 @@ export interface GlbSurface {
   readonly positions: Float32Array;
   readonly normals: Float32Array;
   readonly indices: Uint32Array;
-  /** Optional per-vertex RGB in the range 0 to 1, for tissue patterning. */
+  /** Optional per-vertex RGB tint, multiplied with the display colour. */
   readonly colors?: Float32Array;
   /** Optional per-vertex fur length factor and direction, read by the coat display. */
   readonly fur?: Float32Array;
@@ -49,10 +49,11 @@ export function writeGlb(surfaces: readonly GlbSurface[], generator: string): Bu
     if (surface.colors) attributes.COLOR_0 = attribute(surface.colors, 'VEC3');
     if (surface.fur) attributes._FUR = attribute(surface.fur, 'VEC4');
     if (surface.fibre) attributes._FIBER = attribute(surface.fibre, 'VEC4');
-    accessors.push({ bufferView: pushBytes(bytesOf(surface.indices), 34963), componentType: 5125, count: surface.indices.length, type: 'SCALAR' });
+    const small = count <= 65535;
+    const indexBytes = small ? Buffer.from(Uint16Array.from(surface.indices).buffer) : bytesOf(surface.indices);
+    accessors.push({ bufferView: pushBytes(indexBytes, 34963), componentType: small ? 5123 : 5125, count: surface.indices.length, type: 'SCALAR' });
     meshes.push({ name: surface.name, primitives: [{ attributes, indices: accessors.length - 1, mode: 4 }] });
     nodes.push({ name: surface.id, mesh: index, extras: { structureId: surface.id } });
-    void count;
   });
   const padded = align(offset, 4);
   if (padded > offset) { parts.push(Buffer.alloc(padded - offset)); offset = padded; }

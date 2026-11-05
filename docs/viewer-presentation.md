@@ -60,7 +60,7 @@ The executed asset check (`tests/surface-smoothing-assets.test.ts`) measures the
 
 ## Simulated coat
 
-On the living mouse model the skin carries a simulated coat of individual hairs; see [living mouse methods](living-mouse.md). The hairs appear only while the skin is visible and at least 95% opaque. They are left out of the ground shadow, and they are cut by a virtual section. Distant hairs are kept about one pixel wide so that the coat stays continuous. Coat colours, hair length, width and density are display estimates, and the lighting of the hairs follows the manner of Kajiya and Kay, with its own fixed lights.
+On the living mouse model the skin carries a simulated coat of individual hairs; see [living mouse methods](living-mouse.md). The hairs appear only while the skin is visible and at least 95% opaque. They are left out of the ground shadow, and they are cut by a virtual section. Distant hairs are kept about one pixel wide so that the coat stays continuous. On a machine that draws slowly, fewer and wider hairs are drawn while the view moves, and the full coat returns when it stops. Coat colours, hair length, width and density are display estimates, and the lighting of the hairs follows the manner of Kajiya and Kay, with its own fixed lights.
 
 ## Muscle fibres
 

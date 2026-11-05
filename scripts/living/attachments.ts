@@ -45,7 +45,31 @@ function moved(surface: Surface, transform: RigidTransform): Surface {
     positions[i] = p[0]; positions[i + 1] = p[1]; positions[i + 2] = p[2];
     normals[i] = n[0]; normals[i + 1] = n[1]; normals[i + 2] = n[2];
   }
-  return { positions, normals, indices: surface.indices };
+  return { positions, normals, indices: surface.indices, colors: surface.colors };
+}
+
+/** Tint a surface by a function of position and normal. */
+function tinted(surface: Surface, tint: (p: Vec3, n: Vec3) => Vec3): Surface {
+  const colors = new Float32Array(surface.positions.length);
+  for (let i = 0; i < colors.length; i += 3) {
+    const value = tint([surface.positions[i], surface.positions[i + 1], surface.positions[i + 2]], [surface.normals[i], surface.normals[i + 1], surface.normals[i + 2]]);
+    colors[i] = value[0]; colors[i + 1] = value[1]; colors[i + 2] = value[2];
+  }
+  return { ...surface, colors };
+}
+
+/** Lids round the visible part of the globe, slightly almond-shaped. */
+function eyelid(centre: Vec3, outward: Vec3, radius: number): Surface {
+  const along = unit(sub([0, 1, 0], scale(outward, dot([0, 1, 0], outward))));
+  const across = unit(cross(outward, along));
+  const middle = add(centre, scale(outward, radius * 0.42));
+  const points: Vec3[] = [], radii: number[] = [];
+  for (let i = 0; i <= 36; i++) {
+    const angle = 2 * Math.PI * i / 36;
+    points.push(add(add(middle, scale(along, Math.cos(angle) * radius * 0.98)), scale(across, Math.sin(angle) * radius * 0.84)));
+    radii.push(2.1);
+  }
+  return tube(points, radii, 8);
 }
 
 /** Polygonize a signed function, positive inside, on a local grid around a box. */
@@ -67,6 +91,13 @@ function capsule(p: Vec3, a: Vec3, b: Vec3, ra: number, rb: number): number {
   return ra + (rb - ra) * t - length(sub(p, add(a, scale(ab, t))));
 }
 const smoothUnion = (a: number, b: number, k: number) => { const h = Math.max(0, Math.min(1, 0.5 + 0.5 * (a - b) / k)); return b + (a - b) * h + k * h * (1 - h); };
+
+/** The undersides of paws, where the walking pads lie, are darker. */
+const padTint = (ground: number) => (p: Vec3, n: Vec3): Vec3 => {
+  const down = Math.max(0, -n[2]) * Math.max(0, 1 - (p[2] - ground) / 10);
+  const value = 1 - 0.28 * down;
+  return [value, value * 0.92, value * 0.9];
+};
 
 /** Direction bases for a paw: forward along the digits, lateral across them, up out of the back of the hand. */
 interface PawFrame { origin: Vec3; forward: Vec3; lateral: Vec3; up: Vec3 }
@@ -218,7 +249,20 @@ function pinna(root: Vec3, side: -1 | 1): Surface {
   const front = pushFace(-1), back = pushFace(1);
   for (let s = 0; s < segments; s++) indices.push(front(s), front(s + 1), back(s), front(s + 1), back(s + 1), back(s));
   const positionArray = Float32Array.from(positions), indexArray = Uint32Array.from(indices);
-  return { positions: positionArray, normals: vertexNormals(positionArray, indexArray), indices: indexArray };
+  const colors = new Float32Array(positionArray.length);
+  const faceVertices = (positionArray.length / 3) / 2;
+  for (let i = 0; i < positionArray.length / 3; i++) {
+    const inner = i < faceVertices;
+    const local = i % faceVertices;
+    const ring = local === 0 ? 0 : Math.floor((local - 1) / segments) + 1;
+    const s = local === 0 ? 0 : (local - 1) % segments;
+    const r = ring / rings, theta = 2 * Math.PI * s / segments;
+    const vein = 1 - 0.1 * Math.max(0, Math.sin(theta * 11 + r * 7)) ** 8 * r;
+    const concha = 1 - 0.34 * Math.exp(-(((r - 0.1) / 0.32) ** 2));
+    const shade = (inner ? concha : 0.66) * vein;
+    colors[3 * i] = shade; colors[3 * i + 1] = shade * (inner ? 0.97 : 0.9); colors[3 * i + 2] = shade * (inner ? 0.97 : 0.88);
+  }
+  return { positions: positionArray, normals: vertexNormals(positionArray, indexArray), indices: indexArray, colors };
 }
 
 /** The tail runs along the caudal vertebrae measured in the CT, then falls to the ground and curves. */
@@ -255,7 +299,17 @@ function buildTail(landmarks: Landmarks, ground: number, totalLength: number, pe
     const r = radii[Math.round((from + to) / 2)] * 0.56;
     shafts.push(tube([a, add(a, scale(sub(b, a), 0.18)), c, add(a, scale(sub(b, a), 0.82)), b], [r * 1.25, r * 0.9, r * 0.8, r * 0.9, r * 1.25], 8));
   }
-  return { skin: tube(points, radii, 14), vertebrae: mergeSurfaces(shafts) };
+  const skin = tube(points, radii, 14);
+  const colors = new Float32Array(skin.positions.length).fill(1);
+  const rows2 = points.length;
+  for (let row = 0; row < rows2; row++) for (let s = 0; s < 14; s++) {
+    const at = 3 * (row * 14 + s);
+    const upward = Math.max(0, skin.normals[at + 2]);
+    const ring = row % 2 ? 0.9 : 1;
+    const value = ring * (1 - 0.3 * upward);
+    colors[at] = value; colors[at + 1] = value * 0.96; colors[at + 2] = value * 0.94;
+  }
+  return { skin: { ...skin, colors }, vertebrae: mergeSurfaces(shafts) };
 }
 
 /** A whisker: a tapering hair sweeping out from its follicle. */
@@ -356,11 +410,12 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
   const head = posture.pose.transforms.head;
   const parts: Record<AttachmentPart, Surface> = {
     eyes: moved(mergeSurfaces([sphere(eyeLeft, [eyeRadius, eyeRadius, eyeRadius]), sphere(eyeRight, [eyeRadius, eyeRadius, eyeRadius])]), head),
+    eyelids: moved(mergeSurfaces([eyelid(eyeLeft, unit([-0.86, 0, 0.5]), eyeRadius), eyelid(eyeRight, unit([0.86, 0, 0.5]), eyeRadius)]), head),
     pinnae: moved(mergeSurfaces([pinna(earR, -1), pinna(earL, 1)]), head),
     nose: moved(nose, head),
     vibrissae: moved(mergeSurfaces(whiskers), head),
-    forepaws: mergeSurfaces([foreR.skin, foreL.skin]),
-    hindpaws: mergeSurfaces([hindR.skin, hindL.skin]),
+    forepaws: tinted(mergeSurfaces([foreR.skin, foreL.skin]), padTint(groundZ)),
+    hindpaws: tinted(mergeSurfaces([hindR.skin, hindL.skin]), padTint(groundZ)),
     claws: mergeSurfaces([...foreR.claws, ...foreL.claws, ...hindR.claws, ...hindL.claws]),
     tail: tail.skin,
     'tail-vertebrae': tail.vertebrae,

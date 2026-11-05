@@ -100,6 +100,16 @@ export function deformSurface(surface: Surface, field: PostureField): Surface {
     const out = blendRigid(moved, factors, p);
     positions[i] = out[0]; positions[i + 1] = out[1]; positions[i + 2] = out[2];
   }
+  return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices, colors: surface.colors };
+}
+
+/** A limb bone moves as one rigid piece about its joint. */
+export function deformRigid(surface: Surface, transform: RigidTransform): Surface {
+  const positions = new Float32Array(surface.positions.length);
+  for (let i = 0; i < positions.length; i += 3) {
+    const out = blendRigid([transform], [1], [surface.positions[i], surface.positions[i + 1], surface.positions[i + 2]]);
+    positions[i] = out[0]; positions[i + 1] = out[1]; positions[i + 2] = out[2];
+  }
   return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices };
 }
 

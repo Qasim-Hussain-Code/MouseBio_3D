@@ -71,7 +71,7 @@ export type InternalPart =
   | 'spinal-cord' | 'spinal-nerves' | 'forelimb-nerves' | 'hindlimb-nerves' | 'vagus-phrenic' | 'cranial-nerves'
   | 'trachea' | 'diaphragm' | 'oesophagus' | 'tongue' | 'salivary-glands' | 'gall-bladder'
   | 'ureters' | 'male-ducts' | 'seminal-vesicles' | 'prostate' | 'preputial-glands' | 'penis'
-  | 'thyroid' | 'thymus' | 'pituitary' | 'lymph-nodes';
+  | 'thyroid' | 'thymus' | 'pituitary' | 'lymph-nodes' | 'lymph-vessels' | 'cerebral-base';
 
 export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks): Record<InternalPart, Surface> {
   const s = (y: number) => lm.spineAt(y);
@@ -279,7 +279,31 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks): Re
     ...pair([172, 725, s(725).ventralZ - 15], 3), node([186, 640, 82], 5.5, 2.6), node([182, 752, s(750).ventralZ - 12], 2.8),
   ]);
 
+  // Lymph trunks gather towards a cisterna beside the aorta, and the thoracic duct carries them to the left venous angle.
+  const cisterna: Vec3 = [s(610).x - 2, 610, s(610).ventralZ - 12];
+  const lymphVessels = mergeSurfaces([
+    route([cisterna, [s(540).x - 3, 540, s(540).ventralZ - 8], [s(460).x - 3, 460, s(460).ventralZ - 7], [s(400).x + 2, 400, s(400).ventralZ - 7], [204, 360, 88], junctionL], 0.8, 0.8, 5),
+    route([[186, 640, 82], [180, 625, 110], cisterna], 0.55, 0.55, 5),
+    route([[172, 725, s(725).ventralZ - 15], [172, 670, s(670).ventralZ - 12], cisterna], 0.5, 0.55, 5),
+    route([[190, 725, s(725).ventralZ - 15], [186, 670, s(670).ventralZ - 12], cisterna], 0.5, 0.55, 5),
+    route([[92, 735, 40], [130, 735, 80], [172, 725, s(725).ventralZ - 15]], 0.4, 0.5, 5),
+    route([[270, 735, 40], [232, 735, 80], [190, 725, s(725).ventralZ - 15]], 0.4, 0.5, 5),
+    route([[108, 345, 66], [128, 340, 70], junctionR], 0.4, 0.5, 5),
+    route([[254, 345, 66], [234, 340, 70], junctionL], 0.4, 0.5, 5),
+    route([[158, 266, 34], [160, 300, 54], junctionR], 0.35, 0.5, 5),
+    route([[204, 266, 34], [202, 300, 54], junctionL], 0.35, 0.5, 5),
+  ]);
+  // The vertebral arteries join as the basilar artery under the medulla, which ends in a ring at the base of the brain, after Cook figures 87 and 88.
+  const ring = Array.from({ length: 13 }, (_, i): Vec3 => { const angle = 2 * Math.PI * i / 12; return [189 + 13 * Math.cos(angle), 203 + 16 * Math.sin(angle), 87]; });
+  const cerebralBase = mergeSurfaces([
+    route([[189, 292, 100], [189, 255, 93], [189, 219, 88]], 1.1, 1, 6),
+    route([[170, 340, 92], [176, 310, 98], [189, 292, 100]], 0.8, 0.8, 5), route([[208, 340, 92], [202, 310, 98], [189, 292, 100]], 0.8, 0.8, 5),
+    route(ring, 0.8, 0.8, 5),
+    route([[165, 220, 96], [176, 205, 88]], 0.9, 0.8, 5), route([[205, 220, 96], [202, 205, 88]], 0.9, 0.8, 5),
+  ]);
+
   return {
+    'lymph-vessels': lymphVessels, 'cerebral-base': cerebralBase,
     aorta, 'head-arteries': headArteries, 'forelimb-arteries': forelimbArteries, 'coronary-arteries': coronary, 'visceral-arteries': visceral, 'hindlimb-arteries': hindlimb,
     'caudal-vena-cava': caudalVenaCava, 'cranial-veins': cranial, 'forelimb-veins': forelimbVeins, 'hindlimb-veins': hindlimbVeins, 'portal-veins': portal,
     'spinal-cord': spinalCord, 'spinal-nerves': mergeSurfaces(nerves), 'forelimb-nerves': mergeSurfaces([...plexus('R'), ...plexus('L')]), 'hindlimb-nerves': mergeSurfaces([...sacralPlexus('R'), ...sacralPlexus('L')]),

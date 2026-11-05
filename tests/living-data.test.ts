@@ -103,7 +103,7 @@ test('the living mouse opens as skin with exterior parts outside it, and inner p
   assert.equal(displayPostureFor(atlas)?.frameOnBody, true);
   const exterior = atlas.structures.filter((structure) => structure.exterior).map((structure) => structure.id);
   for (const id of ['living:eyes', 'living:pinnae', 'living:vibrissae', 'living:forepaws', 'living:hindpaws', 'living:tail', 'living:nose', 'living:claws']) assert.ok(exterior.includes(id), id);
-  for (const id of ['living:heart-lv', 'living:aorta', 'living:skeleton', 'living:spinal-cord']) assert.ok(!exterior.includes(id), id);
+  for (const id of ['living:heart-lv', 'living:aorta', 'living:bone-skull', 'living:spinal-cord']) assert.ok(!exterior.includes(id), id);
   assert.equal(coveredBySkin('living:aorta', 'living:skin', true, 1, 'off', false), true);
   assert.equal(coveredBySkin('living:eyes', 'living:skin', true, 1, 'off', true), false);
 });
@@ -154,7 +154,17 @@ test('the coat needs hair directions, scatters hairs by area, skips bare skin an
   assert.ok(Math.abs(fur.hairs / (6e-4 * FUR_DISPLAY.density) - 1) < 0.01, String(fur.hairs));
   assert.equal(instanced.instanceCount, fur.hairs);
   assert.equal(fur.mesh.parent, skin);
+  fur.setDetail(0.25);
+  assert.equal(instanced.instanceCount, Math.round(fur.hairs * 0.25));
+  assert.equal(fur.detail(), 0.25);
+  fur.setDetail(1);
+  assert.equal(instanced.instanceCount, fur.hairs);
   const first = scatterHairs(geometry), second = scatterHairs(geometry);
+  // The first share of hairs reaches every face of the box, so that thinning keeps the coat over the whole body.
+  const share = Math.round(first.count * 0.1);
+  const faces = new Set<string>();
+  for (let i = 0; i < share; i++) for (let k = 0; k < 3; k++) if (Math.abs(first.roots[3 * i + k]) > 0.00499) faces.add(`${k}${Math.sign(first.roots[3 * i + k])}`);
+  assert.equal(faces.size, 6);
   assert.deepEqual([...first.roots.slice(0, 30)], [...second.roots.slice(0, 30)]);
   for (let i = 0; i < first.count; i += 97) for (let k = 0; k < 3; k++) assert.ok(Math.abs(first.roots[3 * i + k]) <= 0.00501);
   // Hair length zero everywhere means no hairs.

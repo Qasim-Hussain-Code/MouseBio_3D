@@ -1,13 +1,17 @@
 /** The inventory of the living mouse reference. Every structure declares its evidence. */
 import type { InternalPart } from './internal';
 import { MUSCLES } from './muscles';
+import { BONES } from './bones';
+import type { TreePart } from './organ-trees';
 export type Evidence = 'source' | 'traced' | 'simulated';
 
 export type Plan =
   | { readonly kind: 'skin' }
-  | { readonly kind: 'ct-bone'; readonly threshold: number }
+  | { readonly kind: 'bone'; readonly index: number }
+  | { readonly kind: 'tree'; readonly part: TreePart }
+  | { readonly kind: 'shell'; readonly membrane: 'pericardium' | 'pleura' | 'meninges' | 'peritoneum'; readonly grow: number; readonly step: number; readonly radius: number }
   | { readonly kind: 'labels'; readonly labels: readonly number[]; readonly step?: number; readonly radius?: number }
-  | { readonly kind: 'label-part'; readonly label: number; readonly seeds: readonly (readonly [number, number, number])[]; readonly index: number; readonly lowX?: number; readonly highX?: number }
+  | { readonly kind: 'label-part'; readonly label: number; readonly seeds: readonly (readonly [number, number, number])[]; readonly index: number | readonly number[]; readonly lowX?: number; readonly highX?: number }
   | { readonly kind: 'gut-part'; readonly part: 'caecum' | 'colon' | 'small' }
   | { readonly kind: 'traced'; readonly tissue: 'gut' | 'blood' | 'fat' | 'muscle' | 'airway'; readonly step: number; readonly radius: number; readonly grow?: number }
   | { readonly kind: 'attachment'; readonly part: AttachmentPart }
@@ -15,7 +19,7 @@ export type Plan =
   | { readonly kind: 'muscle'; readonly index: number }
   | { readonly kind: 'muscle-rest' };
 
-export type AttachmentPart = 'eyes' | 'pinnae' | 'nose' | 'vibrissae' | 'forepaws' | 'hindpaws' | 'claws' | 'tail' | 'tail-vertebrae' | 'foot-bones';
+export type AttachmentPart = 'eyes' | 'eyelids' | 'pinnae' | 'nose' | 'vibrissae' | 'forepaws' | 'hindpaws' | 'claws' | 'tail' | 'tail-vertebrae' | 'foot-bones';
 
 export interface StructurePlan {
   readonly id: string;
@@ -48,7 +52,7 @@ const labelled = (id: string, name: string, label: number, sourceLabel: string, 
  * One part of a source label. The parts of a divided label go to the nearest of hand-placed seeds, following the plates of Cook.
  * `side` keeps only voxels on one side of the midline.
  */
-const part = (id: string, name: string, label: number, sourceLabel: string, systems: string[], color: string, seeds: readonly (readonly [number, number, number])[], index: number, note: string, side: { lowX?: number; highX?: number } = {}): StructurePlan => ({
+const part = (id: string, name: string, label: number, sourceLabel: string, systems: string[], color: string, seeds: readonly (readonly [number, number, number])[], index: number | readonly number[], note: string, side: { lowX?: number; highX?: number } = {}): StructurePlan => ({
   id: `living:${id}`, name, systems, sourceLabel, evidence: 'source', division: seeds.length > 1 ? 'estimated' : undefined, scale: 'organ', color,
   description: `Part of the source label "${sourceLabel}" of the Digimouse image. ${note} ${POSTURE}`,
   basis: [DIGIMOUSE, COOK], plan: { kind: 'label-part', label, seeds, index, ...side },
@@ -63,6 +67,8 @@ const LIVER_LOBE = 'The lobes are named in Cook figure 60; their boundaries are 
 const STOMACH: readonly (readonly [number, number, number])[] = [[262, 520, 135], [210, 552, 105]];
 const STOMACH_REGION = 'The regions are named in Cook figure 59; their boundary is estimated.';
 const MIDDLE_X = 172;
+const BRAIN_REST: readonly (readonly [number, number, number])[] = [[189, 165, 105], [189, 215, 118], [189, 208, 94], [160, 225, 135], [218, 225, 135], [189, 243, 132], [189, 246, 110]];
+const BRAIN_PART = 'The source label "rest of the brain" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat.';
 
 const traced = (id: string, name: string, tissue: 'gut' | 'blood' | 'fat' | 'muscle' | 'airway', systems: string[], color: string, description: string, step = 2, radius = 1, grow?: number): StructurePlan => ({
   id: `living:${id}`, name, systems, sourceLabel: 'none, traced from the source images', evidence: 'traced', scale: 'organ', color,
@@ -90,14 +96,19 @@ export const STRUCTURES: readonly StructurePlan[] = [
     description: `The outer surface of the union of all Digimouse labels, carried into the stance and smoothed. ${POSTURE} The lower hind legs are simulated shapes whose radii are measured from the leg tissue, because the scanned shanks lay pressed flat and the images end at the hind feet. The fur drawn on the surface is simulated, because the specimen is a nude mouse.`,
     basis: [DIGIMOUSE, COOK], plan: { kind: 'skin' },
   },
-  {
-    id: 'living:skeleton', name: 'Skeleton', systems: ['skeletal'], sourceLabel: 'CT bone', evidence: 'traced', scale: 'organ', color: '#e9e2d2',
-    description: `An isosurface of the source CT, which shows the digits that the source skeleton label crops. Bones are not separated by name. ${POSTURE}`,
-    basis: [DIGIMOUSE], plan: { kind: 'ct-bone', threshold: 172 },
-  },
+  ...BONES.map((bone, index): StructurePlan => ({
+    id: `living:bone-${bone.id}`, name: bone.name, systems: ['skeletal'], sourceLabel: 'CT bone', evidence: 'traced', division: 'estimated', scale: 'organ', color: '#e9e2d2',
+    description: `An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. ${bone.note} ${POSTURE}`,
+    basis: [DIGIMOUSE, COOK, HUMMEL], plan: { kind: 'bone', index },
+  })),
   labelled('cerebrum', 'External cerebrum', 7, 'external cerebrum', ['nervous'], '#dcc0ba'),
   labelled('striatum', 'Striatum', 8, 'striatum', ['nervous'], '#d3b0ab'),
-  labelled('brain-rest', 'Rest of the brain', 10, 'rest of the brain', ['nervous'], '#d6b7b3'),
+  part('brain-forebrain', 'Basal forebrain', 10, 'rest of the brain', ['nervous'], '#d9bcb6', BRAIN_REST, 0, BRAIN_PART),
+  part('brain-thalamus', 'Thalamus', 10, 'rest of the brain', ['nervous'], '#d6b7b3', BRAIN_REST, 1, BRAIN_PART),
+  part('brain-hypothalamus', 'Hypothalamus', 10, 'rest of the brain', ['nervous', 'endocrine'], '#d3b1ad', BRAIN_REST, 2, BRAIN_PART),
+  part('brain-hippocampus', 'Hippocampus', 10, 'rest of the brain', ['nervous'], '#dcc2bb', BRAIN_REST, [3, 4], BRAIN_PART),
+  part('brain-midbrain', 'Midbrain', 10, 'rest of the brain', ['nervous'], '#d1aca7', BRAIN_REST, 5, BRAIN_PART),
+  part('brain-pons', 'Pons', 10, 'rest of the brain', ['nervous'], '#d5b5ae', BRAIN_REST, 6, BRAIN_PART),
   labelled('cerebellum', 'Cerebellum', 5, 'cerebellum', ['nervous'], '#cfa89f'),
   labelled('medulla', 'Medulla', 4, 'medulla', ['nervous'], '#d9bdb4'),
   labelled('olfactory', 'Olfactory bulbs', 6, 'olfactory bulbs', ['nervous'], '#e1c6b8'),
@@ -145,6 +156,23 @@ export const STRUCTURES: readonly StructurePlan[] = [
   inner('aorta', 'Aorta', 'aorta', ['cardiovascular', 'arterial-venous'], '#c8333a', 'From the left ventricle it ascends, arches to the left and descends along the ventral side of the vertebral column to its bifurcation.'),
   inner('head-arteries', 'Innominate and carotid arteries', 'head-arteries', ['cardiovascular', 'arterial-venous'], '#c8333a', 'Arch branches in the order drawn by Cook: innominate, left common carotid, left subclavian, with carotid divisions at the head.'),
   inner('forelimb-arteries', 'Subclavian and fore limb arteries', 'forelimb-arteries', ['cardiovascular', 'arterial-venous'], '#c8333a', 'The subclavian, axillary and brachial course to the wrist.'),
+  ...([
+    ['bronchi', 'Bronchial tree', ['respiratory'], '#e4e2d6', 'Airways filling the source lung label.'],
+    ['pulmonary-arteries', 'Pulmonary arteries', ['cardiovascular', 'arterial-venous', 'respiratory'], '#c8333a', 'From the outflow of the heart to fill the source lung label.'],
+    ['pulmonary-veins', 'Pulmonary veins', ['cardiovascular', 'arterial-venous', 'respiratory'], '#3f5a9a', 'From the source lung label to the left atrium.'],
+    ['hepatic-arteries', 'Hepatic artery branches', ['cardiovascular', 'arterial-venous', 'digestive'], '#c8333a', 'Filling the source liver label.'],
+    ['portal-branches', 'Portal vein branches', ['cardiovascular', 'arterial-venous', 'digestive'], '#3f5a9a', 'Filling the source liver label.'],
+    ['hepatic-veins', 'Hepatic vein branches', ['cardiovascular', 'arterial-venous', 'digestive'], '#4a66a8', 'Filling the source liver label.'],
+    ['renal-arteries', 'Renal artery branches', ['cardiovascular', 'arterial-venous', 'urinary'], '#c8333a', 'Filling the source kidney label.'],
+    ['renal-veins', 'Renal vein branches', ['cardiovascular', 'arterial-venous', 'urinary'], '#3f5a9a', 'Filling the source kidney label.'],
+    ['cerebral-arteries', 'Cerebral arteries', ['cardiovascular', 'arterial-venous', 'nervous'], '#c8333a', 'Filling the source brain labels from the base of the brain.'],
+    ['mesenteric-arteries', 'Mesenteric artery branches', ['cardiovascular', 'arterial-venous', 'digestive'], '#c8333a', 'Filling the traced gut from the superior mesenteric artery.'],
+    ['mesenteric-veins', 'Mesenteric vein branches', ['cardiovascular', 'arterial-venous', 'digestive'], '#3f5a9a', 'Filling the traced gut towards the portal vein.'],
+  ] as const).map(([id, name, systems, color, note]): StructurePlan => ({
+    id: `living:${id}`, name, systems: [...systems], sourceLabel: 'none, simulated', evidence: 'simulated', scale: 'organ', color,
+    description: `Simulated. ${note} The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. ${POSTURE}`,
+    basis: [COOK], plan: { kind: 'tree', part: id },
+  })),
   inner('coronary-arteries', 'Coronary arteries', 'coronary-arteries', ['cardiovascular', 'arterial-venous'], '#d0434a', 'Vessels drawn on the surface of the source heart label.'),
   inner('visceral-arteries', 'Coeliac, mesenteric, renal and genital arteries', 'visceral-arteries', ['cardiovascular', 'arterial-venous'], '#c8333a', 'Abdominal branches in the order given by Hummel et al.: coeliac, superior mesenteric, renal, genital and inferior mesenteric.'),
   inner('hindlimb-arteries', 'Iliac, hind limb and median caudal arteries', 'hindlimb-arteries', ['cardiovascular', 'arterial-venous'], '#c8333a', 'From the aortic bifurcation to the ankles, and the median artery towards the tail.'),
@@ -175,6 +203,19 @@ export const STRUCTURES: readonly StructurePlan[] = [
   inner('thymus', 'Thymus', 'thymus', ['endocrine', 'immune', 'lymphatic'], '#ece0cf', 'Two lobes over the base of the source heart label, after Cook figures 46 and 92.'),
   inner('pituitary', 'Pituitary', 'pituitary', ['endocrine'], '#d8b18d', 'Under the source brain label.', [GREENE]),
   inner('lymph-nodes', 'Lymph nodes', 'lymph-nodes', ['lymphatic', 'immune'], '#8d6a8c', 'Bodies at the sites listed by Hummel et al.: cervical, axillary, brachial, inguinal, sciatic, mediastinal, pyloric, renal, lumbar, mesenteric and caudal.', [HUMMEL]),
+  ...([
+    ['pericardium', 'Pericardium', ['cardiovascular'], '#e8d6cf', 'Round the source heart label.', 4, 2, 1],
+    ['pleura', 'Pleura', ['respiratory'], '#e8d6cf', 'Round the source lung label.', 3, 2, 1],
+    ['meninges', 'Meninges', ['nervous'], '#e8d6cf', 'Round the source brain labels.', 3, 2, 1],
+    ['peritoneum', 'Peritoneum', ['digestive'], '#e8d6cf', 'At the edge of the mask of the abdominal cavity used in tracing.', 0, 4, 2],
+  ] as const).map(([id, name, systems, color, note, grow, step, radius]): StructurePlan => ({
+    id: `living:${id}`, name, systems: [...systems], sourceLabel: 'none, simulated', evidence: 'simulated', scale: 'organ', color, defaultOpacity: 0.16,
+    description: `Simulated. A thin membrane, drawn as a faint surface. ${note} Its distance from the label and its form are estimates, and it is not measured. ${POSTURE}`,
+    basis: [COOK], plan: { kind: 'shell', membrane: id, grow, step, radius },
+  })),
+  inner('lymph-vessels', 'Thoracic duct and lymph trunks', 'lymph-vessels', ['lymphatic', 'immune'], '#b58fb0', 'Trunks joining the lymph node sites listed by Hummel et al. to a thoracic duct that ends at the left venous angle. The routes are estimates.', [HUMMEL, GREENE]),
+  inner('cerebral-base', 'Basilar artery and arterial circle', 'cerebral-base', ['cardiovascular', 'arterial-venous', 'nervous'], '#c8333a', 'The vertebral and basilar arteries and a ring at the base of the brain, after Cook figures 87 and 88.'),
+  simulated('eyelids', 'Eyelids', 'eyelids', ['integumentary', 'sensory'], '#3f3029', 'A dark rim round the visible part of each globe.'),
   simulated('eyes', 'Eyes', 'eyes', ['sensory'], '#17110f', 'Dark globes placed at the source eye label, sized to bulge through the eyelids as in the living animal.'),
   simulated('pinnae', 'Ear pinnae', 'pinnae', ['integumentary', 'sensory'], '#e7a99b', 'Thin cupped pinnae placed at the ear canals, shaped after the plates of Cook.'),
   simulated('nose', 'Nose pad', 'nose', ['integumentary', 'respiratory'], '#d98a84', 'The bare rhinarium at the tip of the snout.'),

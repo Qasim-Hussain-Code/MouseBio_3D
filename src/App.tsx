@@ -189,6 +189,7 @@ export default function App() {
     }).then((loaded: Atlas) => {
       if (!validateReferenceAtlas(reference, loaded).ok) throw new Error('Reference binding mismatch.');
       setAtlas(loaded); setSelected(initialReferenceSelection(loaded)); setOpacity(referenceOpacity(loaded));
+      if (layerStops(loaded).length) setNavigatorTab('systems');
     }).catch((error) => { if (error.name !== 'AbortError') setLoadError('The local anatomical manifest could not be loaded.'); });
     return () => { abort.abort(); referenceRequest.current?.abort(); };
   }, []);

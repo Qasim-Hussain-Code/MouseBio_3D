@@ -187,6 +187,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let lastLabelSet = '', lastLabelSetAt = 0;
     let shadow: ContactShadow | null = null, shadowDirty = true;
     let fur: FurLayer | null = null;
+    let interacting = false, slowFrames = 0, lastFrameAt = 0;
     let sectionRoot: THREE.Object3D | null = null, sectionPlane: SectionImagePlane | null = null;
     let sectionShown: SectionImageId | null = null, sectionFailed: SectionImageId | null = null;
     let sectionRequest: { id: SectionImageId; abort: AbortController } | null = null;
@@ -496,6 +497,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       controls.minDistance = radius * 0.07;
       controls.maxDistance = radius * 12;
       if (posture) { shadow = createContactShadow(bounds, new THREE.Vector3(...posture.up)); if (shadow) scene.add(shadow.group); }
+      controls.addEventListener('start', () => { interacting = true; });
+      controls.addEventListener('end', () => { interacting = false; if (fur && fur.detail() < 1) { fur.setDetail(1); dirty = true; } });
       const skinForCoat = skinId ? meshes.get(skinId) : undefined;
       if (posture && skinForCoat instanceof THREE.Mesh) fur = createFur(skinForCoat, new THREE.Vector3(...posture.up));
       display.visible = true;
@@ -617,6 +620,16 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
           if (sectionPlane) sectionPlane.mesh.visible = sectionVisible;
           if (fur) fur.mesh.visible = coatVisible;
           shadowDirty = false;
+        }
+        // A machine that struggles draws fewer hairs while the view moves, and the full coat once it stops.
+        if (fur?.mesh.visible) {
+          const moving = interacting || !!current.autoRotate;
+          const now = performance.now();
+          if (moving && lastFrameAt && now - lastFrameAt < 500) {
+            slowFrames = now - lastFrameAt > 50 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
+            if (slowFrames >= 3) { fur.setDetail(fur.detail() * 0.6); slowFrames = 0; }
+          }
+          lastFrameAt = now;
         }
         renderer.render(scene, camera);
         dirty = false;

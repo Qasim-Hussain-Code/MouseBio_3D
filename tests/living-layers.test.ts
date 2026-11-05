@@ -36,7 +36,8 @@ test('each step shows what it names and removes what lies outside it', () => {
 });
 
 test('the skeleton is faint where it only gives context', () => {
-  for (const id of ['organs', 'vessels', 'nerves']) assert.ok(stop(id).opacity['living:skeleton'] < 0.3, id);
-  assert.equal(stop('skeleton').opacity['living:skeleton'], 1);
+  for (const id of ['organs', 'vessels', 'nerves']) assert.ok(stop(id).opacity['living:bone-femur-r'] < 0.3, id);
+  assert.equal(stop('skeleton').opacity['living:bone-femur-r'], 1);
+  assert.ok(stop('coat').opacity['living:peritoneum'] < 0.3, 'membranes stay faint');
   assert.equal(stop('coat').opacity['living:skin'], 1);
 });

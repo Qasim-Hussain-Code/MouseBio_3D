@@ -29,7 +29,7 @@ export function layerStops(atlas: Pick<Atlas, 'structures' | 'id'>): LayerStop[]
   const { structures } = atlas;
   const all = structures.map((structure) => structure.id);
   const keep = (test: (structure: Structure) => boolean) => all.filter((id) => !test(structures.find((structure) => structure.id === id)!));
-  const opacity = (skeleton: number) => Object.fromEntries(structures.map((structure) => [structure.id, isSkeleton(structure) ? skeleton : 1]));
+  const opacity = (skeleton: number) => Object.fromEntries(structures.map((structure) => [structure.id, isSkeleton(structure) ? skeleton : structure.defaultOpacity ?? 1]));
   const flayed = (structure: Structure) => !structure.exterior && structure.id !== 'living:skin';
   return [
     { id: 'coat', name: 'Coat', description: 'The whole mouse with its simulated coat', hidden: [], opacity: opacity(1), coat: true },

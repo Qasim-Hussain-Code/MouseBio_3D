@@ -15,7 +15,10 @@ export const COATS: Readonly<Record<Exclude<CoatId, 'none'>, { root: string; ban
 });
 
 export const FUR_DISPLAY = Object.freeze({
-  /** Hairs per square metre of skin, far fewer than a real coat, each drawn wider than a real hair. */
+  /**
+   * Hairs per square metre of skin, far fewer than a real coat, each drawn wider than a real hair.
+   * The roots are shuffled by the order of their random values, so that drawing a share of them still covers the whole body.
+   */
   density: 46e6,
   maximumHairs: 340000,
   lengthMetres: 0.0029,
@@ -113,6 +116,9 @@ void main() {
 export interface FurLayer {
   readonly mesh: THREE.Mesh;
   readonly hairs: number;
+  /** The share of hairs drawn, from above zero to one. Fewer hairs are drawn wider so that the coat stays closed. */
+  setDetail(fraction: number): void;
+  readonly detail: () => number;
   setCoat(id: Exclude<CoatId, 'none'>): void;
   setClipping(planes: THREE.Plane[]): void;
   dispose(): void;
@@ -172,6 +178,13 @@ export function scatterHairs(geometry: THREE.BufferGeometry, density = FUR_DISPL
       written++;
     }
   }
+  // Shuffle with the same numbers, so that the first hairs drawn are spread over the whole body.
+  for (let i = written - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    for (let k = 0; k < 3; k++) { let t = roots[3 * i + k]; roots[3 * i + k] = roots[3 * j + k]; roots[3 * j + k] = t; t = normals[3 * i + k]; normals[3 * i + k] = normals[3 * j + k]; normals[3 * j + k] = t; }
+    for (let k = 0; k < 4; k++) { const t = combs[4 * i + k]; combs[4 * i + k] = combs[4 * j + k]; combs[4 * j + k] = t; }
+    const t = randoms[i]; randoms[i] = randoms[j]; randoms[j] = t;
+  }
   return { roots, normals, combs, randoms, count: written };
 }
 
@@ -207,7 +220,7 @@ export function createFur(skin: THREE.Mesh, up: THREE.Vector3): FurLayer | null 
   geometry.boundingBox = source.boundingBox!.clone();
   geometry.boundingSphere = source.boundingSphere!.clone();
   const uniforms = {
-    uLength: { value: FUR_DISPLAY.lengthMetres }, uWidth: { value: FUR_DISPLAY.widthMetres }, uPixel: { value: 0.001 },
+    uLength: { value: FUR_DISPLAY.lengthMetres }, uWidth: { value: FUR_DISPLAY.widthMetres as number }, uPixel: { value: 0.001 },
     uRoot: { value: new THREE.Color() }, uBand: { value: new THREE.Color() }, uTip: { value: new THREE.Color() }, uBelly: { value: new THREE.Color() },
     uUp: { value: up.clone().normalize() },
   };
@@ -222,9 +235,16 @@ export function createFur(skin: THREE.Mesh, up: THREE.Vector3): FurLayer | null 
     if (camera instanceof THREE.PerspectiveCamera) uniforms.uPixel.value = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / Math.max(1, size.y);
   };
   skin.add(mesh);
+  let detail = 1;
   const layer: FurLayer = {
     mesh,
     hairs: hairs.count,
+    detail: () => detail,
+    setDetail(fraction) {
+      detail = Math.max(0.05, Math.min(1, fraction));
+      geometry.instanceCount = Math.round(hairs.count * detail);
+      uniforms.uWidth.value = FUR_DISPLAY.widthMetres / Math.sqrt(detail);
+    },
     setCoat(id) {
       const coat = COATS[id];
       uniforms.uRoot.value.set(coat.root); uniforms.uBand.value.set(coat.band); uniforms.uTip.value.set(coat.tip); uniforms.uBelly.value.set(coat.belly);

@@ -34,6 +34,46 @@ export function extractSurface(grid: Grid, value: (index: number) => number, box
   return surfaceNets(smooth, cells, isovalue, [x0 - step + shift, y0 - step + shift, z0 - step + shift], step);
 }
 
+/** Merge vertices that share a cell of the given size, keeping their mean position, and drop collapsed triangles. */
+export function clusterSurface(surface: Surface, cell: number): Surface {
+  const { positions, indices } = surface;
+  const count = positions.length / 3;
+  const cells = new Map<string, number>();
+  const remap = new Int32Array(count);
+  const sums: number[] = [];
+  const members: number[] = [];
+  for (let i = 0; i < count; i++) {
+    const key = `${Math.floor(positions[3 * i] / cell)},${Math.floor(positions[3 * i + 1] / cell)},${Math.floor(positions[3 * i + 2] / cell)}`;
+    let target = cells.get(key);
+    if (target === undefined) { target = members.length; cells.set(key, target); members.push(0); sums.push(0, 0, 0); }
+    remap[i] = target;
+    members[target]++;
+    sums[3 * target] += positions[3 * i]; sums[3 * target + 1] += positions[3 * i + 1]; sums[3 * target + 2] += positions[3 * i + 2];
+  }
+  const merged = new Float32Array(3 * members.length);
+  for (let i = 0; i < members.length; i++) { merged[3 * i] = sums[3 * i] / members[i]; merged[3 * i + 1] = sums[3 * i + 1] / members[i]; merged[3 * i + 2] = sums[3 * i + 2] / members[i]; }
+  const kept: number[] = [];
+  for (let t = 0; t < indices.length; t += 3) {
+    const a = remap[indices[t]], b = remap[indices[t + 1]], c = remap[indices[t + 2]];
+    if (a !== b && b !== c && a !== c) kept.push(a, b, c);
+  }
+  const out = Uint32Array.from(kept);
+  // Normals are recomputed from the merged triangles, and tiny flipped pieces average away.
+  const normals = new Float32Array(merged.length);
+  for (let t = 0; t < out.length; t += 3) {
+    const a = 3 * out[t], b = 3 * out[t + 1], c = 3 * out[t + 2];
+    const ux = merged[b] - merged[a], uy = merged[b + 1] - merged[a + 1], uz = merged[b + 2] - merged[a + 2];
+    const vx = merged[c] - merged[a], vy = merged[c + 1] - merged[a + 1], vz = merged[c + 2] - merged[a + 2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    for (const i of [a, b, c]) { normals[i] += nx; normals[i + 1] += ny; normals[i + 2] += nz; }
+  }
+  for (let i = 0; i < normals.length; i += 3) {
+    const n = Math.hypot(normals[i], normals[i + 1], normals[i + 2]) || 1;
+    normals[i] /= n; normals[i + 1] /= n; normals[i + 2] /= n;
+  }
+  return { positions: merged, normals, indices: out };
+}
+
 export function maskBox(grid: Grid, inside: (index: number) => boolean): [number, number, number, number, number, number] {
   const box: [number, number, number, number, number, number] = [grid.nx, -1, grid.ny, -1, grid.nz, -1];
   for (let z = 0; z < grid.nz; z++) for (let y = 0; y < grid.ny; y++) for (let x = 0; x < grid.nx; x++) {
@@ -49,14 +89,16 @@ export function mergeSurfaces(surfaces: readonly Surface[]): Surface {
   const vertices = surfaces.reduce((sum, s) => sum + s.positions.length, 0);
   const triangles = surfaces.reduce((sum, s) => sum + s.indices.length, 0);
   const positions = new Float32Array(vertices), normals = new Float32Array(vertices), indices = new Uint32Array(triangles);
+  const colors = surfaces.some((s) => s.colors) ? new Float32Array(vertices).fill(1) : undefined;
   let v = 0, t = 0;
   for (const s of surfaces) {
     positions.set(s.positions, v); normals.set(s.normals, v);
+    if (colors && s.colors) colors.set(s.colors, v);
     const base = v / 3;
     for (let i = 0; i < s.indices.length; i++) indices[t + i] = s.indices[i] + base;
     v += s.positions.length; t += s.indices.length;
   }
-  return { positions, normals, indices };
+  return { positions, normals, indices, colors };
 }
 
 /** A tube along a polyline, with a tapering radius, closed at both ends by a small cap. */

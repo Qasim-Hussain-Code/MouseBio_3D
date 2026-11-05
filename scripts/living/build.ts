@@ -9,11 +9,13 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { buildPosture, deformAxial, deformSurface, type PostureField } from './posture';
+import { buildPosture, deformAxial, deformRigid, deformSurface, type PostureField } from './posture';
+import { BONES, partitionBones } from './bones';
+import { buildTrees } from './organ-trees';
 import { buildBodySurface } from './exterior';
-import { extractSurface, maskBox } from './extract';
+import { clusterSurface, extractSurface, maskBox } from './extract';
 import { writeGlb, type GlbSurface } from './glb';
-import { JOINTS, type Vec3 } from './rig';
+import { boneOfVoxel, JOINTS, type Vec3 } from './rig';
 import { components, dilate, erode, voxelIndex, type Grid } from './volume';
 import type { Surface } from './surface-nets';
 import { buildAttachments } from './attachments';
@@ -53,14 +55,19 @@ log('posture');
 // Traced tissue classes are reused between runs with --cached, which is only for trying out surfaces.
 const tissueFile = path.join(WORK, 'tissues.bin');
 let tissues: Uint8Array;
-if (process.argv.includes('--cached') && fs.existsSync(tissueFile)) tissues = fs.readFileSync(tissueFile);
+const cavityFile = path.join(WORK, 'cavity.bin');
+let cavity: Uint8Array;
+if (process.argv.includes('--cached') && fs.existsSync(tissueFile) && fs.existsSync(cavityFile)) { tissues = fs.readFileSync(tissueFile); cavity = fs.readFileSync(cavityFile); }
 else {
   const traced = traceTissues({ grid, labels, ct, rgb: fs.readFileSync(path.join(WORK, 'rgb.bin')) });
   tissues = traced.classes;
+  cavity = traced.cavity;
   fs.writeFileSync(tissueFile, tissues);
+  fs.writeFileSync(cavityFile, cavity);
   log('traced', JSON.stringify(traced.report));
 }
 
+const SHELLS: Record<string, ReadonlySet<number>> = { pericardium: new Set([9]), pleura: new Set([21]), meninges: new Set([4, 5, 6, 7, 8, 10]) };
 const LIMB_PARTS = new Set(['forelimb-arteries', 'hindlimb-arteries', 'forelimb-veins', 'hindlimb-veins', 'forelimb-nerves', 'hindlimb-nerves', 'lymph-nodes']);
 
 /**
@@ -96,14 +103,6 @@ function build(plan: Plan): Surface {
     log('shank radii', exterior.shanks.map((shank) => shank.radii.map((r) => r.toFixed(1)).join('/')).join(' '));
     return exterior.surface;
   }
-  if (plan.kind === 'ct-bone') {
-    // CT values give a smooth bone surface, and show the digits that the labels crop.
-    const box = maskBox(grid, (i) => !!bone[i]);
-    const labelled = new Uint8Array(voxels);
-    for (let i = 0; i < voxels; i++) labelled[i] = labels[i] === 2 ? 1 : 0;
-    const allowed = dilate(labelled, grid, 2);
-    return deformSurface(extractSurface(grid, (i) => allowed[i] || (near[i] && !labels[i]) ? ct[i] : 0, box, { step: 2, radius: 0, isovalue: plan.threshold }), posture);
-  }
   if (plan.kind === 'traced') {
     const value = TRACED[plan.tissue];
     let mask: Uint8Array<ArrayBufferLike> = new Uint8Array(voxels);
@@ -114,9 +113,16 @@ function build(plan: Plan): Surface {
       mask = dilate(mask, grid, plan.grow, free);
     }
     const box = maskBox(grid, (i) => !!mask[i]);
-    const scan = extractSurface(grid, (i) => mask[i], box, { step: plan.step, radius: plan.radius });
+    const scan = clusterSurface(extractSurface(grid, (i) => mask[i], box, { step: plan.step, radius: plan.radius }), 3.4);
     // Vessels and air spaces belong to the trunk and head; only fat and muscle follow the limbs.
     return plan.tissue === 'blood' || plan.tissue === 'airway' ? deformAxial(scan, posture) : deformSurface(scan, posture);
+  }
+  if (plan.kind === 'shell') {
+    let mask: Uint8Array<ArrayBufferLike> = new Uint8Array(voxels);
+    if (plan.membrane === 'peritoneum') { for (let i = 0; i < voxels; i++) if (cavity[i] && labels[i]) mask[i] = 1; }
+    else { const wanted = SHELLS[plan.membrane]; for (let i = 0; i < voxels; i++) if (wanted.has(labels[i])) mask[i] = 1; mask = dilate(mask, grid, plan.grow); }
+    const box = maskBox(grid, (i) => !!mask[i]);
+    return deformAxial(clusterSurface(extractSurface(grid, (i) => mask[i], box, { step: plan.step, radius: plan.radius }), 4), posture);
   }
   if (plan.kind === 'label-part') {
     const { label, seeds, index, lowX, highX } = plan;
@@ -129,7 +135,7 @@ function build(plan: Plan): Surface {
         const distance = (x - seeds[k][0]) ** 2 + (y - seeds[k][1]) ** 2 + (z - seeds[k][2]) ** 2;
         if (distance < bestDistance) { bestDistance = distance; best = k; }
       }
-      return best === index;
+      return Array.isArray(index) ? index.includes(best) : best === index;
     };
     const box = maskBox(grid, inside);
     return deformAxial(extractSurface(grid, (i) => inside(i) ? 1 : 0, box, { step: 2, radius: 1, isovalue: seeds.length > 1 ? 0.56 : 0.5 }), posture);
@@ -138,7 +144,7 @@ function build(plan: Plan): Surface {
     const parts = gutParts();
     const value = plan.part === 'caecum' ? 1 : plan.part === 'colon' ? 2 : 3;
     const box = maskBox(grid, (i) => parts[i] === value);
-    return deformAxial(extractSurface(grid, (i) => parts[i] === value ? 1 : 0, box, { step: 2, radius: 1, isovalue: 0.54 }), posture);
+    return deformAxial(clusterSurface(extractSurface(grid, (i) => parts[i] === value ? 1 : 0, box, { step: 2, radius: 1, isovalue: 0.54 }), 2.8), posture);
   }
   if (plan.kind === 'labels') {
     const wanted = new Set(plan.labels);
@@ -157,18 +163,40 @@ const landmarks = measureLandmarks(grid, labels, ct);
 const attachments = buildAttachments(posture, { labels, grid, landmarks });
 const internal = buildInternal(grid, labels, landmarks);
 log('internal');
+const trees = buildTrees(grid, labels, landmarks, (i) => gutParts()[i] !== 0);
+log('trees', Object.entries(trees).map(([name, surface]) => `${name} ${surface.indices.length / 3}`).join(', '));
+// Named bones from the CT, with the same test for bone as before: the source label and nearby CT bone outside the labelled body.
+const labelledBone = new Uint8Array(voxels);
+for (let i = 0; i < voxels; i++) labelledBone[i] = labels[i] === 2 ? 1 : 0;
+const allowedBone = dilate(labelledBone, grid, 2);
+const inForePaw = (i: number) => {
+  const x = i % nx, rest = (i - x) / nx, y = rest % ny, z = (rest - y) / ny;
+  const bone = boneOfVoxel([x, y, z]);
+  return bone === 'manusR' || bone === 'manusL';
+};
+const bonePart = partitionBones(grid, (i) => ct[i] >= 140 && (!!allowedBone[i] || (!!near[i] && !labels[i] && inForePaw(i))), landmarks);
+log('bones');
+function boneStance(index: number): Surface {
+  const wanted = index + 1;
+  const box = maskBox(grid, (i) => bonePart[i] === wanted);
+  const scan = clusterSurface(extractSurface(grid, (i) => bonePart[i] === wanted ? ct[i] : 0, box, { step: 2, radius: 0, isovalue: 172 }), 2.7);
+  const rigid = BONES[index].rigid;
+  return rigid ? deformRigid(scan, posture.pose.transforms[rigid]) : deformAxial(scan, posture);
+}
 const musclePartition = partitionMuscles(grid, (i) => tissues[i] === TRACED.muscle, landmarks);
 log('muscles', [...musclePartition.counts].join(','));
 const muscleScanSurfaces = new Map<number, Surface>();
 for (const structure of STRUCTURES) {
   const surface = structure.plan.kind === 'attachment' ? attachments.parts[structure.plan.part]
     : structure.plan.kind === 'internal' ? (LIMB_PARTS.has(structure.plan.part) ? deformSurface : deformAxial)(internal[structure.plan.part], posture)
+      : structure.plan.kind === 'bone' ? boneStance(structure.plan.index)
+      : structure.plan.kind === 'tree' ? deformAxial(trees[structure.plan.part], posture)
       : structure.plan.kind === 'muscle' ? (MUSCLES[structure.plan.index].group === 'head' ? deformAxial : deformSurface)(muscleScan(structure.plan.index), posture)
         : structure.plan.kind === 'muscle-rest' ? deformSurface(muscleSurface(musclePartition, UNNAMED), posture) : build(structure.plan);
   if (!surface || !surface.indices.length) throw new Error(`No surface for ${structure.id}`);
   const fur = structure.plan.kind === 'skin' ? furAttribute(surface) : undefined;
   const fibre = structure.plan.kind === 'muscle' ? fibreOf(structure.plan.index, surface) : undefined;
-  surfaces.push({ id: structure.id, name: structure.name, positions: toMetres(surface.positions), normals: surface.normals, indices: surface.indices, fur, fibre });
+  surfaces.push({ id: structure.id, name: structure.name, positions: toMetres(surface.positions), normals: surface.normals, indices: surface.indices, fur, fibre, colors: surface.colors });
   const { plan: _plan, ...record } = structure;
   const positions = toMetres(surface.positions);
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
@@ -179,7 +207,8 @@ for (const structure of STRUCTURES) {
 
 /** Scan-frame surfaces of muscles are kept to find the direction of their fibres after the posture moves them. */
 function muscleScan(index: number): Surface {
-  const surface = muscleSurface(musclePartition, index + 1);
+  // Muscle surfaces are large and show little fine shape, so they carry fewer triangles.
+  const surface = clusterSurface(muscleSurface(musclePartition, index + 1), 3.4);
   muscleScanSurfaces.set(index, surface);
   return surface;
 }

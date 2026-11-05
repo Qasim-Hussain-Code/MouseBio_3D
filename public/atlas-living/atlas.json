@@ -157,33 +157,841 @@
    }
   },
   {
-   "id": "living:skeleton",
-   "name": "Skeleton",
+   "id": "living:bone-skull",
+   "name": "Skull",
    "systems": [
     "skeletal"
    ],
    "sourceLabel": "CT bone",
    "evidence": "traced",
+   "division": "estimated",
    "scale": "organ",
    "color": "#e9e2d2",
-   "description": "An isosurface of the source CT, which shows the digits that the source skeleton label crops. Bones are not separated by name. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. The cranium and face, without the mandible. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
-    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
    ],
-   "meshNode": "living:skeleton",
+   "meshNode": "living:bone-skull",
    "geometry": {
-    "vertices": 183287,
-    "triangles": 369164,
+    "vertices": 18347,
+    "triangles": 37284,
     "boundsMeters": [
      [
-      0.0033361949026584625,
-      0.005148637108504772,
-      -0.00634516729041934
+      0.01260776910930872,
+      0.006633836310356855,
+      0.005212157499045134
      ],
      [
-      0.03504259139299393,
-      0.0883951410651207,
-      0.020062703639268875
+      0.024971242994070053,
+      0.0371258407831192,
+      0.01771952211856842
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-mandible",
+   "name": "Mandible",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. After Cook figures 14 and 15. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-mandible",
+   "geometry": {
+    "vertices": 826,
+    "triangles": 1650,
+    "boundsMeters": [
+     [
+      0.01415926031768322,
+      0.011729196645319462,
+      0.00575329689309001
+     ],
+     [
+      0.023033322766423225,
+      0.02156270109117031,
+      0.00812714733183384
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-cervical",
+   "name": "Cervical vertebrae",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Seven vertebrae, as counted by Hummel et al. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-cervical",
+   "geometry": {
+    "vertices": 2521,
+    "triangles": 5176,
+    "boundsMeters": [
+     [
+      0.01520627923309803,
+      0.026999609544873238,
+      0.006626124493777752
+     ],
+     [
+      0.021477295085787773,
+      0.035466812551021576,
+      0.013251892291009426
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-thoracic",
+   "name": "Thoracic vertebrae",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Twelve to fourteen vertebrae, as counted by Hummel et al. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-thoracic",
+   "geometry": {
+    "vertices": 7390,
+    "triangles": 15048,
+    "boundsMeters": [
+     [
+      0.012761938385665417,
+      0.03465435653924942,
+      0.009054629132151604
+     ],
+     [
+      0.022769758477807045,
+      0.05874573811888695,
+      0.02004985883831978
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-lumbar",
+   "name": "Lumbar vertebrae",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Five or six vertebrae, as counted by Hummel et al. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-lumbar",
+   "geometry": {
+    "vertices": 3714,
+    "triangles": 7564,
+    "boundsMeters": [
+     [
+      0.014978518709540367,
+      0.0581868514418602,
+      0.009342723526060581
+     ],
+     [
+      0.020060289651155472,
+      0.07066426426172256,
+      0.01934552751481533
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-sacrum",
+   "name": "Sacrum",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Four vertebrae, as counted by Hummel et al. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-sacrum",
+   "geometry": {
+    "vertices": 1778,
+    "triangles": 3588,
+    "boundsMeters": [
+     [
+      0.015515767969191074,
+      0.0693558007478714,
+      0.0053917174227535725
+     ],
+     [
+      0.02035549096763134,
+      0.07868911325931549,
+      0.01193280704319477
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-caudal",
+   "name": "Caudal vertebrae in the scan",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. The vertebrae of the tail base that lie in the CT. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-caudal",
+   "geometry": {
+    "vertices": 2151,
+    "triangles": 4322,
+    "boundsMeters": [
+     [
+      0.015483765862882137,
+      0.07661215215921402,
+      -0.0019060923950746655
+     ],
+     [
+      0.019657384604215622,
+      0.08782988041639328,
+      0.007185094989836216
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-ribs",
+   "name": "Ribs",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Twelve to fourteen pairs, as counted by Hummel et al.; individual ribs are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-ribs",
+   "geometry": {
+    "vertices": 7841,
+    "triangles": 15686,
+    "boundsMeters": [
+     [
+      0.008099221624433994,
+      0.03549445793032646,
+      0.003502656240016222
+     ],
+     [
+      0.0270270723849535,
+      0.05915127694606781,
+      0.01875670999288559
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-sternum",
+   "name": "Sternum",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Six parts in Hummel et al.; they are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-sternum",
+   "geometry": {
+    "vertices": 1445,
+    "triangles": 2916,
+    "boundsMeters": [
+     [
+      0.015573645010590553,
+      0.03226965293288231,
+      0.0034160965587943792
+     ],
+     [
+      0.020549999549984932,
+      0.04969167336821556,
+      0.005662974435836077
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-clavicles",
+   "name": "Clavicles",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. From the sternum to the shoulder. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-clavicles",
+   "geometry": {
+    "vertices": 224,
+    "triangles": 426,
+    "boundsMeters": [
+     [
+      0.012767869979143143,
+      0.029522454366087914,
+      0.004229607991874218
+     ],
+     [
+      0.024375256150960922,
+      0.03490506857633591,
+      0.010579410940408707
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-scapulae",
+   "name": "Scapulae",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. After Cook figure 31. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-scapulae",
+   "geometry": {
+    "vertices": 5037,
+    "triangles": 10188,
+    "boundsMeters": [
+     [
+      0.011037629097700119,
+      0.02818755805492401,
+      0.00870881974697113
+     ],
+     [
+      0.024889426305890083,
+      0.04435019940137863,
+      0.01692851074039936
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-humerus-r",
+   "name": "Right humerus",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-humerus-r",
+   "geometry": {
+    "vertices": 1299,
+    "triangles": 2610,
+    "boundsMeters": [
+     [
+      0.00897192396223545,
+      0.029167408123612404,
+      0.002915254794061184
+     ],
+     [
+      0.013509525917470455,
+      0.03865741193294525,
+      0.010285384021699429
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-humerus-l",
+   "name": "Left humerus",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-humerus-l",
+   "geometry": {
+    "vertices": 876,
+    "triangles": 1780,
+    "boundsMeters": [
+     [
+      0.023036476224660873,
+      0.029294952750205994,
+      0.004600405693054199
+     ],
+     [
+      0.02792752906680107,
+      0.036835599690675735,
+      0.010812956839799881
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-forearm-r",
+   "name": "Right radius and ulna",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-forearm-r",
+   "geometry": {
+    "vertices": 1172,
+    "triangles": 2342,
+    "boundsMeters": [
+     [
+      0.009369859471917152,
+      0.026955248787999153,
+      -0.004033749923110008
+     ],
+     [
+      0.012124916538596153,
+      0.03709101304411888,
+      0.004516450222581625
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-forearm-l",
+   "name": "Left radius and ulna",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-forearm-l",
+   "geometry": {
+    "vertices": 978,
+    "triangles": 1952,
+    "boundsMeters": [
+     [
+      0.02440611459314823,
+      0.029930181801319122,
+      -0.0039007561281323433
+     ],
+     [
+      0.027147512882947922,
+      0.036620087921619415,
+      0.005331824999302626
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-manus-r",
+   "name": "Right fore paw bones",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Carpals, metacarpals and phalanges, which the source label crops. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-manus-r",
+   "geometry": {
+    "vertices": 877,
+    "triangles": 1780,
+    "boundsMeters": [
+     [
+      0.00877887662500143,
+      0.020720114931464195,
+      -0.0052941362373530865
+     ],
+     [
+      0.012835572473704815,
+      0.027934124693274498,
+      -0.0022242737468332052
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-manus-l",
+   "name": "Left fore paw bones",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Carpals, metacarpals and phalanges, which the source label crops. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-manus-l",
+   "geometry": {
+    "vertices": 1013,
+    "triangles": 2030,
+    "boundsMeters": [
+     [
+      0.023732846602797508,
+      0.02119746245443821,
+      -0.005849999841302633
+     ],
+     [
+      0.029164215549826622,
+      0.03120184876024723,
+      -0.002436489798128605
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-pelvis",
+   "name": "Pelvis",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Both ossa coxae, after Cook figures 37 and 38. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-pelvis",
+   "geometry": {
+    "vertices": 5367,
+    "triangles": 10748,
+    "boundsMeters": [
+     [
+      0.011186555027961731,
+      0.06503481417894363,
+      -0.0006480705342255533
+     ],
+     [
+      0.024524077773094177,
+      0.08161579817533493,
+      0.014643996953964233
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-femur-r",
+   "name": "Right femur",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-femur-r",
+   "geometry": {
+    "vertices": 1685,
+    "triangles": 3382,
+    "boundsMeters": [
+     [
+      0.0072035836055874825,
+      0.06421094387769699,
+      -0.0013813269324600697
+     ],
+     [
+      0.01282111182808876,
+      0.074602872133255,
+      0.007355190347880125
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-femur-l",
+   "name": "Left femur",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-femur-l",
+   "geometry": {
+    "vertices": 1909,
+    "triangles": 3850,
+    "boundsMeters": [
+     [
+      0.023388037458062172,
+      0.06379073858261108,
+      -0.0009039371507242322
+     ],
+     [
+      0.028871377930045128,
+      0.07527206838130951,
+      0.008267879486083984
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-tibia-r",
+   "name": "Right tibia and fibula",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-tibia-r",
+   "geometry": {
+    "vertices": 2238,
+    "triangles": 4500,
+    "boundsMeters": [
+     [
+      0.005661875940859318,
+      0.0645134374499321,
+      -0.0041395435109734535
+     ],
+     [
+      0.01036960817873478,
+      0.08053689450025558,
+      0.000863090215716511
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-tibia-l",
+   "name": "Left tibia and fibula",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-tibia-l",
+   "geometry": {
+    "vertices": 1772,
+    "triangles": 3550,
+    "boundsMeters": [
+     [
+      0.02560676820576191,
+      0.06533210724592209,
+      -0.004325644113123417
+     ],
+     [
+      0.029573174193501472,
+      0.08097519725561142,
+      0.0008382019004784524
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-pes-r",
+   "name": "Right ankle bones in the scan",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. The tarsal bones that lie in the CT. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-pes-r",
+   "geometry": {
+    "vertices": 628,
+    "triangles": 1262,
+    "boundsMeters": [
+     [
+      0.005279321689158678,
+      0.07822903245687485,
+      -0.005801626015454531
+     ],
+     [
+      0.009146544151008129,
+      0.08155429363250732,
+      -0.0022965632379055023
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bone-pes-l",
+   "name": "Left ankle bones in the scan",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT near the source skeleton label, which also shows the digits that the label crops. Its division from neighbouring bones and its name are estimates, by the nearest course placed by hand on measured joints. The tarsal bones that lie in the CT. Moved as one rigid piece. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:bone-pes-l",
+   "geometry": {
+    "vertices": 788,
+    "triangles": 1574,
+    "boundsMeters": [
+     [
+      0.02699989639222622,
+      0.07769516855478287,
+      -0.005028687417507172
+     ],
+     [
+      0.0299687497317791,
+      0.0831725224852562,
+      -0.001642092363908887
      ]
     ]
    }
@@ -253,33 +1061,206 @@
    }
   },
   {
-   "id": "living:brain-rest",
-   "name": "Rest of the brain",
+   "id": "living:brain-forebrain",
+   "name": "Basal forebrain",
    "systems": [
     "nervous"
    ],
    "sourceLabel": "rest of the brain",
    "evidence": "source",
+   "division": "estimated",
    "scale": "organ",
-   "color": "#d6b7b3",
-   "description": "The source label \"rest of the brain\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "color": "#d9bcb6",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
-    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:brain-rest",
+   "meshNode": "living:brain-forebrain",
    "geometry": {
-    "vertices": 7026,
-    "triangles": 14040,
+    "vertices": 861,
+    "triangles": 1716,
     "boundsMeters": [
      [
-      0.014794664457440376,
-      0.016162438318133354,
-      0.010975525714457035
+      0.017244888469576836,
+      0.01628587581217289,
+      0.011733843944966793
      ],
      [
-      0.022865137085318565,
-      0.026093630120158195,
-      0.01718609780073166
+      0.02028511092066765,
+      0.019230185076594353,
+      0.015628715977072716
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:brain-thalamus",
+   "name": "Thalamus",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "rest of the brain",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#d6b7b3",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:brain-thalamus",
+   "geometry": {
+    "vertices": 2515,
+    "triangles": 5024,
+    "boundsMeters": [
+     [
+      0.01641717180609703,
+      0.01929420232772827,
+      0.01186162605881691
+     ],
+     [
+      0.021356681361794472,
+      0.023431172594428062,
+      0.01636451482772827
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:brain-hypothalamus",
+   "name": "Hypothalamus",
+   "systems": [
+    "nervous",
+    "endocrine"
+   ],
+   "sourceLabel": "rest of the brain",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#d3b1ad",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:brain-hypothalamus",
+   "geometry": {
+    "vertices": 1507,
+    "triangles": 3008,
+    "boundsMeters": [
+     [
+      0.01504791434854269,
+      0.018493328243494034,
+      0.011022291146218777
+     ],
+     [
+      0.021003616973757744,
+      0.022076604887843132,
+      0.013196708634495735
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:brain-hippocampus",
+   "name": "Hippocampus",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "rest of the brain",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#dcc2bb",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:brain-hippocampus",
+   "geometry": {
+    "vertices": 2296,
+    "triangles": 4588,
+    "boundsMeters": [
+     [
+      0.01570064388215542,
+      0.02035512588918209,
+      0.012075037695467472
+     ],
+     [
+      0.022770779207348824,
+      0.02529391460120678,
+      0.016759522259235382
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:brain-midbrain",
+   "name": "Midbrain",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "rest of the brain",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#d1aca7",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:brain-midbrain",
+   "geometry": {
+    "vertices": 1516,
+    "triangles": 3028,
+    "boundsMeters": [
+     [
+      0.017137011513113976,
+      0.023046288639307022,
+      0.013110720552504063
+     ],
+     [
+      0.020678110420703888,
+      0.02602320909500122,
+      0.017140457406640053
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:brain-pons",
+   "name": "Pons",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "rest of the brain",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#d5b5ae",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:brain-pons",
+   "geometry": {
+    "vertices": 454,
+    "triangles": 900,
+    "boundsMeters": [
+     [
+      0.01742570661008358,
+      0.02301015332341194,
+      0.011624260805547237
+     ],
+     [
+      0.02186998911201954,
+      0.025949563831090927,
+      0.01307530328631401
      ]
     ]
    }
@@ -1232,18 +2213,18 @@
    ],
    "meshNode": "living:muscle-temporalis",
    "geometry": {
-    "vertices": 12683,
-    "triangles": 25416,
+    "vertices": 3477,
+    "triangles": 6976,
     "boundsMeters": [
      [
-      0.01158704049885273,
-      0.016042029485106468,
-      0.010454235598444939
+      0.011590138077735901,
+      0.01606098935008049,
+      0.010479704476892948
      ],
      [
-      0.02600596658885479,
+      0.025997335091233253,
       0.028781667351722717,
-      0.017449868842959404
+      0.01744546741247177
      ]
     ]
    }
@@ -1265,18 +2246,18 @@
    ],
    "meshNode": "living:muscle-facial",
    "geometry": {
-    "vertices": 25733,
-    "triangles": 51596,
+    "vertices": 7133,
+    "triangles": 14404,
     "boundsMeters": [
      [
-      0.011781069450080395,
-      0.007804547902196646,
-      0.005821912083774805
+      0.01179026160389185,
+      0.007829684764146805,
+      0.005830136593431234
      ],
      [
-      0.025836046785116196,
+      0.025821197777986526,
       0.02250475250184536,
-      0.014384501613676548
+      0.014383397065103054
      ]
     ]
    }
@@ -1298,18 +2279,18 @@
    ],
    "meshNode": "living:muscle-mystacial",
    "geometry": {
-    "vertices": 5459,
-    "triangles": 10920,
+    "vertices": 1520,
+    "triangles": 3038,
     "boundsMeters": [
      [
-      0.015478170476853848,
-      0.003517272649332881,
-      0.006870145443826914
+      0.0155020235106349,
+      0.0035306026693433523,
+      0.006890864577144384
      ],
      [
-      0.021852582693099976,
-      0.012172497808933258,
-      0.011483430862426758
+      0.021845486015081406,
+      0.012162582017481327,
+      0.01145861390978098
      ]
     ]
    }
@@ -1331,18 +2312,18 @@
    ],
    "meshNode": "living:muscle-digastric",
    "geometry": {
-    "vertices": 12248,
-    "triangles": 24520,
+    "vertices": 3421,
+    "triangles": 6880,
     "boundsMeters": [
      [
-      0.012938742525875568,
-      0.012333985418081284,
-      0.004411118570715189
+      0.012960352934896946,
+      0.01234965119510889,
+      0.00441967137157917
      ],
      [
-      0.023807058110833168,
-      0.025265762582421303,
-      0.0087942685931921
+      0.02380576729774475,
+      0.025240741670131683,
+      0.008790760301053524
      ]
     ]
    }
@@ -1364,18 +2345,18 @@
    ],
    "meshNode": "living:muscle-strap",
    "geometry": {
-    "vertices": 4884,
-    "triangles": 9760,
+    "vertices": 1368,
+    "triangles": 2732,
     "boundsMeters": [
      [
-      0.014871492050588131,
+      0.014885486103594303,
       0.021812021732330322,
-      0.003506637876853347
+      0.00351910712197423
      ],
      [
-      0.021233132109045982,
-      0.03636494278907776,
-      0.008724721148610115
+      0.021196726709604263,
+      0.03630536422133446,
+      0.008719087578356266
      ]
     ]
    }
@@ -1397,18 +2378,18 @@
    ],
    "meshNode": "living:muscle-sternomastoid",
    "geometry": {
-    "vertices": 15249,
-    "triangles": 30528,
+    "vertices": 4191,
+    "triangles": 8410,
     "boundsMeters": [
      [
-      0.011738991364836693,
-      0.02238478511571884,
-      0.004404820501804352
+      0.011756129562854767,
+      0.022405099123716354,
+      0.004428246058523655
      ],
      [
-      0.02686484158039093,
-      0.035460464656353,
-      0.012449555099010468
+      0.026828110218048096,
+      0.0354476198554039,
+      0.012433336116373539
      ]
     ]
    }
@@ -1430,18 +2411,18 @@
    ],
    "meshNode": "living:muscle-neck-extensors",
    "geometry": {
-    "vertices": 11129,
-    "triangles": 22272,
+    "vertices": 3145,
+    "triangles": 6304,
     "boundsMeters": [
      [
-      0.013221286237239838,
-      0.026091931387782097,
-      0.011492759920656681
+      0.013231229968369007,
+      0.026107894256711006,
+      0.011513118632137775
      ],
      [
-      0.02331184782087803,
-      0.03814653679728508,
-      0.018329158425331116
+      0.02329457737505436,
+      0.03811913728713989,
+      0.018307356163859367
      ]
     ]
    }
@@ -1463,17 +2444,17 @@
    ],
    "meshNode": "living:muscle-acromiotrapezius",
    "geometry": {
-    "vertices": 3825,
-    "triangles": 7644,
+    "vertices": 1050,
+    "triangles": 2108,
     "boundsMeters": [
      [
       0.011896663345396519,
-      0.031216509640216827,
-      0.013485058210790157
+      0.03128337115049362,
+      0.01350121945142746
      ],
      [
-      0.02409392222762108,
-      0.03609175235033035,
+      0.024069637060165405,
+      0.036070726811885834,
       0.01734391413629055
      ]
     ]
@@ -1496,18 +2477,18 @@
    ],
    "meshNode": "living:muscle-spinotrapezius",
    "geometry": {
-    "vertices": 4314,
-    "triangles": 8632,
+    "vertices": 1181,
+    "triangles": 2354,
     "boundsMeters": [
      [
-      0.01158193964511156,
-      0.03600992262363434,
-      0.014715969562530518
+      0.011603298597037792,
+      0.03601924329996109,
+      0.014719164930284023
      ],
      [
-      0.02446484938263893,
-      0.04368605837225914,
-      0.019123831763863564
+      0.024448204785585403,
+      0.043633922934532166,
+      0.019101526588201523
      ]
     ]
    }
@@ -1529,18 +2510,18 @@
    ],
    "meshNode": "living:muscle-latissimus",
    "geometry": {
-    "vertices": 12596,
-    "triangles": 25184,
+    "vertices": 3520,
+    "triangles": 7032,
     "boundsMeters": [
      [
-      0.009803825058043003,
-      0.030753372237086296,
-      0.008284339681267738
+      0.009827947244048119,
+      0.03085722029209137,
+      0.008305641822516918
      ],
      [
-      0.026301616802811623,
-      0.05455103889107704,
-      0.020302535966038704
+      0.02628547139465809,
+      0.054514721035957336,
+      0.02030164748430252
      ]
     ]
    }
@@ -1562,18 +2543,18 @@
    ],
    "meshNode": "living:muscle-erector",
    "geometry": {
-    "vertices": 76148,
-    "triangles": 152516,
+    "vertices": 21563,
+    "triangles": 43366,
     "boundsMeters": [
      [
-      0.009839272126555443,
-      0.028186464682221413,
-      0.005689097102731466
+      0.009841608814895153,
+      0.028209200128912926,
+      0.00571611151099205
      ],
      [
-      0.026377344503998756,
-      0.07685773074626923,
-      0.02035866677761078
+      0.026369724422693253,
+      0.07685207575559616,
+      0.020355384796857834
      ]
     ]
    }
@@ -1595,18 +2576,18 @@
    ],
    "meshNode": "living:muscle-serratus",
    "geometry": {
-    "vertices": 9651,
-    "triangles": 19316,
+    "vertices": 2667,
+    "triangles": 5350,
     "boundsMeters": [
      [
-      0.009215160273015499,
-      0.03528080880641937,
-      0.006565046031028032
+      0.009278367273509502,
+      0.03529113158583641,
+      0.006581172812730074
      ],
      [
       0.027206243947148323,
-      0.047303639352321625,
-      0.0137148667126894
+      0.047303322702646255,
+      0.01369527168571949
      ]
     ]
    }
@@ -1628,17 +2609,17 @@
    ],
    "meshNode": "living:muscle-intercostals",
    "geometry": {
-    "vertices": 8069,
-    "triangles": 16128,
+    "vertices": 2216,
+    "triangles": 4428,
     "boundsMeters": [
      [
-      0.009016808122396469,
-      0.03781991824507713,
-      0.008116302080452442
+      0.00903137493878603,
+      0.037846632301807404,
+      0.008124090731143951
      ],
      [
-      0.027489865198731422,
-      0.05176199972629547,
+      0.027473468333482742,
+      0.05171702802181244,
       0.015071708709001541
      ]
     ]
@@ -1661,18 +2642,18 @@
    ],
    "meshNode": "living:muscle-pectoralis",
    "geometry": {
-    "vertices": 18462,
-    "triangles": 36960,
+    "vertices": 5128,
+    "triangles": 10286,
     "boundsMeters": [
      [
-      0.009638044051826,
-      0.029823070392012596,
-      0.003440493019297719
+      0.009648134931921959,
+      0.029828159138560295,
+      0.0034684264101088047
      ],
      [
-      0.027065908536314964,
-      0.04359564930200577,
-      0.010208811610937119
+      0.02704065851867199,
+      0.043577928096055984,
+      0.010196065530180931
      ]
     ]
    }
@@ -1694,18 +2675,18 @@
    ],
    "meshNode": "living:muscle-obliques",
    "geometry": {
-    "vertices": 48350,
-    "triangles": 96824,
+    "vertices": 13468,
+    "triangles": 27072,
     "boundsMeters": [
      [
       0.0041962857358157635,
-      0.04684382304549217,
-      0.002022880595177412
+      0.04685515910387039,
+      0.002049811650067568
      ],
      [
-      0.03216271474957466,
-      0.06850652396678925,
-      0.016728045418858528
+      0.0321529284119606,
+      0.06848382204771042,
+      0.016693243756890297
      ]
     ]
    }
@@ -1727,17 +2708,17 @@
    ],
    "meshNode": "living:muscle-rectus",
    "geometry": {
-    "vertices": 5432,
-    "triangles": 10864,
+    "vertices": 1555,
+    "triangles": 3112,
     "boundsMeters": [
      [
-      0.013643632642924786,
-      0.05158685892820358,
-      -0.0003202524094376713
+      0.013752870261669159,
+      0.05160047486424446,
+      -0.00030981001327745616
      ],
      [
-      0.01831950806081295,
-      0.06703757494688034,
+      0.018239282071590424,
+      0.0670042484998703,
       0.0031293921638280153
      ]
     ]
@@ -1760,18 +2741,18 @@
    ],
    "meshNode": "living:muscle-tail-base",
    "geometry": {
-    "vertices": 10155,
-    "triangles": 20332,
+    "vertices": 2808,
+    "triangles": 5642,
     "boundsMeters": [
      [
-      0.014470667578279972,
-      0.07497523725032806,
-      -0.0010910816490650177
+      0.014479510486125946,
+      0.07498181611299515,
+      -0.0010649670148268342
      ],
      [
-      0.021680207923054695,
-      0.08697111904621124,
-      0.009519519284367561
+      0.021674716845154762,
+      0.0869540348649025,
+      0.00951951090246439
      ]
     ]
    }
@@ -1793,18 +2774,18 @@
    ],
    "meshNode": "living:muscle-perineal",
    "geometry": {
-    "vertices": 5034,
-    "triangles": 10064,
+    "vertices": 1404,
+    "triangles": 2806,
     "boundsMeters": [
      [
-      0.01459143403917551,
-      0.07468816637992859,
-      -0.0058202375657856464
+      0.014601157046854496,
+      0.07476095855236053,
+      -0.005810213275253773
      ],
      [
-      0.021561507135629654,
-      0.08238745480775833,
-      -0.0006316743092611432
+      0.021551810204982758,
+      0.08237713575363159,
+      -0.0006379113183356822
      ]
     ]
    }
@@ -1826,18 +2807,18 @@
    ],
    "meshNode": "living:muscle-deltoid",
    "geometry": {
-    "vertices": 3164,
-    "triangles": 6320,
+    "vertices": 857,
+    "triangles": 1704,
     "boundsMeters": [
      [
-      0.009485959075391293,
-      0.030184848234057426,
-      0.00580698112025857
+      0.009500867687165737,
+      0.030213596299290657,
+      0.005810107104480267
      ],
      [
-      0.027136264368891716,
-      0.03524988889694214,
-      0.014252505265176296
+      0.027122274041175842,
+      0.0352221243083477,
+      0.014242117293179035
      ]
     ]
    }
@@ -1859,18 +2840,18 @@
    ],
    "meshNode": "living:muscle-supraspinatus",
    "geometry": {
-    "vertices": 4478,
-    "triangles": 8948,
+    "vertices": 1239,
+    "triangles": 2476,
     "boundsMeters": [
      [
-      0.01110314391553402,
-      0.028330275788903236,
-      0.011241870932281017
+      0.011136378161609173,
+      0.028332367539405823,
+      0.011305308900773525
      ],
      [
-      0.025868570432066917,
-      0.03866475075483322,
-      0.015511020086705685
+      0.025800557807087898,
+      0.03863988816738129,
+      0.015462337993085384
      ]
     ]
    }
@@ -1892,18 +2873,18 @@
    ],
    "meshNode": "living:muscle-infraspinatus",
    "geometry": {
-    "vertices": 3842,
-    "triangles": 7680,
+    "vertices": 1046,
+    "triangles": 2090,
     "boundsMeters": [
      [
-      0.010418213903903961,
-      0.029723165556788445,
-      0.010198426432907581
+      0.010439637117087841,
+      0.029775338247418404,
+      0.010235303081572056
      ],
      [
-      0.025989767163991928,
-      0.041138727217912674,
-      0.015948906540870667
+      0.025976726785302162,
+      0.0410921573638916,
+      0.01591440662741661
      ]
     ]
    }
@@ -1925,18 +2906,18 @@
    ],
    "meshNode": "living:muscle-teres",
    "geometry": {
-    "vertices": 2153,
-    "triangles": 4292,
+    "vertices": 590,
+    "triangles": 1166,
     "boundsMeters": [
      [
-      0.010972368530929089,
-      0.031055526807904243,
-      0.009118850342929363
+      0.01097669918090105,
+      0.031095150858163834,
+      0.009170769713819027
      ],
      [
-      0.025768127292394638,
-      0.040949221700429916,
-      0.014588577672839165
+      0.02575458586215973,
+      0.04091949015855789,
+      0.014584644697606564
      ]
     ]
    }
@@ -1958,18 +2939,18 @@
    ],
    "meshNode": "living:muscle-triceps",
    "geometry": {
-    "vertices": 9611,
-    "triangles": 19212,
+    "vertices": 2672,
+    "triangles": 5336,
     "boundsMeters": [
      [
-      0.00983401294797659,
+      0.009887702763080597,
       0.028615677729249,
       0.0037563450168818235
      ],
      [
-      0.026490822434425354,
-      0.039829153567552567,
-      0.012330555357038975
+      0.026476619765162468,
+      0.03979212045669556,
+      0.012322384864091873
      ]
     ]
    }
@@ -1991,18 +2972,18 @@
    ],
    "meshNode": "living:muscle-biceps-brachii",
    "geometry": {
-    "vertices": 6892,
-    "triangles": 13780,
+    "vertices": 1881,
+    "triangles": 3762,
     "boundsMeters": [
      [
-      0.00976729579269886,
-      0.0268856268376112,
-      0.002244252245873213
+      0.009789884090423584,
+      0.026917925104498863,
+      0.0022658647503703833
      ],
      [
-      0.02728094533085823,
-      0.03614548221230507,
-      0.012445519678294659
+      0.027271857485175133,
+      0.036086637526750565,
+      0.012438613921403885
      ]
     ]
    }
@@ -2024,18 +3005,18 @@
    ],
    "meshNode": "living:muscle-forearm-extensors",
    "geometry": {
-    "vertices": 5504,
-    "triangles": 11000,
+    "vertices": 1508,
+    "triangles": 3006,
     "boundsMeters": [
      [
-      0.008752596564590931,
-      0.02532242052257061,
-      -0.0047227502800524235
+      0.00875806249678135,
+      0.025325914844870567,
+      -0.0046924143098294735
      ],
      [
-      0.02764691412448883,
-      0.03522013500332832,
-      0.005307261366397142
+      0.027640176936984062,
+      0.03516484797000885,
+      0.005273166112601757
      ]
     ]
    }
@@ -2057,18 +3038,18 @@
    ],
    "meshNode": "living:muscle-forearm-flexors",
    "geometry": {
-    "vertices": 5497,
-    "triangles": 10980,
+    "vertices": 1517,
+    "triangles": 3022,
     "boundsMeters": [
      [
-      0.009703598916530609,
-      0.025439782068133354,
-      -0.006180895492434502
+      0.00970509834587574,
+      0.025447199121117592,
+      -0.006163731217384338
      ],
      [
-      0.027088116854429245,
-      0.03597651794552803,
-      0.004325844347476959
+      0.027080785483121872,
+      0.03593551740050316,
+      0.0042308419942855835
      ]
     ]
    }
@@ -2090,18 +3071,18 @@
    ],
    "meshNode": "living:muscle-gluteus",
    "geometry": {
-    "vertices": 19310,
-    "triangles": 38668,
+    "vertices": 5405,
+    "triangles": 10850,
     "boundsMeters": [
      [
-      0.007737956941127777,
-      0.06577751785516739,
-      0.004411094821989536
+      0.0077555677853524685,
+      0.06578896194696426,
+      0.004457436036318541
      ],
      [
-      0.026991186663508415,
-      0.07808507978916168,
-      0.015518882311880589
+      0.026938188821077347,
+      0.07807037979364395,
+      0.015501359477639198
      ]
     ]
    }
@@ -2123,18 +3104,18 @@
    ],
    "meshNode": "living:muscle-caudofemoralis",
    "geometry": {
-    "vertices": 7472,
-    "triangles": 14936,
+    "vertices": 2100,
+    "triangles": 4198,
     "boundsMeters": [
      [
-      0.00816320814192295,
-      0.07121327519416809,
-      0.003143862821161747
+      0.008187144063413143,
+      0.071217842400074,
+      0.003151551354676485
      ],
      [
-      0.028287295252084732,
-      0.08062826842069626,
-      0.00728739844635129
+      0.02825040929019451,
+      0.08061569929122925,
+      0.0072720847092568874
      ]
     ]
    }
@@ -2156,18 +3137,18 @@
    ],
    "meshNode": "living:muscle-biceps-femoris",
    "geometry": {
-    "vertices": 24713,
-    "triangles": 49448,
+    "vertices": 6889,
+    "triangles": 13798,
     "boundsMeters": [
      [
-      0.003146581118926406,
-      0.06693637371063232,
-      -0.002012699143961072
+      0.003152782330289483,
+      0.06700793653726578,
+      -0.0019691898487508297
      ],
      [
-      0.029955703765153885,
-      0.08319517225027084,
-      0.008062384091317654
+      0.02995159663259983,
+      0.08317841589450836,
+      0.008054747246205807
      ]
     ]
    }
@@ -2189,18 +3170,18 @@
    ],
    "meshNode": "living:muscle-semitendinosus",
    "geometry": {
-    "vertices": 7778,
-    "triangles": 15556,
+    "vertices": 2136,
+    "triangles": 4270,
     "boundsMeters": [
      [
-      0.008931481279432774,
-      0.06945822387933731,
-      -0.0019992352463304996
+      0.00899098813533783,
+      0.06948226690292358,
+      -0.001965010305866599
      ],
      [
-      0.02861645258963108,
-      0.08209940046072006,
-      0.0018312417669221759
+      0.028603002429008484,
+      0.08207359164953232,
+      0.0018250532448291779
      ]
     ]
    }
@@ -2222,18 +3203,18 @@
    ],
    "meshNode": "living:muscle-semimembranosus",
    "geometry": {
-    "vertices": 12725,
-    "triangles": 25460,
+    "vertices": 3593,
+    "triangles": 7202,
     "boundsMeters": [
      [
-      0.0077386521734297276,
-      0.06732555478811264,
-      -0.0031782069709151983
+      0.007809113245457411,
+      0.06734970957040787,
+      -0.0031685312278568745
      ],
      [
-      0.02832845225930214,
-      0.08056959509849548,
-      0.0024305854458361864
+      0.02832462452352047,
+      0.08053135126829147,
+      0.0024182945489883423
      ]
     ]
    }
@@ -2255,18 +3236,18 @@
    ],
    "meshNode": "living:muscle-gracilis",
    "geometry": {
-    "vertices": 1388,
-    "triangles": 2756,
+    "vertices": 379,
+    "triangles": 742,
     "boundsMeters": [
      [
-      0.00861779972910881,
-      0.06686193495988846,
-      -0.002921940525993705
+      0.00862894020974636,
+      0.06690309941768646,
+      -0.002838121959939599
      ],
      [
-      0.026202227920293808,
-      0.07485248893499374,
-      -0.0007135612540878356
+      0.026190966367721558,
+      0.0748395025730133,
+      -0.0007138989167287946
      ]
     ]
    }
@@ -2288,18 +3269,18 @@
    ],
    "meshNode": "living:muscle-adductors",
    "geometry": {
-    "vertices": 14911,
-    "triangles": 29848,
+    "vertices": 4125,
+    "triangles": 8280,
     "boundsMeters": [
      [
-      0.00954158790409565,
-      0.06710226088762283,
-      -0.0037202967796474695
+      0.009555894881486893,
+      0.0671125203371048,
+      -0.0037105041556060314
      ],
      [
-      0.02775798738002777,
-      0.07603060454130173,
-      0.004451944958418608
+      0.027735043317079544,
+      0.0760250985622406,
+      0.004449440632015467
      ]
     ]
    }
@@ -2321,18 +3302,18 @@
    ],
    "meshNode": "living:muscle-vasti",
    "geometry": {
-    "vertices": 15588,
-    "triangles": 31168,
+    "vertices": 4321,
+    "triangles": 8652,
     "boundsMeters": [
      [
-      0.006865404546260834,
-      0.0636071264743805,
-      -0.0014202496968209743
+      0.006874296348541975,
+      0.06366369128227234,
+      -0.0014099638210609555
      ],
      [
-      0.032840531319379807,
-      0.07336506247520447,
-      0.00916325207799673
+      0.03281756117939949,
+      0.07336065918207169,
+      0.009151846170425415
      ]
     ]
    }
@@ -2354,18 +3335,18 @@
    ],
    "meshNode": "living:muscle-rectus-femoris",
    "geometry": {
-    "vertices": 1866,
-    "triangles": 3724,
+    "vertices": 496,
+    "triangles": 976,
     "boundsMeters": [
      [
-      0.010175066068768501,
-      0.06480828672647476,
-      0.0007875847513787448
+      0.010199757292866707,
+      0.06483671069145203,
+      0.000787870492786169
      ],
      [
-      0.030085299164056778,
-      0.0720653235912323,
-      0.008250871673226357
+      0.030009448528289795,
+      0.07203954458236694,
+      0.00824689120054245
      ]
     ]
    }
@@ -2387,18 +3368,18 @@
    ],
    "meshNode": "living:muscle-psoas",
    "geometry": {
-    "vertices": 12499,
-    "triangles": 24984,
+    "vertices": 3482,
+    "triangles": 6944,
     "boundsMeters": [
      [
-      0.011927631683647633,
+      0.01193183846771717,
       0.060330938547849655,
-      0.00355715723708272
+      0.0035605106968432665
      ],
      [
-      0.024065114557743073,
-      0.07515432685613632,
-      0.015399578958749771
+      0.024029264226555824,
+      0.07513540983200073,
+      0.015394062735140324
      ]
     ]
    }
@@ -2420,18 +3401,18 @@
    ],
    "meshNode": "living:muscle-gastrocnemius",
    "geometry": {
-    "vertices": 7506,
-    "triangles": 15000,
+    "vertices": 2055,
+    "triangles": 4082,
     "boundsMeters": [
      [
-      0.005817326717078686,
-      0.06602185219526291,
-      -0.004462198819965124
+      0.005840747617185116,
+      0.06607715040445328,
+      -0.004431215114891529
      ],
      [
-      0.029122665524482727,
-      0.08243998140096664,
-      0.0019004890928044915
+      0.029097458347678185,
+      0.08241473138332367,
+      0.0018796143122017384
      ]
     ]
    }
@@ -2453,18 +3434,18 @@
    ],
    "meshNode": "living:muscle-soleus",
    "geometry": {
-    "vertices": 3582,
-    "triangles": 7148,
+    "vertices": 987,
+    "triangles": 1958,
     "boundsMeters": [
      [
-      0.0038764106575399637,
-      0.06823219358921051,
-      -0.0024142535403370857
+      0.0038896002806723118,
+      0.06828978657722473,
+      -0.002367214998230338
      ],
      [
-      0.029759930446743965,
-      0.08043067902326584,
-      0.0003337090602144599
+      0.029749222099781036,
+      0.08038374781608582,
+      0.00032655682298354805
      ]
     ]
    }
@@ -2486,18 +3467,18 @@
    ],
    "meshNode": "living:muscle-tibialis",
    "geometry": {
-    "vertices": 2597,
-    "triangles": 5168,
+    "vertices": 701,
+    "triangles": 1370,
     "boundsMeters": [
      [
-      0.007136814761906862,
-      0.06631181389093399,
-      -0.004383184481412172
+      0.007148184813559055,
+      0.06632929295301437,
+      -0.004336732439696789
      ],
      [
-      0.029737988486886024,
-      0.08069120347499847,
-      -0.00126714410725981
+      0.029726596549153328,
+      0.0805838406085968,
+      -0.0012721118982881308
      ]
     ]
    }
@@ -2519,18 +3500,18 @@
    ],
    "meshNode": "living:muscle-peroneals",
    "geometry": {
-    "vertices": 886,
-    "triangles": 1772,
+    "vertices": 208,
+    "triangles": 412,
     "boundsMeters": [
      [
-      0.005246874410659075,
-      0.0705559104681015,
-      -0.0027460274286568165
+      0.005277273710817099,
+      0.07062016427516937,
+      -0.0026920302771031857
      ],
      [
-      0.02962147444486618,
-      0.0753830298781395,
-      -0.001155487960204482
+      0.029585177078843117,
+      0.0753258541226387,
+      -0.0011786463437601924
      ]
     ]
    }
@@ -2552,18 +3533,18 @@
    ],
    "meshNode": "living:muscle-deep-flexors",
    "geometry": {
-    "vertices": 929,
-    "triangles": 1848,
+    "vertices": 260,
+    "triangles": 508,
     "boundsMeters": [
      [
-      0.008368996903300285,
-      0.06852161884307861,
-      -0.0035194805823266506
+      0.008400438353419304,
+      0.06859376281499863,
+      -0.003515898948535323
      ],
      [
       0.02725977823138237,
-      0.07987671345472336,
-      -0.0008259920869022608
+      0.07978406548500061,
+      -0.0009255875484086573
      ]
     ]
    }
@@ -2617,18 +3598,18 @@
    "division": "estimated",
    "meshNode": "living:small-intestine",
    "geometry": {
-    "vertices": 61352,
-    "triangles": 122868,
+    "vertices": 23920,
+    "triangles": 47954,
     "boundsMeters": [
      [
-      0.0050492314621806145,
+      0.005056993570178747,
       0.024370037019252777,
-      0.002681190613657236
+      0.002692998619750142
      ],
      [
       0.031175661832094193,
-      0.06823050230741501,
-      0.015107731334865093
+      0.06822095066308975,
+      0.015092084184288979
      ]
     ]
    }
@@ -2650,18 +3631,18 @@
    "division": "estimated",
    "meshNode": "living:caecum",
    "geometry": {
-    "vertices": 18710,
-    "triangles": 37432,
+    "vertices": 7231,
+    "triangles": 14464,
     "boundsMeters": [
      [
-      0.017463194206357002,
-      0.056947216391563416,
+      0.017481064423918724,
+      0.05695338919758797,
       0.004043263383209705
      ],
      [
-      0.031105849891901016,
+      0.0311006810516119,
       0.06646503508090973,
-      0.014808439649641514
+      0.01478997990489006
      ]
     ]
    }
@@ -2683,18 +3664,18 @@
    "division": "estimated",
    "meshNode": "living:colon",
    "geometry": {
-    "vertices": 1596,
-    "triangles": 3176,
+    "vertices": 625,
+    "triangles": 1236,
     "boundsMeters": [
      [
       0.01684040203690529,
-      0.06659399718046188,
-      -0.003109991317614913
+      0.06661108136177063,
+      -0.0030843913555145264
      ],
      [
-      0.02600071020424366,
-      0.07970231026411057,
-      0.002933851908892393
+      0.02597520686686039,
+      0.07967071235179901,
+      0.002928337315097451
      ]
     ]
    }
@@ -2716,18 +3697,18 @@
    ],
    "meshNode": "living:veins",
    "geometry": {
-    "vertices": 21938,
-    "triangles": 43796,
+    "vertices": 5952,
+    "triangles": 11806,
     "boundsMeters": [
      [
-      0.012289249338209629,
-      0.014086415059864521,
-      0.003354959189891815
+      0.012388130649924278,
+      0.014170452952384949,
+      0.0033818851225078106
      ],
      [
-      0.025401558727025986,
-      0.07171845436096191,
-      0.019744232296943665
+      0.025366930291056633,
+      0.07171011716127396,
+      0.01973966881632805
      ]
     ]
    }
@@ -2748,18 +3729,18 @@
    ],
    "meshNode": "living:fat",
    "geometry": {
-    "vertices": 57116,
-    "triangles": 114324,
+    "vertices": 31518,
+    "triangles": 63050,
     "boundsMeters": [
      [
-      0.00620126910507679,
-      0.006518863141536713,
-      -0.0052991812117397785
+      0.006238435860723257,
+      0.006526364013552666,
+      -0.005296064540743828
      ],
      [
       0.03291870281100273,
       0.08647681772708893,
-      0.019234580919146538
+      0.019211875274777412
      ]
     ]
    }
@@ -2780,18 +3761,18 @@
    ],
    "meshNode": "living:airways",
    "geometry": {
-    "vertices": 8150,
-    "triangles": 16248,
+    "vertices": 2221,
+    "triangles": 4382,
     "boundsMeters": [
      [
-      0.011578076519072056,
-      0.012598853558301926,
-      -0.003640535054728389
+      0.01159824151545763,
+      0.012657674960792065,
+      -0.003601952688768506
      ],
      [
-      0.028465615585446358,
-      0.0836421474814415,
-      0.013301483355462551
+      0.02843145839869976,
+      0.08359789103269577,
+      0.013288076967000961
      ]
     ]
    }
@@ -2894,6 +3875,378 @@
       0.026515381410717964,
       0.036422815173864365,
       0.01060926541686058
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bronchi",
+   "name": "Bronchial tree",
+   "systems": [
+    "respiratory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e4e2d6",
+   "description": "Simulated. Airways filling the source lung label. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:bronchi",
+   "geometry": {
+    "vertices": 25375,
+    "triangles": 38654,
+    "boundsMeters": [
+     [
+      0.011465707793831825,
+      0.035089828073978424,
+      0.005129535682499409
+     ],
+     [
+      0.024308227002620697,
+      0.04655713587999344,
+      0.015599681064486504
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:pulmonary-arteries",
+   "name": "Pulmonary arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "respiratory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the outflow of the heart to fill the source lung label. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:pulmonary-arteries",
+   "geometry": {
+    "vertices": 15048,
+    "triangles": 23048,
+    "boundsMeters": [
+     [
+      0.011462951079010963,
+      0.03498178720474243,
+      0.005194827448576689
+     ],
+     [
+      0.0242537222802639,
+      0.04639575630426407,
+      0.01519782841205597
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:pulmonary-veins",
+   "name": "Pulmonary veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "respiratory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the source lung label to the left atrium. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:pulmonary-veins",
+   "geometry": {
+    "vertices": 15389,
+    "triangles": 23594,
+    "boundsMeters": [
+     [
+      0.011267549358308315,
+      0.03516741469502449,
+      0.005100227892398834
+     ],
+     [
+      0.024317633360624313,
+      0.04640432447195053,
+      0.015492956154048443
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:hepatic-arteries",
+   "name": "Hepatic artery branches",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. Filling the source liver label. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:hepatic-arteries",
+   "geometry": {
+    "vertices": 26653,
+    "triangles": 40298,
+    "boundsMeters": [
+     [
+      0.008053194731473923,
+      0.04558251425623894,
+      0.003332515712827444
+     ],
+     [
+      0.02887566201388836,
+      0.06018581613898277,
+      0.01689099334180355
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:portal-branches",
+   "name": "Portal vein branches",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Filling the source liver label. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:portal-branches",
+   "geometry": {
+    "vertices": 11675,
+    "triangles": 17930,
+    "boundsMeters": [
+     [
+      0.006285917479544878,
+      0.0449780635535717,
+      0.003354484448209405
+     ],
+     [
+      0.027577698230743408,
+      0.05956369638442993,
+      0.016946779564023018
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:hepatic-veins",
+   "name": "Hepatic vein branches",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#4a66a8",
+   "description": "Simulated. Filling the source liver label. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:hepatic-veins",
+   "geometry": {
+    "vertices": 23923,
+    "triangles": 36266,
+    "boundsMeters": [
+     [
+      0.006505834870040417,
+      0.045698150992393494,
+      0.003079035086557269
+     ],
+     [
+      0.028275109827518463,
+      0.060019996017217636,
+      0.01744314655661583
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:renal-arteries",
+   "name": "Renal artery branches",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "urinary"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. Filling the source kidney label. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:renal-arteries",
+   "geometry": {
+    "vertices": 17827,
+    "triangles": 27090,
+    "boundsMeters": [
+     [
+      0.008247912861406803,
+      0.05496976152062416,
+      0.012105722911655903
+     ],
+     [
+      0.026388775557279587,
+      0.0651329755783081,
+      0.018155381083488464
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:renal-veins",
+   "name": "Renal vein branches",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "urinary"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Filling the source kidney label. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:renal-veins",
+   "geometry": {
+    "vertices": 51815,
+    "triangles": 78090,
+    "boundsMeters": [
+     [
+      0.008106442168354988,
+      0.054716795682907104,
+      0.011951778084039688
+     ],
+     [
+      0.026099832728505135,
+      0.0650334283709526,
+      0.017892777919769287
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:cerebral-arteries",
+   "name": "Cerebral arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. Filling the source brain labels from the base of the brain. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:cerebral-arteries",
+   "geometry": {
+    "vertices": 17507,
+    "triangles": 26562,
+    "boundsMeters": [
+     [
+      0.014388120733201504,
+      0.014437436126172543,
+      0.010734468698501587
+     ],
+     [
+      0.023524921387434006,
+      0.028530312702059746,
+      0.017021557316184044
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:mesenteric-arteries",
+   "name": "Mesenteric artery branches",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. Filling the traced gut from the superior mesenteric artery. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:mesenteric-arteries",
+   "geometry": {
+    "vertices": 29736,
+    "triangles": 45068,
+    "boundsMeters": [
+     [
+      0.006552135571837425,
+      0.053934529423713684,
+      0.003016216214746237
+     ],
+     [
+      0.03111390769481659,
+      0.06796765327453613,
+      0.01334737055003643
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:mesenteric-veins",
+   "name": "Mesenteric vein branches",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Filling the traced gut towards the portal vein. The branches are generated to fill the measured volume by a space colonization rule; they show what lies there, not where any real branch runs. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:mesenteric-veins",
+   "geometry": {
+    "vertices": 26803,
+    "triangles": 40630,
+    "boundsMeters": [
+     [
+      0.00582608999684453,
+      0.0528968945145607,
+      0.003484295215457678
+     ],
+     [
+      0.030280185863375664,
+      0.06728950887918472,
+      0.014249810948967934
      ]
     ]
    }
@@ -3896,6 +5249,241 @@
    }
   },
   {
+   "id": "living:pericardium",
+   "name": "Pericardium",
+   "systems": [
+    "cardiovascular"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e8d6cf",
+   "defaultOpacity": 0.16,
+   "description": "Simulated. A thin membrane, drawn as a faint surface. Round the source heart label. Its distance from the label and its form are estimates, and it is not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:pericardium",
+   "geometry": {
+    "vertices": 1831,
+    "triangles": 3658,
+    "boundsMeters": [
+     [
+      0.014028028585016727,
+      0.0354529544711113,
+      0.004550454206764698
+     ],
+     [
+      0.023578861728310585,
+      0.04583519324660301,
+      0.011433766223490238
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:pleura",
+   "name": "Pleura",
+   "systems": [
+    "respiratory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e8d6cf",
+   "defaultOpacity": 0.16,
+   "description": "Simulated. A thin membrane, drawn as a faint surface. Round the source lung label. Its distance from the label and its form are estimates, and it is not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:pleura",
+   "geometry": {
+    "vertices": 4133,
+    "triangles": 8264,
+    "boundsMeters": [
+     [
+      0.01064826175570488,
+      0.03420296683907509,
+      0.00426103500649333
+     ],
+     [
+      0.02487238682806492,
+      0.047617629170417786,
+      0.01594596356153488
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:meninges",
+   "name": "Meninges",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e8d6cf",
+   "defaultOpacity": 0.16,
+   "description": "Simulated. A thin membrane, drawn as a faint surface. Round the source brain labels. Its distance from the label and its form are estimates, and it is not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:meninges",
+   "geometry": {
+    "vertices": 2760,
+    "triangles": 5520,
+    "boundsMeters": [
+     [
+      0.01385054923593998,
+      0.013346760533750057,
+      0.010689465329051018
+     ],
+     [
+      0.02403545193374157,
+      0.030556347221136093,
+      0.017642205581068993
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:peritoneum",
+   "name": "Peritoneum",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e8d6cf",
+   "defaultOpacity": 0.16,
+   "description": "Simulated. A thin membrane, drawn as a faint surface. At the edge of the mask of the abdominal cavity used in tracing. Its distance from the label and its form are estimates, and it is not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:peritoneum",
+   "geometry": {
+    "vertices": 15037,
+    "triangles": 30062,
+    "boundsMeters": [
+     [
+      0.005668411031365395,
+      0.03010014072060585,
+      -0.003928938880562782
+     ],
+     [
+      0.03093740902841091,
+      0.07758466899394989,
+      0.018167801201343536
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lymph-vessels",
+   "name": "Thoracic duct and lymph trunks",
+   "systems": [
+    "lymphatic",
+    "immune"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#b58fb0",
+   "description": "Simulated. Trunks joining the lymph node sites listed by Hummel et al. to a thoracic duct that ends at the left venous angle. The routes are estimates. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/",
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:lymph-vessels",
+   "geometry": {
+    "vertices": 1900,
+    "triangles": 3760,
+    "boundsMeters": [
+     [
+      0.009171098470687866,
+      0.025056522339582443,
+      0.0011874682968482375
+     ],
+     [
+      0.027023978531360626,
+      0.0694034993648529,
+      0.015988731756806374
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:cerebral-base",
+   "name": "Basilar artery and arterial circle",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous",
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. The vertebral and basilar arteries and a ring at the base of the brain, after Cook figures 87 and 88. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:cerebral-base",
+   "geometry": {
+    "vertices": 634,
+    "triangles": 1244,
+    "boundsMeters": [
+     [
+      0.016425011679530144,
+      0.01836835965514183,
+      0.00912284106016159
+     ],
+     [
+      0.020878717303276062,
+      0.03402005881071091,
+      0.011293452233076096
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:eyelids",
+   "name": "Eyelids",
+   "systems": [
+    "integumentary",
+    "sensory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f3029",
+   "exterior": true,
+   "description": "Simulated. A dark rim round the visible part of each globe. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:eyelids",
+   "geometry": {
+    "vertices": 596,
+    "triangles": 1184,
+    "boundsMeters": [
+     [
+      0.012833790853619576,
+      0.01381536852568388,
+      0.012708023190498352
+     ],
+     [
+      0.02589278481900692,
+      0.017460588365793228,
+      0.016104254871606827
+     ]
+    ]
+   }
+  },
+  {
    "id": "living:eyes",
    "name": "Eyes",
    "systems": [
@@ -4232,10 +5820,10 @@
   }
  ],
  "statistics": {
-  "structures": 124,
-  "triangles": 2446866,
-  "glbBytes": 67683076,
-  "glbSha256": "42fafafd90cc1aca54984e3933648e884c91d3191939b19fcf65b3f373d2c1e7",
+  "structures": 170,
+  "triangles": 1813036,
+  "glbBytes": 39404888,
+  "glbSha256": "9a49cf79c8a66753177dc22c3b50b3292df7c591f102b86cfce4e96126c79953",
   "sourceVoxelSpacingMm": [
    0.1,
    0.1,

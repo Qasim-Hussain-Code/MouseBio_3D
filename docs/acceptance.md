@@ -179,3 +179,13 @@ All 449 JavaScript and simulated DOM cases passed with no failures or skips. New
 A headless Chrome session with software WebGL, on the production build, rendered the coat from the default view and close up, the eight steps of the layer stack, and the Living, Experiment and Compare modes on this reference. No JavaScript exception or console error was recorded. Screenshots were inspected visually. In them individual hairs are visible up close, muscles show grooves between them and stripes along them, and the jugular vein no longer stretches to the forearm. In Compare, loading was seen to begin in both viewers, and the Display controls panel overlaps the label of condition A. Neither a completed comparison on this reference nor operation on a representative GPU was exercised.
 
 These observations are software-rendering evidence for integration, not representative GPU, memory or frame-rate measurements. The placement of muscle and organ boundaries was not compared with dissections, and no anatomist has reviewed the model.
+
+## Named bones, branching trees and membranes v0.19.0
+
+This section records checks executed on 2026-11-06 for the changes described in [the release notes](releases/v0.19.0.md).
+
+All 453 JavaScript and simulated DOM cases passed with no failures or skips. New cases cover tree growth within a volume, exact repetition, the branching law at every node and its cap, closed tubes, the assignment of bones, and the thinning of hairs. Viewing the first build found its size to be 105 MB, over the limit for one asset. Thinner trees, clustered surfaces and 16-bit indices brought it to 39 MB. A view of the skeleton found fragments of the scanning holder near the snout, and CT bone outside the labelled body is now accepted only at the fore paws.
+
+A headless Chrome session with software WebGL, on the production build, rendered the coat from the default view, front and top, the skin from the top and below, and the skeleton, blood vessel, muscle and organ steps of the layer stack. No JavaScript exception or console error was recorded. Screenshots were inspected visually. Thinning of hairs in motion was not observed, because it depends on a real GPU and interactive use.
+
+These observations are software-rendering evidence for integration, not representative GPU, memory or frame-rate measurements. Agreement of simulated anatomy with real anatomy was not measured, and no anatomist has reviewed the model.

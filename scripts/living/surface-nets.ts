@@ -12,6 +12,8 @@ export interface Surface {
   positions: Float32Array;
   normals: Float32Array;
   indices: Uint32Array;
+  /** Optional per-vertex tint, multiplied with the display colour. */
+  colors?: Float32Array;
 }
 
 const CORNERS: readonly (readonly [number, number, number])[] = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0], [0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]];
