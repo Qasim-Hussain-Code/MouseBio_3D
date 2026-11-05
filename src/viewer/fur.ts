@@ -1,43 +1,69 @@
 import * as THREE from 'three';
 
 /**
- * A simulated coat drawn by shell texturing: the body surface is repeated at growing
- * offsets along its normals, combed along a per-vertex direction, and each layer keeps
- * only the pixels inside a hair. Hair length, density and colour are display estimates.
- * The Digimouse specimen is a nude mouse and has no measured coat.
+ * A simulated coat of individual hairs. Hair roots are scattered over the body surface in proportion to
+ * area, with a fixed seed, and each hair is a tapered ribbon that turns to face the camera and curves along
+ * a stored combing direction. Hair length, density, width and colour are display estimates. The Digimouse
+ * specimen is a nude mouse and has no measured coat.
  */
 export type CoatId = 'agouti' | 'black' | 'albino' | 'none';
 
-export const COATS: Readonly<Record<Exclude<CoatId, 'none'>, { root: string; band: string; tip: string; belly: string }>> = Object.freeze({
-  agouti: { root: '#3a3531', band: '#6f5f4e', tip: '#2b2521', belly: '#b3a896' },
-  black: { root: '#2a2624', band: '#231f1d', tip: '#141211', belly: '#2b2725' },
-  albino: { root: '#f1ece2', band: '#f8f4ec', tip: '#fffdf8', belly: '#fbf8f1' },
+export const COATS: Readonly<Record<Exclude<CoatId, 'none'>, { root: string; band: string; tip: string; belly: string; under: string }>> = Object.freeze({
+  agouti: { root: '#4a4239', band: '#857360', tip: '#2e2720', belly: '#c6bba9', under: '#3d362f' },
+  black: { root: '#26221f', band: '#1f1b19', tip: '#121010', belly: '#2b2623', under: '#191614' },
+  albino: { root: '#e9e3d6', band: '#f6f1e7', tip: '#fffdf8', belly: '#fbf8f0', under: '#e6dfd0' },
 });
 
-export const FUR_DISPLAY = Object.freeze({ shells: 28, lengthMetres: 0.003, cellMetres: 0.00012 });
+export const FUR_DISPLAY = Object.freeze({
+  /** Hairs per square metre of skin, far fewer than a real coat, each drawn wider than a real hair. */
+  density: 46e6,
+  maximumHairs: 340000,
+  lengthMetres: 0.0029,
+  widthMetres: 0.00011,
+  segments: 5,
+  seed: 19650607,
+});
 
 const VERTEX = `
-attribute vec4 _fur;
-attribute float aShell;
+attribute vec3 aRoot;
+attribute vec3 aNormal;
+attribute vec4 aComb;
+attribute float aRandom;
 uniform float uLength;
-varying vec3 vBase;
-varying float vShell;
-varying float vHair;
+uniform float uWidth;
+uniform float uPixel;
+varying float vAlong;
+varying float vTone;
+varying vec3 vTangent;
 varying vec3 vNormal;
 varying vec3 vView;
 #include <clipping_planes_pars_vertex>
 void main() {
-  vec3 comb = _fur.xyz;
-  float s = aShell;
-  // Hairs rise from the skin and lean further along the combing direction towards their tips.
-  vec3 direction = normalize(normal * (1.0 - 0.55 * s) + comb * (0.55 + 0.75 * s));
-  vec3 transformed = position + direction * uLength * _fur.w * s;
-  vBase = position;
-  vShell = s;
-  vHair = _fur.w;
-  vNormal = normalize(mat3(modelMatrix) * normal);
-  vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
-  vView = -mvPosition.xyz;
+  float t = position.y;
+  float side = position.x;
+  float tone = fract(aRandom * 7.13);
+  // Guard hairs are longer and fewer than the undercoat.
+  float scale = aComb.w * (fract(aRandom * 3.77) > 0.9 ? 1.32 : 0.82 + 0.3 * tone);
+  float reach = uLength * scale;
+  vec3 lean = normalize(aComb.xyz);
+  // The hair leaves the skin at a steep angle and lies down along the coat towards its tip.
+  vec3 start = normalize(aNormal * 0.62 + lean * 0.8);
+  vec3 end = normalize(aNormal * 0.07 + lean);
+  vec3 local = aRoot + reach * (start * t * (1.0 - 0.5 * t) + end * 0.5 * t * t);
+  vec3 tangent = normalize(start * (1.0 - t) + end * t);
+  vec4 world = modelMatrix * vec4(local, 1.0);
+  vec3 worldTangent = normalize(mat3(modelMatrix) * tangent);
+  vec3 toCamera = cameraPosition - world.xyz;
+  float distanceToCamera = length(toCamera);
+  vec3 across = normalize(cross(worldTangent, toCamera));
+  float width = max(uWidth, distanceToCamera * uPixel * 0.75) * (1.0 - t * t * 0.85);
+  world.xyz += across * side * width * 0.5;
+  vAlong = t;
+  vTone = tone;
+  vTangent = worldTangent;
+  vNormal = normalize(mat3(modelMatrix) * aNormal);
+  vView = toCamera;
+  vec4 mvPosition = viewMatrix * world;
   gl_Position = projectionMatrix * mvPosition;
   #include <clipping_planes_vertex>
 }`;
@@ -45,56 +71,48 @@ void main() {
 const FRAGMENT = `
 #include <common>
 #include <clipping_planes_pars_fragment>
-uniform float uCell;
 uniform vec3 uRoot;
 uniform vec3 uBand;
 uniform vec3 uTip;
 uniform vec3 uBelly;
 uniform vec3 uUp;
-varying vec3 vBase;
-varying float vShell;
-varying float vHair;
+varying float vAlong;
+varying float vTone;
+varying vec3 vTangent;
 varying vec3 vNormal;
 varying vec3 vView;
-float hash(vec3 p) { p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 void main() {
   #include <clipping_planes_fragment>
-  if (vHair < 0.04) discard;
-  vec3 q = vBase / uCell;
-  vec3 cell = floor(q);
-  vec3 f = q - cell;
-  vec3 centre = vec3(hash(cell), hash(cell + 11.0), hash(cell + 23.0));
-  float hairLength = 0.55 + 0.45 * hash(cell + 31.0);
-  float t = vShell / hairLength;
-  if (t > 1.0) discard;
-  float d = length(f - centre);
-  float radius = 0.86 * (1.0 - t * t * 0.92) + 0.08;
-  float soft = max(fwidth(d), 0.02);
-  float coverage = smoothstep(radius + soft, radius - soft, d);
-  if (coverage < 0.04) discard;
+  float t = vAlong;
   // Banded hair: dark root, pale band, dark tip.
-  float tone = hash(cell + 47.0);
-  vec3 colour = mix(uRoot, uBand, smoothstep(0.25, 0.62, t));
-  colour = mix(colour, uTip, smoothstep(0.76 + 0.12 * tone, 0.98, t));
-  float ventral = smoothstep(0.1, 0.62, -dot(normalize(vNormal), uUp));
-  colour = mix(colour, uBelly * mix(0.82, 1.0, smoothstep(0.1, 0.8, t)), ventral);
-  colour *= 0.86 + 0.28 * tone;
-  // Darker along the back and paler towards the flanks, as in the wild-type coat.
-  colour *= mix(1.0, 0.8, smoothstep(0.35, 0.95, dot(normalize(vNormal), uUp)));
-  // Roots sit in the shade of the hair above them, and the light wraps round the coat.
+  vec3 colour = mix(uRoot, uBand, smoothstep(0.2, 0.55, t));
+  colour = mix(colour, uTip, smoothstep(0.74 + 0.14 * vTone, 0.98, t));
   vec3 n = normalize(vNormal);
-  vec3 light = normalize(uUp * 0.85 + vec3(0.25, -0.35, 0.0));
-  float wrap = 0.55 + 0.45 * dot(n, light);
-  float occlusion = mix(0.42, 1.0, smoothstep(0.0, 0.8, vShell));
+  float ventral = smoothstep(0.08, 0.6, -dot(n, uUp));
+  colour = mix(colour, uBelly * mix(0.84, 1.0, smoothstep(0.1, 0.7, t)), ventral);
+  colour *= 0.82 + 0.36 * vTone;
+  // Darker along the back and paler towards the flanks, as in the wild-type coat.
+  colour *= mix(1.0, 0.82, smoothstep(0.35, 0.95, dot(n, uUp)));
+  // Light along a hair: strong across it and weak along it, with a soft highlight, in the manner of Kajiya and Kay.
+  vec3 tangent = normalize(vTangent);
   vec3 view = normalize(vView);
-  float rim = pow(1.0 - abs(dot(normalize(mat3(viewMatrix) * n), view)), 2.5);
-  gl_FragColor = vec4(colour * (0.34 + 0.86 * wrap) * occlusion + colour * rim * 0.35, coverage);
+  vec3 keyLight = normalize(vec3(-0.34, 0.5, 0.8));
+  vec3 fillLight = normalize(vec3(0.45, -0.3, 0.45));
+  float key = sqrt(max(0.0, 1.0 - pow(dot(tangent, keyLight), 2.0)));
+  float fill = sqrt(max(0.0, 1.0 - pow(dot(tangent, fillLight), 2.0)));
+  float highlight = pow(sqrt(max(0.0, 1.0 - pow(dot(tangent, normalize(keyLight + view)), 2.0))), 40.0);
+  float wrap = 0.5 + 0.5 * dot(n, keyLight);
+  // Hairs near the skin sit in the shade of those above them.
+  float shade = mix(0.5, 1.0, smoothstep(0.0, 0.6, t));
+  vec3 lit = colour * shade * (0.34 + 0.62 * key * wrap + 0.22 * fill) + vec3(0.13) * highlight * wrap * t;
+  gl_FragColor = vec4(lit, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }`;
 
 export interface FurLayer {
   readonly mesh: THREE.Mesh;
+  readonly hairs: number;
   setCoat(id: Exclude<CoatId, 'none'>): void;
   setClipping(planes: THREE.Plane[]): void;
   dispose(): void;
@@ -102,32 +120,111 @@ export interface FurLayer {
 
 /** Whether a body surface carries the per-vertex combing and length attribute. */
 export function hasFurAttribute(geometry: THREE.BufferGeometry): boolean {
-  return geometry.getAttribute('_fur')?.itemSize === 4;
+  return geometry.getAttribute('_fur')?.itemSize === 4 && geometry.getIndex() !== null;
 }
 
-/** Fur shells as a child of the skin mesh. The skin geometry stays owned by the skin mesh. */
+/** Deterministic numbers, so that the coat is the same on every load. */
+function random(seed: number) {
+  let state = seed >>> 0 || 1;
+  return () => { state ^= state << 13; state >>>= 0; state ^= state >>> 17; state ^= state << 5; state >>>= 0; return state / 4294967296; };
+}
+
+export interface HairRoots { readonly roots: Float32Array; readonly normals: Float32Array; readonly combs: Float32Array; readonly randoms: Float32Array; readonly count: number }
+
+/** Scatter hair roots over a surface, in proportion to area, weighted by hair length so that bare skin receives none. */
+export function scatterHairs(geometry: THREE.BufferGeometry, density = FUR_DISPLAY.density, maximum = FUR_DISPLAY.maximumHairs, seed = FUR_DISPLAY.seed): HairRoots {
+  const position = geometry.getAttribute('position'), normal = geometry.getAttribute('normal'), fur = geometry.getAttribute('_fur');
+  const index = geometry.getIndex()!;
+  const rng = random(seed);
+  const triangles = index.count / 3;
+  const areas = new Float32Array(triangles);
+  let total = 0;
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+  for (let t = 0; t < triangles; t++) {
+    const i0 = index.getX(3 * t), i1 = index.getX(3 * t + 1), i2 = index.getX(3 * t + 2);
+    a.fromBufferAttribute(position, i0); b.fromBufferAttribute(position, i1); c.fromBufferAttribute(position, i2);
+    const lengthFactor = (fur.getW(i0) + fur.getW(i1) + fur.getW(i2)) / 3;
+    const area = b.sub(a).cross(c.sub(a)).length() / 2;
+    areas[t] = lengthFactor < 0.03 ? 0 : area;
+    total += areas[t];
+  }
+  const count = Math.min(maximum, Math.round(total * density));
+  const roots = new Float32Array(3 * count), normals = new Float32Array(3 * count), combs = new Float32Array(4 * count), randoms = new Float32Array(count);
+  const rate = count / (total || 1);
+  let written = 0, carry = 0;
+  for (let t = 0; t < triangles && written < count; t++) {
+    carry += areas[t] * rate;
+    const i0 = index.getX(3 * t), i1 = index.getX(3 * t + 1), i2 = index.getX(3 * t + 2);
+    while (carry >= 1 && written < count) {
+      carry -= 1;
+      let u = rng(), v = rng();
+      if (u + v > 1) { u = 1 - u; v = 1 - v; }
+      const w = 1 - u - v;
+      const blend = (attribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, component: 'getX' | 'getY' | 'getZ' | 'getW') => w * attribute[component](i0) + u * attribute[component](i1) + v * attribute[component](i2);
+      roots[3 * written] = blend(position, 'getX'); roots[3 * written + 1] = blend(position, 'getY'); roots[3 * written + 2] = blend(position, 'getZ');
+      normals[3 * written] = blend(normal, 'getX'); normals[3 * written + 1] = blend(normal, 'getY'); normals[3 * written + 2] = blend(normal, 'getZ');
+      // A little scatter in the combing direction keeps the coat from looking brushed flat.
+      combs[4 * written] = blend(fur, 'getX') + (rng() - 0.5) * 0.34;
+      combs[4 * written + 1] = blend(fur, 'getY') + (rng() - 0.5) * 0.34;
+      combs[4 * written + 2] = blend(fur, 'getZ') + (rng() - 0.5) * 0.34;
+      combs[4 * written + 3] = blend(fur, 'getW');
+      randoms[written] = rng();
+      written++;
+    }
+  }
+  return { roots, normals, combs, randoms, count: written };
+}
+
+/** The ribbon every hair shares: x is the side, from -1 to 1, and y runs from root to tip. */
+function hairRibbon(segments: number): { positions: Float32Array; indices: Uint16Array } {
+  const positions = new Float32Array(3 * 2 * (segments + 1));
+  const indices = new Uint16Array(6 * segments);
+  for (let s = 0; s <= segments; s++) {
+    const t = s / segments;
+    positions.set([-1, t, 0, 1, t, 0], 6 * s);
+    if (s < segments) indices.set([2 * s, 2 * s + 1, 2 * s + 2, 2 * s + 1, 2 * s + 3, 2 * s + 2], 6 * s);
+  }
+  return { positions, indices };
+}
+
+/** Hairs as a child of the skin mesh. The skin geometry stays owned by the skin mesh. */
 export function createFur(skin: THREE.Mesh, up: THREE.Vector3): FurLayer | null {
   const source = skin.geometry;
   if (!hasFurAttribute(source)) return null;
+  const hairs = scatterHairs(source);
+  const ribbon = hairRibbon(FUR_DISPLAY.segments);
   const geometry = new THREE.InstancedBufferGeometry();
-  geometry.setIndex(source.getIndex());
-  for (const name of ['position', 'normal', '_fur']) geometry.setAttribute(name, source.getAttribute(name));
-  const shells = new Float32Array(FUR_DISPLAY.shells);
-  for (let i = 0; i < shells.length; i++) shells[i] = (i + 1) / shells.length;
-  geometry.setAttribute('aShell', new THREE.InstancedBufferAttribute(shells, 1));
-  geometry.instanceCount = shells.length;
+  geometry.setIndex(new THREE.BufferAttribute(ribbon.indices, 1));
+  geometry.setAttribute('position', new THREE.BufferAttribute(ribbon.positions, 3));
+  geometry.setAttribute('aRoot', new THREE.InstancedBufferAttribute(hairs.roots, 3));
+  geometry.setAttribute('aNormal', new THREE.InstancedBufferAttribute(hairs.normals, 3));
+  geometry.setAttribute('aComb', new THREE.InstancedBufferAttribute(hairs.combs, 4));
+  geometry.setAttribute('aRandom', new THREE.InstancedBufferAttribute(hairs.randoms, 1));
+  geometry.instanceCount = hairs.count;
+  // The ribbon's own coordinates say nothing about where hairs lie, so the bounds are those of the skin.
+  source.computeBoundingBox();
+  source.computeBoundingSphere();
+  geometry.boundingBox = source.boundingBox!.clone();
+  geometry.boundingSphere = source.boundingSphere!.clone();
   const uniforms = {
-    uLength: { value: FUR_DISPLAY.lengthMetres }, uCell: { value: FUR_DISPLAY.cellMetres },
+    uLength: { value: FUR_DISPLAY.lengthMetres }, uWidth: { value: FUR_DISPLAY.widthMetres }, uPixel: { value: 0.001 },
     uRoot: { value: new THREE.Color() }, uBand: { value: new THREE.Color() }, uTip: { value: new THREE.Color() }, uBelly: { value: new THREE.Color() },
     uUp: { value: up.clone().normalize() },
   };
-  const material = new THREE.ShaderMaterial({ vertexShader: VERTEX, fragmentShader: FRAGMENT, uniforms, side: THREE.FrontSide, clipping: true, alphaToCoverage: true });
+  const material = new THREE.ShaderMaterial({ vertexShader: VERTEX, fragmentShader: FRAGMENT, uniforms, side: THREE.DoubleSide, clipping: true });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.frustumCulled = false;
   mesh.name = 'simulated-coat';
+  // The width of a pixel at unit distance, so that distant hairs stay at least about a pixel wide.
+  const size = new THREE.Vector2();
+  mesh.onBeforeRender = (renderer, _scene, camera) => {
+    renderer.getSize(size);
+    if (camera instanceof THREE.PerspectiveCamera) uniforms.uPixel.value = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / Math.max(1, size.y);
+  };
   skin.add(mesh);
   const layer: FurLayer = {
     mesh,
+    hairs: hairs.count,
     setCoat(id) {
       const coat = COATS[id];
       uniforms.uRoot.value.set(coat.root); uniforms.uBand.value.set(coat.band); uniforms.uTip.value.set(coat.tip); uniforms.uBelly.value.set(coat.belly);

@@ -72,6 +72,8 @@ export interface Structure {
   basis?: string[];
   /** Lies outside the body surface, so an opaque skin does not cover it. */
   exterior?: boolean;
+  /** The surface comes from measured tissue, but the boundary between this part and its neighbours, and its name, are estimated. */
+  division?: 'estimated';
 }
 
 /**

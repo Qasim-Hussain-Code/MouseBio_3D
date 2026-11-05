@@ -132,8 +132,10 @@ test('the living mouse opens first and marks the evidence of every structure', a
   await view.findByText(/WebGL could not start/, undefined, { timeout: 10_000 });
   assert.equal(requests[0], '/atlas-living/atlas.json');
   assert.ok(view.getAllByText('Simulated').length > 10);
-  assert.ok(view.getAllByText('Traced').length >= 5);
-  assert.ok(view.getAllByText('Source label').length > 10);
+  assert.ok(view.getAllByText('Traced').length >= 3);
+  assert.ok(view.getAllByText('Traced, division estimated').length > 10);
+  assert.ok(view.getAllByText('Source label').length > 5);
+  assert.ok(view.getAllByText('Source label, division estimated').length > 5);
   assert.ok(view.getByText(/CONSTRUCTED MODEL: POSTURE, COAT AND STRUCTURES MARKED SIMULATED ARE NOT MEASURED/));
   assert.equal((view.getByRole('combobox', { name: 'Simulated coat' }) as HTMLSelectElement).value, 'agouti');
   assert.ok(view.getByText(/Constructed model/));
@@ -145,7 +147,7 @@ test('the living mouse opens first and marks the evidence of every structure', a
   assert.equal(simulated.checked, false);
   const saved = await savedView(view);
   assert.ok(saved.hidden.includes('living:aorta'));
-  assert.ok(!saved.hidden.includes('living:heart'));
+  assert.ok(!saved.hidden.includes('living:heart-lv'));
 });
 
 test('specimen and citation UI uses declared metadata rather than a hardcoded Digimouse description', async () => {

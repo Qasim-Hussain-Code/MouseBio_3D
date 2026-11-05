@@ -8,7 +8,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { surfaceShadingOf, SURFACE_PRESENTATION, SKIN_PRESENTATION } from './surface-shading';
 import { createContactShadow, type ContactShadow } from './contact-shadow';
-import { createFur, type CoatId, type FurLayer } from './fur';
+import { COATS, createFur, type CoatId, type FurLayer } from './fur';
 import { labelWithEvidence } from '../domain/evidence';
 import { createSectionImagePlane, cutFaceView, loadSectionVolume, type SectionImagePlane } from './section-image';
 import { sectionImagesApplyTo, type SectionImageChoice, type SectionImageId } from '../domain/section-images';
@@ -308,7 +308,10 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       if (fur) {
         const coat = current.coat ?? 'agouti';
         fur.mesh.visible = coat !== 'none' && !!skinMesh?.visible && skinOpacity >= OPAQUE_SKIN;
-        if (coat !== 'none') fur.setCoat(coat);
+        if (coat !== 'none') {
+          fur.setCoat(coat);
+          if (fur.mesh.visible && skinMesh instanceof THREE.Mesh) skinMesh.material.color.set(COATS[coat].under);
+        }
         fur.setClipping(current.clipAxis === 'off' ? [] : [clip]);
       }
       if (current.clipAxis !== 'off') clip.copy(createDisplayClipPlane(current.clipAxis, current.clipPosition, radius));

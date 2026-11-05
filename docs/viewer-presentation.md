@@ -60,7 +60,11 @@ The executed asset check (`tests/surface-smoothing-assets.test.ts`) measures the
 
 ## Simulated coat
 
-On the living mouse model the skin is drawn with a simulated coat by shell texturing; see [living mouse methods](living-mouse.md). The shells appear only while the skin is visible and at least 95% opaque. They are left out of the ground shadow, and they are cut by a virtual section. Coat colours, hair length and density are display estimates.
+On the living mouse model the skin carries a simulated coat of individual hairs; see [living mouse methods](living-mouse.md). The hairs appear only while the skin is visible and at least 95% opaque. They are left out of the ground shadow, and they are cut by a virtual section. Distant hairs are kept about one pixel wide so that the coat stays continuous. Coat colours, hair length, width and density are display estimates, and the lighting of the hairs follows the manner of Kajiya and Kay, with its own fixed lights.
+
+## Muscle fibres
+
+Named muscles carry fine stripes along the course given to each muscle and pale patches at the ends of that course. These suggest fibre direction and tendon, and they fade before they alias. They are a display convention, not a measured fibre orientation.
 
 ## Regions behind the opaque body surface
 

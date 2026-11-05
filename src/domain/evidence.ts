@@ -15,13 +15,21 @@ export const EVIDENCE_NOTES: Readonly<Record<StructureEvidence, string>> = Objec
   simulated: 'Constructed from published descriptions of mouse anatomy. It is not measured from this specimen or any other, and it may differ from a real mouse.',
 });
 
+export const DIVISION_NOTE = 'The outer form follows the measured tissue, but the boundaries between this part and its neighbours, and its name, are estimated.';
+
+/** The words on a mark: the evidence for the tissue, and whether it was divided by estimate. */
+export function evidenceMark(structure: Pick<Structure, 'evidence' | 'division'>): string {
+  return structure.division === 'estimated' ? `${EVIDENCE_NAMES[evidenceOf(structure)]}, division estimated` : EVIDENCE_NAMES[evidenceOf(structure)];
+}
+
 /** Whether a reference mixes evidence classes, so that they must be shown. */
 export function declaresEvidence(atlas: Pick<Atlas, 'structures'>): boolean {
   return atlas.structures.some((structure) => structure.evidence !== undefined);
 }
 
 /** A region label that cannot be mistaken for a measurement when read on its own. */
-export function labelWithEvidence(structure: Pick<Structure, 'name' | 'evidence'>): string {
+export function labelWithEvidence(structure: Pick<Structure, 'name' | 'evidence' | 'division'>): string {
+  if (structure.division === 'estimated') return `${structure.name} (estimated division)`;
   return structure.evidence === 'simulated' ? `${structure.name} (simulated)` : structure.evidence === 'traced' ? `${structure.name} (traced)` : structure.name;
 }
 

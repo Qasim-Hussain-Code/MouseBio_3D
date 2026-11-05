@@ -22,6 +22,8 @@ export function prepareRegionMaterial(region: SourceRegion): RenderRegion {
     const material = new THREE.MeshPhysicalMaterial({ roughness: SURFACE_PRESENTATION.roughness, metalness: SURFACE_PRESENTATION.metalness,
       clearcoat: SURFACE_PRESENTATION.clearcoat, clearcoatRoughness: SURFACE_PRESENTATION.clearcoatRoughness,
       envMapIntensity: SURFACE_PRESENTATION.envMapIntensity, side: THREE.DoubleSide });
+    // A stored fibre direction turns on the muscle display for this surface.
+    if (region.geometry.getAttribute('_fiber')?.itemSize === 4) material.defines = { ...material.defines, USE_FIBRE: 1 };
     installSurfaceShading(material);
     region.material = material;
   }

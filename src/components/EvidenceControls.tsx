@@ -1,9 +1,9 @@
-import { EVIDENCE_NAMES, EVIDENCE_NOTES, evidenceOf, type EvidenceGroup } from '../domain/evidence';
+import { DIVISION_NOTE, EVIDENCE_NAMES, EVIDENCE_NOTES, evidenceMark, evidenceOf, type EvidenceGroup } from '../domain/evidence';
 import type { Structure } from '../domain/types';
 
-export function EvidenceChip({ structure }: { structure: Pick<Structure, 'evidence'> }) {
+export function EvidenceChip({ structure }: { structure: Pick<Structure, 'evidence' | 'division'> }) {
   const evidence = evidenceOf(structure);
-  return <span className={`evidence-chip evidence-${evidence}`} title={EVIDENCE_NOTES[evidence]}>{EVIDENCE_NAMES[evidence]}</span>;
+  return <span className={`evidence-chip evidence-${evidence}${structure.division ? ' evidence-divided' : ''}`} title={structure.division ? `${EVIDENCE_NOTES[evidence]} ${DIVISION_NOTE}` : EVIDENCE_NOTES[evidence]}>{evidenceMark(structure)}</span>;
 }
 
 /** Shows or hides whole evidence classes, so that the measured model can be seen on its own. */

@@ -3,7 +3,7 @@
  * plates of Cook (1965). Shapes, counts and sizes here are estimates and are not measured.
  * All coordinates are source voxels of 0.1 mm, in the stance frame.
  */
-import type { PostureField } from './posture';
+import { vertexNormals, type PostureField } from './posture';
 import { add, applyRigid, cross, dot, length, rotate, scale, sub, unit, type RigidTransform, type Vec3 } from './rig';
 import { mergeSurfaces, tube } from './extract';
 import { surfaceNets, type Surface } from './surface-nets';
@@ -163,24 +163,62 @@ function clawOn(tip: Vec3, forward: Vec3, up: Vec3, radius: number, len: number)
   return tube(points, radii, 8);
 }
 
-/** A thin rounded disc cupped towards its opening, after Cook figures 4 and 5. */
+/**
+ * A thin cupped sheet, after Cook figures 4 and 5, built from a polar grid so that its rim is smooth.
+ * The outline is a rounded oval narrowing to the root, the middle is a shallow bowl with a fold near the base,
+ * and the sheet thins towards the rim.
+ */
 function pinna(root: Vec3, side: -1 | 1): Surface {
   const out = unit([side * 0.55, 0.22, 0.8]);     // from the root towards the rim, up and outwards
   const face = unit([side * 0.5, -0.85, 0.05]);   // the concave side faces forwards and outwards
   const across = unit(cross(out, face));
   const faceTrue = unit(cross(across, out));
-  const width = 84, height = 94, cup = 20, thick = 2.1;
-  return sculpt([add(root, [-120, -120, -60]), add(root, [120, 120, 140])], 2, (p) => {
-    const q = sub(p, root);
-    const u = dot(q, across), v = dot(q, out) - height * 0.46, w = dot(q, faceTrue);
-    const r = Math.hypot(u / (width * 0.5), v / (height * 0.5));
-    // Bowl: the sheet recedes towards the middle of the ear.
-    const fold = 2.4 * Math.exp(-(((u - 6) / 7) ** 2)) * Math.max(0, 1 - Math.abs(v + 20) / 34);
-    const sheet = cup * (1 - Math.min(1, r * r)) - cup * 0.3 + fold;
-    const inside = thick - Math.abs(w + sheet);
-    const rim = (1 - r) * 30;
-    return Math.min(inside, rim);
-  }, 0);
+  const width = 84, height = 96, cup = 20;
+  const rings = 26, segments = 72;
+  const centre = add(root, scale(out, height * 0.46));
+  const outline = (theta: number) => {
+    // Rounded above, narrowing towards the root below.
+    const v = Math.sin(theta), u = Math.cos(theta);
+    const narrow = v < 0 ? 1 - 0.42 * v * v : 1;
+    return [u * width * 0.5 * narrow, v * height * (v < 0 ? 0.46 : 0.54)] as const;
+  };
+  const sheet = (r: number, u: number, v: number) => {
+    const fold = 2.6 * Math.exp(-(((u - 6) / 8) ** 2)) * Math.max(0, 1 - Math.abs(v + 20) / 30);
+    const antihelix = 1.1 * Math.exp(-(((r - 0.82) / 0.1) ** 2));
+    return cup * (1 - r * r) - cup * 0.3 + fold + antihelix;
+  };
+  const positions: number[] = [];
+  const indices: number[] = [];
+  const point = (r: number, theta: number, offset: number): Vec3 => {
+    const [ou, ov] = outline(theta);
+    const u = ou * r, v = ov * r;
+    return add(add(add(centre, scale(across, u)), scale(out, v)), scale(faceTrue, -sheet(r, u, v) + offset));
+  };
+  const thickness = (r: number) => 0.55 + 1.05 * (1 - r) ** 0.7;
+  // Inner face, outer face, each from the centre point outwards.
+  const pushFace = (sign: 1 | -1) => {
+    const base = positions.length / 3;
+    const c = point(0, 0, sign * thickness(0));
+    positions.push(c[0], c[1], c[2]);
+    for (let ring = 1; ring <= rings; ring++) for (let s = 0; s < segments; s++) {
+      const r = ring / rings, theta = 2 * Math.PI * s / segments;
+      const p = point(r, theta, sign * thickness(r));
+      positions.push(p[0], p[1], p[2]);
+    }
+    const at = (ring: number, s: number) => base + 1 + (ring - 1) * segments + (s % segments);
+    for (let s = 0; s < segments; s++) {
+      if (sign > 0) indices.push(base, at(1, s + 1), at(1, s)); else indices.push(base, at(1, s), at(1, s + 1));
+      for (let ring = 1; ring < rings; ring++) {
+        const a = at(ring, s), b = at(ring, s + 1), c2 = at(ring + 1, s), d = at(ring + 1, s + 1);
+        if (sign > 0) indices.push(a, b, c2, b, d, c2); else indices.push(a, c2, b, b, c2, d);
+      }
+    }
+    return (s: number) => at(rings, s);
+  };
+  const front = pushFace(-1), back = pushFace(1);
+  for (let s = 0; s < segments; s++) indices.push(front(s), front(s + 1), back(s), front(s + 1), back(s + 1), back(s));
+  const positionArray = Float32Array.from(positions), indexArray = Uint32Array.from(indices);
+  return { positions: positionArray, normals: vertexNormals(positionArray, indexArray), indices: indexArray };
 }
 
 /** The tail runs along the caudal vertebrae measured in the CT, then falls to the ground and curves. */
@@ -300,8 +338,8 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
     for (let row = 0; row < 5; row++) for (let column = 0; column < 7; column++) {
       if ((row === 0 || row === 4) && column > 4) continue;
       const root: Vec3 = [tip[0] + side * (15 + column * 3.4 + row * 1.5), tip[1] + 22 + column * 9, tip[2] + 7 - row * 5.2];
-      const spreadUp = (2 - row) * 0.13 + (rng() - 0.5) * 0.08;
-      const direction = unit([side * (0.8 + rng() * 0.1), 0.42 + column * 0.04 + rng() * 0.08, spreadUp]);
+      const spreadUp = (2 - row) * 0.24 + (rng() - 0.5) * 0.1;
+      const direction = unit([side * (0.8 + rng() * 0.1), 0.18 + column * 0.11 + rng() * 0.08, spreadUp]);
       const len = 70 + column * 24 + rng() * 25;
       whiskers.push(hair(root, direction, [side * -0.05, 0.16, -0.1], len, 0.42 + column * 0.04));
     }

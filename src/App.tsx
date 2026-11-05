@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { declaresEvidence, EVIDENCE_NOTES, evidenceGroups, evidenceOf, toggledEvidence } from './domain/evidence';
+import { declaresEvidence, DIVISION_NOTE, EVIDENCE_NOTES, evidenceGroups, evidenceOf, toggledEvidence } from './domain/evidence';
 import { EvidenceChip, EvidenceFilter } from './components/EvidenceControls';
+import { LayerStack } from './components/LayerStack';
+import { layerStops, type LayerStopId } from './domain/living-layers';
 import {
   SYSTEMS, physiologyProcessesForAtlas, MAX_VIEW_STATE_BYTES, compareConditions, exportExperimentalCsv, exportExperimentalJson, exportViewState, parseViewState, parseExperimentalCsv,
   parseExperimentalJson, summarizeMeasurements, type Atlas, type DatasetMetadata,
@@ -121,6 +123,7 @@ export default function App() {
   const [sectionStatus,setSectionStatus]=useState<SectionImageStatus>({status:'idle'});
   const [displayOpen,setDisplayOpen]=useState(false);
   const [coat,setCoat]=useState<CoatId>('agouti');
+  const [layerStop,setLayerStop]=useState<LayerStopId|null>('coat');
   const pendingCut = useRef(false);
   const [navigatorOpen,setNavigatorOpen]=useState(false);
   // A side column on wide screens; below 901 px the inspector is an overlay drawer.
@@ -227,6 +230,7 @@ export default function App() {
   const colorB = measurementColors(groupB, min, max);
   const selectedStructure = atlas?.structures.find((structure) => structure.id === selected);
   const evidenceShown = atlas ? declaresEvidence(atlas) : false;
+  const layerStack = useMemo(() => atlas ? layerStops(atlas) : [], [atlas]);
   const ontologyCandidate = getOntologyCandidate(ontologyCandidates?.candidates ?? [], selected ?? '');
   const availableMotion = physiologyProcessesForAtlas(atlas?.id ?? '');
   const selectedMotion = availableMotion.find((process) => process.requiredStructures.includes(selected ?? ''));
@@ -546,6 +550,7 @@ export default function App() {
         </div>
       </div>
       <div id="navigator-systems" role="tabpanel" aria-labelledby="navigator-tab-systems" hidden={navigatorTab!=='systems'} className="navigator-pane">
+        {layerStack.length>0&&<LayerStack stops={layerStack} active={layerStop} onChoose={(stop)=>{setHidden([...stop.hidden]);setOpacity({...stop.opacity});setCoat(stop.coat?'agouti':'none');setLayerStop(stop.id);setActiveGroup('');}}/>}
         {evidenceShown&&<EvidenceFilter groups={evidenceGroups(atlas,hidden)} onToggle={(group)=>setHidden((current)=>toggledEvidence(current,group))}/>}
         <SystemLayers atlas={atlas} hidden={hidden} opacity={opacity} onToggleSystem={toggleSystem} onIsolateSystem={isolateSystem} onShowAll={showAll} unit={evidenceShown?'structures':'source regions'}/>
         {hasBodyEnvelope&&<button className="secondary-button" onClick={showOrgans} aria-label="Organs visibility preset">Reveal organs</button>}
@@ -638,7 +643,7 @@ export default function App() {
               <div className="structure-type">{selectedStructure.systems.map((id) => SYSTEMS.find((system) => system.id === id)?.name).filter(Boolean).join(' / ') || (activeTrace ? 'Local trace; biological identity unverified' : 'Source surface; system classification unreviewed')}</div><h2>{selectedStructure.name}</h2><code className="structure-id">{selectedStructure.id}</code>{evidenceShown&&<EvidenceChip structure={selectedStructure}/>}
 
         <div className="inspector-tabs" role="tablist" aria-label="Structure detail sections">{([['structure','Structure'],['observations','Observations'],['source','Source evidence']] as const).map(([id,label])=><button key={id} role="tab" id={`inspector-tab-${id}`} aria-selected={inspectorTab===id} aria-controls={`inspector-${id}`} onClick={()=>setInspectorTab(id)}>{label}</button>)}</div>
-        <div id="inspector-structure" role="tabpanel" aria-labelledby="inspector-tab-structure" hidden={inspectorTab!=='structure'}>      {evidenceShown&&<section className={`inspector-section evidence-note evidence-note-${evidenceOf(selectedStructure)}`}><h3>Evidence</h3><p>{EVIDENCE_NOTES[evidenceOf(selectedStructure)]}</p>{selectedStructure.basis?.length?<ul className="evidence-basis">{selectedStructure.basis.map((item)=><li key={item}>{item}</li>)}</ul>:null}</section>}<section className="inspector-section"><h3>{evidenceShown?'Description':'Source annotation'}</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>{parentLinkedTrace ? 'Traced samples and parent links' : sourcePolyline ? 'Source points and polylines' : evidenceShown && selectedStructure.evidence !== 'source' ? (selectedStructure.evidence === 'simulated' ? 'Simulated, not measured' : 'Traced, not reviewed') : 'Source segmented region'}</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
+        <div id="inspector-structure" role="tabpanel" aria-labelledby="inspector-tab-structure" hidden={inspectorTab!=='structure'}>      {evidenceShown&&<section className={`inspector-section evidence-note evidence-note-${evidenceOf(selectedStructure)}`}><h3>Evidence</h3><p>{EVIDENCE_NOTES[evidenceOf(selectedStructure)]}{selectedStructure.division?` ${DIVISION_NOTE}`:''}</p>{selectedStructure.basis?.length?<ul className="evidence-basis">{selectedStructure.basis.map((item)=><li key={item}>{item}</li>)}</ul>:null}</section>}<section className="inspector-section"><h3>{evidenceShown?'Description':'Source annotation'}</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>{parentLinkedTrace ? 'Traced samples and parent links' : sourcePolyline ? 'Source points and polylines' : evidenceShown && selectedStructure.evidence !== 'source' ? (selectedStructure.evidence === 'simulated' ? 'Simulated, not measured' : 'Traced, not reviewed') : 'Source segmented region'}</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
        {!lineReference && <SurfaceDetail baseSpacing={reference?.processingResolution.processingVoxelSpacingMm?.[0]} levels={selectedLevels} levelId={detailLevel} asset={availableDetail} enabled={fineActive} comparative={mode === 'comparative'} viewerFailed={viewerFailed} status={detailStatus} onLevelChange={(id) => { setDetailLevel(id); setDetailStatus({ status: 'idle', structureId: null }); }} onEnabledChange={(enabled) => { setFineEnabled(enabled); setDetailStatus({ status: 'idle', structureId: null }); }} />}
        {parentLinkedTrace && <TraceSampleExplorer key={atlas.id} atlas={atlas} localTrace={activeTrace} viewerReady={viewerState.primary === 'ready'} onFocusSample={(sampleId) => viewer.current?.focusTraceSample(sampleId) ?? false} />}
       {sourcePolyline && <><SourcePolylineExplorer key={atlas.id} atlas={atlas} viewerReady={viewerState.primary === 'ready'} onFocusPath={(row) => viewer.current?.focusPolylinePath(row) ?? false} /></>}

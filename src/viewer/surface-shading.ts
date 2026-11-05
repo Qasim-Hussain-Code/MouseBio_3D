@@ -50,10 +50,47 @@ export function installSurfaceShading(material: THREE.MeshStandardMaterial): Sur
     uGhost: { value: 0 }, uGhostPower: { value: SURFACE_PRESENTATION.ghostPower },
     uRim: { value: 0 }, uRimColor: { value: new THREE.Color(SURFACE_PRESENTATION.rimColor) },
   });
-  material.onBeforeCompile = (shader) => { Object.assign(shader.uniforms, uniforms); shader.fragmentShader = shadeFragment(shader.fragmentShader); };
-  material.customProgramCacheKey = () => SHADING_KEY;
+  material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, uniforms);
+    shader.fragmentShader = shadeFragment(shader.fragmentShader);
+    if (material.defines?.USE_FIBRE) { shader.vertexShader = fibreVertex(shader.vertexShader); shader.fragmentShader = fibreFragment(shader.fragmentShader); }
+  };
+  material.customProgramCacheKey = () => SHADING_KEY + (material.defines?.USE_FIBRE ? '-fibre' : '');
   material.userData.surfaceShading = uniforms;
   return uniforms;
+}
+
+/**
+ * Muscle fibres are suggested by fine stripes along a stored direction, and tendons by a pale colour at the ends of a muscle.
+ * The stripes fade before they alias. This is a display convention, not a measured fibre orientation.
+ */
+export const FIBRE_DISPLAY = Object.freeze({ periodMetres: 0.00017, depth: 0.3, tendon: '#ece4d2' });
+
+export function fibreVertex(vertexShader: string): string {
+  const markers = ['#include <common>', '#include <begin_vertex>'];
+  if (!markers.every((marker) => vertexShader.includes(marker))) return vertexShader;
+  return vertexShader
+    .replace('#include <common>', '#include <common>\nattribute vec4 _fiber;\nvarying vec4 vFibre;\nvarying vec3 vFibrePosition;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvFibre = _fiber;\nvFibrePosition = position;');
+}
+
+export function fibreFragment(fragmentShader: string): string {
+  const markers = ['#include <common>', '#include <color_fragment>'];
+  if (!markers.every((marker) => fragmentShader.includes(marker))) return fragmentShader;
+  const tendon = new THREE.Color(FIBRE_DISPLAY.tendon);
+  return fragmentShader
+    .replace('#include <common>', '#include <common>\nvarying vec4 vFibre;\nvarying vec3 vFibrePosition;')
+    .replace('#include <color_fragment>', [
+      '#include <color_fragment>',
+      'vec3 mbAlong = normalize(vFibre.xyz);',
+      'vec3 mbAcross = normalize(cross(mbAlong, vec3(0.31, 0.57, 0.76)));',
+      'vec3 mbOther = cross(mbAlong, mbAcross);',
+      `float mbStripe = (dot(vFibrePosition, mbAcross) + 0.6 * dot(vFibrePosition, mbOther)) / ${FIBRE_DISPLAY.periodMetres.toFixed(6)};`,
+      'float mbWidth = fwidth(mbStripe);',
+      'float mbWave = 0.5 + 0.5 * sin(mbStripe * 6.2831853);',
+      `diffuseColor.rgb *= mix(1.0, 1.0 - ${FIBRE_DISPLAY.depth.toFixed(2)} + 2.0 * ${FIBRE_DISPLAY.depth.toFixed(2)} * mbWave * 0.5, 1.0 - smoothstep(0.3, 0.8, mbWidth));`,
+      `diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${tendon.r.toFixed(3)}, ${tendon.g.toFixed(3)}, ${tendon.b.toFixed(3)}), clamp(vFibre.w, 0.0, 1.0) * 0.85);`,
+    ].join('\n'));
 }
 
 export function surfaceShadingOf(material: THREE.Material): SurfaceShadingUniforms | null {

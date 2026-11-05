@@ -91,3 +91,13 @@
 .evidence-note-traced{border-left:3px solid #7f8dc4;padding-left:10px}
 .constructed-label{color:#8a4b12}
 .coat-choice{display:flex;align-items:center;gap:8px}
+
+.layer-stack{margin:0 0 12px}
+.layer-stack h3{margin:0 0 6px;font-size:12px;font-weight:600;color:#33403a}
+.layer-stack ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.layer-stack button{width:100%;text-align:left;padding:5px 8px;background:#fff;border:1px solid var(--line,#e2e6e3);border-radius:7px;cursor:pointer}
+.layer-stack button:hover{border-color:#9db5aa}
+.layer-stack button.active{background:#e8f1ec;border-color:#6d9a86}
+.layer-stack strong{display:block;font-size:11.5px;font-weight:600}
+.layer-stack small{display:block;font-size:9.5px;line-height:1.25;color:#6b7671}
+.evidence-divided{border-style:dashed}

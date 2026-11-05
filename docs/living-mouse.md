@@ -37,7 +37,7 @@ The source label image leaves most soft tissue in one residual label. `scripts/l
 - **Blood-filled vessels**: luminance below 34, at least 0.8 mm below the surface, with thin sheets and components under 1.5 mm³ removed. Arteries are mostly empty after death, so these are mainly veins.
 - **Intestines**: yellow-green or tan colour within an abdominal cavity mask, which is the source abdominal labels and yellow voxels closed across a 2.8 mm gap, more than 1.2 mm below the surface, grown 0.2 mm to include the wall.
 - **Adipose and connective tissue**: CT value below 88, or pale and unsaturated colour.
-- **Skeletal muscle**: the rest, outside the abdominal cavity. Individual muscles are not separated or named.
+- **Skeletal muscle**: the rest, outside the abdominal cavity.
 
 The thresholds were chosen by inspecting slices, and the classes have not been reviewed. The stomach and spleen lie at high native x, and with the right-handed axes this makes high x the animal's left. This is an inference from label positions, not a verified laterality.
 
@@ -51,7 +51,11 @@ Skeleton voxels are assigned to the nearest limb segment, organ labels are assig
 
 The body surface carries the source voxels into the stance as one closed surface. The scanned shanks lay pressed flat, so they are replaced by tapered shapes whose radii are the 80th percentile of the distance of leg tissue from the shank axis. The paws are sculpted after Cook figures 6 and 7: four digits and a pollex on the fore paw, with digit spacing and lengths taken from the CT, and five digits on the hind paw, because the images end at the hind feet. Whisker groups follow Cook figure 5, with counts and lengths chosen by eye. The eyes are placed where a ray from the source eye label leaves the head. The tail follows the caudal vertebrae measured in the CT, then falls to the ground, and its length is an estimate.
 
-The specimen is a nude mouse, so the coat is wholly simulated. It is drawn by shell texturing in `src/viewer/fur.ts`: the skin is repeated at growing offsets along its normals, combed along a stored direction, and each shell keeps only the pixels inside a hair. **Coat** in Display controls chooses agouti, black, albino or none. Hair length, density and colours are display estimates.
+The specimen is a nude mouse, so the coat is wholly simulated. `src/viewer/fur.ts` draws it as individual hairs: about 280,000 roots are scattered over the skin in proportion to area, with a fixed seed, and each hair is a tapered ribbon that turns to face the camera and curves along a stored combing direction. **Coat** in Display controls chooses agouti, black, albino or none. Hair length, density, width and colours are display estimates, and a real coat has many more and much finer hairs.
+
+## Named parts of measured tissue
+
+Some structures keep measured tissue but divide it by estimate, and their marks say so ("Traced, division estimated" or "Source label, division estimated"). `scripts/living/muscles.ts` gives each of 41 muscles a course from origin to insertion, placed by hand on the joints and the vertebral column, and each cell of traced muscle tissue goes to the muscle whose course is nearest relative to its width. Hind limb names follow Charles et al. (2016), which describes the mouse ([doi:10.1371/journal.pone.0147669](https://doi.org/10.1371/journal.pone.0147669)), and other names follow Greene (1935), which describes the rat. Fine stripes along each course and pale patches at its ends are a display of fibre direction and tendon, not a measurement. The heart label is divided into four chambers, the right lung into the four lobes and the liver into the four lobes named by Cook, and the stomach into two regions, each by the nearest of hand-placed seeds, with internal cavities not modelled. The traced gut is divided by thickness and position into caecum, colon and rectum, and small intestine. The kidneys and testes are separated by side, and these names rest on the same inference of laterality.
 
 ## Simulated interior
 
@@ -59,4 +63,4 @@ The specimen is a nude mouse, so the coat is wholly simulated. It is drawn by sh
 
 ## Limitations
 
-This is one specimen with estimated additions, not a representative or average mouse. Simulated courses can differ from real anatomy in detail, and they have not been compared with any dissection. Traced classes contain errors at tissue boundaries, and the muscle layer is not yet divided into named muscles. Physical calibration, anatomical orientation and laterality remain unverified. No part of this model has had independent anatomical review, and it must not be used for measurement.
+This is one specimen with estimated additions, not a representative or average mouse. Simulated courses can differ from real anatomy in detail, and they have not been compared with any dissection. Traced classes contain errors at tissue boundaries. Named muscles and organ parts have estimated boundaries, and they do not follow fascia or fissures. Physical calibration, anatomical orientation and laterality remain unverified. No part of this model has had independent anatomical review, and it must not be used for measurement.

@@ -381,40 +381,144 @@
    }
   },
   {
-   "id": "living:heart",
-   "name": "Heart",
+   "id": "living:heart-lv",
+   "name": "Left ventricle",
    "systems": [
     "cardiovascular"
    ],
    "sourceLabel": "heart",
    "evidence": "source",
+   "division": "estimated",
    "scale": "organ",
    "color": "#a7343b",
-   "description": "The source label \"heart\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "description": "Part of the source label \"heart\" of the Digimouse image. Its boundaries with the other chambers are estimated, after Cook figures 89 to 91; the chambers inside are not modelled. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
-    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:heart",
+   "meshNode": "living:heart-lv",
    "geometry": {
-    "vertices": 7264,
-    "triangles": 14524,
+    "vertices": 3944,
+    "triangles": 7884,
     "boundsMeters": [
      [
-      0.014402354136109352,
-      0.03586050868034363,
-      0.004950143396854401
+      0.017444128170609474,
+      0.0393269807100296,
+      0.00518177030608058
      ],
      [
-      0.023180222138762474,
-      0.045440249145030975,
-      0.0110393101349473
+      0.023134782910346985,
+      0.04538987576961517,
+      0.010990913026034832
      ]
     ]
    }
   },
   {
-   "id": "living:lungs",
-   "name": "Lungs",
+   "id": "living:heart-rv",
+   "name": "Right ventricle",
+   "systems": [
+    "cardiovascular"
+   ],
+   "sourceLabel": "heart",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#ad3f45",
+   "description": "Part of the source label \"heart\" of the Digimouse image. Its boundaries with the other chambers are estimated, after Cook figures 89 to 91; the chambers inside are not modelled. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:heart-rv",
+   "geometry": {
+    "vertices": 2990,
+    "triangles": 5976,
+    "boundsMeters": [
+     [
+      0.01460945699363947,
+      0.03846303001046181,
+      0.004996433854103088
+     ],
+     [
+      0.019250325858592987,
+      0.04434098303318024,
+      0.00998628418892622
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:heart-la",
+   "name": "Left atrium",
+   "systems": [
+    "cardiovascular"
+   ],
+   "sourceLabel": "heart",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#9c3a4a",
+   "description": "Part of the source label \"heart\" of the Digimouse image. Its boundaries with the other chambers are estimated, after Cook figures 89 to 91; the chambers inside are not modelled. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:heart-la",
+   "geometry": {
+    "vertices": 1494,
+    "triangles": 2984,
+    "boundsMeters": [
+     [
+      0.01845766231417656,
+      0.035909585654735565,
+      0.0060667311772704124
+     ],
+     [
+      0.02198542095720768,
+      0.04026230052113533,
+      0.009648355655372143
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:heart-ra",
+   "name": "Right atrium",
+   "systems": [
+    "cardiovascular"
+   ],
+   "sourceLabel": "heart",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#8f3a52",
+   "description": "Part of the source label \"heart\" of the Digimouse image. Its boundaries with the other chambers are estimated, after Cook figures 89 to 91; the chambers inside are not modelled. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:heart-ra",
+   "geometry": {
+    "vertices": 1856,
+    "triangles": 3708,
+    "boundsMeters": [
+     [
+      0.014466405846178532,
+      0.0359143428504467,
+      0.00549615453928709
+     ],
+     [
+      0.01874265819787979,
+      0.040018320083618164,
+      0.009410368278622627
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lung-left",
+   "name": "Left lung",
    "systems": [
     "respiratory"
    ],
@@ -422,88 +526,365 @@
    "evidence": "source",
    "scale": "organ",
    "color": "#d4877f",
-   "description": "The source label \"lungs\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "description": "Part of the source label \"lungs\" of the Digimouse image. The left lung has a single lobe in Cook figure 90. Left and right are named from the inference that high native x is the left of the animal, which is not verified. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
-    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:lungs",
+   "meshNode": "living:lung-left",
    "geometry": {
-    "vertices": 17531,
-    "triangles": 35064,
+    "vertices": 7992,
+    "triangles": 15988,
     "boundsMeters": [
      [
-      0.01092675980180502,
-      0.03453509137034416,
-      0.004561278037726879
+      0.017157964408397675,
+      0.03454267606139183,
+      0.008418451994657516
      ],
      [
-      0.024592865258455276,
-      0.047308940440416336,
-      0.01564704440534115
+      0.024594023823738098,
+      0.04651742801070213,
+      0.015647033229470253
      ]
     ]
    }
   },
   {
-   "id": "living:liver",
-   "name": "Liver",
+   "id": "living:lung-r-superior",
+   "name": "Right lung, superior lobe",
+   "systems": [
+    "respiratory"
+   ],
+   "sourceLabel": "lungs",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#d68a82",
+   "description": "Part of the source label \"lungs\" of the Digimouse image. The lobes are named in Cook figure 90; their boundaries are estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:lung-r-superior",
+   "geometry": {
+    "vertices": 3216,
+    "triangles": 6428,
+    "boundsMeters": [
+     [
+      0.0125470831990242,
+      0.03625968471169472,
+      0.007724529132246971
+     ],
+     [
+      0.017099689692258835,
+      0.0420818105340004,
+      0.01383425947278738
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lung-r-middle",
+   "name": "Right lung, middle lobe",
+   "systems": [
+    "respiratory"
+   ],
+   "sourceLabel": "lungs",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#cf8078",
+   "description": "Part of the source label \"lungs\" of the Digimouse image. The lobes are named in Cook figure 90; their boundaries are estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:lung-r-middle",
+   "geometry": {
+    "vertices": 2429,
+    "triangles": 4856,
+    "boundsMeters": [
+     [
+      0.011811023578047752,
+      0.03981618583202362,
+      0.0054561602883040905
+     ],
+     [
+      0.015495577827095985,
+      0.045802339911460876,
+      0.011448166333138943
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lung-r-inferior",
+   "name": "Right lung, inferior lobe",
+   "systems": [
+    "respiratory"
+   ],
+   "sourceLabel": "lungs",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#d88e86",
+   "description": "Part of the source label \"lungs\" of the Digimouse image. The lobes are named in Cook figure 90; their boundaries are estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:lung-r-inferior",
+   "geometry": {
+    "vertices": 4364,
+    "triangles": 8724,
+    "boundsMeters": [
+     [
+      0.010980791412293911,
+      0.041427791118621826,
+      0.009116576053202152
+     ],
+     [
+      0.01707357168197632,
+      0.047267161309719086,
+      0.015574255026876926
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lung-r-postcaval",
+   "name": "Right lung, post-caval lobe",
+   "systems": [
+    "respiratory"
+   ],
+   "sourceLabel": "lungs",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#cc7c74",
+   "description": "Part of the source label \"lungs\" of the Digimouse image. The lobes are named in Cook figure 90; their boundaries are estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:lung-r-postcaval",
+   "geometry": {
+    "vertices": 2823,
+    "triangles": 5644,
+    "boundsMeters": [
+     [
+      0.01274826005101204,
+      0.04158513620495796,
+      0.004614146891981363
+     ],
+     [
+      0.017100127413868904,
+      0.04586143046617508,
+      0.01195917185395956
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:liver-median",
+   "name": "Liver, median lobe",
    "systems": [
     "digestive"
    ],
    "sourceLabel": "liver",
    "evidence": "source",
+   "division": "estimated",
    "scale": "organ",
    "color": "#7d3330",
-   "description": "The source label \"liver\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "description": "Part of the source label \"liver\" of the Digimouse image. The lobes are named in Cook figure 60; their boundaries are estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
-    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:liver",
+   "meshNode": "living:liver-median",
    "geometry": {
-    "vertices": 47234,
-    "triangles": 94472,
+    "vertices": 12566,
+    "triangles": 25128,
     "boundsMeters": [
      [
-      0.005394992418587208,
-      0.04442181438207626,
-      0.0024887355975806713
+      0.009895085357129574,
+      0.04447465017437935,
+      0.002504885196685791
      ],
      [
-      0.029348479583859444,
-      0.06074902415275574,
-      0.018147217109799385
+      0.01963534764945507,
+      0.05843900889158249,
+      0.01382396835833788
      ]
     ]
    }
   },
   {
-   "id": "living:stomach",
-   "name": "Stomach",
+   "id": "living:liver-left",
+   "name": "Liver, left lobe",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "liver",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#823632",
+   "description": "Part of the source label \"liver\" of the Digimouse image. The lobes are named in Cook figure 60; their boundaries are estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:liver-left",
+   "geometry": {
+    "vertices": 20994,
+    "triangles": 41984,
+    "boundsMeters": [
+     [
+      0.016112688928842545,
+      0.044545650482177734,
+      0.003198256716132164
+     ],
+     [
+      0.029302377253770828,
+      0.05922713503241539,
+      0.017497656866908073
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:liver-right",
+   "name": "Liver, right lobe",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "liver",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#78302d",
+   "description": "Part of the source label \"liver\" of the Digimouse image. The lobes are named in Cook figure 60; their boundaries are estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:liver-right",
+   "geometry": {
+    "vertices": 18565,
+    "triangles": 37124,
+    "boundsMeters": [
+     [
+      0.005442986264824867,
+      0.04636772722005844,
+      0.0031459173187613487
+     ],
+     [
+      0.01674836128950119,
+      0.060696862637996674,
+      0.0181012824177742
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:liver-caudate",
+   "name": "Liver, caudate lobe",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "liver",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#853a35",
+   "description": "Part of the source label \"liver\" of the Digimouse image. The lobes are named in Cook figure 60; their boundaries are estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:liver-caudate",
+   "geometry": {
+    "vertices": 10161,
+    "triangles": 20316,
+    "boundsMeters": [
+     [
+      0.013116040267050266,
+      0.04982288181781769,
+      0.0026824690867215395
+     ],
+     [
+      0.02426682412624359,
+      0.060341328382492065,
+      0.01717834547162056
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:stomach-cardiac",
+   "name": "Stomach, cardiac region",
    "systems": [
     "digestive"
    ],
    "sourceLabel": "stomach",
    "evidence": "source",
+   "division": "estimated",
    "scale": "organ",
-   "color": "#c98a73",
-   "description": "The source label \"stomach\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "color": "#d0957e",
+   "description": "Part of the source label \"stomach\" of the Digimouse image. The regions are named in Cook figure 59; their boundary is estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
-    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:stomach",
+   "meshNode": "living:stomach-cardiac",
    "geometry": {
-    "vertices": 8130,
-    "triangles": 16256,
+    "vertices": 6468,
+    "triangles": 12936,
     "boundsMeters": [
      [
-      0.01757810451090336,
-      0.049502965062856674,
-      0.0073401955887675285
+      0.019045276567339897,
+      0.04956873506307602,
+      0.007749014068394899
      ],
      [
-      0.02912072092294693,
-      0.05697822943329811,
-      0.01730027236044407
+      0.029073284938931465,
+      0.0567837655544281,
+      0.017248334363102913
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:stomach-pyloric",
+   "name": "Stomach, pyloric region",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "stomach",
+   "evidence": "source",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#c98a73",
+   "description": "Part of the source label \"stomach\" of the Digimouse image. The regions are named in Cook figure 59; their boundary is estimated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:stomach-pyloric",
+   "geometry": {
+    "vertices": 4172,
+    "triangles": 8336,
+    "boundsMeters": [
+     [
+      0.0176254753023386,
+      0.049725491553545,
+      0.007390283979475498
+     ],
+     [
+      0.027216430753469467,
+      0.056953705847263336,
+      0.016903264448046684
      ]
     ]
    }
@@ -575,8 +956,8 @@
    }
   },
   {
-   "id": "living:kidneys",
-   "name": "Kidneys",
+   "id": "living:kidney-right",
+   "name": "Right kidney",
    "systems": [
     "urinary"
    ],
@@ -584,24 +965,58 @@
    "evidence": "source",
    "scale": "organ",
    "color": "#8f3b3b",
-   "description": "The source label \"kidneys\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "description": "Part of the source label \"kidneys\" of the Digimouse image. Left and right are named from the inference that high native x is the left of the animal, which is not verified. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
-    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:kidneys",
+   "meshNode": "living:kidney-right",
    "geometry": {
-    "vertices": 14840,
-    "triangles": 29672,
+    "vertices": 7360,
+    "triangles": 14716,
     "boundsMeters": [
      [
       0.007881146855652332,
       0.05428096279501915,
-      0.011857683770358562
+      0.011845463886857033
      ],
      [
-      0.026749826967716217,
-      0.06549600511789322,
-      0.018568145111203194
+      0.015013310126960278,
+      0.0641009733080864,
+      0.01795489341020584
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:kidney-left",
+   "name": "Left kidney",
+   "systems": [
+    "urinary"
+   ],
+   "sourceLabel": "kidneys",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#8f3b3b",
+   "description": "Part of the source label \"kidneys\" of the Digimouse image. Left and right are named from the inference that high native x is the left of the animal, which is not verified. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:kidney-left",
+   "geometry": {
+    "vertices": 7518,
+    "triangles": 15032,
+    "boundsMeters": [
+     [
+      0.018649403005838394,
+      0.055953215807676315,
+      0.012160866521298885
+     ],
+     [
+      0.026749657467007637,
+      0.06549156457185745,
+      0.0185532309114933
      ]
     ]
    }
@@ -671,8 +1086,8 @@
    }
   },
   {
-   "id": "living:testes",
-   "name": "Testes",
+   "id": "living:testis-right",
+   "name": "Right testis",
    "systems": [
     "reproductive"
    ],
@@ -680,24 +1095,58 @@
    "evidence": "source",
    "scale": "organ",
    "color": "#e3cfc8",
-   "description": "The source label \"testis\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "description": "Part of the source label \"testis\" of the Digimouse image. Left and right are named from the inference that high native x is the left of the animal, which is not verified. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
-    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:testes",
+   "meshNode": "living:testis-right",
    "geometry": {
-    "vertices": 6402,
-    "triangles": 12796,
+    "vertices": 3334,
+    "triangles": 6664,
     "boundsMeters": [
      [
       0.012584644369781017,
-      0.06691789627075195,
+      0.07060280442237854,
       -0.0046657598577439785
      ],
      [
-      0.024152696132659912,
+      0.017248673364520073,
       0.07751468569040298,
-      0.004045276436954737
+      0.0002019683161051944
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:testis-left",
+   "name": "Left testis",
+   "systems": [
+    "reproductive"
+   ],
+   "sourceLabel": "testis",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#e3cfc8",
+   "description": "Part of the source label \"testis\" of the Digimouse image. Left and right are named from the inference that high native x is the left of the animal, which is not verified. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:testis-left",
+   "geometry": {
+    "vertices": 3074,
+    "triangles": 6144,
+    "boundsMeters": [
+     [
+      0.01975773274898529,
+      0.06691817939281464,
+      -0.0012681990629062057
+     ],
+     [
+      0.024152817204594612,
+      0.0731712281703949,
+      0.004038759507238865
      ]
     ]
    }
@@ -767,40 +1216,1393 @@
    }
   },
   {
-   "id": "living:muscles",
-   "name": "Skeletal muscle",
+   "id": "living:muscle-temporalis",
+   "name": "Temporalis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a5524a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the side of the skull. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-temporalis",
+   "geometry": {
+    "vertices": 12683,
+    "triangles": 25416,
+    "boundsMeters": [
+     [
+      0.01158704049885273,
+      0.016042029485106468,
+      0.010454235598444939
+     ],
+     [
+      0.02600596658885479,
+      0.028781667351722717,
+      0.017449868842959404
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-facial",
+   "name": "Facial muscles",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#ad5a50",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the side of the face, in front of the masseter. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-facial",
+   "geometry": {
+    "vertices": 25733,
+    "triangles": 51596,
+    "boundsMeters": [
+     [
+      0.011781069450080395,
+      0.007804547902196646,
+      0.005821912083774805
+     ],
+     [
+      0.025836046785116196,
+      0.02250475250184536,
+      0.014384501613676548
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-mystacial",
+   "name": "Mystacial pad muscles",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#9c4c46",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the whisker pad. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-mystacial",
+   "geometry": {
+    "vertices": 5459,
+    "triangles": 10920,
+    "boundsMeters": [
+     [
+      0.015478170476853848,
+      0.003517272649332881,
+      0.006870145443826914
+     ],
+     [
+      0.021852582693099976,
+      0.012172497808933258,
+      0.011483430862426758
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-digastric",
+   "name": "Digastric",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#b0605a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Under the jaw. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-digastric",
+   "geometry": {
+    "vertices": 12248,
+    "triangles": 24520,
+    "boundsMeters": [
+     [
+      0.012938742525875568,
+      0.012333985418081284,
+      0.004411118570715189
+     ],
+     [
+      0.023807058110833168,
+      0.025265762582421303,
+      0.0087942685931921
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-strap",
+   "name": "Sternohyoid and sternothyroid",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a14f4f",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Strap muscles on the front of the neck. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-strap",
+   "geometry": {
+    "vertices": 4884,
+    "triangles": 9760,
+    "boundsMeters": [
+     [
+      0.014871492050588131,
+      0.021812021732330322,
+      0.003506637876853347
+     ],
+     [
+      0.021233132109045982,
+      0.03636494278907776,
+      0.008724721148610115
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-sternomastoid",
+   "name": "Sternomastoid",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a85649",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the manubrium to behind the ear. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-sternomastoid",
+   "geometry": {
+    "vertices": 15249,
+    "triangles": 30528,
+    "boundsMeters": [
+     [
+      0.011738991364836693,
+      0.02238478511571884,
+      0.004404820501804352
+     ],
+     [
+      0.02686484158039093,
+      0.035460464656353,
+      0.012449555099010468
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-neck-extensors",
+   "name": "Splenius and semispinalis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a5524a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Deep on the back of the neck. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-neck-extensors",
+   "geometry": {
+    "vertices": 11129,
+    "triangles": 22272,
+    "boundsMeters": [
+     [
+      0.013221286237239838,
+      0.026091931387782097,
+      0.011492759920656681
+     ],
+     [
+      0.02331184782087803,
+      0.03814653679728508,
+      0.018329158425331116
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-acromiotrapezius",
+   "name": "Acromiotrapezius",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#ad5a50",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the back of the neck to the scapula. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-acromiotrapezius",
+   "geometry": {
+    "vertices": 3825,
+    "triangles": 7644,
+    "boundsMeters": [
+     [
+      0.011896663345396519,
+      0.031216509640216827,
+      0.013485058210790157
+     ],
+     [
+      0.02409392222762108,
+      0.03609175235033035,
+      0.01734391413629055
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-spinotrapezius",
+   "name": "Spinotrapezius",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#9c4c46",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the thoracic midline to the scapula. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-spinotrapezius",
+   "geometry": {
+    "vertices": 4314,
+    "triangles": 8632,
+    "boundsMeters": [
+     [
+      0.01158193964511156,
+      0.03600992262363434,
+      0.014715969562530518
+     ],
+     [
+      0.02446484938263893,
+      0.04368605837225914,
+      0.019123831763863564
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-latissimus",
+   "name": "Latissimus dorsi",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#b0605a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the lower back to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-latissimus",
+   "geometry": {
+    "vertices": 12596,
+    "triangles": 25184,
+    "boundsMeters": [
+     [
+      0.009803825058043003,
+      0.030753372237086296,
+      0.008284339681267738
+     ],
+     [
+      0.026301616802811623,
+      0.05455103889107704,
+      0.020302535966038704
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-erector",
+   "name": "Longissimus and iliocostalis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a14f4f",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Along the vertebral column; the course follows the column measured in the CT. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-erector",
+   "geometry": {
+    "vertices": 76148,
+    "triangles": 152516,
+    "boundsMeters": [
+     [
+      0.009839272126555443,
+      0.028186464682221413,
+      0.005689097102731466
+     ],
+     [
+      0.026377344503998756,
+      0.07685773074626923,
+      0.02035866677761078
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-serratus",
+   "name": "Serratus ventralis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a85649",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the ribs to under the scapula. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-serratus",
+   "geometry": {
+    "vertices": 9651,
+    "triangles": 19316,
+    "boundsMeters": [
+     [
+      0.009215160273015499,
+      0.03528080880641937,
+      0.006565046031028032
+     ],
+     [
+      0.027206243947148323,
+      0.047303639352321625,
+      0.0137148667126894
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-intercostals",
+   "name": "Intercostal muscles",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a5524a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Between the ribs. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-intercostals",
+   "geometry": {
+    "vertices": 8069,
+    "triangles": 16128,
+    "boundsMeters": [
+     [
+      0.009016808122396469,
+      0.03781991824507713,
+      0.008116302080452442
+     ],
+     [
+      0.027489865198731422,
+      0.05176199972629547,
+      0.015071708709001541
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-pectoralis",
+   "name": "Pectoralis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#ad5a50",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the sternum to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-pectoralis",
+   "geometry": {
+    "vertices": 18462,
+    "triangles": 36960,
+    "boundsMeters": [
+     [
+      0.009638044051826,
+      0.029823070392012596,
+      0.003440493019297719
+     ],
+     [
+      0.027065908536314964,
+      0.04359564930200577,
+      0.010208811610937119
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-obliques",
+   "name": "Abdominal obliques and transversus",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#9c4c46",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the side wall of the abdomen. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-obliques",
+   "geometry": {
+    "vertices": 48350,
+    "triangles": 96824,
+    "boundsMeters": [
+     [
+      0.0041962857358157635,
+      0.04684382304549217,
+      0.002022880595177412
+     ],
+     [
+      0.03216271474957466,
+      0.06850652396678925,
+      0.016728045418858528
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-rectus",
+   "name": "Rectus abdominis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#b0605a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the ventral wall of the abdomen. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-rectus",
+   "geometry": {
+    "vertices": 5432,
+    "triangles": 10864,
+    "boundsMeters": [
+     [
+      0.013643632642924786,
+      0.05158685892820358,
+      -0.0003202524094376713
+     ],
+     [
+      0.01831950806081295,
+      0.06703757494688034,
+      0.0031293921638280153
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-tail-base",
+   "name": "Tail base muscles",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a14f4f",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Beside the first caudal vertebrae. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-tail-base",
+   "geometry": {
+    "vertices": 10155,
+    "triangles": 20332,
+    "boundsMeters": [
+     [
+      0.014470667578279972,
+      0.07497523725032806,
+      -0.0010910816490650177
+     ],
+     [
+      0.021680207923054695,
+      0.08697111904621124,
+      0.009519519284367561
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-perineal",
+   "name": "Perineal muscles",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a85649",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the floor of the pelvis. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-perineal",
+   "geometry": {
+    "vertices": 5034,
+    "triangles": 10064,
+    "boundsMeters": [
+     [
+      0.01459143403917551,
+      0.07468816637992859,
+      -0.0058202375657856464
+     ],
+     [
+      0.021561507135629654,
+      0.08238745480775833,
+      -0.0006316743092611432
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-deltoid",
+   "name": "Deltoid",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a5524a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the scapula over the shoulder to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-deltoid",
+   "geometry": {
+    "vertices": 3164,
+    "triangles": 6320,
+    "boundsMeters": [
+     [
+      0.009485959075391293,
+      0.030184848234057426,
+      0.00580698112025857
+     ],
+     [
+      0.027136264368891716,
+      0.03524988889694214,
+      0.014252505265176296
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-supraspinatus",
+   "name": "Supraspinatus",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#ad5a50",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the scapula, in front of its spine. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-supraspinatus",
+   "geometry": {
+    "vertices": 4478,
+    "triangles": 8948,
+    "boundsMeters": [
+     [
+      0.01110314391553402,
+      0.028330275788903236,
+      0.011241870932281017
+     ],
+     [
+      0.025868570432066917,
+      0.03866475075483322,
+      0.015511020086705685
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-infraspinatus",
+   "name": "Infraspinatus",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#9c4c46",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the scapula, behind its spine. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-infraspinatus",
+   "geometry": {
+    "vertices": 3842,
+    "triangles": 7680,
+    "boundsMeters": [
+     [
+      0.010418213903903961,
+      0.029723165556788445,
+      0.010198426432907581
+     ],
+     [
+      0.025989767163991928,
+      0.041138727217912674,
+      0.015948906540870667
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-teres",
+   "name": "Teres major",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#b0605a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the lower angle of the scapula to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-teres",
+   "geometry": {
+    "vertices": 2153,
+    "triangles": 4292,
+    "boundsMeters": [
+     [
+      0.010972368530929089,
+      0.031055526807904243,
+      0.009118850342929363
+     ],
+     [
+      0.025768127292394638,
+      0.040949221700429916,
+      0.014588577672839165
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-triceps",
+   "name": "Triceps brachii",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a14f4f",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Behind the humerus to the olecranon. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-triceps",
+   "geometry": {
+    "vertices": 9611,
+    "triangles": 19212,
+    "boundsMeters": [
+     [
+      0.00983401294797659,
+      0.028615677729249,
+      0.0037563450168818235
+     ],
+     [
+      0.026490822434425354,
+      0.039829153567552567,
+      0.012330555357038975
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-biceps-brachii",
+   "name": "Biceps brachii and brachialis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a85649",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In front of the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-biceps-brachii",
+   "geometry": {
+    "vertices": 6892,
+    "triangles": 13780,
+    "boundsMeters": [
+     [
+      0.00976729579269886,
+      0.0268856268376112,
+      0.002244252245873213
+     ],
+     [
+      0.02728094533085823,
+      0.03614548221230507,
+      0.012445519678294659
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-forearm-extensors",
+   "name": "Forearm extensors",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a5524a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the back of the forearm. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-forearm-extensors",
+   "geometry": {
+    "vertices": 5504,
+    "triangles": 11000,
+    "boundsMeters": [
+     [
+      0.008752596564590931,
+      0.02532242052257061,
+      -0.0047227502800524235
+     ],
+     [
+      0.02764691412448883,
+      0.03522013500332832,
+      0.005307261366397142
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-forearm-flexors",
+   "name": "Forearm flexors",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#ad5a50",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the palm side of the forearm. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:muscle-forearm-flexors",
+   "geometry": {
+    "vertices": 5497,
+    "triangles": 10980,
+    "boundsMeters": [
+     [
+      0.009703598916530609,
+      0.025439782068133354,
+      -0.006180895492434502
+     ],
+     [
+      0.027088116854429245,
+      0.03597651794552803,
+      0.004325844347476959
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-gluteus",
+   "name": "Gluteus maximus",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#9c4c46",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the ilium over the hip to the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-gluteus",
+   "geometry": {
+    "vertices": 19310,
+    "triangles": 38668,
+    "boundsMeters": [
+     [
+      0.007737956941127777,
+      0.06577751785516739,
+      0.004411094821989536
+     ],
+     [
+      0.026991186663508415,
+      0.07808507978916168,
+      0.015518882311880589
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-caudofemoralis",
+   "name": "Caudofemoralis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#b0605a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the tail base to the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-caudofemoralis",
+   "geometry": {
+    "vertices": 7472,
+    "triangles": 14936,
+    "boundsMeters": [
+     [
+      0.00816320814192295,
+      0.07121327519416809,
+      0.003143862821161747
+     ],
+     [
+      0.028287295252084732,
+      0.08062826842069626,
+      0.00728739844635129
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-biceps-femoris",
+   "name": "Biceps femoris",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a14f4f",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the ischium over the back of the thigh to the knee. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-biceps-femoris",
+   "geometry": {
+    "vertices": 24713,
+    "triangles": 49448,
+    "boundsMeters": [
+     [
+      0.003146581118926406,
+      0.06693637371063232,
+      -0.002012699143961072
+     ],
+     [
+      0.029955703765153885,
+      0.08319517225027084,
+      0.008062384091317654
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-semitendinosus",
+   "name": "Semitendinosus",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a85649",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the inner back of the thigh. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-semitendinosus",
+   "geometry": {
+    "vertices": 7778,
+    "triangles": 15556,
+    "boundsMeters": [
+     [
+      0.008931481279432774,
+      0.06945822387933731,
+      -0.0019992352463304996
+     ],
+     [
+      0.02861645258963108,
+      0.08209940046072006,
+      0.0018312417669221759
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-semimembranosus",
+   "name": "Semimembranosus",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a5524a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the inner back of the thigh, under the semitendinosus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-semimembranosus",
+   "geometry": {
+    "vertices": 12725,
+    "triangles": 25460,
+    "boundsMeters": [
+     [
+      0.0077386521734297276,
+      0.06732555478811264,
+      -0.0031782069709151983
+     ],
+     [
+      0.02832845225930214,
+      0.08056959509849548,
+      0.0024305854458361864
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-gracilis",
+   "name": "Gracilis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#ad5a50",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. A flat muscle on the inner thigh. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-gracilis",
+   "geometry": {
+    "vertices": 1388,
+    "triangles": 2756,
+    "boundsMeters": [
+     [
+      0.00861779972910881,
+      0.06686193495988846,
+      -0.002921940525993705
+     ],
+     [
+      0.026202227920293808,
+      0.07485248893499374,
+      -0.0007135612540878356
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-adductors",
+   "name": "Adductor magnus and longus",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#9c4c46",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the pubis to the inner femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-adductors",
+   "geometry": {
+    "vertices": 14911,
+    "triangles": 29848,
+    "boundsMeters": [
+     [
+      0.00954158790409565,
+      0.06710226088762283,
+      -0.0037202967796474695
+     ],
+     [
+      0.02775798738002777,
+      0.07603060454130173,
+      0.004451944958418608
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-vasti",
+   "name": "Vastus lateralis, intermedius and medialis",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#b0605a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the front and sides of the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-vasti",
+   "geometry": {
+    "vertices": 15588,
+    "triangles": 31168,
+    "boundsMeters": [
+     [
+      0.006865404546260834,
+      0.0636071264743805,
+      -0.0014202496968209743
+     ],
+     [
+      0.032840531319379807,
+      0.07336506247520447,
+      0.00916325207799673
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-rectus-femoris",
+   "name": "Rectus femoris",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a14f4f",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the front of the thigh. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-rectus-femoris",
+   "geometry": {
+    "vertices": 1866,
+    "triangles": 3724,
+    "boundsMeters": [
+     [
+      0.010175066068768501,
+      0.06480828672647476,
+      0.0007875847513787448
+     ],
+     [
+      0.030085299164056778,
+      0.0720653235912323,
+      0.008250871673226357
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-psoas",
+   "name": "Psoas major and iliacus",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a85649",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From under the lumbar column to the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-psoas",
+   "geometry": {
+    "vertices": 12499,
+    "triangles": 24984,
+    "boundsMeters": [
+     [
+      0.011927631683647633,
+      0.060330938547849655,
+      0.00355715723708272
+     ],
+     [
+      0.024065114557743073,
+      0.07515432685613632,
+      0.015399578958749771
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-gastrocnemius",
+   "name": "Gastrocnemius",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a5524a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the back of the shank to the heel. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-gastrocnemius",
+   "geometry": {
+    "vertices": 7506,
+    "triangles": 15000,
+    "boundsMeters": [
+     [
+      0.005817326717078686,
+      0.06602185219526291,
+      -0.004462198819965124
+     ],
+     [
+      0.029122665524482727,
+      0.08243998140096664,
+      0.0019004890928044915
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-soleus",
+   "name": "Soleus and plantaris",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#ad5a50",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Under the gastrocnemius. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-soleus",
+   "geometry": {
+    "vertices": 3582,
+    "triangles": 7148,
+    "boundsMeters": [
+     [
+      0.0038764106575399637,
+      0.06823219358921051,
+      -0.0024142535403370857
+     ],
+     [
+      0.029759930446743965,
+      0.08043067902326584,
+      0.0003337090602144599
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-tibialis",
+   "name": "Tibialis anterior and extensor digitorum longus",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#9c4c46",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the front of the shank. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-tibialis",
+   "geometry": {
+    "vertices": 2597,
+    "triangles": 5168,
+    "boundsMeters": [
+     [
+      0.007136814761906862,
+      0.06631181389093399,
+      -0.004383184481412172
+     ],
+     [
+      0.029737988486886024,
+      0.08069120347499847,
+      -0.00126714410725981
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-peroneals",
+   "name": "Peroneus muscles",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#b0605a",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the outer side of the shank. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-peroneals",
+   "geometry": {
+    "vertices": 886,
+    "triangles": 1772,
+    "boundsMeters": [
+     [
+      0.005246874410659075,
+      0.0705559104681015,
+      -0.0027460274286568165
+     ],
+     [
+      0.02962147444486618,
+      0.0753830298781395,
+      -0.001155487960204482
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-deep-flexors",
+   "name": "Flexor digitorum longus and tibialis posterior",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced tissue with an estimated division",
+   "evidence": "traced",
+   "division": "estimated",
+   "scale": "organ",
+   "color": "#a14f4f",
+   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Deep on the inner side of the shank. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
+   ],
+   "meshNode": "living:muscle-deep-flexors",
+   "geometry": {
+    "vertices": 929,
+    "triangles": 1848,
+    "boundsMeters": [
+     [
+      0.008368996903300285,
+      0.06852161884307861,
+      -0.0035194805823266506
+     ],
+     [
+      0.02725977823138237,
+      0.07987671345472336,
+      -0.0008259920869022608
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscle-rest",
+   "name": "Other muscle tissue",
    "systems": [
     "muscular"
    ],
    "sourceLabel": "none, traced from the source images",
    "evidence": "traced",
    "scale": "organ",
-   "color": "#a5524a",
-   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Red tissue of muscle density outside the abdominal cavity, including the trunk, neck and limbs. Individual muscles are not separated or named. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "color": "#9a4f48",
+   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT. Red tissue of muscle density that lies far from the course of every named muscle. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
    ],
-   "meshNode": "living:muscles",
+   "meshNode": "living:muscle-rest",
    "geometry": {
-    "vertices": 133176,
-    "triangles": 267220,
+    "vertices": 22823,
+    "triangles": 45572,
     "boundsMeters": [
      [
-      0.0032547716982662678,
-      0.003606584621593356,
-      -0.006412272807210684
+      0.005502792540937662,
+      0.00698181614279747,
+      -0.00647388631477952
      ],
      [
-      0.03278099745512009,
-      0.08651597797870636,
-      0.020309409126639366
+      0.028840726241469383,
+      0.0832773894071579,
+      0.018211888149380684
      ]
     ]
    }
   },
   {
-   "id": "living:intestines",
-   "name": "Intestines",
+   "id": "living:small-intestine",
+   "name": "Small intestine",
    "systems": [
     "digestive"
    ],
@@ -808,24 +2610,91 @@
    "evidence": "traced",
    "scale": "organ",
    "color": "#c7a071",
-   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Yellow-green and tan gut contents and wall within the abdominal cavity, closed slightly to include the wall. Loops are not separated into named segments. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Yellow-green and tan gut contents and wall within the abdominal cavity, closed slightly to include the wall. Division from the large intestine is estimated by thickness and position. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
    ],
-   "meshNode": "living:intestines",
+   "division": "estimated",
+   "meshNode": "living:small-intestine",
    "geometry": {
-    "vertices": 62411,
-    "triangles": 124876,
+    "vertices": 61352,
+    "triangles": 122868,
     "boundsMeters": [
      [
-      0.00503084622323513,
-      0.030982650816440582,
-      -0.002600089181214571
+      0.0050492314621806145,
+      0.024370037019252777,
+      0.002681190613657236
      ],
      [
-      0.03134888410568237,
-      0.07915950566530228,
-      0.015230725519359112
+      0.031175661832094193,
+      0.06823050230741501,
+      0.015107731334865093
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:caecum",
+   "name": "Caecum",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "none, traced from the source images",
+   "evidence": "traced",
+   "scale": "organ",
+   "color": "#b99560",
+   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. The thickest part of the traced gut, on the left of the abdomen as in Cook figure 54. Division from the rest of the gut is estimated by thickness and position. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "division": "estimated",
+   "meshNode": "living:caecum",
+   "geometry": {
+    "vertices": 18710,
+    "triangles": 37432,
+    "boundsMeters": [
+     [
+      0.017463194206357002,
+      0.056947216391563416,
+      0.004043263383209705
+     ],
+     [
+      0.031105849891901016,
+      0.06646503508090973,
+      0.014808439649641514
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:colon",
+   "name": "Colon and rectum",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "none, traced from the source images",
+   "evidence": "traced",
+   "scale": "organ",
+   "color": "#a98754",
+   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Traced gut behind the bladder, near the midline. Division from the rest of the gut is estimated by position. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "division": "estimated",
+   "meshNode": "living:colon",
+   "geometry": {
+    "vertices": 1596,
+    "triangles": 3176,
+    "boundsMeters": [
+     [
+      0.01684040203690529,
+      0.06659399718046188,
+      -0.003109991317614913
+     ],
+     [
+      0.02600071020424366,
+      0.07970231026411057,
+      0.002933851908892393
      ]
     ]
    }
@@ -851,12 +2720,12 @@
     "triangles": 43796,
     "boundsMeters": [
      [
-      0.012543493881821632,
+      0.012289249338209629,
       0.014086415059864521,
       0.003354959189891815
      ],
      [
-      0.02570313774049282,
+      0.025401558727025986,
       0.07171845436096191,
       0.019744232296943665
      ]
@@ -879,18 +2748,18 @@
    ],
    "meshNode": "living:fat",
    "geometry": {
-    "vertices": 184253,
-    "triangles": 368964,
+    "vertices": 57116,
+    "triangles": 114324,
     "boundsMeters": [
      [
-      0.0053424411453306675,
-      0.005815434735268354,
-      -0.005428665317595005
+      0.00620126910507679,
+      0.006518863141536713,
+      -0.0052991812117397785
      ],
      [
-      0.03305301070213318,
-      0.0868227407336235,
-      0.01932401955127716
+      0.03291870281100273,
+      0.08647681772708893,
+      0.019234580919146538
      ]
     ]
    }
@@ -915,14 +2784,14 @@
     "triangles": 16248,
     "boundsMeters": [
      [
-      0.011911014094948769,
+      0.011578076519072056,
       0.012598853558301926,
-      -0.002868463983759284
+      -0.003640535054728389
      ],
      [
-      0.02841043472290039,
+      0.028465615585446358,
       0.0836421474814415,
-      0.013225450180470943
+      0.013301483355462551
      ]
     ]
    }
@@ -985,7 +2854,7 @@
      [
       0.013115559704601765,
       0.01938214898109436,
-      0.006753318011760712
+      0.0067582582123577595
      ],
      [
       0.023875251412391663,
@@ -1160,7 +3029,7 @@
      [
       0.018083076924085617,
       0.07063383609056473,
-      0.015388790518045425
+      0.015354221686720848
      ]
     ]
    }
@@ -1187,12 +3056,12 @@
     "triangles": 3328,
     "boundsMeters": [
      [
-      0.01174753438681364,
-      0.020093630999326706,
-      0.001346440170891583
+      0.011223339475691319,
+      0.02009241282939911,
+      0.005052907392382622
      ],
      [
-      0.02498706616461277,
+      0.024980813264846802,
       0.05451085790991783,
       0.01620114967226982
      ]
@@ -1291,12 +3160,12 @@
      [
       0.010768874548375607,
       0.04803111404180527,
-      0.00513111287727952
+      0.005125474650412798
      ],
      [
       0.026495113968849182,
-      0.06575632840394974,
-      0.015052001923322678
+      0.06572063267230988,
+      0.01502976380288601
      ]
     ]
    }
@@ -1323,7 +3192,7 @@
     "boundsMeters": [
      [
       0.017269441857933998,
-      0.02975507453083992,
+      0.029756398871541023,
       0.006843998096883297
      ],
      [
@@ -1356,7 +3225,7 @@
     "boundsMeters": [
      [
       0.00964068528264761,
-      0.029755208641290665,
+      0.029753509908914566,
       0.0042257653549313545
      ],
      [
@@ -1453,7 +3322,7 @@
     "boundsMeters": [
      [
       0.013668429106473923,
-      0.025411054491996765,
+      0.025393806397914886,
       0.005948634352535009
      ],
      [
@@ -1585,7 +3454,7 @@
     "boundsMeters": [
      [
       0.01815476082265377,
-      0.024422649294137955,
+      0.0244169682264328,
       0.007471568416804075
      ],
      [
@@ -1650,14 +3519,14 @@
     "triangles": 2376,
     "boundsMeters": [
      [
-      0.011021804995834827,
+      0.011099999770522118,
       0.023433391004800797,
-      0.003301484975963831
+      0.0033040763810276985
      ],
      [
-      0.0252450630068779,
-      0.032565176486968994,
-      0.009838697500526905
+      0.025100000202655792,
+      0.0325787328183651,
+      0.009912095963954926
      ]
     ]
    }
@@ -1717,13 +3586,13 @@
     "boundsMeters": [
      [
       0.012665902264416218,
-      0.05977540463209152,
+      0.059785835444927216,
       -0.005244615022093058
      ],
      [
       0.021609343588352203,
       0.07850655168294907,
-      0.014584364369511604
+      0.014575985260307789
      ]
     ]
    }
@@ -1749,13 +3618,13 @@
     "triangles": 2088,
     "boundsMeters": [
      [
-      0.012017503380775452,
+      0.011999901384115219,
       0.06747608631849289,
-      -0.003640397684648633
+      -0.0036427120212465525
      ],
      [
-      0.024625780060887337,
-      0.07707010209560394,
+      0.024764107540249825,
+      0.0770828053355217,
       0.005520839709788561
      ]
     ]
@@ -1783,13 +3652,13 @@
     "boundsMeters": [
      [
       0.01492712739855051,
-      0.06473483890295029,
+      0.06471439450979233,
       0.0022155516780912876
      ],
      [
       0.02126934565603733,
       0.07013444602489471,
-      0.011150110512971878
+      0.01114590372890234
      ]
     ]
    }
@@ -1850,11 +3719,11 @@
      [
       0.015599999576807022,
       0.07571736723184586,
-      -0.005579221528023481
+      -0.005572204478085041
      ],
      [
-      0.020185496658086777,
-      0.0784934014081955,
+      0.02019999921321869,
+      0.07845073193311691,
       -0.00394732691347599
      ]
     ]
@@ -1915,13 +3784,13 @@
     "boundsMeters": [
      [
       0.01730000041425228,
-      0.026705872267484665,
-      0.005935004912316799
+      0.026680149137973785,
+      0.005934375338256359
      ],
      [
       0.020600000396370888,
-      0.02996104769408703,
-      0.007572622038424015
+      0.029991015791893005,
+      0.007574167568236589
      ]
     ]
    }
@@ -1950,7 +3819,7 @@
     "boundsMeters": [
      [
       0.015300000086426735,
-      0.031903352588415146,
+      0.03193921968340874,
       0.004800000227987766
      ],
      [
@@ -2077,18 +3946,18 @@
    ],
    "meshNode": "living:pinnae",
    "geometry": {
-    "vertices": 11538,
-    "triangles": 23280,
+    "vertices": 7492,
+    "triangles": 14976,
     "boundsMeters": [
      [
-      0.00656175147742033,
-      0.024186501279473305,
-      0.01413256861269474
+      0.0063343411311507225,
+      0.024587830528616905,
+      0.014786639250814915
      ],
      [
-      0.031819187104701996,
-      0.029305268079042435,
-      0.02393498830497265
+      0.0320465974509716,
+      0.029394082725048065,
+      0.0243169367313385
      ]
     ]
    }
@@ -2149,13 +4018,13 @@
     "triangles": 9880,
     "boundsMeters": [
      [
-      -0.0009105746285058558,
-      0.004864847287535667,
-      -0.0026783340144902468
+      0.0009006336913444102,
+      0.004861387889832258,
+      -0.005622826050966978
      ],
      [
-      0.039532069116830826,
-      0.02819928340613842,
+      0.03765615448355675,
+      0.03032955341041088,
       0.020724697038531303
      ]
     ]
@@ -2363,10 +4232,10 @@
   }
  ],
  "statistics": {
-  "structures": 68,
-  "triangles": 1915898,
-  "glbBytes": 47450716,
-  "glbSha256": "a5af057553c122c3e0a93a5e45219a166a7b433766104183064b91e4beb975c9",
+  "structures": 124,
+  "triangles": 2446866,
+  "glbBytes": 67683076,
+  "glbSha256": "42fafafd90cc1aca54984e3933648e884c91d3191939b19fcf65b3f373d2c1e7",
   "sourceVoxelSpacingMm": [
    0.1,
    0.1,

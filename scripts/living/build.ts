@@ -9,18 +9,19 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { buildPosture, deformSurface, type PostureField } from './posture';
+import { buildPosture, deformAxial, deformSurface, type PostureField } from './posture';
 import { buildBodySurface } from './exterior';
 import { extractSurface, maskBox } from './extract';
 import { writeGlb, type GlbSurface } from './glb';
 import { JOINTS, type Vec3 } from './rig';
-import { dilate, voxelIndex, type Grid } from './volume';
+import { components, dilate, erode, voxelIndex, type Grid } from './volume';
 import type { Surface } from './surface-nets';
 import { buildAttachments } from './attachments';
 import { STRUCTURES, type Plan } from './structures';
 import { TRACED, traceTissues } from './trace';
 import { buildInternal } from './internal';
 import { measureLandmarks } from './landmarks';
+import { fibreAttribute, MUSCLES, muscleSurface, partitionMuscles, UNNAMED } from './muscles';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const argument = process.argv.indexOf('--work');
@@ -60,6 +61,35 @@ else {
   log('traced', JSON.stringify(traced.report));
 }
 
+const LIMB_PARTS = new Set(['forelimb-arteries', 'hindlimb-arteries', 'forelimb-veins', 'hindlimb-veins', 'forelimb-nerves', 'hindlimb-nerves', 'lymph-nodes']);
+
+/**
+ * The traced gut divided by estimate: 1 the caecum, the largest thick part on the left of the abdomen;
+ * 2 the colon and rectum, behind the bladder; 3 the rest, which is mostly small intestine.
+ */
+let gutCache: Uint8Array | null = null;
+function gutParts(): Uint8Array {
+  if (gutCache) return gutCache;
+  const gut = new Uint8Array(voxels);
+  for (let i = 0; i < voxels; i++) if (tissues[i] === TRACED.gut) gut[i] = 1;
+  const free = new Uint8Array(voxels);
+  for (let i = 0; i < voxels; i++) free[i] = labels[i] === 1 ? 1 : 0;
+  const grown = dilate(gut, grid, 2, free);
+  const thick = dilate(erode(gut, grid, 13), grid, 13, gut);
+  const { ids, list } = components(thick, grid);
+  const caecum = list.find((item) => item.centroid[0] > 190)?.id ?? -1;
+  log('gut thick parts', list.slice(0, 5).map((item) => `${item.size}@${item.centroid.map((v) => v.toFixed(0)).join(',')}`).join(' '));
+  const out = new Uint8Array(voxels);
+  for (let z = 0; z < nz; z++) for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+    const at = voxelIndex(grid, x, y, z);
+    if (!grown[at]) continue;
+    out[at] = ids[at] === caecum ? 1 : y > 720 ? 2 : 3;
+  }
+  // The wall grown round the caecum goes with the caecum.
+  gutCache = out;
+  return out;
+}
+
 function build(plan: Plan): Surface {
   if (plan.kind === 'skin') {
     const exterior = buildBodySurface(grid, body, posture);
@@ -84,7 +114,31 @@ function build(plan: Plan): Surface {
       mask = dilate(mask, grid, plan.grow, free);
     }
     const box = maskBox(grid, (i) => !!mask[i]);
-    return deformSurface(extractSurface(grid, (i) => mask[i], box, { step: plan.step, radius: plan.radius }), posture);
+    const scan = extractSurface(grid, (i) => mask[i], box, { step: plan.step, radius: plan.radius });
+    // Vessels and air spaces belong to the trunk and head; only fat and muscle follow the limbs.
+    return plan.tissue === 'blood' || plan.tissue === 'airway' ? deformAxial(scan, posture) : deformSurface(scan, posture);
+  }
+  if (plan.kind === 'label-part') {
+    const { label, seeds, index, lowX, highX } = plan;
+    const inside = (at: number) => {
+      if (labels[at] !== label) return false;
+      const x = at % nx, rest = (at - x) / nx, y = rest % ny, z = (rest - y) / ny;
+      if ((lowX !== undefined && x < lowX) || (highX !== undefined && x >= highX)) return false;
+      let best = 0, bestDistance = Infinity;
+      for (let k = 0; k < seeds.length; k++) {
+        const distance = (x - seeds[k][0]) ** 2 + (y - seeds[k][1]) ** 2 + (z - seeds[k][2]) ** 2;
+        if (distance < bestDistance) { bestDistance = distance; best = k; }
+      }
+      return best === index;
+    };
+    const box = maskBox(grid, inside);
+    return deformAxial(extractSurface(grid, (i) => inside(i) ? 1 : 0, box, { step: 2, radius: 1, isovalue: seeds.length > 1 ? 0.56 : 0.5 }), posture);
+  }
+  if (plan.kind === 'gut-part') {
+    const parts = gutParts();
+    const value = plan.part === 'caecum' ? 1 : plan.part === 'colon' ? 2 : 3;
+    const box = maskBox(grid, (i) => parts[i] === value);
+    return deformAxial(extractSurface(grid, (i) => parts[i] === value ? 1 : 0, box, { step: 2, radius: 1, isovalue: 0.54 }), posture);
   }
   if (plan.kind === 'labels') {
     const wanted = new Set(plan.labels);
@@ -103,18 +157,48 @@ const landmarks = measureLandmarks(grid, labels, ct);
 const attachments = buildAttachments(posture, { labels, grid, landmarks });
 const internal = buildInternal(grid, labels, landmarks);
 log('internal');
+const musclePartition = partitionMuscles(grid, (i) => tissues[i] === TRACED.muscle, landmarks);
+log('muscles', [...musclePartition.counts].join(','));
+const muscleScanSurfaces = new Map<number, Surface>();
 for (const structure of STRUCTURES) {
   const surface = structure.plan.kind === 'attachment' ? attachments.parts[structure.plan.part]
-    : structure.plan.kind === 'internal' ? deformSurface(internal[structure.plan.part], posture) : build(structure.plan);
+    : structure.plan.kind === 'internal' ? (LIMB_PARTS.has(structure.plan.part) ? deformSurface : deformAxial)(internal[structure.plan.part], posture)
+      : structure.plan.kind === 'muscle' ? (MUSCLES[structure.plan.index].group === 'head' ? deformAxial : deformSurface)(muscleScan(structure.plan.index), posture)
+        : structure.plan.kind === 'muscle-rest' ? deformSurface(muscleSurface(musclePartition, UNNAMED), posture) : build(structure.plan);
   if (!surface || !surface.indices.length) throw new Error(`No surface for ${structure.id}`);
   const fur = structure.plan.kind === 'skin' ? furAttribute(surface) : undefined;
-  surfaces.push({ id: structure.id, name: structure.name, positions: toMetres(surface.positions), normals: surface.normals, indices: surface.indices, fur });
+  const fibre = structure.plan.kind === 'muscle' ? fibreOf(structure.plan.index, surface) : undefined;
+  surfaces.push({ id: structure.id, name: structure.name, positions: toMetres(surface.positions), normals: surface.normals, indices: surface.indices, fur, fibre });
   const { plan: _plan, ...record } = structure;
   const positions = toMetres(surface.positions);
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
   for (let i = 0; i < positions.length; i += 3) for (let k = 0; k < 3; k++) { min[k] = Math.min(min[k], positions[i + k]); max[k] = Math.max(max[k], positions[i + k]); }
   records.push({ ...record, meshNode: structure.id, geometry: { vertices: positions.length / 3, triangles: surface.indices.length / 3, boundsMeters: [min, max] } });
   log(structure.id, surface.positions.length / 3, surface.indices.length / 3);
+}
+
+/** Scan-frame surfaces of muscles are kept to find the direction of their fibres after the posture moves them. */
+function muscleScan(index: number): Surface {
+  const surface = muscleSurface(musclePartition, index + 1);
+  muscleScanSurfaces.set(index, surface);
+  return surface;
+}
+
+/** xyz is the fibre direction after the posture; w is how far the vertex lies into a tendon. */
+function fibreOf(index: number, stance: Surface): Float32Array {
+  const scan = muscleScanSurfaces.get(index)!;
+  const { directions, tendon } = fibreAttribute(scan, musclePartition.courses[index]);
+  const shifted = new Float32Array(scan.positions.length);
+  for (let i = 0; i < shifted.length; i++) shifted[i] = scan.positions[i] + 4 * directions[i];
+  const ahead = deformSurface({ ...scan, positions: shifted }, posture).positions;
+  const count = scan.positions.length / 3;
+  const out = new Float32Array(4 * count);
+  for (let i = 0; i < count; i++) {
+    const dx = ahead[3 * i] - stance.positions[3 * i], dy = ahead[3 * i + 1] - stance.positions[3 * i + 1], dz = ahead[3 * i + 2] - stance.positions[3 * i + 2];
+    const n = Math.hypot(dx, dy, dz) || 1;
+    out[4 * i] = dx / n; out[4 * i + 1] = dy / n; out[4 * i + 2] = dz / n; out[4 * i + 3] = tendon[i];
+  }
+  return out;
 }
 
 /** xyz is the combing direction of the hair, tangent to the surface; w is the relative hair length, zero on bare skin. */
@@ -200,3 +284,4 @@ fs.writeFileSync(path.join(ROOT, 'data/constructed-references.json'), JSON.strin
 }], null, 2) + '\n');
 log('done', triangles, 'triangles', glb.length, 'bytes', digest);
 void ny; void nz; void voxelIndex;
+if (MUSCLES.length + 1 !== records.filter((record) => String(record.id).startsWith('living:muscle-')).length) throw new Error('Muscle inventory differs');

@@ -4,9 +4,9 @@
     "title": "Living mouse: measured and simulated",
     "manifestUrl": "/atlas-living/atlas.json",
     "coordinateFrameId": "digimouse-living-stance-v1",
-    "assetSha256": "a5af057553c122c3e0a93a5e45219a166a7b433766104183064b91e4beb975c9",
+    "assetSha256": "42fafafd90cc1aca54984e3933648e884c91d3191939b19fcf65b3f373d2c1e7",
     "coverage": {
-      "regionCount": 68,
+      "regionCount": 124,
       "systems": [
         "arterial-venous",
         "cardiovascular",

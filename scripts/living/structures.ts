@@ -1,14 +1,19 @@
 /** The inventory of the living mouse reference. Every structure declares its evidence. */
 import type { InternalPart } from './internal';
+import { MUSCLES } from './muscles';
 export type Evidence = 'source' | 'traced' | 'simulated';
 
 export type Plan =
   | { readonly kind: 'skin' }
   | { readonly kind: 'ct-bone'; readonly threshold: number }
   | { readonly kind: 'labels'; readonly labels: readonly number[]; readonly step?: number; readonly radius?: number }
+  | { readonly kind: 'label-part'; readonly label: number; readonly seeds: readonly (readonly [number, number, number])[]; readonly index: number; readonly lowX?: number; readonly highX?: number }
+  | { readonly kind: 'gut-part'; readonly part: 'caecum' | 'colon' | 'small' }
   | { readonly kind: 'traced'; readonly tissue: 'gut' | 'blood' | 'fat' | 'muscle' | 'airway'; readonly step: number; readonly radius: number; readonly grow?: number }
   | { readonly kind: 'attachment'; readonly part: AttachmentPart }
-  | { readonly kind: 'internal'; readonly part: InternalPart };
+  | { readonly kind: 'internal'; readonly part: InternalPart }
+  | { readonly kind: 'muscle'; readonly index: number }
+  | { readonly kind: 'muscle-rest' };
 
 export type AttachmentPart = 'eyes' | 'pinnae' | 'nose' | 'vibrissae' | 'forepaws' | 'hindpaws' | 'claws' | 'tail' | 'tail-vertebrae' | 'foot-bones';
 
@@ -23,6 +28,7 @@ export interface StructurePlan {
   readonly color: string;
   readonly defaultOpacity?: number;
   readonly exterior?: boolean;
+  readonly division?: 'estimated';
   readonly scale: string;
   readonly plan: Plan;
 }
@@ -38,12 +44,34 @@ const labelled = (id: string, name: string, label: number, sourceLabel: string, 
   basis: [DIGIMOUSE], plan: { kind: 'labels', labels: [label], step },
 });
 
+/**
+ * One part of a source label. The parts of a divided label go to the nearest of hand-placed seeds, following the plates of Cook.
+ * `side` keeps only voxels on one side of the midline.
+ */
+const part = (id: string, name: string, label: number, sourceLabel: string, systems: string[], color: string, seeds: readonly (readonly [number, number, number])[], index: number, note: string, side: { lowX?: number; highX?: number } = {}): StructurePlan => ({
+  id: `living:${id}`, name, systems, sourceLabel, evidence: 'source', division: seeds.length > 1 ? 'estimated' : undefined, scale: 'organ', color,
+  description: `Part of the source label "${sourceLabel}" of the Digimouse image. ${note} ${POSTURE}`,
+  basis: [DIGIMOUSE, COOK], plan: { kind: 'label-part', label, seeds, index, ...side },
+});
+const LATERALITY = 'Left and right are named from the inference that high native x is the left of the animal, which is not verified.';
+const HEART: readonly (readonly [number, number, number])[] = [[158, 372, 82], [212, 374, 90], [165, 415, 62], [205, 425, 72]];
+const CHAMBER = 'Its boundaries with the other chambers are estimated, after Cook figures 89 to 91; the chambers inside are not modelled.';
+const LUNG_R: readonly (readonly [number, number, number])[] = [[140, 385, 105], [122, 420, 80], [135, 455, 125], [162, 450, 85]];
+const LOBE = 'The lobes are named in Cook figure 90; their boundaries are estimated.';
+const LIVER: readonly (readonly [number, number, number])[] = [[140, 480, 45], [235, 500, 85], [95, 540, 110], [190, 590, 135]];
+const LIVER_LOBE = 'The lobes are named in Cook figure 60; their boundaries are estimated.';
+const STOMACH: readonly (readonly [number, number, number])[] = [[262, 520, 135], [210, 552, 105]];
+const STOMACH_REGION = 'The regions are named in Cook figure 59; their boundary is estimated.';
+const MIDDLE_X = 172;
+
 const traced = (id: string, name: string, tissue: 'gut' | 'blood' | 'fat' | 'muscle' | 'airway', systems: string[], color: string, description: string, step = 2, radius = 1, grow?: number): StructurePlan => ({
   id: `living:${id}`, name, systems, sourceLabel: 'none, traced from the source images', evidence: 'traced', scale: 'organ', color,
   description: `Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. ${description} Not reviewed by an anatomist. ${POSTURE}`,
   basis: [DIGIMOUSE], plan: { kind: 'traced', tissue, step, radius, grow },
 });
 
+const CHARLES = 'Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669';
+const MUSCLE_TONES = ['#a5524a', '#ad5a50', '#9c4c46', '#b0605a', '#a14f4f', '#a85649'];
 const GREENE = 'Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse.';
 const inner = (id: string, name: string, part: InternalPart, systems: string[], color: string, description: string, basis: readonly string[] = [COOK, HUMMEL]): StructurePlan => ({
   id: `living:${id}`, name, systems, sourceLabel: 'none, simulated', evidence: 'simulated', scale: 'organ', color,
@@ -73,22 +101,46 @@ export const STRUCTURES: readonly StructurePlan[] = [
   labelled('cerebellum', 'Cerebellum', 5, 'cerebellum', ['nervous'], '#cfa89f'),
   labelled('medulla', 'Medulla', 4, 'medulla', ['nervous'], '#d9bdb4'),
   labelled('olfactory', 'Olfactory bulbs', 6, 'olfactory bulbs', ['nervous'], '#e1c6b8'),
-  labelled('heart', 'Heart', 9, 'heart', ['cardiovascular'], '#a7343b'),
-  labelled('lungs', 'Lungs', 21, 'lungs', ['respiratory'], '#d4877f'),
-  labelled('liver', 'Liver', 18, 'liver', ['digestive'], '#7d3330'),
-  labelled('stomach', 'Stomach', 15, 'stomach', ['digestive'], '#c98a73'),
+  part('heart-lv', 'Left ventricle', 9, 'heart', ['cardiovascular'], '#a7343b', HEART, 3, CHAMBER),
+  part('heart-rv', 'Right ventricle', 9, 'heart', ['cardiovascular'], '#ad3f45', HEART, 2, CHAMBER),
+  part('heart-la', 'Left atrium', 9, 'heart', ['cardiovascular'], '#9c3a4a', HEART, 1, CHAMBER),
+  part('heart-ra', 'Right atrium', 9, 'heart', ['cardiovascular'], '#8f3a52', HEART, 0, CHAMBER),
+  part('lung-left', 'Left lung', 21, 'lungs', ['respiratory'], '#d4877f', [[209, 420, 121]], 0, `The left lung has a single lobe in Cook figure 90. ${LATERALITY}`, { lowX: MIDDLE_X }),
+  part('lung-r-superior', 'Right lung, superior lobe', 21, 'lungs', ['respiratory'], '#d68a82', LUNG_R, 0, LOBE, { highX: MIDDLE_X }),
+  part('lung-r-middle', 'Right lung, middle lobe', 21, 'lungs', ['respiratory'], '#cf8078', LUNG_R, 1, LOBE, { highX: MIDDLE_X }),
+  part('lung-r-inferior', 'Right lung, inferior lobe', 21, 'lungs', ['respiratory'], '#d88e86', LUNG_R, 2, LOBE, { highX: MIDDLE_X }),
+  part('lung-r-postcaval', 'Right lung, post-caval lobe', 21, 'lungs', ['respiratory'], '#cc7c74', LUNG_R, 3, LOBE, { highX: MIDDLE_X }),
+  part('liver-median', 'Liver, median lobe', 18, 'liver', ['digestive'], '#7d3330', LIVER, 0, LIVER_LOBE),
+  part('liver-left', 'Liver, left lobe', 18, 'liver', ['digestive'], '#823632', LIVER, 1, LIVER_LOBE),
+  part('liver-right', 'Liver, right lobe', 18, 'liver', ['digestive'], '#78302d', LIVER, 2, LIVER_LOBE),
+  part('liver-caudate', 'Liver, caudate lobe', 18, 'liver', ['digestive'], '#853a35', LIVER, 3, LIVER_LOBE),
+  part('stomach-cardiac', 'Stomach, cardiac region', 15, 'stomach', ['digestive'], '#d0957e', STOMACH, 0, STOMACH_REGION),
+  part('stomach-pyloric', 'Stomach, pyloric region', 15, 'stomach', ['digestive'], '#c98a73', STOMACH, 1, STOMACH_REGION),
   labelled('spleen', 'Spleen', 16, 'spleen', ['lymphatic', 'immune'], '#5f2b45'),
   labelled('pancreas', 'Pancreas', 17, 'pancreas', ['digestive', 'endocrine'], '#dfb88a'),
-  labelled('kidneys', 'Kidneys', 19, 'kidneys', ['urinary'], '#8f3b3b'),
+  part('kidney-right', 'Right kidney', 19, 'kidneys', ['urinary'], '#8f3b3b', [[114, 595, 146]], 0, LATERALITY, { highX: MIDDLE_X }),
+  part('kidney-left', 'Left kidney', 19, 'kidneys', ['urinary'], '#8f3b3b', [[229, 606, 150]], 0, LATERALITY, { lowX: MIDDLE_X }),
   labelled('adrenals', 'Adrenal glands', 20, 'adrenal glands', ['endocrine'], '#e0b86d', 1),
   labelled('bladder', 'Bladder', 13, 'bladder', ['urinary'], '#d9a98f'),
-  labelled('testes', 'Testes', 14, 'testis', ['reproductive'], '#e3cfc8'),
+  part('testis-right', 'Right testis', 14, 'testis', ['reproductive'], '#e3cfc8', [[149, 809, 37]], 0, LATERALITY, { highX: 190 }),
+  part('testis-left', 'Left testis', 14, 'testis', ['reproductive'], '#e3cfc8', [[219, 757, 51]], 0, LATERALITY, { lowX: 190 }),
   labelled('masseter', 'Masseter muscles', 11, 'masseter muscles', ['muscular'], '#9c4d47'),
   labelled('lachrymal', 'Lachrymal glands', 12, 'lachrymal glands', ['sensory'], '#d7b3a4'),
-  traced('muscles', 'Skeletal muscle', 'muscle', ['muscular'], '#a5524a', 'Red tissue of muscle density outside the abdominal cavity, including the trunk, neck and limbs. Individual muscles are not separated or named.', 3, 1),
-  traced('intestines', 'Intestines', 'gut', ['digestive'], '#c7a071', 'Yellow-green and tan gut contents and wall within the abdominal cavity, closed slightly to include the wall. Loops are not separated into named segments.', 2, 1, 2),
+  ...MUSCLES.map((muscle, index): StructurePlan => ({
+    id: `living:muscle-${muscle.id}`, name: muscle.name, systems: ['muscular'], sourceLabel: 'none, traced tissue with an estimated division', evidence: 'traced', division: 'estimated', scale: 'organ', color: MUSCLE_TONES[index % MUSCLE_TONES.length],
+    description: `The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. ${muscle.note} Paired muscles are not separated. ${POSTURE}`,
+    basis: muscle.basis === 'charles' ? [CHARLES] : [GREENE], plan: { kind: 'muscle', index },
+  })),
+  {
+    id: 'living:muscle-rest', name: 'Other muscle tissue', systems: ['muscular'], sourceLabel: 'none, traced from the source images', evidence: 'traced', scale: 'organ', color: '#9a4f48',
+    description: `Traced by automatic colour and density rules in the coregistered source photographs and CT. Red tissue of muscle density that lies far from the course of every named muscle. Not reviewed by an anatomist. ${POSTURE}`,
+    basis: [DIGIMOUSE], plan: { kind: 'muscle-rest' },
+  },
+  { ...traced('small-intestine', 'Small intestine', 'gut', ['digestive'], '#c7a071', 'Yellow-green and tan gut contents and wall within the abdominal cavity, closed slightly to include the wall. Division from the large intestine is estimated by thickness and position.', 2, 1, 2), division: 'estimated', plan: { kind: 'gut-part', part: 'small' } },
+  { ...traced('caecum', 'Caecum', 'gut', ['digestive'], '#b99560', 'The thickest part of the traced gut, on the left of the abdomen as in Cook figure 54. Division from the rest of the gut is estimated by thickness and position.', 2, 1, 2), division: 'estimated', plan: { kind: 'gut-part', part: 'caecum' } },
+  { ...traced('colon', 'Colon and rectum', 'gut', ['digestive'], '#a98754', 'Traced gut behind the bladder, near the midline. Division from the rest of the gut is estimated by position.', 2, 1, 2), division: 'estimated', plan: { kind: 'gut-part', part: 'colon' } },
   traced('veins', 'Blood-filled vessels', 'blood', ['cardiovascular', 'arterial-venous'], '#47202f', 'Very dark blood-filled lumens, mainly large veins such as the caudal vena cava and jugular veins. Arteries are empty after death and do not appear.', 2, 1),
-  traced('fat', 'Adipose and connective tissue', 'fat', ['integumentary'], '#ecdcae', 'Tissue of low CT density or pale colour, such as the fat pads around the testes and under the skin.', 2, 1),
+  traced('fat', 'Adipose and connective tissue', 'fat', ['integumentary'], '#ecdcae', 'Tissue of low CT density or pale colour, such as the fat pads around the testes and under the skin.', 3, 1),
   traced('airways', 'Air spaces', 'airway', ['respiratory'], '#cfe3e8', 'Voxels of very low CT density, such as the nasal passages and gas in the gut.', 2, 1),
   inner('aorta', 'Aorta', 'aorta', ['cardiovascular', 'arterial-venous'], '#c8333a', 'From the left ventricle it ascends, arches to the left and descends along the ventral side of the vertebral column to its bifurcation.'),
   inner('head-arteries', 'Innominate and carotid arteries', 'head-arteries', ['cardiovascular', 'arterial-venous'], '#c8333a', 'Arch branches in the order drawn by Cook: innominate, left common carotid, left subclavian, with carotid divisions at the head.'),

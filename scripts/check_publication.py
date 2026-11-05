@@ -602,6 +602,8 @@ def anatomy_registry(read) -> dict[str, dict]:
                     raise ValueError("Living mouse structure does not declare its evidence and basis")
                 if entry["evidence"] == "simulated" and not str(entry.get("description", "")).startswith("Simulated."):
                     raise ValueError("Simulated structure is not described as simulated")
+                if entry.get("division") not in (None, "estimated") or (entry.get("division") and "estimated" not in str(entry.get("description", "")) and "estimates" not in str(entry.get("description", ""))):
+                    raise ValueError("Estimated division is not described as estimated")
             license_bytes = read(f"public/{folder}/LICENSE.md", MAX_GLB_JSON_BYTES)
             if not license_bytes or b"creativecommons.org/licenses/by-sa/4.0" not in license_bytes or b"10.1088/0031-9155/52/3/003" not in license_bytes or b"simulated" not in license_bytes:
                 raise ValueError("Registered living mouse attribution is missing")

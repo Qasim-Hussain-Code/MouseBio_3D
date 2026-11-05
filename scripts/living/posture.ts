@@ -103,6 +103,21 @@ export function deformSurface(surface: Surface, field: PostureField): Surface {
   return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices };
 }
 
+/** Deform a surface of the trunk or head, which follows only the bends of the column and never a limb lying beside it in the scan. */
+export function deformAxial(surface: Surface, field: PostureField): Surface {
+  const positions = new Float32Array(surface.positions.length);
+  const smooth = (t: number) => { const v = Math.max(0, Math.min(1, t)); return v * v * (3 - 2 * v); };
+  const head = field.pose.transforms.head, pelvis = field.pose.transforms.pelvis, trunk = field.pose.transforms.trunk;
+  for (let i = 0; i < positions.length; i += 3) {
+    const p: Vec3 = [surface.positions[i], surface.positions[i + 1], surface.positions[i + 2]];
+    const towardsPelvis = smooth((p[1] - PELVIS_BEND.fromY) / (PELVIS_BEND.toY - PELVIS_BEND.fromY));
+    const towardsHead = smooth((HEAD_BEND.fromY - p[1]) / (HEAD_BEND.fromY - HEAD_BEND.toY));
+    const out = blendRigid([trunk, head, pelvis], [1 - towardsPelvis - towardsHead, towardsHead, towardsPelvis], p);
+    positions[i] = out[0]; positions[i + 1] = out[1]; positions[i + 2] = out[2];
+  }
+  return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices };
+}
+
 export function vertexNormals(positions: Float32Array, indices: Uint32Array): Float32Array {
   const normals = new Float32Array(positions.length);
   for (let t = 0; t < indices.length; t += 3) {

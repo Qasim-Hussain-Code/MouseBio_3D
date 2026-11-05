@@ -8,11 +8,11 @@ import constructedCatalog from '../data/constructed-references.json';
 import { blob, curve, route } from '../scripts/living/internal';
 import { surfaceMeasures } from '../scripts/living/surface-nets';
 import { classifyVoxel, TRACED } from '../scripts/living/trace';
-import { declaresEvidence, evidenceGroups, evidenceOf, labelWithEvidence, toggledEvidence } from '../src/domain/evidence';
+import { declaresEvidence, evidenceGroups, evidenceMark, evidenceOf, labelWithEvidence, toggledEvidence } from '../src/domain/evidence';
 import { bodySurfaceIdFor, displayPostureFor, opensAsSkin } from '../src/domain/display-pose';
 import { coveredBySkin } from '../src/domain/reference-display';
 import type { Atlas } from '../src/domain/types';
-import { COATS, createFur, FUR_DISPLAY, hasFurAttribute } from '../src/viewer/fur';
+import { COATS, createFur, FUR_DISPLAY, hasFurAttribute, scatterHairs } from '../src/viewer/fur';
 
 const atlas = JSON.parse(await readFile(new URL('../public/atlas-living/atlas.json', import.meta.url), 'utf8')) as Atlas;
 const glb = await readFile(new URL('../public/atlas-living/living-mouse.glb', import.meta.url));
@@ -50,7 +50,8 @@ test('every structure declares its evidence, its basis and, when simulated, says
       assert.match(String(structure.sourceLabel), /simulated/, structure.id);
     }
     if (structure.evidence === 'traced') assert.match(structure.description!, /[Tt]raced|isosurface|outer surface/, structure.id);
-    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas/, reference);
+    if (structure.division) assert.match(structure.description!, /estimate/, structure.id);
+    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles/, reference);
   }
   assert.ok(counts.source >= 15 && counts.traced >= 5 && counts.simulated >= 30, JSON.stringify(counts));
 });
@@ -83,6 +84,9 @@ test('evidence labels, groups and toggling', () => {
   assert.equal(labelWithEvidence({ name: 'Aorta', evidence: 'simulated' }), 'Aorta (simulated)');
   assert.equal(labelWithEvidence({ name: 'Veins', evidence: 'traced' }), 'Veins (traced)');
   assert.equal(labelWithEvidence({ name: 'Heart', evidence: 'source' }), 'Heart');
+  assert.equal(labelWithEvidence({ name: 'Liver, left lobe', evidence: 'source', division: 'estimated' }), 'Liver, left lobe (estimated division)');
+  assert.equal(evidenceMark({ evidence: 'traced', division: 'estimated' }), 'Traced, division estimated');
+  assert.equal(evidenceMark({ evidence: 'simulated' }), 'Simulated');
   assert.equal(declaresEvidence({ structures: [{ id: 'a', name: 'a', systems: [], sourceLabel: 1, meshNode: 'a' }] }), false);
   const groups = evidenceGroups(atlas, []);
   assert.deepEqual(groups.map((group) => group.evidence), ['source', 'traced', 'simulated']);
@@ -99,7 +103,7 @@ test('the living mouse opens as skin with exterior parts outside it, and inner p
   assert.equal(displayPostureFor(atlas)?.frameOnBody, true);
   const exterior = atlas.structures.filter((structure) => structure.exterior).map((structure) => structure.id);
   for (const id of ['living:eyes', 'living:pinnae', 'living:vibrissae', 'living:forepaws', 'living:hindpaws', 'living:tail', 'living:nose', 'living:claws']) assert.ok(exterior.includes(id), id);
-  for (const id of ['living:heart', 'living:aorta', 'living:skeleton', 'living:spinal-cord']) assert.ok(!exterior.includes(id), id);
+  for (const id of ['living:heart-lv', 'living:aorta', 'living:skeleton', 'living:spinal-cord']) assert.ok(!exterior.includes(id), id);
   assert.equal(coveredBySkin('living:aorta', 'living:skin', true, 1, 'off', false), true);
   assert.equal(coveredBySkin('living:eyes', 'living:skin', true, 1, 'off', true), false);
 });
@@ -133,19 +137,30 @@ test('routes pass through their control points, taper, and close; bodies have th
   assert.ok(Math.abs(surfaceMeasures(body).volume / (4 / 3 * Math.PI * 120) - 1) < 0.01);
 });
 
-test('the coat needs hair directions, repeats the skin in shells, and shares its buffers', () => {
+test('the coat needs hair directions, scatters hairs by area, skips bare skin and repeats exactly', () => {
   const bare = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
   assert.equal(hasFurAttribute(bare.geometry), false);
   assert.equal(createFur(bare, new THREE.Vector3(0, 0, 1)), null);
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
-  geometry.setAttribute('_fur', new THREE.BufferAttribute(new Float32Array(4 * geometry.getAttribute('position').count), 4));
+  const geometry = new THREE.BoxGeometry(0.01, 0.01, 0.01);
+  const vertices = geometry.getAttribute('position').count;
+  const directions = new Float32Array(4 * vertices);
+  for (let i = 0; i < vertices; i++) directions.set([0, 1, 0, geometry.getAttribute('position').getX(i) > 0 ? 1 : 1], 4 * i);
+  geometry.setAttribute('_fur', new THREE.BufferAttribute(directions, 4));
   const skin = new THREE.Mesh(geometry);
   const fur = createFur(skin, new THREE.Vector3(0, 0, 1))!;
   assert.ok(fur);
   const instanced = fur.mesh.geometry as THREE.InstancedBufferGeometry;
-  assert.equal(instanced.instanceCount, FUR_DISPLAY.shells);
-  assert.equal(instanced.getAttribute('position'), geometry.getAttribute('position'));
+  // Six faces of 1 cm: 600 square millimetres at the stated density.
+  assert.ok(Math.abs(fur.hairs / (6e-4 * FUR_DISPLAY.density) - 1) < 0.01, String(fur.hairs));
+  assert.equal(instanced.instanceCount, fur.hairs);
   assert.equal(fur.mesh.parent, skin);
+  const first = scatterHairs(geometry), second = scatterHairs(geometry);
+  assert.deepEqual([...first.roots.slice(0, 30)], [...second.roots.slice(0, 30)]);
+  for (let i = 0; i < first.count; i += 97) for (let k = 0; k < 3; k++) assert.ok(Math.abs(first.roots[3 * i + k]) <= 0.00501);
+  // Hair length zero everywhere means no hairs.
+  const shorn = new THREE.BoxGeometry(0.01, 0.01, 0.01);
+  shorn.setAttribute('_fur', new THREE.BufferAttribute(new Float32Array(4 * vertices), 4));
+  assert.equal(scatterHairs(shorn).count, 0);
   assert.deepEqual(Object.keys(COATS).sort(), ['agouti', 'albino', 'black']);
   fur.dispose();
   assert.equal(skin.children.length, 0);
