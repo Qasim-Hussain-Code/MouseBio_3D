@@ -75,3 +75,19 @@
 .section-image-label{position:absolute;left:17px;bottom:172px;z-index:2;max-width:300px;font-size:8px;letter-spacing:.8px;line-height:1.7;color:#5f6e6a}
 .section-cut-button{margin-left:6px}
 @media(max-width:600px){.section-image-label{bottom:208px;left:12px;max-width:170px;font-size:7px}}
+
+.evidence-chip{display:inline-block;margin-top:3px;padding:1px 6px;border-radius:9px;font-size:9.5px;line-height:15px;font-weight:600;letter-spacing:.02em;border:1px solid transparent;white-space:nowrap}
+.structure-name .evidence-chip{display:table}
+.inspector .evidence-chip{margin-left:8px;vertical-align:middle}
+.evidence-source{background:#e8f1ec;color:#1d5c48;border-color:#c7ded3}
+.evidence-traced{background:#eef0f7;color:#39467c;border-color:#d0d5ea}
+.evidence-simulated{background:#fbeee0;color:#8a4b12;border-color:#efd5b7}
+.evidence-filter{margin:0 0 12px;padding:8px 10px 6px;border:1px solid var(--line,#e2e6e3);border-radius:8px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.evidence-filter legend{padding:0 4px;font-size:11px;color:#55615b}
+.evidence-filter label{display:inline-flex;align-items:center;gap:5px;font-size:11px}
+.evidence-filter small{color:#6b7671}
+.evidence-basis{margin:6px 0 0;padding-left:16px;font-size:11px;line-height:1.45;color:#55615b}
+.evidence-note-simulated{border-left:3px solid #d99a55;padding-left:10px}
+.evidence-note-traced{border-left:3px solid #7f8dc4;padding-left:10px}
+.constructed-label{color:#8a4b12}
+.coat-choice{display:flex;align-items:center;gap:8px}

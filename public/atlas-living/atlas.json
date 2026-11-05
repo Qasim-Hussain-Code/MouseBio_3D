@@ -1,0 +1,2395 @@
+{
+ "id": "mousebio-living-v1",
+ "title": "Living mouse: measured, traced and simulated layers",
+ "assetUrl": "/atlas-living/living-mouse.glb",
+ "coordinateFrame": {
+  "id": "digimouse-living-stance-v1",
+  "assetUnits": "metres",
+  "sourceUnits": "zero-based voxel indices of the Digimouse grid, after a simulated posture",
+  "sourceVoxelSpacingMm": [
+   0.1,
+   0.1,
+   0.1
+  ],
+  "voxelIndexToAssetScale": 0.0001,
+  "origin": "Index(0,0,0) of the Digimouse image; limbs are displaced from it by the simulated posture",
+  "axes": {
+   "x": "native x",
+   "y": "native y, towards the tail",
+   "z": "native z, towards the back; inferred from label positions"
+  },
+  "anatomicalOrientationVerified": false,
+  "physicalCalibrationVerified": false,
+  "posture": "simulated",
+  "groundZMetres": -0.0053,
+  "joints": {
+   "shoulderR": [
+    125,
+    295,
+    102
+   ],
+   "elbowR": [
+    61.5,
+    339.7,
+    44.6
+   ],
+   "wristR": [
+    77.1,
+    210.3,
+    36
+   ],
+   "tipR": [
+    69.9,
+    153,
+    27.2
+   ],
+   "shoulderL": [
+    247.4,
+    292.5,
+    111
+   ],
+   "elbowL": [
+    308.7,
+    313.6,
+    45.8
+   ],
+   "wristL": [
+    312,
+    200,
+    38
+   ],
+   "tipL": [
+    316.9,
+    134.9,
+    48
+   ],
+   "hipR": [
+    120.5,
+    771.3,
+    116.2
+   ],
+   "kneeR": [
+    38.3,
+    756.2,
+    39.9
+   ],
+   "ankleR": [
+    89.9,
+    900.1,
+    36.9
+   ],
+   "toeR": [
+    75,
+    935,
+    28
+   ],
+   "hipL": [
+    239.3,
+    771.1,
+    122.2
+   ],
+   "kneeL": [
+    331.7,
+    751.3,
+    44.9
+   ],
+   "ankleL": [
+    270.4,
+    900.3,
+    43
+   ],
+   "toeL": [
+    300,
+    930,
+    42
+   ]
+  }
+ },
+ "source": {
+  "id": "digimouse-registered-volume-2007",
+  "title": "Digimouse: a 3D whole body mouse atlas from CT and cryosection data",
+  "displayName": "Living mouse model",
+  "authors": [
+   "Belma Dogdas",
+   "David Stout",
+   "Arion F. Chatziioannou",
+   "Richard M. Leahy"
+  ],
+  "doi": "10.1088/0031-9155/52/3/003",
+  "publicationYear": 2007,
+  "url": "https://neuroimage.usc.edu/neuro/Digimouse",
+  "license": "CC-BY-SA-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+ },
+ "structures": [
+  {
+   "id": "living:skin",
+   "name": "Skin, with simulated coat",
+   "systems": [
+    "integumentary"
+   ],
+   "sourceLabel": "outer surface of all source labels",
+   "evidence": "traced",
+   "scale": "organism",
+   "color": "#e8b9a8",
+   "defaultOpacity": 1,
+   "description": "The outer surface of the union of all Digimouse labels, carried into the stance and smoothed. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. The lower hind legs are simulated shapes whose radii are measured from the leg tissue, because the scanned shanks lay pressed flat and the images end at the hind feet. The fur drawn on the surface is simulated, because the specimen is a nude mouse.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:skin",
+   "geometry": {
+    "vertices": 87413,
+    "triangles": 174832,
+    "boundsMeters": [
+     [
+      0.0039027465973049402,
+      0.003134792670607567,
+      -0.00658358633518219
+     ],
+     [
+      0.03335709497332573,
+      0.08801992237567902,
+      0.020847011357545853
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:skeleton",
+   "name": "Skeleton",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "CT bone",
+   "evidence": "traced",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "description": "An isosurface of the source CT, which shows the digits that the source skeleton label crops. Bones are not separated by name. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:skeleton",
+   "geometry": {
+    "vertices": 183287,
+    "triangles": 369164,
+    "boundsMeters": [
+     [
+      0.0033361949026584625,
+      0.005148637108504772,
+      -0.00634516729041934
+     ],
+     [
+      0.03504259139299393,
+      0.0883951410651207,
+      0.020062703639268875
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:cerebrum",
+   "name": "External cerebrum",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "external cerebrum",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#dcc0ba",
+   "description": "The source label \"external cerebrum\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:cerebrum",
+   "geometry": {
+    "vertices": 9208,
+    "triangles": 18412,
+    "boundsMeters": [
+     [
+      0.014148635789752007,
+      0.016386261209845543,
+      0.011035178788006306
+     ],
+     [
+      0.023738237097859383,
+      0.024082792922854424,
+      0.017326215282082558
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:striatum",
+   "name": "Striatum",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "striatum",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#d3b0ab",
+   "description": "The source label \"striatum\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:striatum",
+   "geometry": {
+    "vertices": 2088,
+    "triangles": 4172,
+    "boundsMeters": [
+     [
+      0.01554247085005045,
+      0.01988096535205841,
+      0.014034736901521683
+     ],
+     [
+      0.022118056192994118,
+      0.023955127224326134,
+      0.016557250171899796
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:brain-rest",
+   "name": "Rest of the brain",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "rest of the brain",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#d6b7b3",
+   "description": "The source label \"rest of the brain\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:brain-rest",
+   "geometry": {
+    "vertices": 7026,
+    "triangles": 14040,
+    "boundsMeters": [
+     [
+      0.014794664457440376,
+      0.016162438318133354,
+      0.010975525714457035
+     ],
+     [
+      0.022865137085318565,
+      0.026093630120158195,
+      0.01718609780073166
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:cerebellum",
+   "name": "Cerebellum",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "cerebellum",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#cfa89f",
+   "description": "The source label \"cerebellum\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:cerebellum",
+   "geometry": {
+    "vertices": 2154,
+    "triangles": 4304,
+    "boundsMeters": [
+     [
+      0.015258301049470901,
+      0.02437061257660389,
+      0.01377230416983366
+     ],
+     [
+      0.02269197627902031,
+      0.02739856019616127,
+      0.016614172607660294
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:medulla",
+   "name": "Medulla",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "medulla",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#d9bdb4",
+   "description": "The source label \"medulla\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:medulla",
+   "geometry": {
+    "vertices": 2750,
+    "triangles": 5496,
+    "boundsMeters": [
+     [
+      0.016183508560061455,
+      0.023309409618377686,
+      0.011006047949194908
+     ],
+     [
+      0.02159639447927475,
+      0.030157525092363358,
+      0.013831422664225101
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:olfactory",
+   "name": "Olfactory bulbs",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "olfactory bulbs",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#e1c6b8",
+   "description": "The source label \"olfactory bulbs\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:olfactory",
+   "geometry": {
+    "vertices": 1246,
+    "triangles": 2488,
+    "boundsMeters": [
+     [
+      0.017686741426587105,
+      0.013636373914778233,
+      0.012384442612528801
+     ],
+     [
+      0.021005932241678238,
+      0.01681855507194996,
+      0.015324275009334087
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:heart",
+   "name": "Heart",
+   "systems": [
+    "cardiovascular"
+   ],
+   "sourceLabel": "heart",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#a7343b",
+   "description": "The source label \"heart\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:heart",
+   "geometry": {
+    "vertices": 7264,
+    "triangles": 14524,
+    "boundsMeters": [
+     [
+      0.014402354136109352,
+      0.03586050868034363,
+      0.004950143396854401
+     ],
+     [
+      0.023180222138762474,
+      0.045440249145030975,
+      0.0110393101349473
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lungs",
+   "name": "Lungs",
+   "systems": [
+    "respiratory"
+   ],
+   "sourceLabel": "lungs",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#d4877f",
+   "description": "The source label \"lungs\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:lungs",
+   "geometry": {
+    "vertices": 17531,
+    "triangles": 35064,
+    "boundsMeters": [
+     [
+      0.01092675980180502,
+      0.03453509137034416,
+      0.004561278037726879
+     ],
+     [
+      0.024592865258455276,
+      0.047308940440416336,
+      0.01564704440534115
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:liver",
+   "name": "Liver",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "liver",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#7d3330",
+   "description": "The source label \"liver\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:liver",
+   "geometry": {
+    "vertices": 47234,
+    "triangles": 94472,
+    "boundsMeters": [
+     [
+      0.005394992418587208,
+      0.04442181438207626,
+      0.0024887355975806713
+     ],
+     [
+      0.029348479583859444,
+      0.06074902415275574,
+      0.018147217109799385
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:stomach",
+   "name": "Stomach",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "stomach",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#c98a73",
+   "description": "The source label \"stomach\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:stomach",
+   "geometry": {
+    "vertices": 8130,
+    "triangles": 16256,
+    "boundsMeters": [
+     [
+      0.01757810451090336,
+      0.049502965062856674,
+      0.0073401955887675285
+     ],
+     [
+      0.02912072092294693,
+      0.05697822943329811,
+      0.01730027236044407
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:spleen",
+   "name": "Spleen",
+   "systems": [
+    "lymphatic",
+    "immune"
+   ],
+   "sourceLabel": "spleen",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#5f2b45",
+   "description": "The source label \"spleen\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:spleen",
+   "geometry": {
+    "vertices": 7554,
+    "triangles": 15104,
+    "boundsMeters": [
+     [
+      0.018248315900564194,
+      0.05211583152413368,
+      0.006425431929528713
+     ],
+     [
+      0.03080620989203453,
+      0.059829432517290115,
+      0.018559861928224564
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:pancreas",
+   "name": "Pancreas",
+   "systems": [
+    "digestive",
+    "endocrine"
+   ],
+   "sourceLabel": "pancreas",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#dfb88a",
+   "description": "The source label \"pancreas\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:pancreas",
+   "geometry": {
+    "vertices": 3384,
+    "triangles": 6764,
+    "boundsMeters": [
+     [
+      0.017409395426511765,
+      0.05468671768903732,
+      0.01194662507623434
+     ],
+     [
+      0.02909679338335991,
+      0.06320159137248993,
+      0.01572001539170742
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:kidneys",
+   "name": "Kidneys",
+   "systems": [
+    "urinary"
+   ],
+   "sourceLabel": "kidneys",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#8f3b3b",
+   "description": "The source label \"kidneys\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:kidneys",
+   "geometry": {
+    "vertices": 14840,
+    "triangles": 29672,
+    "boundsMeters": [
+     [
+      0.007881146855652332,
+      0.05428096279501915,
+      0.011857683770358562
+     ],
+     [
+      0.026749826967716217,
+      0.06549600511789322,
+      0.018568145111203194
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:adrenals",
+   "name": "Adrenal glands",
+   "systems": [
+    "endocrine"
+   ],
+   "sourceLabel": "adrenal glands",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#e0b86d",
+   "description": "The source label \"adrenal glands\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:adrenals",
+   "geometry": {
+    "vertices": 2862,
+    "triangles": 5716,
+    "boundsMeters": [
+     [
+      0.013384907506406307,
+      0.053563423454761505,
+      0.013950417749583721
+     ],
+     [
+      0.019638385623693466,
+      0.05604323744773865,
+      0.016749968752264977
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:bladder",
+   "name": "Bladder",
+   "systems": [
+    "urinary"
+   ],
+   "sourceLabel": "bladder",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#d9a98f",
+   "description": "The source label \"bladder\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:bladder",
+   "geometry": {
+    "vertices": 5970,
+    "triangles": 11936,
+    "boundsMeters": [
+     [
+      0.013003946281969547,
+      0.06211688369512558,
+      0.0013228418538346887
+     ],
+     [
+      0.019848745316267014,
+      0.06891728192567825,
+      0.007960746064782143
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:testes",
+   "name": "Testes",
+   "systems": [
+    "reproductive"
+   ],
+   "sourceLabel": "testis",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#e3cfc8",
+   "description": "The source label \"testis\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:testes",
+   "geometry": {
+    "vertices": 6402,
+    "triangles": 12796,
+    "boundsMeters": [
+     [
+      0.012584644369781017,
+      0.06691789627075195,
+      -0.0046657598577439785
+     ],
+     [
+      0.024152696132659912,
+      0.07751468569040298,
+      0.004045276436954737
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:masseter",
+   "name": "Masseter muscles",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "masseter muscles",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#9c4d47",
+   "description": "The source label \"masseter muscles\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:masseter",
+   "geometry": {
+    "vertices": 6524,
+    "triangles": 13040,
+    "boundsMeters": [
+     [
+      0.0121829928830266,
+      0.011787299066781998,
+      0.00587241118773818
+     ],
+     [
+      0.024750877171754837,
+      0.021932056173682213,
+      0.011380467563867569
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lachrymal",
+   "name": "Lachrymal glands",
+   "systems": [
+    "sensory"
+   ],
+   "sourceLabel": "lachrymal glands",
+   "evidence": "source",
+   "scale": "organ",
+   "color": "#d7b3a4",
+   "description": "The source label \"lachrymal glands\" of the Digimouse image, resurfaced from a smoothed mask. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:lachrymal",
+   "geometry": {
+    "vertices": 2190,
+    "triangles": 4372,
+    "boundsMeters": [
+     [
+      0.014244101010262966,
+      0.013179375790059566,
+      0.010267699137330055
+     ],
+     [
+      0.023651987314224243,
+      0.01707574538886547,
+      0.013473537750542164
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:muscles",
+   "name": "Skeletal muscle",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, traced from the source images",
+   "evidence": "traced",
+   "scale": "organ",
+   "color": "#a5524a",
+   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Red tissue of muscle density outside the abdominal cavity, including the trunk, neck and limbs. Individual muscles are not separated or named. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:muscles",
+   "geometry": {
+    "vertices": 133176,
+    "triangles": 267220,
+    "boundsMeters": [
+     [
+      0.0032547716982662678,
+      0.003606584621593356,
+      -0.006412272807210684
+     ],
+     [
+      0.03278099745512009,
+      0.08651597797870636,
+      0.020309409126639366
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:intestines",
+   "name": "Intestines",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "none, traced from the source images",
+   "evidence": "traced",
+   "scale": "organ",
+   "color": "#c7a071",
+   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Yellow-green and tan gut contents and wall within the abdominal cavity, closed slightly to include the wall. Loops are not separated into named segments. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:intestines",
+   "geometry": {
+    "vertices": 62411,
+    "triangles": 124876,
+    "boundsMeters": [
+     [
+      0.00503084622323513,
+      0.030982650816440582,
+      -0.002600089181214571
+     ],
+     [
+      0.03134888410568237,
+      0.07915950566530228,
+      0.015230725519359112
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:veins",
+   "name": "Blood-filled vessels",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, traced from the source images",
+   "evidence": "traced",
+   "scale": "organ",
+   "color": "#47202f",
+   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Very dark blood-filled lumens, mainly large veins such as the caudal vena cava and jugular veins. Arteries are empty after death and do not appear. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:veins",
+   "geometry": {
+    "vertices": 21938,
+    "triangles": 43796,
+    "boundsMeters": [
+     [
+      0.012543493881821632,
+      0.014086415059864521,
+      0.003354959189891815
+     ],
+     [
+      0.02570313774049282,
+      0.07171845436096191,
+      0.019744232296943665
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:fat",
+   "name": "Adipose and connective tissue",
+   "systems": [
+    "integumentary"
+   ],
+   "sourceLabel": "none, traced from the source images",
+   "evidence": "traced",
+   "scale": "organ",
+   "color": "#ecdcae",
+   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Tissue of low CT density or pale colour, such as the fat pads around the testes and under the skin. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:fat",
+   "geometry": {
+    "vertices": 184253,
+    "triangles": 368964,
+    "boundsMeters": [
+     [
+      0.0053424411453306675,
+      0.005815434735268354,
+      -0.005428665317595005
+     ],
+     [
+      0.03305301070213318,
+      0.0868227407336235,
+      0.01932401955127716
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:airways",
+   "name": "Air spaces",
+   "systems": [
+    "respiratory"
+   ],
+   "sourceLabel": "none, traced from the source images",
+   "evidence": "traced",
+   "scale": "organ",
+   "color": "#cfe3e8",
+   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Voxels of very low CT density, such as the nasal passages and gas in the gut. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
+   ],
+   "meshNode": "living:airways",
+   "geometry": {
+    "vertices": 8150,
+    "triangles": 16248,
+    "boundsMeters": [
+     [
+      0.011911014094948769,
+      0.012598853558301926,
+      -0.002868463983759284
+     ],
+     [
+      0.02841043472290039,
+      0.0836421474814415,
+      0.013225450180470943
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:aorta",
+   "name": "Aorta",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the left ventricle it ascends, arches to the left and descends along the ventral side of the vertebral column to its bifurcation. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:aorta",
+   "geometry": {
+    "vertices": 1282,
+    "triangles": 2560,
+    "boundsMeters": [
+     [
+      0.01816892996430397,
+      0.034508395940065384,
+      0.007388927508145571
+     ],
+     [
+      0.020769182592630386,
+      0.07061848789453506,
+      0.016269201412796974
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:head-arteries",
+   "name": "Innominate and carotid arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. Arch branches in the order drawn by Cook: innominate, left common carotid, left subclavian, with carotid divisions at the head. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:head-arteries",
+   "geometry": {
+    "vertices": 1100,
+    "triangles": 2172,
+    "boundsMeters": [
+     [
+      0.013115559704601765,
+      0.01938214898109436,
+      0.006753318011760712
+     ],
+     [
+      0.023875251412391663,
+      0.035265013575553894,
+      0.01169053465127945
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:forelimb-arteries",
+   "name": "Subclavian and fore limb arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. The subclavian, axillary and brachial course to the wrist. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:forelimb-arteries",
+   "geometry": {
+    "vertices": 1132,
+    "triangles": 2256,
+    "boundsMeters": [
+     [
+      0.010727805085480213,
+      0.026626117527484894,
+      -0.0040202937088906765
+     ],
+     [
+      0.026515381410717964,
+      0.036422815173864365,
+      0.01060926541686058
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:coronary-arteries",
+   "name": "Coronary arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#d0434a",
+   "description": "Simulated. Vessels drawn on the surface of the source heart label. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:coronary-arteries",
+   "geometry": {
+    "vertices": 956,
+    "triangles": 1892,
+    "boundsMeters": [
+     [
+      0.014221862889826298,
+      0.03639351576566696,
+      0.004892864730209112
+     ],
+     [
+      0.023233098909258842,
+      0.04571707174181938,
+      0.010157757438719273
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:visceral-arteries",
+   "name": "Coeliac, mesenteric, renal and genital arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. Abdominal branches in the order given by Hummel et al.: coeliac, superior mesenteric, renal, genital and inferior mesenteric. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:visceral-arteries",
+   "geometry": {
+    "vertices": 2745,
+    "triangles": 5426,
+    "boundsMeters": [
+     [
+      0.010473519563674927,
+      0.04979221895337105,
+      -0.002081542043015361
+     ],
+     [
+      0.026516275480389595,
+      0.07428281009197235,
+      0.016005616635084152
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:hindlimb-arteries",
+   "name": "Iliac, hind limb and median caudal arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the aortic bifurcation to the ankles, and the median artery towards the tail. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:hindlimb-arteries",
+   "geometry": {
+    "vertices": 1644,
+    "triangles": 3276,
+    "boundsMeters": [
+     [
+      0.007951624691486359,
+      0.06604640185832977,
+      -0.003425363451242447
+     ],
+     [
+      0.02822820469737053,
+      0.08134682476520538,
+      0.00790178868919611
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:caudal-vena-cava",
+   "name": "Inferior vena cava",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. To the right of the vertebral column and aorta as stated by Hummel et al., passing through the liver to the right atrium. Traced blood-filled lumens lie around the same course. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:caudal-vena-cava",
+   "geometry": {
+    "vertices": 978,
+    "triangles": 1952,
+    "boundsMeters": [
+     [
+      0.01653444766998291,
+      0.03990698978304863,
+      0.007227714639157057
+     ],
+     [
+      0.018083076924085617,
+      0.07063383609056473,
+      0.015388790518045425
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:cranial-veins",
+   "name": "Superior venae cavae, jugular and azygos veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Two superior venae cavae, right and left, each formed by jugular and subclavian veins, as drawn by Cook. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:cranial-veins",
+   "geometry": {
+    "vertices": 1678,
+    "triangles": 3328,
+    "boundsMeters": [
+     [
+      0.01174753438681364,
+      0.020093630999326706,
+      0.001346440170891583
+     ],
+     [
+      0.02498706616461277,
+      0.05451085790991783,
+      0.01620114967226982
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:forelimb-veins",
+   "name": "Fore limb veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Veins alongside the fore limb arteries. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:forelimb-veins",
+   "geometry": {
+    "vertices": 1018,
+    "triangles": 2028,
+    "boundsMeters": [
+     [
+      0.010553780011832714,
+      0.026743756607174873,
+      -0.004174084402620792
+     ],
+     [
+      0.026639975607395172,
+      0.03625166788697243,
+      0.010136210359632969
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:hindlimb-veins",
+   "name": "Iliac and hind limb veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Veins alongside the hind limb arteries. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:hindlimb-veins",
+   "geometry": {
+    "vertices": 1378,
+    "triangles": 2748,
+    "boundsMeters": [
+     [
+      0.0074880048632621765,
+      0.06610473990440369,
+      -0.0036532748490571976
+     ],
+     [
+      0.0283710565418005,
+      0.0809847041964531,
+      0.007821124978363514
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:portal-veins",
+   "name": "Hepatic portal, hepatic and renal veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. The portal system draining the gut to the liver, with hepatic and renal veins. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:portal-veins",
+   "geometry": {
+    "vertices": 1663,
+    "triangles": 3286,
+    "boundsMeters": [
+     [
+      0.010768874548375607,
+      0.04803111404180527,
+      0.00513111287727952
+     ],
+     [
+      0.026495113968849182,
+      0.06575632840394974,
+      0.015052001923322678
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:spinal-cord",
+   "name": "Spinal cord",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#efe4cf",
+   "description": "Simulated. Its course follows the vertebral canal measured in the source CT; its radius is an estimate, with cervical and lumbar enlargements. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:spinal-cord",
+   "geometry": {
+    "vertices": 1012,
+    "triangles": 2020,
+    "boundsMeters": [
+     [
+      0.017269441857933998,
+      0.02975507453083992,
+      0.006843998096883297
+     ],
+     [
+      0.01881261169910431,
+      0.07731378078460693,
+      0.018876902759075165
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:spinal-nerves",
+   "name": "Spinal nerves",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e9d98f",
+   "description": "Simulated. Paired nerves at cervical, thoracic, lumbar and sacral levels, counted from the vertebral formula in Hummel et al. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/",
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:spinal-nerves",
+   "geometry": {
+    "vertices": 8764,
+    "triangles": 17280,
+    "boundsMeters": [
+     [
+      0.00964068528264761,
+      0.029755208641290665,
+      0.0042257653549313545
+     ],
+     [
+      0.026349343359470367,
+      0.07740579545497894,
+      0.018455008044838905
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:forelimb-nerves",
+   "name": "Brachial plexus and fore limb nerves",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e9d98f",
+   "description": "Simulated. Roots from the lower neck joining a plexus at the shoulder, with radial, median and ulnar courses. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:forelimb-nerves",
+   "geometry": {
+    "vertices": 3117,
+    "triangles": 6170,
+    "boundsMeters": [
+     [
+      0.010155382566154003,
+      0.02660890482366085,
+      -0.003891007974743843
+     ],
+     [
+      0.027058063074946404,
+      0.037225231528282166,
+      0.010740206576883793
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:hindlimb-nerves",
+   "name": "Lumbosacral plexus, sciatic and femoral nerves",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e9d98f",
+   "description": "Simulated. Roots joining a plexus at the hip; the sciatic nerve divides above the knee, and the femoral nerve runs in front of the thigh. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:hindlimb-nerves",
+   "geometry": {
+    "vertices": 3394,
+    "triangles": 6724,
+    "boundsMeters": [
+     [
+      0.007344493642449379,
+      0.06567859649658203,
+      -0.0034348091576248407
+     ],
+     [
+      0.028411535546183586,
+      0.08155867457389832,
+      0.012838090769946575
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:vagus-phrenic",
+   "name": "Vagus and phrenic nerves",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e9d98f",
+   "description": "Simulated. The vagus beside the carotid artery and oesophagus to the stomach, and the phrenic nerve to the diaphragm. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:vagus-phrenic",
+   "geometry": {
+    "vertices": 1468,
+    "triangles": 2920,
+    "boundsMeters": [
+     [
+      0.013668429106473923,
+      0.025411054491996765,
+      0.005948634352535009
+     ],
+     [
+      0.022534454241394997,
+      0.0505213737487793,
+      0.013245854526758194
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:cranial-nerves",
+   "name": "Optic, trigeminal and facial nerves",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e9d98f",
+   "description": "Simulated. Selected cranial nerves: the optic nerves to their chiasm, the three trigeminal divisions and the facial nerve. Others are not drawn. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:cranial-nerves",
+   "geometry": {
+    "vertices": 2148,
+    "triangles": 4244,
+    "boundsMeters": [
+     [
+      0.01324349083006382,
+      0.0072717973962426186,
+      0.007288080640137196
+     ],
+     [
+      0.023117711767554283,
+      0.024541258811950684,
+      0.013932466506958008
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:trachea",
+   "name": "Larynx, trachea and bronchi",
+   "systems": [
+    "respiratory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#dfe6e0",
+   "description": "Simulated. A ringed trachea ventral to the oesophagus, dividing into main and lobar bronchi towards the source lung label. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:trachea",
+   "geometry": {
+    "vertices": 1885,
+    "triangles": 3648,
+    "boundsMeters": [
+     [
+      0.013451139442622662,
+      0.022565698251128197,
+      0.0061792368069291115
+     ],
+     [
+      0.022403830662369728,
+      0.04336193948984146,
+      0.012192645110189915
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:diaphragm",
+   "name": "Diaphragm",
+   "systems": [
+    "respiratory",
+    "muscular"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#b0605a",
+   "description": "Simulated. A thin sheet midway between the source thoracic and abdominal labels, so its position follows this specimen while its thickness is an estimate. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:diaphragm",
+   "geometry": {
+    "vertices": 13554,
+    "triangles": 27500,
+    "boundsMeters": [
+     [
+      0.006782041862607002,
+      0.04409727081656456,
+      0.004962300416082144
+     ],
+     [
+      0.03040149249136448,
+      0.05590112879872322,
+      0.01940467767417431
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:oesophagus",
+   "name": "Oesophagus",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#d59a8a",
+   "description": "Simulated. Dorsal to the trachea and through the diaphragm to the stomach. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:oesophagus",
+   "geometry": {
+    "vertices": 942,
+    "triangles": 1880,
+    "boundsMeters": [
+     [
+      0.01815476082265377,
+      0.024422649294137955,
+      0.007471568416804075
+     ],
+     [
+      0.02079649828374386,
+      0.05093442648649216,
+      0.014013634994626045
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:tongue",
+   "name": "Tongue",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#d98a84",
+   "description": "Simulated. In the floor of the mouth, after Cook figure 57. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:tongue",
+   "geometry": {
+    "vertices": 753,
+    "triangles": 1404,
+    "boundsMeters": [
+     [
+      0.0178071316331625,
+      0.006870273035019636,
+      0.00627214414998889
+     ],
+     [
+      0.019792867824435234,
+      0.019505174830555916,
+      0.009408660233020782
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:salivary-glands",
+   "name": "Salivary glands",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#dcb7a0",
+   "description": "Simulated. The three pairs named by Hummel et al.: parotid, submandibular and sublingual. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:salivary-glands",
+   "geometry": {
+    "vertices": 1482,
+    "triangles": 2376,
+    "boundsMeters": [
+     [
+      0.011021804995834827,
+      0.023433391004800797,
+      0.003301484975963831
+     ],
+     [
+      0.0252450630068779,
+      0.032565176486968994,
+      0.009838697500526905
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:gall-bladder",
+   "name": "Gall bladder",
+   "systems": [
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#8fa35a",
+   "description": "Simulated. On the ventral side of the source liver label, after Cook figure 61. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:gall-bladder",
+   "geometry": {
+    "vertices": 112,
+    "triangles": 220,
+    "boundsMeters": [
+     [
+      0.016504276543855667,
+      0.04911913722753525,
+      0.0029255393892526627
+     ],
+     [
+      0.01773153990507126,
+      0.05159773677587509,
+      0.004505875054746866
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:ureters",
+   "name": "Ureters and urethra",
+   "systems": [
+    "urinary"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e1c4a3",
+   "description": "Simulated. From the source kidney labels to the source bladder label, and on to the penis. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:ureters",
+   "geometry": {
+    "vertices": 816,
+    "triangles": 1620,
+    "boundsMeters": [
+     [
+      0.012665902264416218,
+      0.05977540463209152,
+      -0.005244615022093058
+     ],
+     [
+      0.021609343588352203,
+      0.07850655168294907,
+      0.014584364369511604
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:male-ducts",
+   "name": "Epididymides and vasa deferentia",
+   "systems": [
+    "reproductive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e6d6c9",
+   "description": "Simulated. On each source testis label, and from there to the urethra, after Cook figures 62 to 66. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:male-ducts",
+   "geometry": {
+    "vertices": 1052,
+    "triangles": 2088,
+    "boundsMeters": [
+     [
+      0.012017503380775452,
+      0.06747608631849289,
+      -0.003640397684648633
+     ],
+     [
+      0.024625780060887337,
+      0.07707010209560394,
+      0.005520839709788561
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:seminal-vesicles",
+   "name": "Seminal vesicles and coagulating glands",
+   "systems": [
+    "reproductive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e8d9b5",
+   "description": "Simulated. Curved paired glands above the bladder, after Cook figures 54 and 67. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:seminal-vesicles",
+   "geometry": {
+    "vertices": 1096,
+    "triangles": 2176,
+    "boundsMeters": [
+     [
+      0.01492712739855051,
+      0.06473483890295029,
+      0.0022155516780912876
+     ],
+     [
+      0.02126934565603733,
+      0.07013444602489471,
+      0.011150110512971878
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:prostate",
+   "name": "Prostate",
+   "systems": [
+    "reproductive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#dcc2a8",
+   "description": "Simulated. At the neck of the source bladder label, after Cook figure 67. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:prostate",
+   "geometry": {
+    "vertices": 494,
+    "triangles": 792,
+    "boundsMeters": [
+     [
+      0.01590000092983246,
+      0.06829077750444412,
+      0.0004295486432965845
+     ],
+     [
+      0.01889999955892563,
+      0.0711371898651123,
+      0.003575419308617711
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:preputial-glands",
+   "name": "Preputial glands",
+   "systems": [
+    "reproductive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e6d3b0",
+   "description": "Simulated. Paired flat glands beneath the skin before the penis, after Cook figure 54. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:preputial-glands",
+   "geometry": {
+    "vertices": 494,
+    "triangles": 792,
+    "boundsMeters": [
+     [
+      0.015599999576807022,
+      0.07571736723184586,
+      -0.005579221528023481
+     ],
+     [
+      0.020185496658086777,
+      0.0784934014081955,
+      -0.00394732691347599
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:penis",
+   "name": "Penis",
+   "systems": [
+    "reproductive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e0a99c",
+   "description": "Simulated. After Cook figures 9 and 54. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:penis",
+   "geometry": {
+    "vertices": 232,
+    "triangles": 460,
+    "boundsMeters": [
+     [
+      0.01725035160779953,
+      0.0741983950138092,
+      -0.0064610810950398445
+     ],
+     [
+      0.018349647521972656,
+      0.08032606542110443,
+      -0.0025136847980320454
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:thyroid",
+   "name": "Thyroid",
+   "systems": [
+    "endocrine"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#b0564f",
+   "description": "Simulated. Two lobes beside the trachea joined by an isthmus, after Cook figures 46 and 47. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:thyroid",
+   "geometry": {
+    "vertices": 550,
+    "triangles": 900,
+    "boundsMeters": [
+     [
+      0.01730000041425228,
+      0.026705872267484665,
+      0.005935004912316799
+     ],
+     [
+      0.020600000396370888,
+      0.02996104769408703,
+      0.007572622038424015
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:thymus",
+   "name": "Thymus",
+   "systems": [
+    "endocrine",
+    "immune",
+    "lymphatic"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#ece0cf",
+   "description": "Simulated. Two lobes over the base of the source heart label, after Cook figures 46 and 92. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:thymus",
+   "geometry": {
+    "vertices": 494,
+    "triangles": 792,
+    "boundsMeters": [
+     [
+      0.015300000086426735,
+      0.031903352588415146,
+      0.004800000227987766
+     ],
+     [
+      0.02250000089406967,
+      0.03706050291657448,
+      0.007600000128149986
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:pituitary",
+   "name": "Pituitary",
+   "systems": [
+    "endocrine"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#d8b18d",
+   "description": "Simulated. Under the source brain label. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+   ],
+   "meshNode": "living:pituitary",
+   "geometry": {
+    "vertices": 247,
+    "triangles": 396,
+    "boundsMeters": [
+     [
+      0.018300000578165054,
+      0.020936965942382812,
+      0.010505755431950092
+     ],
+     [
+      0.019500000402331352,
+      0.021787544712424278,
+      0.011120913550257683
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lymph-nodes",
+   "name": "Lymph nodes",
+   "systems": [
+    "lymphatic",
+    "immune"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#8d6a8c",
+   "description": "Simulated. Bodies at the sites listed by Hummel et al.: cervical, axillary, brachial, inguinal, sciatic, mediastinal, pyloric, renal, lumbar, mesenteric and caudal. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT.",
+   "basis": [
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:lymph-nodes",
+   "geometry": {
+    "vertices": 2691,
+    "triangles": 3864,
+    "boundsMeters": [
+     [
+      0.01009287778288126,
+      0.02435000240802765,
+      0.0003398471453692764
+     ],
+     [
+      0.02762172557413578,
+      0.07563191652297974,
+      0.01403326541185379
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:eyes",
+   "name": "Eyes",
+   "systems": [
+    "sensory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#17110f",
+   "exterior": true,
+   "description": "Simulated. Dark globes placed at the source eye label, sized to bulge through the eyelids as in the living animal. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:eyes",
+   "geometry": {
+    "vertices": 1102,
+    "triangles": 1904,
+    "boundsMeters": [
+     [
+      0.012721732258796692,
+      0.013894264586269855,
+      0.012221657671034336
+     ],
+     [
+      0.026005007326602936,
+      0.017224960029125214,
+      0.01597677357494831
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:pinnae",
+   "name": "Ear pinnae",
+   "systems": [
+    "integumentary",
+    "sensory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e7a99b",
+   "exterior": true,
+   "description": "Simulated. Thin cupped pinnae placed at the ear canals, shaped after the plates of Cook. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:pinnae",
+   "geometry": {
+    "vertices": 11538,
+    "triangles": 23280,
+    "boundsMeters": [
+     [
+      0.00656175147742033,
+      0.024186501279473305,
+      0.01413256861269474
+     ],
+     [
+      0.031819187104701996,
+      0.029305268079042435,
+      0.02393498830497265
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:nose",
+   "name": "Nose pad",
+   "systems": [
+    "integumentary",
+    "respiratory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#d98a84",
+   "exterior": true,
+   "description": "Simulated. The bare rhinarium at the tip of the snout. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:nose",
+   "geometry": {
+    "vertices": 881,
+    "triangles": 1456,
+    "boundsMeters": [
+     [
+      0.018133487552404404,
+      0.002928442321717739,
+      0.00833040289580822
+     ],
+     [
+      0.020173488184809685,
+      0.004717178177088499,
+      0.009842303581535816
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:vibrissae",
+   "name": "Vibrissae",
+   "systems": [
+    "integumentary",
+    "sensory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#6a5a4c",
+   "exterior": true,
+   "description": "Simulated. The mystacial, superciliary, genal, submental and interramal whisker groups named by Cook, with counts and lengths chosen by eye. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:vibrissae",
+   "geometry": {
+    "vertices": 5092,
+    "triangles": 9880,
+    "boundsMeters": [
+     [
+      -0.0009105746285058558,
+      0.004864847287535667,
+      -0.0026783340144902468
+     ],
+     [
+      0.039532069116830826,
+      0.02819928340613842,
+      0.020724697038531303
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:forepaws",
+   "name": "Fore paws",
+   "systems": [
+    "integumentary"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#eab2a4",
+   "exterior": true,
+   "description": "Simulated. Four digits and a pollex, with walking pads, after Cook. Real digit bones from the CT lie inside. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:forepaws",
+   "geometry": {
+    "vertices": 13424,
+    "triangles": 26840,
+    "boundsMeters": [
+     [
+      0.008959743194282055,
+      0.020128954201936722,
+      -0.004666407126933336
+     ],
+     [
+      0.028285708278417587,
+      0.03239912539720535,
+      -0.0025245915167033672
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:hindpaws",
+   "name": "Hind paws",
+   "systems": [
+    "integumentary"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#eab2a4",
+   "exterior": true,
+   "description": "Simulated. Five digits with walking pads, after Cook, because the source images end at the hind feet. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:hindpaws",
+   "geometry": {
+    "vertices": 18480,
+    "triangles": 36936,
+    "boundsMeters": [
+     [
+      0.0045804656110703945,
+      0.0697849690914154,
+      -0.005372150801122189
+     ],
+     [
+      0.031708549708127975,
+      0.08388495445251465,
+      -0.00015437178080901504
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:claws",
+   "name": "Claws",
+   "systems": [
+    "integumentary"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#d9cdb9",
+   "exterior": true,
+   "description": "Simulated. Claws on the digits and a flattened nail on the pollex, after Cook. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:claws",
+   "geometry": {
+    "vertices": 1566,
+    "triangles": 2928,
+    "boundsMeters": [
+     [
+      0.004265897907316685,
+      0.019290165975689888,
+      -0.005074560176581144
+     ],
+     [
+      0.032022081315517426,
+      0.07327573746442795,
+      -0.0035835953895002604
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:tail",
+   "name": "Tail",
+   "systems": [
+    "integumentary"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e3a896",
+   "exterior": true,
+   "description": "Simulated. A ringed tail continuing the short length of tail in the source images, with a length chosen to match the body as drawn by Cook. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:tail",
+   "geometry": {
+    "vertices": 7016,
+    "triangles": 14028,
+    "boundsMeters": [
+     [
+      0.016612863168120384,
+      0.08016259223222733,
+      -0.00555847492069006
+     ],
+     [
+      0.05239887535572052,
+      0.14477753639221191,
+      0.00411363085731864
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:tail-vertebrae",
+   "name": "Caudal vertebrae beyond the scan",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "exterior": false,
+   "description": "Simulated. Twenty shafts along the simulated tail, which with the vertebrae in the CT approach the 27 to 30 caudal vertebrae counted by Hummel et al. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:tail-vertebrae",
+   "geometry": {
+    "vertices": 840,
+    "triangles": 1600,
+    "boundsMeters": [
+     [
+      0.017255358397960663,
+      0.08702882379293442,
+      -0.005096434149891138
+     ],
+     [
+      0.05186375230550766,
+      0.14433400332927704,
+      -0.0005691248225048184
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:foot-bones",
+   "name": "Hind foot bones beyond the scan",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e9e2d2",
+   "exterior": false,
+   "description": "Simulated. Tarsals, metatarsals and phalanges by the counts in Hummel et al., drawn as simple shafts, because the source images end at the hind feet. Not measured from this specimen.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
+   ],
+   "meshNode": "living:foot-bones",
+   "geometry": {
+    "vertices": 1466,
+    "triangles": 2128,
+    "boundsMeters": [
+     [
+      0.004626567009836435,
+      0.06976999342441559,
+      -0.004547338932752609
+     ],
+     [
+      0.031665414571762085,
+      0.0832241103053093,
+      -0.0033900002017617226
+     ]
+    ]
+   }
+  }
+ ],
+ "statistics": {
+  "structures": 68,
+  "triangles": 1915898,
+  "glbBytes": 47450716,
+  "glbSha256": "a5af057553c122c3e0a93a5e45219a166a7b433766104183064b91e4beb975c9",
+  "sourceVoxelSpacingMm": [
+   0.1,
+   0.1,
+   0.1
+  ]
+ },
+ "limitations": [
+  "This is a constructed model and not a measurement of a living mouse. Each structure states whether it is source-labelled, traced from the source images or simulated.",
+  "The standing posture is simulated: the specimen was scanned spread flat, postmortem and frozen, and its limbs were rotated about their joints to an estimated stance.",
+  "Simulated structures follow published anatomical descriptions and are not measured from this specimen or any other.",
+  "Anatomical orientation, laterality and physical calibration remain unverified, and nothing here has had independent anatomical review."
+ ],
+ "specimen": {
+  "scientificName": "Mus musculus",
+  "taxonomyId": "NCBITaxon:10090",
+  "sex": "male",
+  "mass": {
+   "value": 28,
+   "unit": "g"
+  },
+  "scope": "one specimen with simulated additions",
+  "count": 1,
+  "description": "Measured layers from one 28 g normal nude male mouse, with a simulated posture and simulated layers. The coat is simulated, because the specimen is hairless.",
+  "sourceReference": "https://doi.org/10.1088/0031-9155/52/3/003"
+ }
+}

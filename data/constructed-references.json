@@ -1,0 +1,52 @@
+[
+  {
+    "id": "mousebio-living-v1",
+    "title": "Living mouse: measured and simulated",
+    "manifestUrl": "/atlas-living/atlas.json",
+    "coordinateFrameId": "digimouse-living-stance-v1",
+    "assetSha256": "a5af057553c122c3e0a93a5e45219a166a7b433766104183064b91e4beb975c9",
+    "coverage": {
+      "regionCount": 68,
+      "systems": [
+        "arterial-venous",
+        "cardiovascular",
+        "digestive",
+        "endocrine",
+        "immune",
+        "integumentary",
+        "lymphatic",
+        "muscular",
+        "nervous",
+        "reproductive",
+        "respiratory",
+        "sensory",
+        "skeletal",
+        "urinary"
+      ],
+      "description": "One male Digimouse specimen in a simulated posture. Every structure declares whether it is source-labelled, traced from the source images or simulated."
+    },
+    "processingResolution": {
+      "sourceVoxelSpacingMm": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "method": "Surfaces from source labels and images, moved to a simulated standing posture, with simulated layers added",
+      "limitations": [
+        "This is a constructed model, not a measurement of a living mouse.",
+        "The posture, coat and all structures marked simulated are estimates and are not measured."
+      ]
+    },
+    "licenses": [
+      {
+        "identifier": "CC-BY-SA-4.0",
+        "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+      }
+    ]
+  }
+]

@@ -42,6 +42,7 @@ const neuronText = await readFile(new URL('../public/atlas-neuron/atlas.json', i
 const nerveText = await readFile(new URL('../public/atlas-nerve/atlas.json', import.meta.url), 'utf8');
 const vascularText = await readFile(new URL('../public/atlas-vascular/atlas.json', import.meta.url), 'utf8');
 const microctText = await readFile(new URL('../public/atlas-microct/atlas.json', import.meta.url), 'utf8');
+const livingText = await readFile(new URL('../public/atlas-living/atlas.json', import.meta.url), 'utf8');
 const nervePaths = await readFile(new URL('../public/atlas-nerve/mousemapper-patch0-lines.json', import.meta.url));
 const neuronSamples = await readFile(new URL('../public/atlas-neuron/nmo130632-standardized.swc.txt', import.meta.url));
 
@@ -58,18 +59,20 @@ let downloads: { name: string; url: string }[] = [];
 let expectedRequests = ['/atlas/atlas.json'];
 
 beforeEach(() => {
+  window.history.replaceState(null, '', '/?reference=digimouse-tessellated-v1');
   requests = []; unexpectedErrors = []; expectedWebGLFailures = 0;
   exportedBlobs = []; downloads = [];
   expectedRequests = ['/atlas/atlas.json'];
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = String(input);
     requests.push(url);
-    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json', '/atlas-neuron/nmo130632-standardized.swc.txt', '/atlas-nerve/atlas.json', '/atlas-vascular/atlas.json', '/atlas-nerve/mousemapper-patch0-lines.json', '/atlas-microct/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json', '/atlas-neuron/nmo130632-standardized.swc.txt', '/atlas-nerve/atlas.json', '/atlas-vascular/atlas.json', '/atlas-nerve/mousemapper-patch0-lines.json', '/atlas-microct/atlas.json', '/atlas-living/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
     if (url === '/atlas-nerve/mousemapper-patch0-lines.json') return new Response(nervePaths);
     if (url === '/atlas-neuron/nmo130632-standardized.swc.txt') return new Response(neuronSamples);
     if (url === '/atlas-vascular/atlas.json') return new Response(vascularText);
     if (url === '/atlas-nerve/atlas.json') return new Response(nerveText);
     if (url === '/atlas-microct/atlas.json') return new Response(microctText);
+    if (url === '/atlas-living/atlas.json') return new Response(livingText);
     return new Response(url === '/atlas/atlas.json' ? atlasText : url === '/atlas-volume/atlas.json' ? volumeText : url === '/atlas-hindlimb/atlas.json' ? hindlimbText : url === '/atlas-neuron/atlas.json' ? neuronText : ema147Text, { status: 200, headers: { 'Content-Type': 'application/json' } });
   }) as typeof fetch;
   console.error = (...args: unknown[]) => {
@@ -120,6 +123,30 @@ async function openApp() {
   assert.ok(view.container.querySelector('.workspace-footer .status-failed'));
   return view;
 }
+
+test('the living mouse opens first and marks the evidence of every structure', async () => {
+  window.history.replaceState(null, '', '/');
+  expectedRequests = ['/atlas-living/atlas.json'];
+  const view = render(createElement(App));
+  await view.findByRole('heading', { name: 'Explore the mouse' }, { timeout: 10_000 });
+  await view.findByText(/WebGL could not start/, undefined, { timeout: 10_000 });
+  assert.equal(requests[0], '/atlas-living/atlas.json');
+  assert.ok(view.getAllByText('Simulated').length > 10);
+  assert.ok(view.getAllByText('Traced').length >= 5);
+  assert.ok(view.getAllByText('Source label').length > 10);
+  assert.ok(view.getByText(/CONSTRUCTED MODEL: POSTURE, COAT AND STRUCTURES MARKED SIMULATED ARE NOT MEASURED/));
+  assert.equal((view.getByRole('combobox', { name: 'Simulated coat' }) as HTMLSelectElement).value, 'agouti');
+  assert.ok(view.getByText(/Constructed model/));
+  assert.ok(view.getAllByText(/\d+ structures/).length >= 1);
+  showTab(view, 'Layers');
+  const simulated = view.getByRole('checkbox', { name: 'Simulated structures' }) as HTMLInputElement;
+  assert.equal(simulated.checked, true);
+  fireEvent.click(simulated);
+  assert.equal(simulated.checked, false);
+  const saved = await savedView(view);
+  assert.ok(saved.hidden.includes('living:aorta'));
+  assert.ok(!saved.hidden.includes('living:heart'));
+});
 
 test('specimen and citation UI uses declared metadata rather than a hardcoded Digimouse description', async () => {
   // Metadata-only software fixture. This does not represent a female geometry import.

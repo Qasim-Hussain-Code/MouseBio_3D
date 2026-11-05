@@ -66,7 +66,19 @@ export interface Structure {
   parentId?: string;
   sourceReference?: string;
   limitations?: string[];
+  /** How this geometry was obtained. Absent means source-labelled, as in the references that predate this field. */
+  evidence?: StructureEvidence;
+  /** Published works that the geometry follows. */
+  basis?: string[];
+  /** Lies outside the body surface, so an opaque skin does not cover it. */
+  exterior?: boolean;
 }
+
+/**
+ * source: labelled by the source authors. traced: found in the source images by this
+ * project and not reviewed. simulated: constructed from published descriptions, not measured.
+ */
+export type StructureEvidence = 'source' | 'traced' | 'simulated';
 
 /** Native orientation can remain unresolved; a display rotation is not anatomical validation. */
 export interface CoordinateFrame {

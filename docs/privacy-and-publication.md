@@ -2,7 +2,7 @@
 
 MouseBio_3D keeps imported research observations in the user's browser memory. The import and comparison workflows do not upload observations, call an analysis service, add analytics or write research datasets to browser storage. Each reference retains its own observations while switching references. Replacing or clearing data affects the active reference; reloading clears all reference datasets. Dataset and view downloads occur only through the corresponding user action.
 
-The repository and its releases must remain private until Qasim Hussain personally decides to make them public. Preparing artifacts or passing content checks does not authorize a visibility change. Local AGENTS.md instructions are ignored and excluded from release archives.
+The repository and its releases are public by the decision of Qasim Hussain. Each publication is preceded by a check that nothing private or personal is included, covering the published tree, Git history, tags, release archives and repository metadata. Preparing artifacts or passing content checks does not authorize a visibility change. Local AGENTS.md instructions are ignored and excluded from release archives.
 
 The application serves its code and anatomical assets from the local server. Opening a scientific reference link is a separate visit to that source; imported measurements are not attached to the link. Development commands can download software dependencies and explicitly selected public scientific resources. That activity is distinct from transmitting research observations.
 

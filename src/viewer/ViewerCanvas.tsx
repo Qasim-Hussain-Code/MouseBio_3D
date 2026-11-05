@@ -8,6 +8,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { surfaceShadingOf, SURFACE_PRESENTATION, SKIN_PRESENTATION } from './surface-shading';
 import { createContactShadow, type ContactShadow } from './contact-shadow';
+import { createFur, type CoatId, type FurLayer } from './fur';
+import { labelWithEvidence } from '../domain/evidence';
 import { createSectionImagePlane, cutFaceView, loadSectionVolume, type SectionImagePlane } from './section-image';
 import { sectionImagesApplyTo, type SectionImageChoice, type SectionImageId } from '../domain/section-images';
 import { bodySurfaceIdFor, displayPostureFor } from '../domain/display-pose';
@@ -53,6 +55,8 @@ export type ViewerSettings = {
   allLabels?: boolean;
   /** Source image shown on the cut face of a virtual section, where the reference has one. Defaults to none. */
   sectionImage?: SectionImageChoice;
+  /** Simulated coat on a body surface that carries hair directions. Defaults to agouti. */
+  coat?: CoatId;
 };
 export type SectionImageStatus = { status: 'idle' | 'loading' | 'ready' | 'failed'; id?: SectionImageId };
 export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean; viewCutFace: (axis: 'x' | 'y' | 'z') => void };
@@ -182,6 +186,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let lastLabel = '';
     let lastLabelSet = '', lastLabelSetAt = 0;
     let shadow: ContactShadow | null = null, shadowDirty = true;
+    let fur: FurLayer | null = null;
     let sectionRoot: THREE.Object3D | null = null, sectionPlane: SectionImagePlane | null = null;
     let sectionShown: SectionImageId | null = null, sectionFailed: SectionImageId | null = null;
     let sectionRequest: { id: SectionImageId; abort: AbortController } | null = null;
@@ -243,7 +248,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         const structure = atlas.structures.find((item) => item.id === id)!;
         // Larger displayed regions are placed first; the selection always comes first.
         const extent = mesh.geometry.boundingSphere?.radius ?? 0;
-        candidates.push({ id, name: structure.name, x: (point.x + 1) / 2 * width, y: (-point.y + 1) / 2 * height, depth: point.z, priority: selected ? Number.MAX_SAFE_INTEGER : extent * mesh.scale.x });
+        candidates.push({ id, name: labelWithEvidence(structure), x: (point.x + 1) / 2 * width, y: (-point.y + 1) / 2 * height, depth: point.z, priority: selected ? Number.MAX_SAFE_INTEGER : extent * mesh.scale.x });
       }
       const labels = layoutLabels(candidates, { width, height });
       const signature = `${width}x${height}|${labels.map((item) => `${item.id}:${item.left},${item.top}`).join('|')}`;
@@ -298,7 +303,14 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       }
       // Covered regions leave the rendered and picked layer only, so that overlays and Fit visible still treat them as shown.
       const skinMesh = skinId ? meshes.get(skinId) : undefined;
-      for (const [id, mesh] of meshes) mesh.layers.set(coveredBySkin(id, skinId, !!skinMesh?.visible, skinId ? current.opacity[skinId] ?? defaultOpacity(skinId) : 0, current.clipAxis) ? 1 : 0);
+      const skinOpacity = skinId ? current.opacity[skinId] ?? defaultOpacity(skinId) : 0;
+      for (const [id, mesh] of meshes) mesh.layers.set(coveredBySkin(id, skinId, !!skinMesh?.visible, skinOpacity, current.clipAxis, atlas.structures.find((item) => item.id === id)?.exterior) ? 1 : 0);
+      if (fur) {
+        const coat = current.coat ?? 'agouti';
+        fur.mesh.visible = coat !== 'none' && !!skinMesh?.visible && skinOpacity >= OPAQUE_SKIN;
+        if (coat !== 'none') fur.setCoat(coat);
+        fur.setClipping(current.clipAxis === 'off' ? [] : [clip]);
+      }
       if (current.clipAxis !== 'off') clip.copy(createDisplayClipPlane(current.clipAxis, current.clipPosition, radius));
       applySurfaceDisplay();
       syncSectionImage(current);
@@ -344,8 +356,10 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       controls.target.set(0, 0, 0);
       if (posture) {
         // A raised lateral view with the inferred dorsal side up.
+        const bodyMesh = posture.frameOnBody && skinId ? meshes.get(skinId) : undefined;
+        if (bodyMesh) new THREE.Box3().setFromObject(bodyMesh).getCenter(controls.target);
         camera.up.set(...posture.up);
-        camera.position.set(...posture.view).multiplyScalar(radius * posture.distance);
+        camera.position.set(...posture.view).multiplyScalar(radius * posture.distance).add(controls.target);
       } else {
         camera.up.set(0, 1, 0);
         // A raised three-quarter display pose; the display axes carry no anatomical direction.
@@ -414,8 +428,12 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       },
       view(axis) {
         controls.target.set(0, 0, 0);
-        camera.position.set(axis === 'x' ? radius * 3.3 : 0, axis === 'y' ? radius * 3.3 : 0, axis === 'z' ? radius * 3.3 : 0);
-        camera.up.set(0, axis === 'y' ? 0 : 1, axis === 'y' ? -1 : 0);
+        const framedBody = posture?.frameOnBody && skinId ? meshes.get(skinId) : undefined;
+        if (framedBody) new THREE.Box3().setFromObject(framedBody).getCenter(controls.target);
+        const reach = framedBody ? radius * 1.9 : radius * 3.3;
+        camera.position.set(axis === 'x' ? reach : 0, axis === 'y' ? reach : 0, axis === 'z' ? reach : 0).add(controls.target);
+        if (framedBody && axis !== 'z') camera.up.set(0, 0, 1);
+        else camera.up.set(0, axis === 'y' ? 0 : 1, axis === 'y' ? -1 : 0);
         controls.update();
         dirty = true;
       },
@@ -475,6 +493,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       controls.minDistance = radius * 0.07;
       controls.maxDistance = radius * 12;
       if (posture) { shadow = createContactShadow(bounds, new THREE.Vector3(...posture.up)); if (shadow) scene.add(shadow.group); }
+      const skinForCoat = skinId ? meshes.get(skinId) : undefined;
+      if (posture && skinForCoat instanceof THREE.Mesh) fur = createFur(skinForCoat, new THREE.Vector3(...posture.up));
       display.visible = true;
       loaded = true;
       if (latest.current.cameraPose) setPose(latest.current.cameraPose);
@@ -587,9 +607,12 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       if (dirty && !document.hidden) {
         if (shadow && shadowDirty) {
           const sectionVisible = sectionPlane?.mesh.visible ?? false;
+          const coatVisible = fur?.mesh.visible ?? false;
           if (sectionPlane) sectionPlane.mesh.visible = false;
+          if (fur) fur.mesh.visible = false;
           shadow.render(renderer, scene, current.clipAxis === 'off' ? [] : [clip]);
           if (sectionPlane) sectionPlane.mesh.visible = sectionVisible;
+          if (fur) fur.mesh.visible = coatVisible;
           shadowDirty = false;
         }
         renderer.render(scene, camera);
@@ -600,7 +623,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
           const anchor = regionLabelCenter(selected);
           if (!anchor) { setLabel(null); lastLabel = ""; return; }
           const point = anchor.project(camera);
-          const projected = { x: (point.x + 1) / 2 * element.clientWidth, y: (-point.y + 1) / 2 * element.clientHeight, name: atlas.structures.find((item) => item.id === current.selected)!.name };
+          const projected = { x: (point.x + 1) / 2 * element.clientWidth, y: (-point.y + 1) / 2 * element.clientHeight, name: labelWithEvidence(atlas.structures.find((item) => item.id === current.selected)!) };
           const signature = `${Math.round(projected.x)},${Math.round(projected.y)},${projected.name}`;
           if (signature !== lastLabel) { setLabel(point.z < 1 ? projected : null); lastLabel = signature; }
         } else if (lastLabel) { setLabel(null); lastLabel = ''; }

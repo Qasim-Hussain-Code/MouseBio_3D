@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "reviewedOn": "2026-10-25",
-  "updatedOn": "2026-10-30",
+  "updatedOn": "2026-11-06",
   "notes": "Resource evaluation is distinct from imported asset provenance. Null denotes unknown or not applicable, as explained by each record. Dataset-specific licenses take precedence over general website descriptions.",
   "resources": [
     {
@@ -1208,6 +1208,61 @@
         "Optional balanced-transition substitution is computationally inferred and lacks independent physiological validation.",
         "No contraction mechanics, blood flow, nerve propagation, spatial cell anatomy or accepted cross-reference registration."
       ]
+    },
+    {
+      "id": "cook1965-anatomy-laboratory-mouse",
+      "title": "The Anatomy of the Laboratory Mouse",
+      "landingPage": "https://www.informatics.jax.org/cookbook/",
+      "publication": {
+        "year": 1965,
+        "authors": [
+          "Margaret J. Cook"
+        ],
+        "publisher": "Academic Press"
+      },
+      "license": {
+        "identifier": "All rights reserved",
+        "verifiedAt": "https://www.informatics.jax.org/cookbook/index.shtml",
+        "notes": "Copyright 1965, web edition with permission from Elsevier. Read as a description of anatomy; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_simulated_structures_nothing_redistributed"
+    },
+    {
+      "id": "hummel1966-biology-laboratory-mouse-anatomy",
+      "title": "Anatomy, in Biology of the Laboratory Mouse, second edition",
+      "landingPage": "https://www.informatics.jax.org/greenbook/",
+      "publication": {
+        "year": 1966,
+        "authors": [
+          "Katharine P. Hummel",
+          "Flavia L. Richardson",
+          "Elizabeth Fekete"
+        ],
+        "editor": "Earl L. Green"
+      },
+      "license": {
+        "identifier": "All rights reserved",
+        "verifiedAt": "https://www.informatics.jax.org/greenbook/",
+        "notes": "Copyright The Jackson Laboratory. Read as a description of anatomy; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_simulated_structures_nothing_redistributed"
+    },
+    {
+      "id": "greene1935-anatomy-of-the-rat",
+      "title": "Anatomy of the Rat",
+      "landingPage": "https://www.pennpress.org/9781422377468/anatomy-of-the-rat",
+      "publication": {
+        "year": 1935,
+        "authors": [
+          "Eunice Chace Greene"
+        ],
+        "series": "Transactions of the American Philosophical Society, New Series, vol. 27"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a description of rat anatomy for nerves; no figure or text is redistributed. It describes the rat, not the mouse."
+      },
+      "decision": "descriptive_basis_for_simulated_nerves_nothing_redistributed"
     }
   ]
 }

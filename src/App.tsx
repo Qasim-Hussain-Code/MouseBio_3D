@@ -1,10 +1,13 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { declaresEvidence, EVIDENCE_NOTES, evidenceGroups, evidenceOf, toggledEvidence } from './domain/evidence';
+import { EvidenceChip, EvidenceFilter } from './components/EvidenceControls';
 import {
   SYSTEMS, physiologyProcessesForAtlas, MAX_VIEW_STATE_BYTES, compareConditions, exportExperimentalCsv, exportExperimentalJson, exportViewState, parseViewState, parseExperimentalCsv,
   parseExperimentalJson, summarizeMeasurements, type Atlas, type DatasetMetadata,
   type ExperimentalMeasurement, type ExplorationMode, type ImportResult, type MeasurementSummary,
 } from './domain';
 import type { CameraPose, SectionImageStatus, ViewerHandle, ViewerSettings } from './viewer/ViewerCanvas';
+import type { CoatId } from './viewer/fur';
 import { sectionImagesApplyTo, type SectionImageChoice } from './domain/section-images';
 import { measurementColors } from './domain/visualization';
 import { DatasetDetails } from './components/DatasetDetails';
@@ -16,6 +19,7 @@ import { buildReferenceCatalog, getReference, validateReferenceAtlas, createExpe
 import { defaultStructureOpacity, initialReferenceSelection, OPAQUE_SKIN, referenceOpacity, seeThroughSkinOpacity } from './domain/reference-display';
 import { bodySurfaceIdFor } from './domain/display-pose';
 import referenceCatalogData from '../data/anatomy-references.json';
+import constructedCatalogData from '../data/constructed-references.json';
 import detailIndexData from '../public/atlas-volume/detail-index.json';
 import { buildRegionDetailAssets, type RegionDetailStatus } from './viewer/region-detail-registry';
 import { buildAnatomyGroups, type AnatomyGroup } from './domain/anatomy-groups';
@@ -49,7 +53,8 @@ import { coverageRequests, resolveCoverageTarget, type AnatomyCoverageTopicId, t
 import { smoothingOptionsFor, type SurfaceDisplay } from './domain/display-smoothing';
 import { displayColour, type ColourScheme } from './domain/tissue-palette';
 
-const referenceCatalog = buildReferenceCatalog(referenceCatalogData);
+const referenceCatalog = buildReferenceCatalog([...constructedCatalogData, ...referenceCatalogData]);
+const DEFAULT_REFERENCE_ID = 'mousebio-living-v1';
 
 const ViewerCanvas = lazy(() => import('./viewer/ViewerCanvas').then((module) => ({ default: module.ViewerCanvas })));
 const viewerLoading = <div className="viewer-status" role="status">Loading the 3D renderer</div>;
@@ -115,6 +120,7 @@ export default function App() {
   const [sectionImage,setSectionImage]=useState<SectionImageChoice>('cryosection');
   const [sectionStatus,setSectionStatus]=useState<SectionImageStatus>({status:'idle'});
   const [displayOpen,setDisplayOpen]=useState(false);
+  const [coat,setCoat]=useState<CoatId>('agouti');
   const pendingCut = useRef(false);
   const [navigatorOpen,setNavigatorOpen]=useState(false);
   // A side column on wide screens; below 901 px the inspector is an overlay drawer.
@@ -170,7 +176,9 @@ export default function App() {
   const inspector = useRef<HTMLElement>(null);
   useEffect(() => {
     const abort = new AbortController();
-    const reference = referenceCatalog.catalog[0];
+    // The living mouse opens first. Any reference can be opened directly by its catalog identifier, for example ?reference=digimouse-volume-040-v1.
+    const requested = new URLSearchParams(window.location.search).get('reference') ?? DEFAULT_REFERENCE_ID;
+    const reference = getReference(referenceCatalog.catalog, requested) ?? referenceCatalog.catalog[0];
     if (!referenceCatalog.ok || !reference) { setLoadError('The local reference catalog is invalid.'); return; }
     fetch(reference.manifestUrl, { signal: abort.signal }).then((response) => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -218,6 +226,7 @@ export default function App() {
   const colorA = mode === 'experimental' || mode === 'comparative' ? measurementColors(groupA, min, max) : {};
   const colorB = measurementColors(groupB, min, max);
   const selectedStructure = atlas?.structures.find((structure) => structure.id === selected);
+  const evidenceShown = atlas ? declaresEvidence(atlas) : false;
   const ontologyCandidate = getOntologyCandidate(ontologyCandidates?.candidates ?? [], selected ?? '');
   const availableMotion = physiologyProcessesForAtlas(atlas?.id ?? '');
   const selectedMotion = availableMotion.find((process) => process.requiredStructures.includes(selected ?? ''));
@@ -239,7 +248,7 @@ export default function App() {
     structureId: selected, measurement: first.measurement, unit: first.unit, timePoint: first.timePoint,
     conditionA: activeA, conditionB: activeB,
   }) : null;
-  const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels, sectionImage: mode === 'comparative' ? 'none' : sectionImage };
+  const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels, sectionImage: mode === 'comparative' ? 'none' : sectionImage, coat };
   const toggleHidden = (id: string) => { isolation.current = null; setActiveGroup(''); pendingGroupFocus.current = null; setHidden((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); };
   /** Make opaque skin see-through so that regions inside the body can be seen. Returns whether it changed. */
   const peelSkin = () => {
@@ -530,14 +539,15 @@ export default function App() {
         <label className="search-field"><Icon name="search" size={16}/><input ref={searchInput} type="search" placeholder="Search structures or source IDs" aria-label="Find a structure or ID" value={query} onChange={event=>setQuery(event.target.value)}/><kbd>/</kbd></label>
         <div className="structure-toolbar"><span><span>{visibleCount} visible {visibleCount === 1 ? 'region' : 'regions'}</span> <small>of {atlas.structures.length}</small></span><button className="text-button" onClick={showAll}>Show all</button></div>
         <div className="structure-list">{atlas.structures.filter((structure) => `${structure.name} ${structure.id} ${structure.sourceLabel}`.toLowerCase().includes(query.toLowerCase())).map((structure) => <div key={structure.id} className={`structure-row ${selected === structure.id ? 'selected' : ''} ${hidden.includes(structure.id) ? 'is-hidden' : ''}`}>
-          <button className="structure-name" onClick={() => select(structure.id)} aria-pressed={selected === structure.id}><span className={`structure-dot system-${structure.systems[0]}`} style={{ backgroundColor: displayColour(structure, colourScheme) }} /><span>{structure.name}<small>{structure.id}</small></span></button>
+          <button className="structure-name" onClick={() => select(structure.id)} aria-pressed={selected === structure.id}><span className={`structure-dot system-${structure.systems[0]}`} style={{ backgroundColor: displayColour(structure, colourScheme) }} /><span>{structure.name}<small>{structure.id}</small>{evidenceShown&&<EvidenceChip structure={structure}/>}</span></button>
           <button className="visibility-button" aria-label={`${hidden.includes(structure.id) ? 'Show' : 'Hide'} ${structure.name}`} onClick={() => toggleHidden(structure.id)}><Icon name={hidden.includes(structure.id) ? 'hidden' : 'eye'} size={15} /></button>
         </div>)}
         {!atlas.structures.some(region=>`${region.name} ${region.id} ${region.sourceLabel}`.toLowerCase().includes(query.toLowerCase()))&&<p className="empty-small">No matching source record.</p>}
         </div>
       </div>
       <div id="navigator-systems" role="tabpanel" aria-labelledby="navigator-tab-systems" hidden={navigatorTab!=='systems'} className="navigator-pane">
-        <SystemLayers atlas={atlas} hidden={hidden} opacity={opacity} onToggleSystem={toggleSystem} onIsolateSystem={isolateSystem} onShowAll={showAll}/>
+        {evidenceShown&&<EvidenceFilter groups={evidenceGroups(atlas,hidden)} onToggle={(group)=>setHidden((current)=>toggledEvidence(current,group))}/>}
+        <SystemLayers atlas={atlas} hidden={hidden} opacity={opacity} onToggleSystem={toggleSystem} onIsolateSystem={isolateSystem} onShowAll={showAll} unit={evidenceShown?'structures':'source regions'}/>
         {hasBodyEnvelope&&<button className="secondary-button" onClick={showOrgans} aria-label="Organs visibility preset">Reveal organs</button>}
         {sectionImages&&<button className="secondary-button section-cut-button" onClick={cutSpecimen}>Cut through the specimen</button>}
         {atlas.id==='digimouse-tessellated-v1'&&<button className="secondary-button section-cut-button" disabled={referenceLoading} onClick={()=>{pendingCut.current=true;void switchReference('digimouse-volume-040-v1').then(cutSpecimen);}} title="Opens the registered-volume reference of this specimen, whose grid the source images share">Open specimen photographs</button>}
@@ -576,12 +586,12 @@ export default function App() {
       {rows.length > 0 && metadata.origin === 'synthetic-example' && (mode === 'experimental' || mode === 'comparative') && <p className="synthetic-banner" role="status">Synthetic example data. These values are not experimental observations.</p>}
       {mode === 'comparative' && rows.length > 0 && (conditions.length < 2 || activeA === activeB) && <p className="view-import-error" role="status">Choose two distinct conditions in this measurement series.</p>}
       <div className="viewer-stage"><section className={`viewport ${mode === 'comparative' ? 'comparison-viewport' : ''}`} aria-label="Anatomical viewer">
-        <div className="viewport-top"><span className="viewport-breadcrumb">{referenceSummary.source.displayName.toUpperCase()} <span>/</span> {mode === 'comparative' ? 'SYNCHRONIZED REFERENCE' : referenceSummary.specimen.scope.toUpperCase()}</span><div className="viewport-top-actions"><span className="viewport-chip"><span /> {atlas.structures.length} source regions</span>{skinId&&<label className="skin-control" title="Opacity of the body surface shown as skin; display only">Skin <input type="range" min="0" max="100" aria-label="Skin opacity" value={Math.round(skinOpacity*100)} onChange={event=>{const value=+event.target.value/100;setOpacity(previous=>({...previous,[skinId]:value}));if(value>0)setHidden(previous=>previous.filter(id=>id!==skinId));setActiveGroup('');}}/><span>{Math.round(skinOpacity*100)}%</span></label>}</div></div>
+        <div className="viewport-top"><span className="viewport-breadcrumb">{referenceSummary.source.displayName.toUpperCase()} <span>/</span> {mode === 'comparative' ? 'SYNCHRONIZED REFERENCE' : referenceSummary.specimen.scope.toUpperCase()}</span><div className="viewport-top-actions"><span className="viewport-chip"><span /> {atlas.structures.length} {evidenceShown?'structures':'source regions'}</span>{skinId&&<label className="skin-control" title="Opacity of the body surface shown as skin; display only">Skin <input type="range" min="0" max="100" aria-label="Skin opacity" value={Math.round(skinOpacity*100)} onChange={event=>{const value=+event.target.value/100;setOpacity(previous=>({...previous,[skinId]:value}));if(value>0)setHidden(previous=>previous.filter(id=>id!==skinId));setActiveGroup('');}}/><span>{Math.round(skinOpacity*100)}%</span></label>}</div></div>
         <details className="scene-display" open={displayOpen} onToggle={event=>setDisplayOpen((event.target as HTMLDetailsElement).open)}><summary>Display controls</summary>
           <label><input type="checkbox" checked={focusOnSelection} onChange={event=>setFocusOnSelection(event.target.checked)}/> Focus on selection</label>
           <label><input type="checkbox" checked={autoRotate} disabled={mode==='comparative'} onChange={event=>setAutoRotate(event.target.checked)}/> Auto-rotate</label>
           {smoothing&&<label title={`Taubin smoothing, ${smoothing.iterations} iterations; removes the processing-grid staircase and adds no resolution`}><input type="checkbox" checked={surfaceDisplay==='smoothed'} onChange={event=>setSurfaceDisplay(event.target.checked?'smoothed':'source')}/> Smooth voxel surfaces (display only)</label>}
-          <label>Colours <select aria-label="Display colour scheme" value={colourScheme} onChange={event=>setColourScheme(event.target.value as ColourScheme)}><option value="tissue">Tissue-like display colours</option><option value="source">Manifest colours</option></select></label>
+          <label>Colours <select aria-label="Display colour scheme" value={colourScheme} onChange={event=>setColourScheme(event.target.value as ColourScheme)}><option value="tissue">Tissue-like display colours</option><option value="source">Manifest colours</option></select></label>{atlas.id==='mousebio-living-v1'&&<label className="coat-choice">Coat<select aria-label="Simulated coat" value={coat} onChange={(event)=>setCoat(event.target.value as CoatId)}><option value="agouti">Agouti, simulated</option><option value="black">Black, simulated</option><option value="albino">Albino, simulated</option><option value="none">None, skin only</option></select></label>}
                 <div className="section-bar"><Icon name="layers" size={18} /><div><strong>Virtual section</strong><small>{sectionImages&&sectionImage!=='none'&&mode!=='comparative'?'Source images of this specimen on the cut':'Surface clipping, without tissue reconstruction'}</small></div><select aria-label="Section axis" value={clipAxis} onChange={(event) => chooseSectionAxis(event.target.value as typeof clipAxis)}><option value="off">No section</option><option value="x">Display X</option><option value="y">Display Y</option><option value="z">Display Z</option></select><input type="range" aria-label="Section position" min="0" max="100" value={clipPosition} disabled={clipAxis === 'off'} onChange={(event) => setClipPosition(+event.target.value)} /><span>{clipPosition}%</span>{sectionImages&&<label className="section-image-choice">Cut face <select aria-label="Cut face image" value={sectionImage} disabled={mode==='comparative'} onChange={event=>setSectionImage(event.target.value as SectionImageChoice)}><option value="cryosection">Specimen photograph</option><option value="ct">CT</option><option value="none">None</option></select>{clipAxis!=='off'&&sectionImage!=='none'&&sectionStatus.status==='loading'&&<small>Loading images</small>}{clipAxis!=='off'&&sectionImage!=='none'&&sectionStatus.status==='failed'&&<small role="alert">Images unavailable</small>}</label>}</div>
         </details><div className="canvas-pair">
           <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} pathSignal={mode==='living'&&pathSignal?.referenceId===atlas.id?pathSignal:undefined} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} onAutoRotateEnd={()=>setAutoRotate(false)} onSectionImageStatus={setSectionStatus} /></Suspense></div>
@@ -590,6 +600,7 @@ export default function App() {
         <div className="camera-pad" role="group" aria-label="Camera controls"><button aria-label="Pan display up" onClick={()=>viewer.current?.pan(0,.1)}>↑</button><button aria-label="Zoom in" onClick={()=>viewer.current?.zoom(.8)}>+</button><button aria-label="Pan display left" onClick={()=>viewer.current?.pan(-.1,0)}>←</button><button aria-label="Reset camera" onClick={()=>viewer.current?.reset()}>⌖</button><button aria-label="Pan display right" onClick={()=>viewer.current?.pan(.1,0)}>→</button><button aria-label="Pan display down" onClick={()=>viewer.current?.pan(0,-.1)}>↓</button><button aria-label="Zoom out" onClick={()=>viewer.current?.zoom(1.25)}>−</button></div><div className="view-controls"><span className="control-divider" />{(['x', 'y', 'z'] as const).map((axis) => <button className="viewer-button axis-button" key={axis} aria-label={`View along display ${axis} axis`} title={`Display ${axis.toUpperCase()} axis; not an anatomical direction`} onClick={() => viewer.current?.view(axis)}>{axis.toUpperCase()}</button>)}<span className="control-divider" /><button className={`viewer-button ${labels ? 'active' : ''}`} aria-label="Toggle selected structure label" aria-pressed={labels} onClick={() => setLabels(!labels)}>Aa</button><button className={`viewer-button label-all-button ${allLabels ? 'active' : ''}`} aria-label="Label all displayed regions" title="Label all displayed regions without overlaps" aria-pressed={allLabels} onClick={() => setAllLabels(!allLabels)}>All</button></div>
         {shownGroups.length > 0 && (mode === 'experimental' || mode === 'comparative') && <div className="quantitative-legend"><strong>Mean {first?.measurement}</strong><span>{first?.unit} · {first?.timePoint}</span><div className="color-ramp" /><div className="legend-numbers"><span>{format(min)}</span><span>{format(max)}</span></div><small>Unmapped regions keep their display colours</small></div>}
         <div className="viewport-bottom"><span>Drag to rotate <i /> Scroll to zoom <i /> Click to select</span><span className="display-frame">Display axes · orientation unverified</span></div>
+        {evidenceShown && !cutFaceShown && <span className="section-image-label constructed-label">CONSTRUCTED MODEL: POSTURE, COAT AND STRUCTURES MARKED SIMULATED ARE NOT MEASURED</span>}
         {cutFaceShown && <span className="section-image-label">{sectionImage === 'ct' ? 'CUT FACE: SOURCE CT OF THIS SPECIMEN' : 'CUT FACE: SOURCE PHOTOGRAPH OF THIS SPECIMEN, FROZEN AND POSTMORTEM'}</span>}
         {mode === 'living' && availableMotion.length > 0 && <span className="illustrative-label">ILLUSTRATIVE MOTION · NOT A VALIDATED SIMULATION</span>}
         {circuitsShown && <><span className="circuit-label">SCHEMATIC ROUTES · CONNECTORS ARE NOT VESSEL OR NERVE GEOMETRY</span>
@@ -618,16 +629,16 @@ export default function App() {
         {rows.length > 0 && <><p className="dataset-source">{metadata.sourceReference ? `Declared source: ${metadata.sourceReference}` : 'Source reference not supplied.'}</p><DatasetDetails metadata={metadata} onChange={setMetadata} /></>}
         {mode === 'comparative' && <p className="comparison-note">Both panels use the same selected reference geometry. Only imported measurements change. Condition labels do not generate anatomical differences.</p>}
       </div>}
-      <footer className="workspace-footer"><span><span className={`status-dot ${viewerFailed ? 'status-failed' : ''}`} /> {viewerFailed ? '3D viewer unavailable' : diagnostics ? diagnostics.traces ? sourcePolyline ? `${diagnostics.traces} line reference · ${diagnostics.samples.toLocaleString()} source points · ${diagnostics.segments.toLocaleString()} polyline segments` : `${diagnostics.traces} trace · ${diagnostics.samples.toLocaleString()} samples · ${diagnostics.segments.toLocaleString()} parent links` : `${diagnostics.meshes} meshes loaded · ${diagnostics.triangles.toLocaleString()} triangles` : 'Loading anatomy'}</span><span>Source-derived geometry · no expert review</span></footer>
+      <footer className="workspace-footer"><span><span className={`status-dot ${viewerFailed ? 'status-failed' : ''}`} /> {viewerFailed ? '3D viewer unavailable' : diagnostics ? diagnostics.traces ? sourcePolyline ? `${diagnostics.traces} line reference · ${diagnostics.samples.toLocaleString()} source points · ${diagnostics.segments.toLocaleString()} polyline segments` : `${diagnostics.traces} trace · ${diagnostics.samples.toLocaleString()} samples · ${diagnostics.segments.toLocaleString()} parent links` : `${diagnostics.meshes} meshes loaded · ${diagnostics.triangles.toLocaleString()} triangles` : 'Loading anatomy'}</span><span>{evidenceShown?'Constructed model':'Source-derived geometry'} · no expert review</span></footer>
     </main>
 
     <aside className="inspector panel" id="structure-inspector" ref={inspector} tabIndex={-1} hidden={!inspectorOpen} aria-label="Structure details">
       <div className="panel-heading"><span className="eyebrow">STRUCTURE DETAILS</span><button className="icon-button" aria-label="Close structure details" onClick={()=>setInspectorOpen(false)}>×</button></div>
       {selectedStructure?<>
-              <div className="structure-type">{selectedStructure.systems.map((id) => SYSTEMS.find((system) => system.id === id)?.name).filter(Boolean).join(' / ') || (activeTrace ? 'Local trace; biological identity unverified' : 'Source surface; system classification unreviewed')}</div><h2>{selectedStructure.name}</h2><code className="structure-id">{selectedStructure.id}</code>
+              <div className="structure-type">{selectedStructure.systems.map((id) => SYSTEMS.find((system) => system.id === id)?.name).filter(Boolean).join(' / ') || (activeTrace ? 'Local trace; biological identity unverified' : 'Source surface; system classification unreviewed')}</div><h2>{selectedStructure.name}</h2><code className="structure-id">{selectedStructure.id}</code>{evidenceShown&&<EvidenceChip structure={selectedStructure}/>}
 
         <div className="inspector-tabs" role="tablist" aria-label="Structure detail sections">{([['structure','Structure'],['observations','Observations'],['source','Source evidence']] as const).map(([id,label])=><button key={id} role="tab" id={`inspector-tab-${id}`} aria-selected={inspectorTab===id} aria-controls={`inspector-${id}`} onClick={()=>setInspectorTab(id)}>{label}</button>)}</div>
-        <div id="inspector-structure" role="tabpanel" aria-labelledby="inspector-tab-structure" hidden={inspectorTab!=='structure'}>      <section className="inspector-section"><h3>Source annotation</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>{parentLinkedTrace ? 'Traced samples and parent links' : sourcePolyline ? 'Source points and polylines' : 'Source segmented region'}</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
+        <div id="inspector-structure" role="tabpanel" aria-labelledby="inspector-tab-structure" hidden={inspectorTab!=='structure'}>      {evidenceShown&&<section className={`inspector-section evidence-note evidence-note-${evidenceOf(selectedStructure)}`}><h3>Evidence</h3><p>{EVIDENCE_NOTES[evidenceOf(selectedStructure)]}</p>{selectedStructure.basis?.length?<ul className="evidence-basis">{selectedStructure.basis.map((item)=><li key={item}>{item}</li>)}</ul>:null}</section>}<section className="inspector-section"><h3>{evidenceShown?'Description':'Source annotation'}</h3><p>{selectedStructure.description}</p><dl><dt>Original label</dt><dd>{String(selectedStructure.sourceLabel)}</dd><dt>Biological detail</dt><dd>{parentLinkedTrace ? 'Traced samples and parent links' : sourcePolyline ? 'Source points and polylines' : evidenceShown && selectedStructure.evidence !== 'source' ? (selectedStructure.evidence === 'simulated' ? 'Simulated, not measured' : 'Traced, not reviewed') : 'Source segmented region'}</dd><dt>Ontology review</dt><dd>{ontologyCandidate ? 'Proposed association only' : 'No candidate association'}</dd></dl></section>
        {!lineReference && <SurfaceDetail baseSpacing={reference?.processingResolution.processingVoxelSpacingMm?.[0]} levels={selectedLevels} levelId={detailLevel} asset={availableDetail} enabled={fineActive} comparative={mode === 'comparative'} viewerFailed={viewerFailed} status={detailStatus} onLevelChange={(id) => { setDetailLevel(id); setDetailStatus({ status: 'idle', structureId: null }); }} onEnabledChange={(enabled) => { setFineEnabled(enabled); setDetailStatus({ status: 'idle', structureId: null }); }} />}
        {parentLinkedTrace && <TraceSampleExplorer key={atlas.id} atlas={atlas} localTrace={activeTrace} viewerReady={viewerState.primary === 'ready'} onFocusSample={(sampleId) => viewer.current?.focusTraceSample(sampleId) ?? false} />}
       {sourcePolyline && <><SourcePolylineExplorer key={atlas.id} atlas={atlas} viewerReady={viewerState.primary === 'ready'} onFocusPath={(row) => viewer.current?.focusPolylinePath(row) ?? false} /></>}

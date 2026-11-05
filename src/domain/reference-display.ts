@@ -33,8 +33,8 @@ export function referenceOpacity(atlas: Atlas, organs = false): Record<string, n
  * would then appear through the gap, although at source resolution only the body
  * label meets the background.
  */
-export function coveredBySkin(id: string, skinId: string | null | undefined, skinVisible: boolean, skinOpacity: number, clipAxis: string): boolean {
-  return !!skinId && id !== skinId && skinVisible && skinOpacity >= OPAQUE_SKIN && clipAxis === 'off';
+export function coveredBySkin(id: string, skinId: string | null | undefined, skinVisible: boolean, skinOpacity: number, clipAxis: string, exterior = false): boolean {
+  return !!skinId && id !== skinId && !exterior && skinVisible && skinOpacity >= OPAQUE_SKIN && clipAxis === 'off';
 }
 
 /** The see-through skin opacity used when the inside of the body is to be shown. */

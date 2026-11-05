@@ -18,7 +18,7 @@ MAX_HISTORY_BLOBS = 1000
 MAX_GLB_JSON_BYTES = 1024 * 1024
 MAX_REGISTERED_GLB_BYTES = 80 * 1024 * 1024
 # Raised from 160 MiB on 2026-11-05 for the 0.2 mm skeleton detail and the micro-CT reference (about 182 MB in total).
-MAX_REGISTERED_TOTAL_BYTES = 256 * 1024 * 1024
+MAX_REGISTERED_TOTAL_BYTES = 512 * 1024 * 1024
 MAX_PLY_HEADER_BYTES = 16 * 1024
 EMA147_ARCHIVE_SHA256 = "efd5df6df9b69cf21a62d1f4245ecc5419ee4e5c4c72635f444ce3fba5b7971c"
 EMA147_MODEL_INFO_SHA256 = "cf37ac2de4f7ce79cfeb912dda70257ee06a561511ef54a18a7d89fa69cbeb21"
@@ -530,7 +530,7 @@ def anatomy_registry(read) -> dict[str, dict]:
     """
     registry: dict[str, dict] = {}
     volume = None
-    for folder in ("atlas", "atlas-volume", "atlas-hindlimb", "atlas-microct"):
+    for folder in ("atlas", "atlas-volume", "atlas-hindlimb", "atlas-microct", "atlas-living"):
         manifest_path = f"public/{folder}/atlas.json"
         raw = read(manifest_path, MAX_GLB_JSON_BYTES)
         if raw is None:
@@ -588,6 +588,23 @@ def anatomy_registry(read) -> dict[str, dict]:
                     or b"10.1371/journal.pone.0147669.s002" not in license_bytes
                     or any(author.encode("ascii") not in license_bytes for author in HINDLIMB_AUTHORS)):
                 raise ValueError("Registered hindlimb attribution is missing")
+        if folder == "atlas-living":
+            if (source.get("id") != "digimouse-registered-volume-2007" or source.get("license") != "CC-BY-SA-4.0"
+                    or source.get("licenseUrl") != "https://creativecommons.org/licenses/by-sa/4.0/" or identifier != "mousebio-living-v1"
+                    or frame != "digimouse-living-stance-v1" or manifest["coordinateFrame"].get("posture") != "simulated"
+                    or manifest["coordinateFrame"].get("physicalCalibrationVerified") is not False
+                    or manifest["coordinateFrame"].get("anatomicalOrientationVerified") is not False
+                    or manifest.get("assetUrl") != "/atlas-living/living-mouse.glb"):
+                raise ValueError("Living mouse source, license or frame is not registered")
+            for entry in manifest["structures"]:
+                # Nothing constructed may be published without saying so where it is read.
+                if entry.get("evidence") not in ("source", "traced", "simulated") or not entry.get("basis"):
+                    raise ValueError("Living mouse structure does not declare its evidence and basis")
+                if entry["evidence"] == "simulated" and not str(entry.get("description", "")).startswith("Simulated."):
+                    raise ValueError("Simulated structure is not described as simulated")
+            license_bytes = read(f"public/{folder}/LICENSE.md", MAX_GLB_JSON_BYTES)
+            if not license_bytes or b"creativecommons.org/licenses/by-sa/4.0" not in license_bytes or b"10.1088/0031-9155/52/3/003" not in license_bytes or b"simulated" not in license_bytes:
+                raise ValueError("Registered living mouse attribution is missing")
         if folder == "atlas-microct":
             members = {entry.get("name"): entry.get("sha256") for entry in source.get("members", []) if isinstance(entry, dict)}
             expected_microct = ["rosenhain2018-m01:Bed:1"] + [f"rosenhain2018-m01:Organ1:{index}" for index in range(1, len(MICROCT_CLASSES) + 1)]

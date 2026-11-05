@@ -13,6 +13,8 @@ export interface DisplayPosture {
   readonly view: readonly [number, number, number];
   /** Distance of the default camera in display radii. */
   readonly distance: number;
+  /** Aim the default camera at the body surface, because long thin parts displace the centre of the display bounds. */
+  readonly frameOnBody?: boolean;
   readonly basis: string;
 }
 
@@ -45,10 +47,20 @@ const MICROCT_POSTURE: DisplayPosture = Object.freeze({
   basis: 'Dorsal side inferred from source class positions: in the micro-CT scan the kidneys, spleen and trunk bone lie towards native -y and the heart and bladder towards native +y. Laterality and calibration remain unverified.',
 });
 
+/** The living mouse keeps the Digimouse axes. Its long tail makes the display bounds large, so the camera sits closer. */
+const LIVING_POSTURE: DisplayPosture = Object.freeze({
+  up: Object.freeze([0, 0, 1] as const),
+  view: Object.freeze(normalize([0.62, -0.68, 0.3])),
+  distance: 2.05,
+  frameOnBody: true,
+  basis: 'The standing posture of the living mouse reference is simulated; its dorsal direction follows the Digimouse inference from source label positions.',
+});
+
 const POSTURES: Readonly<Record<string, DisplayPosture>> = Object.freeze({
   'digimouse-tessellated-v1': DIGIMOUSE_POSTURE,
   'digimouse-volume-040-v1': DIGIMOUSE_POSTURE,
   'rosenhain2018-m01-native-v1': MICROCT_POSTURE,
+  'mousebio-living-v1': LIVING_POSTURE,
 });
 
 /** The region whose outer surface is the body surface of each reference that has one. */
@@ -56,6 +68,7 @@ const BODY_SURFACES: Readonly<Record<string, string>> = Object.freeze({
   'digimouse-tessellated-v1': 'digimouse:1',
   'digimouse-volume-040-v1': 'digimouse-volume:1',
   'rosenhain2018-m01-native-v1': 'rosenhain2018-m01:Bed:1',
+  'mousebio-living-v1': 'living:skin',
 });
 
 function normalize(vector: readonly [number, number, number]): [number, number, number] {
