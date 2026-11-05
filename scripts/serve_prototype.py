@@ -45,7 +45,7 @@ ATLAS_ASSETS = {
     "atlas-vascular": "schmid2021-mvn1-lines.json",
     "atlas-nerve": "mousemapper-patch0-lines.json",
 }
-DETAIL_NAMES = {f"atlas-volume/detail/region-{region}.glb" for region in range(3, 22)}
+DETAIL_NAMES = {f"atlas-volume/detail/region-{region}.glb" for region in range(2, 22)}
 DETAIL_NAMES |= {f"atlas-volume/native-010/region-{region}.glb" for region in (12, 20)}
 KNOWN_FILES = {"index.html", "THIRD_PARTY_NOTICES.txt", "atlas-volume/detail-index.json"} | DETAIL_NAMES
 for _directory, _asset in ATLAS_ASSETS.items():

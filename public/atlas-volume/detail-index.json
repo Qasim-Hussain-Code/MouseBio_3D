@@ -92,6 +92,37 @@
   ],
   "structures": [
     {
+      "id": "digimouse-volume:2",
+      "name": "Skeleton",
+      "systems": [
+        "skeletal"
+      ],
+      "sourceLabel": "skeleton",
+      "sourceRegion": 2,
+      "meshNode": "digimouse-volume:2",
+      "description": "Aggregate skeletal label. Individual bones are not independently identified; a finer surface does not add bone names.",
+      "geometry": {
+        "vertices": 507646,
+        "triangles": 1016548,
+        "boundsMeters": [
+          [
+            0.002099999925121665,
+            0.007499999832361937,
+            0.001500000013038516
+          ],
+          [
+            0.033900000154972076,
+            0.09269999712705612,
+            0.0203000009059906
+          ]
+        ]
+      },
+      "sourceId": "digimouse-registered-volume-2007",
+      "scale": "system",
+      "color": "#dfd7c5",
+      "defaultOpacity": 0.14
+    },
+    {
       "id": "digimouse-volume:3",
       "name": "Eye",
       "systems": [
@@ -684,6 +715,35 @@
     }
   ],
   "assets": [
+    {
+      "structureId": "digimouse-volume:2",
+      "levelId": "fine-020",
+      "assetUrl": "/atlas-volume/detail/region-2.glb",
+      "coordinateFrameId": "digimouse-registered-voxel-native-v1",
+      "processingVoxelSpacingMm": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "glbBytes": 24383356,
+      "glbSha256": "ee2a30d32065ef3b2dd921806407b6ce15825647d8e8a3629b881a093ccf4c43",
+      "geometry": {
+        "vertices": 507646,
+        "triangles": 1016548,
+        "boundsMeters": [
+          [
+            0.002099999925121665,
+            0.007499999832361937,
+            0.001500000013038516
+          ],
+          [
+            0.033900000154972076,
+            0.09269999712705612,
+            0.0203000009059906
+          ]
+        ]
+      }
+    },
     {
       "structureId": "digimouse-volume:3",
       "assetUrl": "/atlas-volume/detail/region-3.glb",
@@ -1301,11 +1361,6 @@
       "reason": "This finer surface is not bundled. The complete coarse reference retains the source label."
     },
     {
-      "structureId": "digimouse-volume:2",
-      "levelId": "fine-020",
-      "reason": "This finer surface is not bundled. The complete coarse reference retains the source label."
-    },
-    {
       "structureId": "digimouse-volume:1",
       "levelId": "source-010",
       "reason": "This source-grid level is limited to lachrymal and adrenal gland labels to bound storage and rendering cost."
@@ -1402,11 +1457,11 @@
     }
   ],
   "statistics": {
-    "structures": 19,
-    "assets": 21,
-    "triangles": 1136716,
-    "surfaceVerticesIncludingRegionBoundaries": 568446,
-    "glbBytesTotal": 27309900,
+    "structures": 20,
+    "assets": 22,
+    "triangles": 2153264,
+    "surfaceVerticesIncludingRegionBoundaries": 1076092,
+    "glbBytesTotal": 51693256,
     "sourceVoxelSpacingMm": [
       0.1,
       0.1,
@@ -1424,11 +1479,11 @@
     "These surfaces and numerical topology checks do not constitute independent anatomical expert review or physiological validation."
   ],
   "lastConversionBenchmark": {
-    "elapsedSeconds": 4.251610229000001,
-    "peakResidentKiB": 114680,
-    "measuredAtUtc": "2026-10-26T23:47:29+00:00",
-    "step": 1,
+    "elapsedSeconds": 10.237952364994271,
+    "peakResidentKiB": 134208,
+    "measuredAtUtc": "2026-11-05T04:01:11+00:00",
+    "step": 2,
     "perRegion": true,
-    "levelId": "source-010"
+    "levelId": "fine-020"
   }
 }

@@ -277,7 +277,7 @@ def register_details(detail: dict, volume: dict | None, registry: dict[str, dict
         path = anatomy_asset_path(asset["assetUrl"], "atlas-volume")
         size, digest = asset["glbBytes"], asset["glbSha256"]
         spacing, prefix = DETAIL_LEVELS[level_id]
-        allowed = {f"digimouse-volume:{label}" for label in (range(3, 22) if level_id == "fine-020" else (12, 20))}
+        allowed = {f"digimouse-volume:{label}" for label in (range(2, 22) if level_id == "fine-020" else (12, 20))}
         if (pair in selected or identifier not in expected or path in registry or not path.startswith(prefix)
                 or identifier not in allowed or path != f"{prefix}region-{identifier.rsplit(':', 1)[-1]}.glb"
                 or asset.get("coordinateFrameId") != VOLUME_FRAME or type(size) is not int

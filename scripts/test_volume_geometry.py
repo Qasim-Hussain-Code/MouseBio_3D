@@ -193,16 +193,16 @@ class VolumeAssetTests(unittest.TestCase):
         detail = json.loads((ROOT / "public/atlas-volume/detail-index.json").read_text())
         self.assertEqual(detail["schemaVersion"], "mousebio.volume-detail-index.v2")
         self.assertEqual(detail["coordinateFrame"]["id"], FRAME_ID)
-        self.assertEqual({a["structureId"] for a in detail["assets"]}, {f"digimouse-volume:{i}" for i in range(3, 22)})
-        self.assertEqual(len(detail["assets"]), 21)
-        self.assertEqual(len(detail["structures"]), 19)
+        self.assertEqual({a["structureId"] for a in detail["assets"]}, {f"digimouse-volume:{i}" for i in range(2, 22)})
+        self.assertEqual(len(detail["assets"]), 22)
+        self.assertEqual(len(detail["structures"]), 20)
         self.assertEqual({level["id"] for level in detail["levels"]}, set(DETAIL_LEVELS))
         pairs = {(a["structureId"], a["levelId"]) for a in detail["assets"] + detail["unavailable"]}
         self.assertEqual(pairs, {(f"digimouse-volume:{label}", level) for label in range(1, 22) for level in DETAIL_LEVELS})
         self.assertEqual(len(detail["assets"]) + len(detail["unavailable"]), len(pairs))
         self.assertTrue(all(a["reason"].strip() for a in detail["unavailable"]))
-        self.assertEqual(detail["statistics"]["assets"], 21)
-        self.assertEqual(detail["statistics"]["structures"], 19)
+        self.assertEqual(detail["statistics"]["assets"], 22)
+        self.assertEqual(detail["statistics"]["structures"], 20)
         self.assertEqual(detail["statistics"]["glbBytesTotal"], sum(a["glbBytes"] for a in detail["assets"]))
         for asset in detail["assets"]:
             definition = DETAIL_LEVELS[asset["levelId"]]

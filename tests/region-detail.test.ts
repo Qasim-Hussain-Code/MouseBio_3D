@@ -18,14 +18,15 @@ const localFetcher = (async () => new Response(Uint8Array.from(heartBytes))) as 
 
 test('detail registry preserves all explicit source bindings and unavailable regions', () => {
   assert.equal(details.ok, true, details.errors.join(' '));
-  assert.equal(details.assets.length, 21);
+  assert.equal(details.assets.length, 22);
   assert.deepEqual(details.levels.map((level) => level.id).sort(), ['fine-020', 'source-010']);
-  assert.equal(details.assets.filter((asset) => asset.levelId === 'fine-020').length, 19);
+  assert.equal(details.assets.filter((asset) => asset.levelId === 'fine-020').length, 20);
   assert.deepEqual(details.assets.filter((asset) => asset.levelId === 'source-010').map((asset) => asset.structureId).sort(),
     ['digimouse-volume:12', 'digimouse-volume:20']);
   assert.ok(details.assets.every((asset) => asset.atlasId === atlas.id && asset.coordinateFrameId === atlas.coordinateFrame.id
     && asset.atlasAssetSha256 === atlas.statistics.glbSha256));
-  assert.equal(details.assets.some((asset) => ['digimouse-volume:1', 'digimouse-volume:2'].includes(asset.structureId)), false);
+  assert.equal(details.assets.some((asset) => asset.structureId === 'digimouse-volume:1'), false);
+  assert.deepEqual(details.assets.filter((asset) => asset.structureId === 'digimouse-volume:2').map((asset) => asset.levelId), ['fine-020']);
   for (const change of [
     (value: typeof index) => { value.coordinateFrame.id = 'wrong-frame'; },
     (value: typeof index) => { value.assets[0].assetUrl = 'https://example.org/region.glb'; },
@@ -55,7 +56,7 @@ test('legacy detail indices normalize to one explicit 0.2 mm level for historica
   delete legacy.statistics.assets;
   const normalized = buildRegionDetailAssets(legacy, atlas);
   assert.equal(normalized.ok, true, normalized.errors.join(' '));
-  assert.equal(normalized.assets.length, 19);
+  assert.equal(normalized.assets.length, 20);
   assert.deepEqual(normalized.levels.map((level) => level.id), ['fine-020']);
   assert.ok(normalized.assets.every((asset) => asset.levelId === 'fine-020'));
 });

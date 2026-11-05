@@ -10,7 +10,7 @@ The React, TypeScript and Three.js application provides seven bundled anatomical
 | --- | --- | --- |
 | Lightweight tetrahedral | 17 source regions with aggregate brain and skeleton | 127,784 triangles; 3,083,672-byte GLB |
 | Registered-volume base | All 21 nonbackground labels, including six brain regions, eye, lachrymal and adrenal glands and masseter muscles | 0.4 mm processing; 1,152,516 triangles; 27,648,532-byte GLB |
-| Optional volume detail | 19 surfaces for source labels 3 through 21 | 0.2 mm processing; 1,050,980 triangles; 25,249,496 bytes combined |
+| Optional volume detail | 20 surfaces for source labels 2 through 21, including the aggregate skeleton | 0.2 mm processing; 2,067,528 triangles; 49,632,852 bytes combined |
 | Selected original-grid detail | Lachrymal and adrenal glands with unchanged IDs and frame | 0.1 mm processing; 85,736 triangles; 2,060,404 bytes combined |
 | Female hindlimb and pelvis | 37 muscle-named regions, one tendon and six bone or aggregate regions | 44 surfaces; 664,210 triangles; 20,981,512-byte GLB |
 | EMA147 native source | 76 EMAPA-labelled surfaces and one unannotated reference surface | 374,725 triangles; 10,079,275-byte PLY; unknown coordinate units |

@@ -61,7 +61,7 @@ function levelRegion(levelId: unknown, structureId: unknown, assetUrl: unknown):
   const match = /^digimouse-volume:([1-9][0-9]*)$/.exec(structureId);
   if (!match) return false;
   const label = Number(match[1]);
-  return (levelId === 'fine-020' ? label >= 3 && label <= 21 : label === 12 || label === 20)
+  return (levelId === 'fine-020' ? label >= 2 && label <= 21 : label === 12 || label === 20)
     && assetUrl === `${REGISTERED_LEVELS[levelId].folder}region-${label}.glb`;
 }
 function pair(structureId: string, levelId: string): string { return `${structureId}\0${levelId}`; }

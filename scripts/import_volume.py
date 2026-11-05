@@ -32,7 +32,7 @@ MAX_TRIANGLES = 5_000_000
 SPACING_M = 0.0001
 DETAIL_LEVELS = {
     "fine-020": {
-        "step": 2, "directory": "detail", "labels": tuple(range(3, 22)),
+        "step": 2, "directory": "detail", "labels": tuple(range(2, 22)),
         "title": "Finer surface (0.2 mm)",
         "description": "Every second source sample is retained for the selected region.",
         "limitations": [

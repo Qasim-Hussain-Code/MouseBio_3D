@@ -803,8 +803,8 @@ test('switching references isolates observations and restores each source-bound 
   fireEvent.click(view.getByRole('button', { name: 'Export JSON' }));
   assert.deepEqual(JSON.parse(await exportedBlobs.at(-1)!.text()), volumeData);
   fireEvent.click(view.getByRole('button', { name: /Skeleton.*digimouse-volume:2/ }));
-  assert.equal(view.queryByRole('checkbox', { name: 'Finer selected surface' }), null);
-  assert.ok(view.getByText('No finer surface is bundled for this region.'));
+  assert.equal((view.getByRole('checkbox', { name: 'Finer selected surface' }) as HTMLInputElement).checked, false);
+  assert.equal(view.queryAllByText('No finer surface is bundled for this region.').length, 0);
   fireEvent.click(view.getByRole('button', { name: 'Clear local data' }));
   expectedRequests.push('/atlas/atlas.json');
   fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
