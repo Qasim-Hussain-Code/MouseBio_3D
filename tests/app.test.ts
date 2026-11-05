@@ -761,6 +761,43 @@ test('the female micro-CT reference keeps its own classes, skin, groups and sour
   await view.findByText('8 observations · 4 biological subject IDs · 4 groups');
 });
 
+test('the registered-volume reference offers source images on the cut face and other references do not', async () => {
+  const view = await openApp();
+  assert.equal(view.queryByRole('combobox', { name: 'Cut face image' }), null);
+  showTab(view, 'Layers');
+  assert.equal(view.queryByRole('button', { name: 'Cut through the specimen' }), null);
+  expectedRequests.push('/atlas-volume/atlas.json');
+  fireEvent.click(view.getByRole('button', { name: 'Open specimen photographs' }));
+  await view.findByText('21 visible regions');
+  await waitFor(() => assert.equal((view.getByRole('combobox', { name: 'Section axis' }) as HTMLSelectElement).value, 'y'));
+  assert.equal((view.container.querySelector('.scene-display') as HTMLDetailsElement).open, true);
+  assert.equal(view.queryByRole('button', { name: 'Open specimen photographs' }), null);
+  const choice = () => view.getByRole('combobox', { name: 'Cut face image' }) as HTMLSelectElement;
+  assert.equal(choice().value, 'cryosection');
+  assert.deepEqual([...choice().options].map((option) => option.value), ['cryosection', 'ct', 'none']);
+  fireEvent.click(view.getByRole('button', { name: 'Cut through the specimen' }));
+  const axis = view.getByRole('combobox', { name: 'Section axis' }) as HTMLSelectElement;
+  assert.equal(axis.value, 'y');
+  assert.equal((view.getByRole('slider', { name: 'Section position' }) as HTMLInputElement).value, '50');
+  let saved = await savedView(view);
+  assert.equal(saved.clipAxis, 'y');
+  assert.equal(Object.hasOwn(saved, 'sectionImage'), false);
+  fireEvent.change(choice(), { target: { value: 'none' } });
+  fireEvent.click(view.getByRole('button', { name: 'Cut through the specimen' }));
+  assert.equal(choice().value, 'cryosection');
+  // Nothing is requested in this harness, because the renderer never starts and images load only on demand.
+  assert.equal(requests.some((url) => url.includes('/sections/')), false);
+  fireEvent.click(view.getByRole('button', { name: 'Compare' }));
+  assert.equal(choice().disabled, true);
+  fireEvent.click(view.getByRole('button', { name: 'Anatomy' }));
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  assert.equal(view.queryByRole('combobox', { name: 'Cut face image' }), null);
+  saved = await savedView(view);
+  assert.equal(saved.clipAxis, 'off');
+});
+
 test('organs visibility preset preserves selection, background and data while the details shortcut focuses its inspector', async () => {
   const view = await openApp();
   fireEvent.click(view.getByRole('button', { name: 'Experiment' }));

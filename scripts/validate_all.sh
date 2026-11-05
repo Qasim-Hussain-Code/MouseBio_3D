@@ -9,6 +9,7 @@ python3 scripts/test_volume_assessment.py
 python3 scripts/test_volume_geometry.py
 python3 scripts/test_hindlimb_geometry.py
 python3 scripts/test_microct_geometry.py
+python3 scripts/test_section_images.py
 python3 scripts/test_ema147_geometry.py
 python3 scripts/test_publication.py
 python3 scripts/test_registered_anatomy.py

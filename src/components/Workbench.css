@@ -71,3 +71,7 @@
 .skin-control{display:flex;align-items:center;gap:7px;pointer-events:auto;padding:5px 9px;border:1px solid #d9e0dd;border-radius:5px;background:#ffffffee;color:#2f4a46;font-size:11px;white-space:nowrap}
 .skin-control input{width:96px;margin:0}.skin-control span{min-width:32px;text-align:right;font-variant-numeric:tabular-nums;color:#5f6e6a;font-size:10px}
 @media(max-width:600px){.skin-control input{width:64px}.skin-control{padding:4px 6px;font-size:10px}}
+.scene-display .section-image-choice{display:flex;align-items:center;flex-wrap:wrap;gap:6px;width:100%;font-size:11px}.scene-display .section-image-choice select{flex:1;width:auto;min-width:0}.scene-display .section-image-choice small{width:100%;font-size:9px;color:#5f6e6a}
+.section-image-label{position:absolute;left:17px;bottom:172px;z-index:2;max-width:300px;font-size:8px;letter-spacing:.8px;line-height:1.7;color:#5f6e6a}
+.section-cut-button{margin-left:6px}
+@media(max-width:600px){.section-image-label{bottom:208px;left:12px;max-width:170px;font-size:7px}}

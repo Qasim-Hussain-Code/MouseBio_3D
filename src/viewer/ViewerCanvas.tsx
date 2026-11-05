@@ -8,13 +8,15 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { surfaceShadingOf, SURFACE_PRESENTATION, SKIN_PRESENTATION } from './surface-shading';
 import { createContactShadow, type ContactShadow } from './contact-shadow';
+import { createSectionImagePlane, cutFaceView, loadSectionVolume, type SectionImagePlane } from './section-image';
+import { sectionImagesApplyTo, type SectionImageChoice, type SectionImageId } from '../domain/section-images';
 import { bodySurfaceIdFor, displayPostureFor } from '../domain/display-pose';
 import { smoothingOptionsFor, smoothSurfaceGeometries } from './surface-smoothing';
 import type { SurfaceDisplay } from '../domain/display-smoothing';
 import { displayColour, type ColourScheme } from '../domain/tissue-palette';
 import { layoutLabels, leaderEnd, type LabelCandidate, type PlacedLabel } from './label-layout';
 import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas } from '../domain';
-import { defaultStructureOpacity, OPAQUE_SKIN } from '../domain/reference-display';
+import { coveredBySkin, defaultStructureOpacity, OPAQUE_SKIN } from '../domain/reference-display';
 import { RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
 import { loadAtlasScene } from './atlas-loader';
 import type { LocalTraceAsset } from '../domain/local-trace';
@@ -49,8 +51,11 @@ export type ViewerSettings = {
   colourScheme?: ColourScheme;
   /** Label every displayed region without overlaps, in addition to the selected label. */
   allLabels?: boolean;
+  /** Source image shown on the cut face of a virtual section, where the reference has one. Defaults to none. */
+  sectionImage?: SectionImageChoice;
 };
-export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean };
+export type SectionImageStatus = { status: 'idle' | 'loading' | 'ready' | 'failed'; id?: SectionImageId };
+export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean; viewCutFace: (axis: 'x' | 'y' | 'z') => void };
 type Props = {
   atlas: Atlas;
   pathSignal?:PathSignalDisplay;
@@ -67,12 +72,13 @@ type Props = {
   onDetailStatus?: (status: RegionDetailStatus) => void;
   /** The user started a pointer interaction while the view was rotating automatically. */
   onAutoRotateEnd?: () => void;
+  onSectionImageStatus?: (status: SectionImageStatus) => void;
 };
 
-export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace, pathSignal, onAutoRotateEnd }: Props) {
+export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace, pathSignal, onAutoRotateEnd, onSectionImageStatus }: Props) {
   const host = useRef<HTMLDivElement>(null);
-  const latest = useRef({ pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd });
-  latest.current = { pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd };
+  const latest = useRef({ pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus });
+  latest.current = { pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus };
   const engine = useRef<{ apply: () => void; setPose: (pose: CameraPose) => void; setDetail: () => void } | null>(null);
   const [status, setStatus] = useState('Loading reference geometry');
   const [failure, setFailure] = useState(false);
@@ -176,6 +182,45 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let lastLabel = '';
     let lastLabelSet = '', lastLabelSetAt = 0;
     let shadow: ContactShadow | null = null, shadowDirty = true;
+    let sectionRoot: THREE.Object3D | null = null, sectionPlane: SectionImagePlane | null = null;
+    let sectionShown: SectionImageId | null = null, sectionFailed: SectionImageId | null = null;
+    let sectionRequest: { id: SectionImageId; abort: AbortController } | null = null;
+    /** Show the chosen source image on the cut face, loading it once on first use. The plane matches the clip plane. */
+    const syncSectionImage = (current: ViewerSettings) => {
+      const wanted = loaded && sectionRoot && sectionImagesApplyTo(atlas) && current.clipAxis !== 'off' && current.sectionImage && current.sectionImage !== 'none' ? current.sectionImage : null;
+      if (wanted !== sectionFailed) sectionFailed = null;
+      if (wanted && wanted !== sectionShown && wanted !== sectionFailed && sectionRequest?.id !== wanted) {
+        sectionRequest?.abort.abort();
+        const request = { id: wanted, abort: new AbortController() };
+        sectionRequest = request;
+        latest.current.onSectionImageStatus?.({ status: 'loading', id: wanted });
+        void loadSectionVolume(atlas, wanted, request.abort.signal).then((volume) => {
+          if (disposed || sectionRequest !== request || !sectionRoot) return;
+          sectionRequest = null;
+          if (!sectionPlane) {
+            sectionRoot.updateWorldMatrix(true, false);
+            sectionPlane = createSectionImagePlane(bounds, sectionRoot.matrixWorld.clone().invert());
+            scene.add(sectionPlane.mesh);
+          }
+          sectionPlane.setVolume(volume);
+          sectionShown = volume.id;
+          latest.current.onSectionImageStatus?.({ status: 'ready', id: volume.id });
+          apply();
+        }).catch((error) => {
+          if (error instanceof DOMException && error.name === 'AbortError') return;
+          if (disposed || sectionRequest !== request) return;
+          console.error('Section images could not be prepared', error);
+          sectionRequest = null; sectionFailed = wanted;
+          latest.current.onSectionImageStatus?.({ status: 'failed', id: wanted });
+        });
+      }
+      if (sectionPlane) {
+        const show = wanted !== null && wanted === sectionShown;
+        sectionPlane.mesh.visible = show;
+        // One source voxel in front of the clip plane, on the removed side, so that the cut edges of regions cannot show through.
+        if (show) sectionPlane.place(current.clipAxis as 'x' | 'y' | 'z', (current.clipPosition / 100 * 2 - 1) * radius + 0.0001);
+      }
+    };
     /** True when the opaque body surface covers the regions inside it. */
     const skinCovers = (current: ViewerSettings) => {
       const skin = skinId ? meshes.get(skinId) : undefined;
@@ -251,8 +296,12 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         }
         mesh.material.clippingPlanes = current.clipAxis === 'off' ? [] : [clip];
       }
+      // Covered regions leave the rendered and picked layer only, so that overlays and Fit visible still treat them as shown.
+      const skinMesh = skinId ? meshes.get(skinId) : undefined;
+      for (const [id, mesh] of meshes) mesh.layers.set(coveredBySkin(id, skinId, !!skinMesh?.visible, skinId ? current.opacity[skinId] ?? defaultOpacity(skinId) : 0, current.clipAxis) ? 1 : 0);
       if (current.clipAxis !== 'off') clip.copy(createDisplayClipPlane(current.clipAxis, current.clipPosition, radius));
       applySurfaceDisplay();
+      syncSectionImage(current);
       dirty = true; shadowDirty = true;
     };
     const detailController = new RegionDetailController(atlas, (id) => detailTargets.get(id), () => {
@@ -356,6 +405,13 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         dirty = true;
         return true;
       },
+      viewCutFace(axis) {
+        if (!loaded || !posture) return;
+        controls.target.set(0, 0, 0);
+        camera.up.set(...posture.up);
+        camera.position.copy(cutFaceView(axis)).multiplyScalar(radius * posture.distance);
+        controls.update(); dirty = true;
+      },
       view(axis) {
         controls.target.set(0, 0, 0);
         camera.position.set(axis === 'x' ? radius * 3.3 : 0, axis === 'y' ? radius * 3.3 : 0, axis === 'z' ? radius * 3.3 : 0);
@@ -381,6 +437,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       gltf.scene.position.sub(sourceBounds.getCenter(new THREE.Vector3()));
       display.add(gltf.scene);
       gltf.scene.updateWorldMatrix(true, true);
+      sectionRoot = gltf.scene;
       let sourceRegionCount = 0;
       const traceFormat = atlas.assetFormat === 'local-trace-v1' || atlas.assetFormat === 'swc-native-v1' || atlas.assetFormat === 'polyline-native-v1';
       gltf.scene.traverse((object) => {
@@ -528,7 +585,13 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         if (mesh.scale.x !== scale) { mesh.scale.setScalar(scale); dirty = true; }
       }
       if (dirty && !document.hidden) {
-        if (shadow && shadowDirty) { shadow.render(renderer, scene, current.clipAxis === 'off' ? [] : [clip]); shadowDirty = false; }
+        if (shadow && shadowDirty) {
+          const sectionVisible = sectionPlane?.mesh.visible ?? false;
+          if (sectionPlane) sectionPlane.mesh.visible = false;
+          shadow.render(renderer, scene, current.clipAxis === 'off' ? [] : [clip]);
+          if (sectionPlane) sectionPlane.mesh.visible = sectionVisible;
+          shadowDirty = false;
+        }
         renderer.render(scene, camera);
         dirty = false;
         syncAllLabels(current, timestamp);
@@ -550,6 +613,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       pathOverlay?.dispose();
       circuitOverlay?.dispose();
       shadow?.dispose();
+      sectionRequest?.abort.abort();
+      sectionPlane?.dispose();
       detailController.dispose();
       cancelAnimationFrame(frame);
       observer.disconnect();

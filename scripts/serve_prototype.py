@@ -48,15 +48,17 @@ ATLAS_ASSETS = {
 }
 DETAIL_NAMES = {f"atlas-volume/detail/region-{region}.glb" for region in range(2, 22)}
 DETAIL_NAMES |= {f"atlas-volume/native-010/region-{region}.glb" for region in (12, 20)}
-KNOWN_FILES = {"index.html", "THIRD_PARTY_NOTICES.txt", "atlas-volume/detail-index.json"} | DETAIL_NAMES
+SECTION_MANIFEST = "atlas-volume/sections/sections.json"
+SECTION_NAMES = {f"atlas-volume/sections/{name}.bin" for name in ("cryosection-slices", "ct-deflate", "labels-deflate")}
+KNOWN_FILES = {"index.html", "THIRD_PARTY_NOTICES.txt", "atlas-volume/detail-index.json", SECTION_MANIFEST} | DETAIL_NAMES | SECTION_NAMES
 for _directory, _asset in ATLAS_ASSETS.items():
     KNOWN_FILES.update({f"{_directory}/atlas.json", f"{_directory}/LICENSE.md", f"{_directory}/{_asset}"})
 KNOWN_FILES.update({MODEL_MANIFEST, MODEL_NOTICE})
-KNOWN_DIRECTORIES = {"models", "models/bondarenko-apical","assets", *ATLAS_ASSETS, "atlas-volume/detail", "atlas-volume/native-010"}
+KNOWN_DIRECTORIES = {"models", "models/bondarenko-apical","assets", *ATLAS_ASSETS, "atlas-volume/detail", "atlas-volume/native-010", "atlas-volume/sections"}
 CONTENT_TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
                  ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8",
                  ".txt": "text/plain; charset=utf-8", ".md": "text/plain; charset=utf-8",
-                 ".glb": "model/gltf-binary", ".ply": "application/octet-stream"}
+                 ".glb": "model/gltf-binary", ".ply": "application/octet-stream", ".bin": "application/octet-stream"}
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
        "img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; "
        "object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
@@ -230,6 +232,21 @@ def _validate_contents(files: Mapping[str, PreviewFile]) -> None:
             bound.add(name)
     if (set(files) & DETAIL_NAMES) - bound:
         raise PreviewError("unbound_bundle_detail_asset")
+    if SECTION_MANIFEST in files:
+        sections = _json_file(files, SECTION_MANIFEST)
+        entries = sections.get("layers")
+        if not isinstance(entries, list) or not isinstance(sections.get("labels"), dict):
+            raise PreviewError("invalid_bundle_section_images")
+        for entry in [*entries, sections["labels"]]:
+            if not isinstance(entry, dict) or not isinstance(entry.get("assetUrl"), str):
+                raise PreviewError("invalid_bundle_section_images")
+            name = entry["assetUrl"].removeprefix("/")
+            if entry["assetUrl"] != "/" + name or name not in SECTION_NAMES or name in bound:
+                raise PreviewError("invalid_bundle_section_images")
+            _check_binding(files, name, entry)
+            bound.add(name)
+    if (set(files) & SECTION_NAMES) - bound:
+        raise PreviewError("unbound_bundle_section_image")
     _validate_model_metadata(files)
 
 

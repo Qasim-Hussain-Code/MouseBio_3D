@@ -4,7 +4,8 @@ import {
   parseExperimentalJson, summarizeMeasurements, type Atlas, type DatasetMetadata,
   type ExperimentalMeasurement, type ExplorationMode, type ImportResult, type MeasurementSummary,
 } from './domain';
-import type { CameraPose, ViewerHandle, ViewerSettings } from './viewer/ViewerCanvas';
+import type { CameraPose, SectionImageStatus, ViewerHandle, ViewerSettings } from './viewer/ViewerCanvas';
+import { sectionImagesApplyTo, type SectionImageChoice } from './domain/section-images';
 import { measurementColors } from './domain/visualization';
 import { DatasetDetails } from './components/DatasetDetails';
 import { OntologyContext } from './components/OntologyContext';
@@ -111,6 +112,10 @@ export default function App() {
   const [allLabels,setAllLabels]=useState(false);
   const [surfaceDisplay,setSurfaceDisplay]=useState<SurfaceDisplay>('smoothed');
   const [colourScheme,setColourScheme]=useState<ColourScheme>('tissue');
+  const [sectionImage,setSectionImage]=useState<SectionImageChoice>('cryosection');
+  const [sectionStatus,setSectionStatus]=useState<SectionImageStatus>({status:'idle'});
+  const [displayOpen,setDisplayOpen]=useState(false);
+  const pendingCut = useRef(false);
   const [navigatorOpen,setNavigatorOpen]=useState(false);
   // A side column on wide screens; below 901 px the inspector is an overlay drawer.
   const [inspectorOpen,setInspectorOpen]=useState(()=>typeof window.matchMedia!=='function'||window.matchMedia('(min-width: 901px)').matches);
@@ -234,7 +239,7 @@ export default function App() {
     structureId: selected, measurement: first.measurement, unit: first.unit, timePoint: first.timePoint,
     conditionA: activeA, conditionB: activeB,
   }) : null;
-  const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels };
+  const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels, sectionImage: mode === 'comparative' ? 'none' : sectionImage };
   const toggleHidden = (id: string) => { isolation.current = null; setActiveGroup(''); pendingGroupFocus.current = null; setHidden((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); };
   /** Make opaque skin see-through so that regions inside the body can be seen. Returns whether it changed. */
   const peelSkin = () => {
@@ -276,8 +281,15 @@ export default function App() {
       viewer.current.focusRegions(ids); pendingGroupFocus.current = null;
     }
   };
+  /** Open the source images on a central section through the specimen, facing the camera towards the cut. */
+  const cutSpecimen = () => {
+    setSectionImage((previous) => previous === 'none' ? 'cryosection' : previous);
+    setClipPosition(50); setClipAxis('y'); setDisplayOpen(true); setNavigatorOpen(false);
+    viewer.current?.viewCutFace('y');
+  };
   const viewerReady = (details: ViewerDiagnostics) => {
     setDiagnostics(details);
+    if (pendingCut.current) { pendingCut.current = false; viewer.current?.viewCutFace('y'); }
     const pending = pendingGroupFocus.current;
     if (pending && pending.atlasId === atlas?.id && viewer.current) {
       viewer.current.focusRegions(pending.ids); pendingGroupFocus.current = null;
@@ -494,6 +506,9 @@ export default function App() {
   const hasBodyEnvelope = !!skinId;
   const skinOpacity = skinId ? opacity[skinId] ?? defaultStructureOpacity(atlas.structures.find((structure) => structure.id === skinId)!) : 0;
   const smoothing = smoothingOptionsFor(atlas);
+  const sectionImages = sectionImagesApplyTo(atlas);
+  const cutFaceShown = sectionImages && mode !== 'comparative' && clipAxis !== 'off' && sectionImage !== 'none' && sectionStatus.status === 'ready' && sectionStatus.id === sectionImage;
+  const chooseSectionAxis = (axis: typeof clipAxis) => { setClipAxis(axis); if (axis !== 'off' && sectionImages && sectionImage !== 'none') viewer.current?.viewCutFace(axis); };
   const viewerFailed = viewerState.primary === 'failed' || (mode === 'comparative' && viewerState.secondary === 'failed');
   return <div className={`app-shell workbench mode-${mode} ${inspectorOpen?'inspector-open':''} ${navigatorOpen?'navigator-open':''}`}>
     <header className="app-header">
@@ -524,6 +539,8 @@ export default function App() {
       <div id="navigator-systems" role="tabpanel" aria-labelledby="navigator-tab-systems" hidden={navigatorTab!=='systems'} className="navigator-pane">
         <SystemLayers atlas={atlas} hidden={hidden} opacity={opacity} onToggleSystem={toggleSystem} onIsolateSystem={isolateSystem} onShowAll={showAll}/>
         {hasBodyEnvelope&&<button className="secondary-button" onClick={showOrgans} aria-label="Organs visibility preset">Reveal organs</button>}
+        {sectionImages&&<button className="secondary-button section-cut-button" onClick={cutSpecimen}>Cut through the specimen</button>}
+        {atlas.id==='digimouse-tessellated-v1'&&<button className="secondary-button section-cut-button" disabled={referenceLoading} onClick={()=>{pendingCut.current=true;void switchReference('digimouse-volume-040-v1').then(cutSpecimen);}} title="Opens the registered-volume reference of this specimen, whose grid the source images share">Open specimen photographs</button>}
               <div className="anatomy-group-bar"><label>Isolate a source group<select aria-label="Source anatomy group" value={selectedGroup ? activeGroup : ''} disabled={!anatomyGroups?.ok} onChange={(event) => { const group = anatomyGroups?.groups.find((entry) => entry.id === event.target.value); if (group) exploreGroup(group); }}><option value="" disabled>Current view</option>{anatomyGroups?.groups.map((group) => <option key={group.id} value={group.id}>{group.title} ({group.structureIds.length})</option>)}</select></label><button className="secondary-button" disabled={visibleCount === 0 || viewerState.primary !== 'ready'} onClick={() => focusRegions(atlas.structures.filter((structure) => !hidden.includes(structure.id) && (opacity[structure.id] ?? defaultStructureOpacity(structure)) > 0).map((structure) => structure.id))}><Icon name="focus" size={15} /> Fit visible regions</button>{selectedGroup && <details className="group-limitations"><summary>Group limits</summary><p>{selectedGroup.description}</p><ul>{selectedGroup.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul></details>}</div>
       {anatomyGroups?.ok && <SourceLayerControls key={atlas.id} groups={anatomyGroups.groups} onApply={applySourceLayers} />}
 
@@ -560,19 +577,20 @@ export default function App() {
       {mode === 'comparative' && rows.length > 0 && (conditions.length < 2 || activeA === activeB) && <p className="view-import-error" role="status">Choose two distinct conditions in this measurement series.</p>}
       <div className="viewer-stage"><section className={`viewport ${mode === 'comparative' ? 'comparison-viewport' : ''}`} aria-label="Anatomical viewer">
         <div className="viewport-top"><span className="viewport-breadcrumb">{referenceSummary.source.displayName.toUpperCase()} <span>/</span> {mode === 'comparative' ? 'SYNCHRONIZED REFERENCE' : referenceSummary.specimen.scope.toUpperCase()}</span><div className="viewport-top-actions"><span className="viewport-chip"><span /> {atlas.structures.length} source regions</span>{skinId&&<label className="skin-control" title="Opacity of the body surface shown as skin; display only">Skin <input type="range" min="0" max="100" aria-label="Skin opacity" value={Math.round(skinOpacity*100)} onChange={event=>{const value=+event.target.value/100;setOpacity(previous=>({...previous,[skinId]:value}));if(value>0)setHidden(previous=>previous.filter(id=>id!==skinId));setActiveGroup('');}}/><span>{Math.round(skinOpacity*100)}%</span></label>}</div></div>
-        <details className="scene-display"><summary>Display controls</summary>
+        <details className="scene-display" open={displayOpen} onToggle={event=>setDisplayOpen((event.target as HTMLDetailsElement).open)}><summary>Display controls</summary>
           <label><input type="checkbox" checked={focusOnSelection} onChange={event=>setFocusOnSelection(event.target.checked)}/> Focus on selection</label>
           <label><input type="checkbox" checked={autoRotate} disabled={mode==='comparative'} onChange={event=>setAutoRotate(event.target.checked)}/> Auto-rotate</label>
           {smoothing&&<label title={`Taubin smoothing, ${smoothing.iterations} iterations; removes the processing-grid staircase and adds no resolution`}><input type="checkbox" checked={surfaceDisplay==='smoothed'} onChange={event=>setSurfaceDisplay(event.target.checked?'smoothed':'source')}/> Smooth voxel surfaces (display only)</label>}
           <label>Colours <select aria-label="Display colour scheme" value={colourScheme} onChange={event=>setColourScheme(event.target.value as ColourScheme)}><option value="tissue">Tissue-like display colours</option><option value="source">Manifest colours</option></select></label>
-                <div className="section-bar"><Icon name="layers" size={18} /><div><strong>Virtual section</strong><small>Surface clipping, without tissue reconstruction</small></div><select aria-label="Section axis" value={clipAxis} onChange={(event) => setClipAxis(event.target.value as typeof clipAxis)}><option value="off">No section</option><option value="x">Display X</option><option value="y">Display Y</option><option value="z">Display Z</option></select><input type="range" aria-label="Section position" min="0" max="100" value={clipPosition} disabled={clipAxis === 'off'} onChange={(event) => setClipPosition(+event.target.value)} /><span>{clipPosition}%</span></div>
+                <div className="section-bar"><Icon name="layers" size={18} /><div><strong>Virtual section</strong><small>{sectionImages&&sectionImage!=='none'&&mode!=='comparative'?'Source images of this specimen on the cut':'Surface clipping, without tissue reconstruction'}</small></div><select aria-label="Section axis" value={clipAxis} onChange={(event) => chooseSectionAxis(event.target.value as typeof clipAxis)}><option value="off">No section</option><option value="x">Display X</option><option value="y">Display Y</option><option value="z">Display Z</option></select><input type="range" aria-label="Section position" min="0" max="100" value={clipPosition} disabled={clipAxis === 'off'} onChange={(event) => setClipPosition(+event.target.value)} /><span>{clipPosition}%</span>{sectionImages&&<label className="section-image-choice">Cut face <select aria-label="Cut face image" value={sectionImage} disabled={mode==='comparative'} onChange={event=>setSectionImage(event.target.value as SectionImageChoice)}><option value="cryosection">Specimen photograph</option><option value="ct">CT</option><option value="none">None</option></select>{clipAxis!=='off'&&sectionImage!=='none'&&sectionStatus.status==='loading'&&<small>Loading images</small>}{clipAxis!=='off'&&sectionImage!=='none'&&sectionStatus.status==='failed'&&<small role="alert">Images unavailable</small>}</label>}</div>
         </details><div className="canvas-pair">
-          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} pathSignal={mode==='living'&&pathSignal?.referenceId===atlas.id?pathSignal:undefined} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} onAutoRotateEnd={()=>setAutoRotate(false)} /></Suspense></div>
+          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} pathSignal={mode==='living'&&pathSignal?.referenceId===atlas.id?pathSignal:undefined} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} onAutoRotateEnd={()=>setAutoRotate(false)} onSectionImageStatus={setSectionStatus} /></Suspense></div>
           {mode === 'comparative' && <div className="canvas-cell"><div className="condition-label"><span>B</span>{activeB || 'Reference anatomy'}</div><Suspense fallback={viewerLoading}><ViewerCanvas atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} settings={{ ...settings, colors: colorB }} onSelect={select} handle={compareViewer} onStatus={(status) => setViewerState((previous) => ({ ...previous, secondary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>}
         </div>
         <div className="camera-pad" role="group" aria-label="Camera controls"><button aria-label="Pan display up" onClick={()=>viewer.current?.pan(0,.1)}>↑</button><button aria-label="Zoom in" onClick={()=>viewer.current?.zoom(.8)}>+</button><button aria-label="Pan display left" onClick={()=>viewer.current?.pan(-.1,0)}>←</button><button aria-label="Reset camera" onClick={()=>viewer.current?.reset()}>⌖</button><button aria-label="Pan display right" onClick={()=>viewer.current?.pan(.1,0)}>→</button><button aria-label="Pan display down" onClick={()=>viewer.current?.pan(0,-.1)}>↓</button><button aria-label="Zoom out" onClick={()=>viewer.current?.zoom(1.25)}>−</button></div><div className="view-controls"><span className="control-divider" />{(['x', 'y', 'z'] as const).map((axis) => <button className="viewer-button axis-button" key={axis} aria-label={`View along display ${axis} axis`} title={`Display ${axis.toUpperCase()} axis; not an anatomical direction`} onClick={() => viewer.current?.view(axis)}>{axis.toUpperCase()}</button>)}<span className="control-divider" /><button className={`viewer-button ${labels ? 'active' : ''}`} aria-label="Toggle selected structure label" aria-pressed={labels} onClick={() => setLabels(!labels)}>Aa</button><button className={`viewer-button label-all-button ${allLabels ? 'active' : ''}`} aria-label="Label all displayed regions" title="Label all displayed regions without overlaps" aria-pressed={allLabels} onClick={() => setAllLabels(!allLabels)}>All</button></div>
         {shownGroups.length > 0 && (mode === 'experimental' || mode === 'comparative') && <div className="quantitative-legend"><strong>Mean {first?.measurement}</strong><span>{first?.unit} · {first?.timePoint}</span><div className="color-ramp" /><div className="legend-numbers"><span>{format(min)}</span><span>{format(max)}</span></div><small>Unmapped regions keep their display colours</small></div>}
         <div className="viewport-bottom"><span>Drag to rotate <i /> Scroll to zoom <i /> Click to select</span><span className="display-frame">Display axes · orientation unverified</span></div>
+        {cutFaceShown && <span className="section-image-label">{sectionImage === 'ct' ? 'CUT FACE: SOURCE CT OF THIS SPECIMEN' : 'CUT FACE: SOURCE PHOTOGRAPH OF THIS SPECIMEN, FROZEN AND POSTMORTEM'}</span>}
         {mode === 'living' && availableMotion.length > 0 && <span className="illustrative-label">ILLUSTRATIVE MOTION · NOT A VALIDATED SIMULATION</span>}
         {circuitsShown && <><span className="circuit-label">SCHEMATIC ROUTES · CONNECTORS ARE NOT VESSEL OR NERVE GEOMETRY</span>
           <div className="circuit-legend" role="note" aria-label="Schematic route legend"><strong>SCHEMATIC ROUTES</strong>

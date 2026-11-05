@@ -6,6 +6,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { coveredBySkin, OPAQUE_SKIN } from '../src/domain/reference-display';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { bodySurfaceIdFor, displayPostureFor } from '../src/domain/display-pose';
@@ -101,4 +102,14 @@ test('the contact shadow lies just under the displayed bounds and its program ed
   assert.deepEqual([sidePlane.geometry.parameters.width, sidePlane.geometry.parameters.height].map((value) => Math.round(value / CONTACT_SHADOW.margin * 1e9) / 1e9).sort(), [1, 2]);
   sideways.dispose();
   assert.equal(createContactShadow(bounds, new THREE.Vector3(2, 0, 0)), null);
+});
+
+test('an opaque uncut body surface covers the regions inside it, and nothing else does', () => {
+  assert.equal(coveredBySkin('liver', 'skin', true, 1, 'off'), true);
+  assert.equal(coveredBySkin('liver', 'skin', true, OPAQUE_SKIN, 'off'), true);
+  assert.equal(coveredBySkin('skin', 'skin', true, 1, 'off'), false);
+  assert.equal(coveredBySkin('liver', 'skin', true, OPAQUE_SKIN - 0.01, 'off'), false);
+  assert.equal(coveredBySkin('liver', 'skin', false, 1, 'off'), false);
+  for (const axis of ['x', 'y', 'z']) assert.equal(coveredBySkin('liver', 'skin', true, 1, axis), false);
+  assert.equal(coveredBySkin('liver', null, true, 1, 'off'), false);
 });

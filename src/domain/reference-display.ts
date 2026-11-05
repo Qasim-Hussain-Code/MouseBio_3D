@@ -27,6 +27,16 @@ export function referenceOpacity(atlas: Atlas, organs = false): Record<string, n
         : structure.id === skin ? SKIN_OPACITY : defaultStructureOpacity(structure)]));
 }
 
+/**
+ * Whether an opaque, uncut body surface hides a region inside it. A thin body
+ * surface can fall between the samples of a coarse grid, and a region behind it
+ * would then appear through the gap, although at source resolution only the body
+ * label meets the background.
+ */
+export function coveredBySkin(id: string, skinId: string | null | undefined, skinVisible: boolean, skinOpacity: number, clipAxis: string): boolean {
+  return !!skinId && id !== skinId && skinVisible && skinOpacity >= OPAQUE_SKIN && clipAxis === 'off';
+}
+
 /** The see-through skin opacity used when the inside of the body is to be shown. */
 export function seeThroughSkinOpacity(atlas: Atlas): number | null {
   const skin = bodySurfaceIdFor(atlas);

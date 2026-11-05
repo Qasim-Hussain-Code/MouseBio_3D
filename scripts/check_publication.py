@@ -9,6 +9,7 @@ import math
 import re
 import struct
 import subprocess
+import zlib
 from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 
@@ -34,6 +35,18 @@ HINDLIMB_JSON_SHA256 = "0eda5effc49a460fbc89de070baa5d48c940c5f5b0dab1319f5d4f13
 HINDLIMB_PRC_SHA256 = "c300f38c7888b82b0c2e00548c8d2bb5b879b076872e5e44781da8a8477fc659"
 HINDLIMB_DECODER_COMMIT = "24bfa43b7c29203c572892662ec8a5a8e8ae7b96"
 HINDLIMB_FRAME = "charles2016-hindlimb-prc-native-v1"
+SECTION_MANIFEST_PATH = "public/atlas-volume/sections/sections.json"
+SECTION_SOURCES = {
+    "cryosection": ("public/atlas-volume/sections/cryosection-slices.bin", "c6b40136e06709ad7b5ce1b3496828b1a282b462ca2ec4a5610971af07c73090"),
+    "ct": ("public/atlas-volume/sections/ct-deflate.bin", "5ca9e99a3a4adeb7879bb4d6c8f45e407b7a49bbc599b3936fa46503cf7acb65"),
+    "labels": ("public/atlas-volume/sections/labels-deflate.bin", VOLUME_ARCHIVE_SHA256),
+}
+# Other binary files stay opaque and require review; only these exact paths are registered section images.
+SECTION_IMAGE_PATHS = frozenset(path for path, _ in SECTION_SOURCES.values())
+# JFIF header, quantization tables, baseline frame, Huffman tables and restart interval; any other segment could carry metadata.
+SECTION_JPEG_MARKERS = frozenset({0xE0, 0xDB, 0xC0, 0xC4, 0xDD})
+SECTION_DIMENSIONS = [380, 992, 208]
+SECTION_VOXELS = 380 * 992 * 208
 MICROCT_FRAME = "rosenhain2018-m01-ct280-native-v1"
 # SHA-256 of the first organ segmentation and bed segmentation of scan 1_nativeCTdata/M01_0.25h (CC0 1.0 dataset).
 MICROCT_ORGAN1_SHA256 = "61db0343fceea50b43159af348f5c780056ae45643a5f3d36d8ed55ea7589ffb"
@@ -219,6 +232,62 @@ def register_neuromorpho(manifest: dict, read, registry: dict[str, dict]) -> Non
         "coordinateFrameId": NEURON_FRAME_ID, "statistics": expected["statistics"],
         "manifestPath": NEURON_MANIFEST_PATH, "licensePath": NEURON_LICENSE_PATH,
     }
+
+
+def register_section_images(manifest: dict, volume: dict | None, registry: dict[str, dict]) -> None:
+    """Bind the coregistered source image streams to the registered-volume reference."""
+    if (volume is None or manifest.get("schemaVersion") != "mousebio.section-images.v1" or manifest.get("atlasId") != volume.get("id")
+            or manifest.get("coordinateFrameId") != VOLUME_FRAME or manifest.get("dimensions") != SECTION_DIMENSIONS
+            or manifest.get("license") != "CC-BY-SA-4.0" or manifest.get("licenseUrl") != "https://creativecommons.org/licenses/by-sa/4.0/"
+            or "Dogdas" not in str(manifest.get("attribution"))):
+        raise ValueError("Section images are not bound to the registered source")
+    entries = {layer.get("id"): layer for layer in manifest["layers"]}
+    entries["labels"] = manifest["labels"]
+    if set(entries) != set(SECTION_SOURCES):
+        raise ValueError("Section image inventory is not registered")
+    for kind, entry in entries.items():
+        path, archive = SECTION_SOURCES[kind]
+        size, digest = entry.get("assetBytes"), entry.get("assetSha256")
+        if (entry.get("assetUrl") != "/" + path.removeprefix("public/") or entry.get("sourceArchiveSha256") != archive or path in registry
+                or type(size) is not int or not 0 < size <= MAX_REGISTERED_GLB_BYTES or not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest)):
+            raise ValueError("Invalid section image binding")
+        registry[path] = {"format": "section-image-v1", "encoding": entry.get("format"), "bytes": size, "sha256": digest, "ids": None,
+                          "atlasId": manifest["atlasId"], "coordinateFrameId": VOLUME_FRAME, "manifestPath": SECTION_MANIFEST_PATH,
+                          "licensePath": "public/atlas-volume/LICENSE.md", "slices": entry.get("slices"),
+                          "expandedBytes": entry.get("expandedBytes"), "expandedSha256": entry.get("expandedSha256")}
+
+
+def inspect_registered_section_image(data: bytes, binding: dict) -> bytes:
+    """Numeric image streams have no text to scan; JPEG slices may hold no metadata segments."""
+    if len(data) != binding["bytes"] or hashlib.sha256(data).hexdigest() != binding["sha256"]:
+        raise ValueError("Section image differs from its registry")
+    if binding["encoding"] == "jpeg-slices-v1":
+        expected = 0
+        if len(binding["slices"]) != SECTION_DIMENSIONS[2]:
+            raise ValueError("Unexpected section slice count")
+        for offset, length in binding["slices"]:
+            if offset != expected or data[offset:offset + 2] != b"\xff\xd8" or data[offset + length - 2:offset + length] != b"\xff\xd9":
+                raise ValueError("Section slice is not one complete JPEG")
+            expected += length
+            cursor = offset + 2
+            while True:
+                if data[cursor] != 0xFF:
+                    raise ValueError("Invalid JPEG marker sequence")
+                marker = data[cursor + 1]
+                if marker == 0xDA:
+                    break
+                if marker not in SECTION_JPEG_MARKERS:
+                    raise ValueError("Section slice contains an unreviewed JPEG segment")
+                cursor += 2 + struct.unpack_from(">H", data, cursor + 2)[0]
+        if expected != len(data):
+            raise ValueError("Section slices do not cover their asset")
+    elif binding["encoding"] == "deflate-raw-u8-v1":
+        expanded = zlib.decompress(data, -15)
+        if len(expanded) != SECTION_VOXELS or binding["expandedBytes"] != SECTION_VOXELS or hashlib.sha256(expanded).hexdigest() != binding["expandedSha256"]:
+            raise ValueError("Section image stream differs from its registry")
+    else:
+        raise ValueError("Unsupported section image encoding")
+    return b""
 
 
 def inspect_registered_source_trace(data: bytes, binding: dict) -> bytes:
@@ -572,6 +641,9 @@ def anatomy_registry(read) -> dict[str, dict]:
     raw = read(detail_path, MAX_GLB_JSON_BYTES)
     if raw is not None:
         register_details(json.loads(raw), volume, registry)
+    raw = read(SECTION_MANIFEST_PATH, MAX_GLB_JSON_BYTES)
+    if raw is not None:
+        register_section_images(json.loads(raw), volume, registry)
     if sum(asset["bytes"] for asset in registry.values()) > MAX_REGISTERED_TOTAL_BYTES:
         raise ValueError("Registered anatomical assets exceed the total bound")
     return registry
@@ -696,6 +768,8 @@ def inspect_registered_asset(data: bytes, binding: dict) -> bytes:
         return inspect_registered_source_trace(data, binding)
     if binding.get("format") == "polyline-native-v1":
         return inspect_registered_polyline(data, binding)
+    if binding.get("format") == "section-image-v1":
+        return inspect_registered_section_image(data, binding)
     raise ValueError("Unsupported registered anatomical asset format")
 
 
@@ -816,7 +890,7 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
         nonlocal inspected, opaque, registered
         selected_registry = registry if bindings is None else bindings
         registered_text = is_registered_text_path(path, selected_registry.get(path))
-        if path.lower().endswith((".glb", ".ply")) or registered_text:
+        if path.lower().endswith((".glb", ".ply")) or path in SECTION_IMAGE_PATHS or registered_text:
             try:
                 if path not in selected_registry:
                     raise ValueError("Unregistered anatomical asset")

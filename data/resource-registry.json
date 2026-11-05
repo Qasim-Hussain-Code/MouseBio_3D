@@ -65,7 +65,26 @@
         "Source overview may be more detailed than distributed tetrahedral labels",
         "No physiological validation implied",
         "Native anatomical axis directions need explicit verification before anatomical direction labels or quantitative registration"
-      ]
+      ],
+      "coregisteredImages": {
+        "selectedOn": "2026-11-05",
+        "files": [
+          {
+            "url": "https://neuroimage.usc.edu/mouse_atlas/cryo_data.zip",
+            "bytes": 89109742,
+            "sha256": "c6b40136e06709ad7b5ce1b3496828b1a282b462ca2ec4a5610971af07c73090",
+            "use": "208 colour cryosection JPEG slices on the registered grid"
+          },
+          {
+            "url": "https://neuroimage.usc.edu/mouse_atlas/ct_data.zip",
+            "bytes": 19876037,
+            "sha256": "5ca9e99a3a4adeb7879bb4d6c8f45e407b7a49bbc599b3936fa46503cf7acb65",
+            "use": "8-bit CT image on the registered grid"
+          }
+        ],
+        "license": "CC-BY-SA-4.0, stated in each archive LICENSE.txt",
+        "decision": "selected_for_cut_face_display_on_the_registered_volume_reference"
+      }
     },
     {
       "id": "charles2016_hindlimb_s1",

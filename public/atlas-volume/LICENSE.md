@@ -4,7 +4,7 @@ These assets are adapted from Digimouse by Belma Dogdas, David Stout, Arion F. C
 
 Source: <https://neuroimage.usc.edu/neuro/Digimouse>
 
-Dataset: <https://neuroimage.usc.edu/mouse_atlas/atlas.zip>
+Datasets: <https://neuroimage.usc.edu/mouse_atlas/atlas.zip>, and for the section images <https://neuroimage.usc.edu/mouse_atlas/cryo_data.zip> and <https://neuroimage.usc.edu/mouse_atlas/ct_data.zip>
 
 Publication: Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. *Physics in Medicine and Biology*. 2007;52:577-587. <https://doi.org/10.1088/0031-9155/52/3/003>
 
@@ -12,4 +12,6 @@ The source data and adapted anatomical surfaces are licensed under [Creative Com
 
 Adaptation by Qasim Hussain for MouseBio_3D includes explicitly recorded grid subsampling, binary half-value isosurfaces on a consistent tetrahedral grid, outward triangle winding, area-weighted normals, indexed glTF encoding and categorical display colours. No additional anatomical labels, laterality, registration, tissue layers or physiological claims were supplied. Source labels and limitations are retained in the manifests.
 
-The derived geometry, manifests and detail index retain CC BY-SA 4.0. Preserve attribution, indicate further changes and comply with ShareAlike when redistributing adaptations. No endorsement by the original authors is implied. These data are supplied without warranties under the license terms. The original application code's MIT license does not replace this anatomical asset license.
+The `sections` directory packages the coregistered source images without re-encoding: the JPEG cryosection slices are concatenated, and the CT and label images keep the raw deflate streams of their archive members.
+
+The derived geometry, manifests, detail index and section images retain CC BY-SA 4.0. Preserve attribution, indicate further changes and comply with ShareAlike when redistributing adaptations. No endorsement by the original authors is implied. These data are supplied without warranties under the license terms. The original application code's MIT license does not replace this anatomical asset license.

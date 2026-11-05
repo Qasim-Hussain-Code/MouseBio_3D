@@ -141,7 +141,7 @@ Digimouse geometry and adapted atlas metadata are separately licensed CC BY-SA 4
 Digimouse, Belma Dogdas, David Stout, Arion F. Chatziioannou and Richard M. Leahy, USC/UCLA, 2007.
 Source: https://neuroimage.usc.edu/neuro/Digimouse
 License: https://creativecommons.org/licenses/by-sa/4.0/
-Geometry adaptation: Qasim Hussain, MouseBio_3D. See atlas/LICENSE.md and atlas-volume/LICENSE.md for tetrahedral boundary and registered-volume surface modifications.
+Geometry adaptation: Qasim Hussain, MouseBio_3D. See atlas/LICENSE.md and atlas-volume/LICENSE.md for tetrahedral boundary and registered-volume surface modifications and for the coregistered cryosection and CT images packaged without re-encoding.
 
 
 Hindlimb source surfaces and source labels are licensed CC BY 4.0.

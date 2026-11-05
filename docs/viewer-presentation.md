@@ -58,6 +58,14 @@ Smoothing adds no resolution. A smoothed boundary remains bounded by the process
 
 The executed asset check (`tests/surface-smoothing-assets.test.ts`) measures the departure of the display copy from the source triangles. For all 17 tetrahedral regions the largest vertex displacement is 0.54 mm (1.35 processing voxels), the largest bounding-box shift 0.36 mm and the largest change of enclosed signed volume 3.28 percent, in the 388-triangle muscle region 15; the whole-body envelope, skeleton, liver and lungs change by less than 0.1 percent. For the volume base heart, liver and lungs the displacements are at most 0.31 mm (0.77 voxels), bounds shift at most 0.11 mm and the enclosed volumes change by 0.19, 0.01 and 0.16 percent; the 0.2 mm adrenal surface changes by 0.25 percent with a 0.15 mm displacement. Residual long terraces remain visible on the largest volume surfaces at close range; removing them entirely would require passes that begin to alter shape. A separate check records that long runs with mu -0.53 inflate low-frequency shape instead of smoothing further, which is why the counts are fixed. These are numerical properties of the display copy, not statements about anatomical size.
 
+## Regions behind the opaque body surface
+
+While the body surface is visible, at least 95% opaque and not cut by a virtual section, the regions inside it are neither drawn nor picked. They remain listed and shown in the interface, and they return as soon as the surface becomes translucent, is hidden or is cut. Without this rule, sampling alone would place regions in view that the source does not expose: in the 0.1 mm source only the residual tissue label meets the background, whereas on the 0.4 mm grid of the registered-volume reference a thin body surface can fall between samples, which leaves 421 voxel faces of inner regions next to the background (383 skeleton, 30 masseter muscle and 8 liver). The gaps in the body surface themselves remain, because closing them would add geometry, and they appear as small dents showing the inner side of the surface.
+
+## Cut-face images
+
+On the registered-volume reference the cut face of a virtual section can show the coregistered source photographs or CT of the specimen. They are measured image data shown unlit and are not a presentation convention, although their masking to the labelled body, the 0.2 mm in-plane display resolution and the camera move that faces the cut are. See [section image methods](section-images.md).
+
 ## Limitations
 
 These conventions were checked in a headless Chrome session with software WebGL and inspected visually; representative hardware performance remains unmeasured. The shading hooks modify the standard fragment program through `onBeforeCompile`; an unexpected program is left unchanged and the surface renders with plain shading. No lighting, material or pose setting constitutes anatomical review, physical calibration or validation of any model.
