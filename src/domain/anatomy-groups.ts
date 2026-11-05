@@ -64,6 +64,8 @@ const HINDLIMB_LABELS = Object.freeze([
   'Biceps femoris (anterior)', 'Popliteus', 'Caudofemoralis', 'Gracilis (anterior)',
   'Semitendinosus', 'Adductor magnus', 'Semimembranosus', 'Gracilis (posterior)',
 ]);
+/** Class names of the first organ segmentation file of the Rosenhain et al. (2018) micro-CT scan, CC0 1.0. */
+const MICROCT_CLASSES = Object.freeze(['Bone', 'Lung', 'Heart', 'Liver', 'Intestine', 'Bladder', 'Spleen', 'Stomach', 'Muscle', 'Kidneys']);
 const HINDLIMB_BONES = Object.freeze([14, 16, 17, 18, 19, 20]);
 const HINDLIMB_TENDON = Object.freeze([15]);
 const HINDLIMB_MUSCLES = Object.freeze([...Array.from({ length: 14 }, (_, index) => index),
@@ -77,6 +79,38 @@ function group(id: string, title: string, structureIds: readonly string[], descr
   limitations: readonly string[]): AnatomyGroup {
   return Object.freeze({ id, title, structureIds: Object.freeze([...structureIds]), description,
     limitations: Object.freeze([...limitations]) });
+}
+
+/** The bed body class and the ten Organ1 classes are the complete reviewed micro-CT inventory. */
+function microctGroups(atlas: Atlas): AnatomyGroupsResult {
+  if (atlas.coordinateFrame?.id !== 'rosenhain2018-m01-ct280-native-v1' || atlas.source?.id !== 'rosenhain2018-native-microct'
+      || atlas.source?.license !== 'CC0-1.0' || !Array.isArray(atlas.structures) || atlas.structures.length !== MICROCT_CLASSES.length + 1) {
+    return failure('The reference frame, source provenance or source-region inventory does not match the reviewed display-group definition.');
+  }
+  const body = 'rosenhain2018-m01:Bed:1';
+  const expected = [{ id: body, label: '1' }, ...MICROCT_CLASSES.map((label, index) => ({ id: `rosenhain2018-m01:Organ1:${index + 1}`, label }))];
+  const byId = new Map(atlas.structures.map((structure) => [structure?.id, structure]));
+  if (byId.size !== expected.length || expected.some(({ id, label }) => byId.get(id)?.sourceLabel !== label)) {
+    return failure('Display groups require every original source identifier and label without duplicates or substitutions.');
+  }
+  const organ = (name: string) => `rosenhain2018-m01:Organ1:${MICROCT_CLASSES.indexOf(name) + 1}`;
+  const whole = expected.map(({ id }) => id);
+  const groups = [
+    group('whole-mouse', 'Whole micro-CT reference', whole,
+      'The body and all ten organ classes of the first segmentation file.',
+      ['One female specimen within a trunk field of view; the head, distal limbs and tail are partly outside it.',
+        'This selection adds no geometry, biological resolution or independently verified anatomical orientation.']),
+    group('skeleton', 'Bone', [organ('Bone')],
+      'The aggregate bone class, segmented by thresholding and region growing in the source study.',
+      ['Individual bones are not identified, and the two source segmentations of this scan disagree on bone extent.']),
+    group('organs', 'Organs and other regions', whole.filter((id) => id !== body && id !== organ('Bone')),
+      'All organ classes except bone, including the partial thigh muscle class.',
+      ['This is a display convenience, not a formal organ classification or a claim of complete internal anatomy.']),
+    group('digestive', 'Liver, stomach and intestine', ['Liver', 'Stomach', 'Intestine'].map(organ),
+      'The three digestive organ classes of the source segmentation.',
+      ['The intestine class is one aggregate region; intestinal segments and the pancreas are not identified.']),
+  ];
+  return Object.freeze({ ok: true, groups: Object.freeze(groups), errors: Object.freeze([]) });
 }
 
 /** The PDF's zero-based tessellation indices and names are the complete reviewed inventory. */
@@ -142,6 +176,7 @@ export function buildAnatomyGroups(atlas: Atlas): AnatomyGroupsResult {
 
   if (atlas?.id === 'ema147-native-v1') return buildEma147Groups(atlas);
   if (atlas?.id === 'charles2016-hindlimb-v1') return hindlimbGroups(atlas);
+  if (atlas?.id === 'rosenhain2018-m01-native-v1') return microctGroups(atlas);
   if (!atlas || typeof atlas.id !== 'string' || !Object.hasOwn(REFERENCES, atlas.id)) {
     return failure('No supported anatomical display groups are defined for this reference.');
   }

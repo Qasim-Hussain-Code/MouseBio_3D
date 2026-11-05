@@ -147,7 +147,7 @@
         "ageConflictResolved": false,
         "ageClaims": [
           {
-            "value": 15.0,
+            "value": 15,
             "unit": "embryonic_day",
             "source": "deposit_estimate"
           },
@@ -285,7 +285,7 @@
       "id": "rosenhain_microct_2018",
       "title": "A preclinical micro-computed tomography database including 3D whole body organ segmentations",
       "origin": "Institute for Experimental Molecular Imaging, University Hospital Aachen and collaborators",
-      "landingPage": "https://springernature.figshare.com/collections/A_preclinical_micro-computed_tomography_database_including_3D_whole_body_organ_segmentations/4224377",
+      "landingPage": "https://doi.org/10.6084/m9.figshare.c.4224377.v1",
       "publication": {
         "doi": "10.1038/sdata.2018.294",
         "year": 2018,
@@ -300,30 +300,50 @@
         "datasetDoi": "10.6084/m9.figshare.c.4224377.v1"
       },
       "license": {
-        "identifier": null,
-        "verifiedAt": "https://www.nature.com/articles/sdata2018294",
-        "redistribution": "unresolved_per_dataset_file_review_required",
+        "identifier": "CC0-1.0",
+        "verifiedAt": "https://api.figshare.com/v2/articles/7058615",
+        "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "redistribution": "permitted_public_domain_dedication_attribution_retained",
         "articleLicense": "CC-BY-4.0",
-        "datasetSpecificPermissionVerified": false
+        "datasetSpecificPermissionVerified": true,
+        "note": "Verified on 2026-11-05: the figshare record of item 7058615, native CT scans with manual organ segmentation, declares CC0. The contrast-enhanced item was not reviewed."
       },
       "coverage": "225 native and contrast-enhanced whole-body mouse CT scans with organ segmentations; longitudinal observations.",
       "methodology": "Native and contrast-enhanced in vivo micro-CT with manual or semi-automatic organ segmentation.",
       "resolution": {
         "reconstructedVoxelSpacingMicrometresAsReported": 28,
-        "status": "header_verification_required",
-        "note": "The publication also reports 0.28 mm in acquisition paragraphs; actual selected files must resolve the discrepancy."
+        "selectedFileVoxelSpacingMm": [
+          0.28,
+          0.28,
+          0.28
+        ],
+        "status": "header_verified_for_selected_scan",
+        "note": "The Analyze headers of the selected CT280, Organ1, Organ2 and Bed files declare 0.28 mm voxels on a 142 by 105 by 200 grid; the article describes CT280 as an averaged level of the 28 micrometre reconstruction.",
+        "surfaceBiologicalResolutionMm": null
       },
       "download": {
-        "compressedBytes": null,
-        "decision": "deferred_select_small_subset_and_verify_file_license"
+        "url": "https://ndownloader.figshare.com/files/12981293",
+        "format": "ZIP of Analyze images and class files",
+        "compressedBytes": 4495345483,
+        "method": "HTTP range requests for the 11 members of one scan; member CRC-32 and SHA-256 recorded in public/atlas-microct/atlas.json",
+        "decision": "selected_one_native_scan_as_separate_reference"
       },
       "limitations": [
-        "Collection size not measured",
-        "Per-file license not established by article license",
-        "Segmentation quality varies by organ and contrast protocol",
-        "Female nude and tumor-bearing populations must not be treated as generic normal anatomy",
+        "One scan of one female BALB/c nu/nu mouse; this athymic, hairless strain is not generic normal anatomy",
+        "Trunk field of view; the head, distal limbs and tail are partly outside it",
+        "Two segmentation files of the same scan disagree for bone and spleen; the first file is used",
+        "No accepted registration to Digimouse; orientation and physical calibration remain independently unverified",
         "Longitudinal scans are not independent biological replicates"
-      ]
+      ],
+      "specimen": {
+        "species": "Mus musculus",
+        "sex": "female",
+        "strain": "BALB/c nu/nu",
+        "age_days": null,
+        "mass_g": null,
+        "count": 1,
+        "selectedScan": "1_nativeCTdata/M01_0.25h"
+      }
     },
     {
       "id": "physiome_bondarenko_2004",
@@ -641,7 +661,7 @@
         "zeroLengthEdges": 2,
         "sourceEdgesRepairedOrRemoved": false,
         "radius": {
-          "constantRecordedValue": 1.0,
+          "constantRecordedValue": 1,
           "records": 5665,
           "negativeRecords": 0,
           "zeroRecords": 0,
@@ -721,7 +741,7 @@
     {
       "id": "morphomuseum_mouse_bony_labyrinth_1376",
       "title": "Mouse paired bony labyrinths: MorphoMuseuM M3#1376",
-      "origin": "Sabrina Renaud, L\u00e9a Amar, Caroline Romestaing, Jean-Pierre Qu\u00e9r\u00e9 and Renaud Lebrun",
+      "origin": "Sabrina Renaud, Léa Amar, Caroline Romestaing, Jean-Pierre Quéré and Renaud Lebrun",
       "landingPage": "https://www.morphomuseum.com/articles/view/220",
       "sourceRecord": {
         "id": "M3#1376",
@@ -882,7 +902,7 @@
         "cycles": 0,
         "zeroLengthEdges": 0,
         "initialFloat32CollapsedEdges": 0,
-        "maximumInitialFloat32PositionErrorSourceUnits": 1.464843751364242e-05,
+        "maximumInitialFloat32PositionErrorSourceUnits": 0.00001464843751364242,
         "initialFloat32DiagnosticsBoundTotalDisplayError": false,
         "radius": {
           "minimumRecordedValue": 0.035,
@@ -977,29 +997,29 @@
         "float32CollapsedSegments": 0,
         "boundsSourceUnits": [
           [
-            1.0,
-            1.0,
-            101.0
+            1,
+            1,
+            101
           ],
           [
-            298.0,
-            298.0,
-            298.0
+            298,
+            298,
+            298
           ]
         ],
         "displayBoundsSourceUnits": [
           [
-            1.0,
-            1.0,
-            101.0
+            1,
+            1,
+            101
           ],
           [
-            298.0,
-            298.0,
-            298.0
+            298,
+            298,
+            298
           ]
         ],
-        "maxFloat32PositionError": 1.5136718729991117e-05
+        "maxFloat32PositionError": 0.000015136718729991117
       },
       "limitations": [
         "This is a predicted regional nerve-graph example, not complete adult peripheral nerve coverage.",

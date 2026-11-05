@@ -44,16 +44,18 @@ function trunkSkeletonHeight(skeleton: THREE.BufferGeometry, body: THREE.BufferG
   return (bone[Math.floor(bone.length / 2)] - low) / (high - low);
 }
 
-test('only the Digimouse references receive an inferred dorsal posture and a body surface', async () => {
-  for (const path of ['atlas', 'atlas-volume', 'atlas-hindlimb', 'atlas-ema147', 'atlas-neuron', 'atlas-vascular', 'atlas-nerve']) {
+test('only the whole-body surface references receive an inferred dorsal posture and a body surface', async () => {
+  const skins: Record<string, string> = { atlas: 'digimouse:1', 'atlas-volume': 'digimouse-volume:1', 'atlas-microct': 'rosenhain2018-m01:Bed:1' };
+  for (const path of ['atlas', 'atlas-volume', 'atlas-microct', 'atlas-hindlimb', 'atlas-ema147', 'atlas-neuron', 'atlas-vascular', 'atlas-nerve']) {
     const atlas = JSON.parse(await readFile(new URL(`../public/${path}/atlas.json`, import.meta.url), 'utf8')) as Atlas;
     const posture = displayPostureFor(atlas), skin = bodySurfaceIdFor(atlas);
-    assert.equal(!!posture, path === 'atlas' || path === 'atlas-volume', path);
-    assert.equal(skin, path === 'atlas' ? 'digimouse:1' : path === 'atlas-volume' ? 'digimouse-volume:1' : null, path);
+    assert.equal(!!posture, Object.hasOwn(skins, path), path);
+    assert.equal(skin, skins[path] ?? null, path);
     if (posture) {
-      assert.deepEqual(posture.up, [0, 0, 1]);
+      assert.deepEqual(posture.up, path === 'atlas-microct' ? [1, 0, 0] : [0, 0, 1]);
       assert.ok(Math.abs(Math.hypot(...posture.view) - 1) < 1e-12);
-      assert.ok(posture.view[2] > 0, 'the default view is raised above the inferred ground');
+      const raised = posture.view[0] * posture.up[0] + posture.view[1] * posture.up[1] + posture.view[2] * posture.up[2];
+      assert.ok(raised > 0, 'the default view is raised above the inferred ground');
       assert.match(posture.basis, /Laterality and calibration remain unverified/);
     }
   }
@@ -89,4 +91,14 @@ test('the contact shadow lies just under the displayed bounds and its program ed
   assert.match(edited, /^uniform float darkness;/);
   assert.match(edited, /\( 1\.0 - fragCoordZ \) \* darkness/);
   assert.equal(shadowFragment('void main() {}'), 'void main() {}');
+  // With display +x as the dorsal direction the plane lies below the lowest x and spans y and z.
+  const sideways = createContactShadow(bounds, new THREE.Vector3(1, 0, 0))!;
+  sideways.group.updateMatrixWorld(true);
+  assert.ok(Math.abs(sideways.group.position.x - (-2 - 0.04)) < 1e-12);
+  assert.ok(Math.abs(sideways.group.position.y) < 1e-12 && Math.abs(sideways.group.position.z) < 1e-12);
+  assert.ok(new THREE.Vector3(0, 0, 1).applyQuaternion(sideways.group.quaternion).distanceTo(new THREE.Vector3(1, 0, 0)) < 1e-12);
+  const sidePlane = sideways.group.children.find((child) => child instanceof THREE.Mesh && child.visible) as THREE.Mesh<THREE.PlaneGeometry>;
+  assert.deepEqual([sidePlane.geometry.parameters.width, sidePlane.geometry.parameters.height].map((value) => Math.round(value / CONTACT_SHADOW.margin * 1e9) / 1e9).sort(), [1, 2]);
+  sideways.dispose();
+  assert.equal(createContactShadow(bounds, new THREE.Vector3(2, 0, 0)), null);
 });

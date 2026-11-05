@@ -151,6 +151,13 @@ License: https://creativecommons.org/licenses/by/4.0/
 Geometry adaptation: Qasim Hussain, MouseBio_3D. See atlas-hindlimb/LICENSE.md for the source and conversion details.
 
 
+Rosenhain et al. native micro-CT surfaces and source class labels: dataset CC0 1.0; article CC BY 4.0.
+Rosenhain S, Magnuska ZA, Yamoah GG, Al Rawashdeh W, Kiessling F and Gremse F, 2018. Scientific Data 5:180294. doi:10.1038/sdata.2018.294.
+Dataset: https://doi.org/10.6084/m9.figshare.c.4224377.v1 (figshare item 7058615, scan 1_nativeCTdata/M01_0.25h)
+License: https://creativecommons.org/publicdomain/zero/1.0/
+Surface adaptation: Qasim Hussain, MouseBio_3D. See atlas-microct/LICENSE.md for the source and conversion details.
+
+
 EMA147 source surfaces and source labels are licensed CC BY 4.0.
 Ruffins S, Jacobs R, Armit C, Burton N, Hill B and Baldock R, 2017, University of Edinburgh.
 Source: https://doi.org/10.7488/ds/2167

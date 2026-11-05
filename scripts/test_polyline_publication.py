@@ -46,7 +46,7 @@ class PolylinePublicationTests(unittest.TestCase):
         for path, binding in registry.items():
             self.assertEqual(inspect_registered_asset(self.files[path], binding), self.files[path])
             self.assertEqual(asset_scan_limit(path, {}), MAX_REGISTERED_GLB_BYTES)
-        self.assertEqual(MAX_REGISTERED_TOTAL_BYTES, 160*1024*1024)
+        self.assertEqual(MAX_REGISTERED_TOTAL_BYTES, 256*1024*1024)
 
     def test_scientific_claims_and_incomplete_source_licenses_reject_registration(self):
         # Pinned metadata is a single reviewed record, not a grant of arbitrary claims.

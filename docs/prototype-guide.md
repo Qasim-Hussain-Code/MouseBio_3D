@@ -1,6 +1,6 @@
 # Prototype guide
 
-MouseBio_3D is a local scientific exploration prototype maintained by Qasim Hussain. It combines seven separately selectable anatomical references, local morphology inspection, source-bound experimental comparisons and an independent parameterized mouse ventricular-cell equation model. Each source keeps its identifiers, coordinate frame, attribution and limitations. There is no accepted whole-body registration between these sources.
+MouseBio_3D is a local scientific exploration prototype maintained by Qasim Hussain. It combines eight separately selectable anatomical references, including a micro-CT trunk reference whose organ classes include the intestine, local morphology inspection, source-bound experimental comparisons and an independent parameterized mouse ventricular-cell equation model. Each source keeps its identifiers, coordinate frame, attribution and limitations. There is no accepted whole-body registration between these sources.
 
 ## Open the application
 
@@ -46,4 +46,4 @@ The independent cell model is parameterized and numerically checked; this does n
 
 Imported files remain in browser memory on the device. No analytics, remote research service or automatic upload is used. Reloading clears observations and local morphology; export records explicitly if they must be retained. Downloads can contain your observations and declared provenance, so review them before sharing. Saved anatomical views contain display state rather than observation rows.
 
-Original code is MIT and original documentation is CC BY 4.0. Digimouse-derived geometry and metadata retain CC BY-SA 4.0. Hindlimb, EMA147, neuronal and vascular adaptations retain their recorded CC BY 4.0 terms; the regional predicted nerve adaptation retains Apache-2.0. The Bondarenko model mathematics and derived numerical references retain CC BY 3.0. Preserve individual notices, scientific attribution and modifications. See [license records](../LICENSES.md) and each bundled source notice. No source author endorsement is implied.
+Original code is MIT and original documentation is CC BY 4.0. Digimouse-derived geometry and metadata retain CC BY-SA 4.0. Hindlimb, EMA147, neuronal and vascular adaptations retain their recorded CC BY 4.0 terms; the regional predicted nerve adaptation retains Apache-2.0, and the micro-CT surfaces derive from a dataset declared CC0 1.0 with attribution retained. The Bondarenko model mathematics and derived numerical references retain CC BY 3.0. Preserve individual notices, scientific attribution and modifications. See [license records](../LICENSES.md) and each bundled source notice. No source author endorsement is implied.

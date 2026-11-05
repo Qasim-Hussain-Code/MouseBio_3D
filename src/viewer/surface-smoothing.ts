@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { DISPLAY_SMOOTHING, smoothSurfacePositions, validateSmoothingOptions, type SmoothingOptions } from '../domain/display-smoothing';
+import { DISPLAY_SMOOTHING, displayVertexNormals, normalPassesFor, smoothSurfacePositions, validateSmoothingOptions, type SmoothingOptions } from '../domain/display-smoothing';
 
 export { DISPLAY_SMOOTHING, DISPLAY_SMOOTHING_COARSE, DISPLAY_SMOOTHING_VOLUME, smoothingAppliesTo, smoothingOptionsFor, validateSmoothingOptions, type SmoothingOptions } from '../domain/display-smoothing';
 
 /** Geometry-level wrapper of the display smoothing filter; see `domain/display-smoothing.ts`. */
 
-interface SurfaceInput { positions: Float32Array; index: Uint16Array | Uint32Array; vertexCount: number }
+interface SurfaceInput { positions: Float32Array; index: Uint16Array | Uint32Array; vertexCount: number; fullNormalPasses?: boolean }
 
 function surfaceInput(geometry: THREE.BufferGeometry): SurfaceInput {
   const attribute = geometry.getAttribute('position'), index = geometry.index;
@@ -22,11 +22,11 @@ function surfaceInput(geometry: THREE.BufferGeometry): SurfaceInput {
   return { positions, index: copy, vertexCount: attribute.count };
 }
 
-/** A new geometry with the given display positions, recomputed normals and bounds. The input is not modified. */
-function withPositions(geometry: THREE.BufferGeometry, positions: Float32Array): THREE.BufferGeometry {
+/** A new geometry with the given display positions and normals and recomputed bounds. The input is not modified. */
+function withPositions(geometry: THREE.BufferGeometry, positions: Float32Array, normals: Float32Array): THREE.BufferGeometry {
   const result = geometry.clone();
   result.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  result.computeVertexNormals();
+  result.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
   result.computeBoundingBox();
   result.computeBoundingSphere();
   return result;
@@ -36,10 +36,13 @@ function withPositions(geometry: THREE.BufferGeometry, positions: Float32Array):
 export function smoothSurfaceGeometry(geometry: THREE.BufferGeometry, options: SmoothingOptions = DISPLAY_SMOOTHING): THREE.BufferGeometry {
   validateSmoothingOptions(options);
   const input = surfaceInput(geometry);
-  return withPositions(geometry, smoothSurfacePositions(input.positions, input.index, input.vertexCount, options));
+  const positions = smoothSurfacePositions(input.positions, input.index, input.vertexCount, options);
+  return withPositions(geometry, positions, displayVertexNormals(positions, input.index, input.vertexCount, normalPassesFor(positions, input.index, options.normalIterations ?? 0)));
 }
 
-function smoothInWorker(inputs: SurfaceInput[], options: SmoothingOptions, signal?: AbortSignal): Promise<Float32Array[]> {
+interface SmoothedSurface { positions: Float32Array; normals: Float32Array }
+
+function smoothInWorker(inputs: SurfaceInput[], options: SmoothingOptions, signal?: AbortSignal): Promise<SmoothedSurface[]> {
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL('../workers/surface-smoothing.worker.ts', import.meta.url), { type: 'module' });
     const finish = (settle: () => void) => { worker.terminate(); signal?.removeEventListener('abort', abort); settle(); };
@@ -47,7 +50,9 @@ function smoothInWorker(inputs: SurfaceInput[], options: SmoothingOptions, signa
     signal?.addEventListener('abort', abort, { once: true });
     worker.onmessage = (event: MessageEvent) => {
       const message = event.data;
-      if (message?.type === 'result' && Array.isArray(message.positions)) finish(() => resolve(message.positions as Float32Array[]));
+      if (message?.type === 'result' && Array.isArray(message.positions) && Array.isArray(message.normals) && message.normals.length === message.positions.length) {
+        finish(() => resolve((message.positions as Float32Array[]).map((positions, slot) => ({ positions, normals: (message.normals as Float32Array[])[slot] }))));
+      }
       else finish(() => reject(new Error(typeof message?.message === 'string' ? message.message : 'Display smoothing failed in its worker.')));
     };
     worker.onerror = () => finish(() => reject(new Error('The display smoothing worker could not run.')));
@@ -61,19 +66,26 @@ function smoothInWorker(inputs: SurfaceInput[], options: SmoothingOptions, signa
  * Each result geometry corresponds to the input at the same position.
  */
 export async function smoothSurfaceGeometries(geometries: readonly THREE.BufferGeometry[], options: SmoothingOptions = DISPLAY_SMOOTHING,
-  signal?: AbortSignal): Promise<THREE.BufferGeometry[]> {
+  signal?: AbortSignal, fullNormalPasses: readonly boolean[] = []): Promise<THREE.BufferGeometry[]> {
   validateSmoothingOptions(options);
   if (!geometries.length) return [];
-  const inputs = geometries.map(surfaceInput);
-  let positions: Float32Array[] | null = null;
+  // A body surface uses the full normal pass limit; its inner organ interfaces would understate its thickness.
+  const inputs = geometries.map((geometry, slot) => ({ ...surfaceInput(geometry), fullNormalPasses: !!fullNormalPasses[slot] }));
+  const passesFor = (positions: Float32Array, index: ArrayLike<number>, slot: number) =>
+    fullNormalPasses[slot] ? options.normalIterations ?? 0 : normalPassesFor(positions, index, options.normalIterations ?? 0);
+  let results: SmoothedSurface[] | null = null;
   if (typeof Worker === 'function') {
-    try { positions = await smoothInWorker(inputs, options, signal); }
-    catch (error) { if (error instanceof DOMException && error.name === 'AbortError') throw error; positions = null; }
+    try { results = await smoothInWorker(inputs, options, signal); }
+    catch (error) { if (error instanceof DOMException && error.name === 'AbortError') throw error; results = null; }
   }
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  if (!positions || positions.length !== geometries.length) {
+  if (!results || results.length !== geometries.length) {
     // The transferred buffers are detached after a worker attempt; read the surfaces again.
-    positions = geometries.map((geometry) => { const input = surfaceInput(geometry); return smoothSurfacePositions(input.positions, input.index, input.vertexCount, options); });
+    results = geometries.map((geometry, slot) => {
+      const input = surfaceInput(geometry);
+      const positions = smoothSurfacePositions(input.positions, input.index, input.vertexCount, options);
+      return { positions, normals: displayVertexNormals(positions, input.index, input.vertexCount, passesFor(positions, input.index, slot)) };
+    });
   }
-  return geometries.map((geometry, slot) => withPositions(geometry, positions![slot]));
+  return geometries.map((geometry, slot) => withPositions(geometry, results![slot].positions, results![slot].normals));
 }

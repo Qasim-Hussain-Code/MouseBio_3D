@@ -30,9 +30,32 @@ const DIGIMOUSE_POSTURE: DisplayPosture = Object.freeze({
   basis: 'Dorsal side inferred from source label positions: in mid-trunk columns of the Digimouse label image the vertebral column and kidneys lie towards native +z (median relative positions 0.84 and 0.69) and the heart and bladder towards native -z (0.30 and 0.24). Laterality and calibration remain unverified.',
 });
 
+/**
+ * In the micro-CT scan of Rosenhain et al. (2018) the kidneys and spleen lie at
+ * smaller native y than the heart and bladder, and the trunk bone lies at small
+ * native y within the kidneys' rostrocaudal range, so native -y is treated as
+ * dorsal. After the presentation rotation about display z, native -y is display
+ * +x. The heart lies at larger native z than the bladder, so display +z points
+ * towards the head; the default view leans that way.
+ */
+const MICROCT_POSTURE: DisplayPosture = Object.freeze({
+  up: Object.freeze([1, 0, 0] as const),
+  view: Object.freeze(normalize([0.42, -0.84, 0.36])),
+  distance: 3.1,
+  basis: 'Dorsal side inferred from source class positions: in the micro-CT scan the kidneys, spleen and trunk bone lie towards native -y and the heart and bladder towards native +y. Laterality and calibration remain unverified.',
+});
+
 const POSTURES: Readonly<Record<string, DisplayPosture>> = Object.freeze({
   'digimouse-tessellated-v1': DIGIMOUSE_POSTURE,
   'digimouse-volume-040-v1': DIGIMOUSE_POSTURE,
+  'rosenhain2018-m01-native-v1': MICROCT_POSTURE,
+});
+
+/** The region whose outer surface is the body surface of each reference that has one. */
+const BODY_SURFACES: Readonly<Record<string, string>> = Object.freeze({
+  'digimouse-tessellated-v1': 'digimouse:1',
+  'digimouse-volume-040-v1': 'digimouse-volume:1',
+  'rosenhain2018-m01-native-v1': 'rosenhain2018-m01:Bed:1',
 });
 
 function normalize(vector: readonly [number, number, number]): [number, number, number] {
@@ -47,6 +70,15 @@ export function displayPostureFor(atlas: Pick<Atlas, 'id'>): DisplayPosture | nu
 
 /** The region whose outer surface is the body surface of the specimen, when one exists. */
 export function bodySurfaceIdFor(atlas: Pick<Atlas, 'id' | 'structures'>): string | null {
-  const id = atlas.id === 'digimouse-tessellated-v1' ? 'digimouse:1' : atlas.id === 'digimouse-volume-040-v1' ? 'digimouse-volume:1' : null;
+  const id = Object.hasOwn(BODY_SURFACES, atlas.id) ? BODY_SURFACES[atlas.id] : null;
   return id && atlas.structures.some((structure) => structure.id === id) ? id : null;
+}
+
+/**
+ * Whether the body surface opens as opaque skin. The Digimouse specimens are
+ * imaged whole; the micro-CT scan covers the trunk only, so its body surface
+ * is cut flat at the field edges and opens see-through to show the organs.
+ */
+export function opensAsSkin(atlas: Pick<Atlas, 'id' | 'structures'>): boolean {
+  return bodySurfaceIdFor(atlas) !== null && atlas.id !== 'rosenhain2018-m01-native-v1';
 }

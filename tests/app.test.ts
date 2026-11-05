@@ -41,6 +41,7 @@ const ema147Text = await readFile(new URL('../public/atlas-ema147/atlas.json', i
 const neuronText = await readFile(new URL('../public/atlas-neuron/atlas.json', import.meta.url), 'utf8');
 const nerveText = await readFile(new URL('../public/atlas-nerve/atlas.json', import.meta.url), 'utf8');
 const vascularText = await readFile(new URL('../public/atlas-vascular/atlas.json', import.meta.url), 'utf8');
+const microctText = await readFile(new URL('../public/atlas-microct/atlas.json', import.meta.url), 'utf8');
 const nervePaths = await readFile(new URL('../public/atlas-nerve/mousemapper-patch0-lines.json', import.meta.url));
 const neuronSamples = await readFile(new URL('../public/atlas-neuron/nmo130632-standardized.swc.txt', import.meta.url));
 
@@ -63,11 +64,12 @@ beforeEach(() => {
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = String(input);
     requests.push(url);
-    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json', '/atlas-neuron/nmo130632-standardized.swc.txt', '/atlas-nerve/atlas.json', '/atlas-vascular/atlas.json', '/atlas-nerve/mousemapper-patch0-lines.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
+    assert.ok(['/atlas/atlas.json', '/atlas-volume/atlas.json', '/atlas-hindlimb/atlas.json', '/atlas-ema147/atlas.json', '/atlas-neuron/atlas.json', '/atlas-neuron/nmo130632-standardized.swc.txt', '/atlas-nerve/atlas.json', '/atlas-vascular/atlas.json', '/atlas-nerve/mousemapper-patch0-lines.json', '/atlas-microct/atlas.json'].includes(url), 'The tested workflow must not send research data to another endpoint.');
     if (url === '/atlas-nerve/mousemapper-patch0-lines.json') return new Response(nervePaths);
     if (url === '/atlas-neuron/nmo130632-standardized.swc.txt') return new Response(neuronSamples);
     if (url === '/atlas-vascular/atlas.json') return new Response(vascularText);
     if (url === '/atlas-nerve/atlas.json') return new Response(nerveText);
+    if (url === '/atlas-microct/atlas.json') return new Response(microctText);
     return new Response(url === '/atlas/atlas.json' ? atlasText : url === '/atlas-volume/atlas.json' ? volumeText : url === '/atlas-hindlimb/atlas.json' ? hindlimbText : url === '/atlas-neuron/atlas.json' ? neuronText : ema147Text, { status: 200, headers: { 'Content-Type': 'application/json' } });
   }) as typeof fetch;
   console.error = (...args: unknown[]) => {
@@ -722,6 +724,41 @@ test('the body surface opens as opaque skin, becomes see-through for enclosed se
   assert.equal(skin().value, '100');
   fireEvent.click(view.getByRole('button', { name: /Kidneys.*digimouse-volume:19/ }));
   assert.equal(skin().value, '6');
+});
+
+test('the female micro-CT reference keeps its own classes, skin, groups and source-bound observations', async () => {
+  const view = await openApp();
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(syntheticCsv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  fireEvent.click(view.getByRole('button', { name: 'Anatomy' }));
+  expectedRequests.push('/atlas-microct/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: 'rosenhain2018-m01-native-v1' } });
+  await view.findByText('11 visible regions');
+  assert.ok(view.getByText(/Mus musculus · female/));
+  assert.equal(view.queryByText('8 observations · 4 biological subject IDs · 4 groups'), null);
+  assert.equal((view.getByRole('slider', { name: 'Skin opacity' }) as HTMLInputElement).value, '8');
+  assert.ok(view.getAllByText('rosenhain2018-m01:Organ1:5').length > 0);
+  fireEvent.click(view.getByRole('button', { name: /Intestine.*rosenhain2018-m01:Organ1:5/ }));
+  assert.equal((view.getByRole('slider', { name: 'Skin opacity' }) as HTMLInputElement).value, '8');
+  showTab(view, 'Layers');
+  fireEvent.change(view.getByRole('combobox', { name: 'Source anatomy group' }), { target: { value: 'digestive' } });
+  assert.ok(view.getByText('3 visible regions'));
+  fireEvent.click(view.getByRole('button', { name: 'Organs visibility preset' }));
+  assert.ok(view.getByText('11 visible regions'));
+  const saved = await savedView(view);
+  assert.equal(saved.atlasId, 'rosenhain2018-m01-native-v1');
+  assert.equal(saved.coordinateFrameId, 'rosenhain2018-m01-ct280-native-v1');
+  assert.equal(saved.opacity['rosenhain2018-m01:Bed:1'], 0.06);
+  assert.equal(saved.opacity['rosenhain2018-m01:Organ1:1'], 0.14);
+  fireEvent.click(view.getByRole('button', { name: 'Experiment' }));
+  const csv = syntheticCsv.replaceAll('digimouse:3', 'rosenhain2018-m01:Organ1:3').replaceAll('digimouse:4', 'rosenhain2018-m01:Organ1:6');
+  fireEvent.change(view.getByLabelText('Import experimental dataset'), { target: { files: [inputFile(csv)] } });
+  await view.findByText('Accepted 8 measurements. No data transmitted.');
+  expectedRequests.push('/atlas/atlas.json');
+  fireEvent.change(view.getByRole('combobox', { name: 'Anatomy reference' }), { target: { value: atlas.id } });
+  await view.findByText('17 visible regions');
+  await view.findByText('8 observations · 4 biological subject IDs · 4 groups');
 });
 
 test('organs visibility preset preserves selection, background and data while the details shortcut focuses its inspector', async () => {

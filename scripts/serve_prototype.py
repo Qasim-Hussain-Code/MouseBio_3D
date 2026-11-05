@@ -23,7 +23,7 @@ from typing import Mapping
 from urllib.parse import urlsplit
 
 MAX_FILES = 256
-MAX_TOTAL_BYTES = 160 * 1024 * 1024
+MAX_TOTAL_BYTES = 256 * 1024 * 1024
 MAX_FILE_BYTES = 80 * 1024 * 1024
 MAX_METADATA_BYTES = 512 * 1024
 ASSET_NAME = re.compile(r"assets/[A-Za-z0-9_-]+(?:\.worker)?-[A-Za-z0-9_-]{8,}\.(?:js|css)\Z")
@@ -40,6 +40,7 @@ ATLAS_ASSETS = {
     "atlas": "digimouse.glb",
     "atlas-volume": "digimouse-volume-040.glb",
     "atlas-hindlimb": "charles2016-hindlimb.glb",
+    "atlas-microct": "rosenhain2018-m01.glb",
     "atlas-ema147": "ema147-native.ply",
     "atlas-neuron": "nmo130632-standardized.swc.txt",
     "atlas-vascular": "schmid2021-mvn1-lines.json",

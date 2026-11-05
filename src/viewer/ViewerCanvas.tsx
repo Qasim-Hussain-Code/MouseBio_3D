@@ -403,7 +403,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         // Display copies are prepared off the main thread where possible; the source surfaces stay in memory.
         setStatus('Preparing display surfaces');
         const surfaces = [...meshes].filter((entry): entry is [string, THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>] => entry[1] instanceof THREE.Mesh);
-        const smoothed = await smoothSurfaceGeometries(surfaces.map(([, mesh]) => mesh.geometry), smoothingOptions, sourceAbort.signal);
+        const smoothed = await smoothSurfaceGeometries(surfaces.map(([, mesh]) => mesh.geometry), smoothingOptions, sourceAbort.signal, surfaces.map(([id]) => id === skinId));
         if (disposed) { smoothed.forEach((geometry) => geometry.dispose()); return; }
         surfaces.forEach(([id, mesh], slot) => {
           surfaceCopies.set(id, { source: mesh.geometry, smoothed: smoothed[slot] });
@@ -417,7 +417,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       camera.updateProjectionMatrix();
       controls.minDistance = radius * 0.07;
       controls.maxDistance = radius * 12;
-      if (posture) { shadow = createContactShadow(bounds); if (shadow) scene.add(shadow.group); }
+      if (posture) { shadow = createContactShadow(bounds, new THREE.Vector3(...posture.up)); if (shadow) scene.add(shadow.group); }
       display.visible = true;
       loaded = true;
       if (latest.current.cameraPose) setPose(latest.current.cameraPose);

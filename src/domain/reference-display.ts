@@ -1,5 +1,5 @@
 import type { Atlas, Structure } from './types';
-import { bodySurfaceIdFor } from './display-pose';
+import { bodySurfaceIdFor, opensAsSkin } from './display-pose';
 
 /** Source metadata controls display only, never quantitative measurements. */
 export function defaultStructureOpacity(structure: Structure): number {
@@ -14,14 +14,15 @@ export const SKIN_OPACITY = 1;
 export const OPAQUE_SKIN = 0.95;
 
 /**
- * Initial display opacity. The body surface of a reference is shown as opaque
- * skin; the Organs preset makes it and the skeleton translucent. Other regions
- * keep their source defaults.
+ * Initial display opacity. The body surface of a whole-body reference is shown
+ * as opaque skin; the Organs preset makes it and the skeleton translucent.
+ * Other regions, and a body cut by the scanned field, keep their source defaults.
  */
 export function referenceOpacity(atlas: Atlas, organs = false): Record<string, number> {
-  const skin = bodySurfaceIdFor(atlas);
+  const body = bodySurfaceIdFor(atlas);
+  const skin = opensAsSkin(atlas) ? body : null;
   return Object.fromEntries(atlas.structures.map((structure) => [structure.id,
-    organs && structure.id === skin ? 0.06
+    organs && structure.id === body ? 0.06
       : organs && structure.systems.includes('skeletal') ? 0.14
         : structure.id === skin ? SKIN_OPACITY : defaultStructureOpacity(structure)]));
 }

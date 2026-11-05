@@ -416,7 +416,7 @@ export default function App() {
     if (!atlas || !selected) return;
     setActiveGroup(''); pendingGroupFocus.current = null;
     if (isolation.current) { setHidden(isolation.current);if(isolationOpacity.current)setOpacity(isolationOpacity.current);isolation.current=null;isolationOpacity.current=null; }
-    else { isolation.current = [...hidden]; isolationOpacity.current={...opacity}; setHidden(atlas.structures.filter((structure) => structure.id !== selected).map((structure) => structure.id)); }
+    else { isolation.current = [...hidden]; isolationOpacity.current={...opacity}; setHidden(atlas.structures.filter((structure) => structure.id !== selected).map((structure) => structure.id)); setOpacity(previous=>({...previous,[selected]:1})); }
   };
   const showAll = () => { setHidden([]); isolation.current = null; setActiveGroup('whole-mouse'); pendingGroupFocus.current = null; if (atlas) setOpacity(referenceOpacity(atlas)); };
   const showOrgans = () => {

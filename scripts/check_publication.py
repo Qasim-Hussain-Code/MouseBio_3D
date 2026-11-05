@@ -16,7 +16,8 @@ MAX_FILE_BYTES = 8 * 1024 * 1024
 MAX_HISTORY_BLOBS = 1000
 MAX_GLB_JSON_BYTES = 1024 * 1024
 MAX_REGISTERED_GLB_BYTES = 80 * 1024 * 1024
-MAX_REGISTERED_TOTAL_BYTES = 160 * 1024 * 1024
+# Raised from 160 MiB on 2026-11-05 for the 0.2 mm skeleton detail and the micro-CT reference (about 182 MB in total).
+MAX_REGISTERED_TOTAL_BYTES = 256 * 1024 * 1024
 MAX_PLY_HEADER_BYTES = 16 * 1024
 EMA147_ARCHIVE_SHA256 = "efd5df6df9b69cf21a62d1f4245ecc5419ee4e5c4c72635f444ce3fba5b7971c"
 EMA147_MODEL_INFO_SHA256 = "cf37ac2de4f7ce79cfeb912dda70257ee06a561511ef54a18a7d89fa69cbeb21"
@@ -33,6 +34,12 @@ HINDLIMB_JSON_SHA256 = "0eda5effc49a460fbc89de070baa5d48c940c5f5b0dab1319f5d4f13
 HINDLIMB_PRC_SHA256 = "c300f38c7888b82b0c2e00548c8d2bb5b879b076872e5e44781da8a8477fc659"
 HINDLIMB_DECODER_COMMIT = "24bfa43b7c29203c572892662ec8a5a8e8ae7b96"
 HINDLIMB_FRAME = "charles2016-hindlimb-prc-native-v1"
+MICROCT_FRAME = "rosenhain2018-m01-ct280-native-v1"
+# SHA-256 of the first organ segmentation and bed segmentation of scan 1_nativeCTdata/M01_0.25h (CC0 1.0 dataset).
+MICROCT_ORGAN1_SHA256 = "61db0343fceea50b43159af348f5c780056ae45643a5f3d36d8ed55ea7589ffb"
+MICROCT_BED_SHA256 = "98ff8ecf98eb57365498a85229f50d3c8867ea30f19b6bd2b2a80289a75620ef"
+MICROCT_CLASSES = ("Bone", "Lung", "Heart", "Liver", "Intestine", "Bladder", "Spleen", "Stomach", "Muscle", "Kidneys")
+MICROCT_AUTHORS = ("Rosenhain", "Magnuska", "Yamoah", "Al Rawashdeh", "Kiessling", "Gremse")
 HINDLIMB_AUTHORS = ("Charles", "Cappellari", "Spence", "Hutchinson", "Wells")
 # Source-defined names and tessellation order, from the Charles et al. CC BY 4.0 figure.
 HINDLIMB_NAMES = (
@@ -58,7 +65,7 @@ TOKENS = re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{20,255}|github_pat_[A-Za-z0-9_]
 PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")
 ASSIGNMENT = re.compile(r"(?im)^\s*(?:export\s+)?[\"']?(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password|aws_secret_access_key)[\"']?\s*[:=]\s*[\"']?([^\s\"'#]{8,})")
 URL = re.compile(r"https?://[^\s<>\"']+")
-ATTRIBUTION_PATHS = {"public/THIRD_PARTY_NOTICES.txt", "public/atlas/LICENSE.md", "public/atlas-volume/LICENSE.md", "public/atlas-hindlimb/LICENSE.md", "public/atlas-ema147/LICENSE.md"}
+ATTRIBUTION_PATHS = {"public/THIRD_PARTY_NOTICES.txt", "public/atlas/LICENSE.md", "public/atlas-volume/LICENSE.md", "public/atlas-hindlimb/LICENSE.md", "public/atlas-ema147/LICENSE.md", "public/atlas-microct/LICENSE.md"}
 NEURON_ASSET_PATH = "public/atlas-neuron/nmo130632-standardized.swc.txt"
 NEURON_MANIFEST_PATH = "public/atlas-neuron/atlas.json"
 NEURON_LICENSE_PATH = "public/atlas-neuron/LICENSE.md"
@@ -454,7 +461,7 @@ def anatomy_registry(read) -> dict[str, dict]:
     """
     registry: dict[str, dict] = {}
     volume = None
-    for folder in ("atlas", "atlas-volume", "atlas-hindlimb"):
+    for folder in ("atlas", "atlas-volume", "atlas-hindlimb", "atlas-microct"):
         manifest_path = f"public/{folder}/atlas.json"
         raw = read(manifest_path, MAX_GLB_JSON_BYTES)
         if raw is None:
@@ -512,6 +519,31 @@ def anatomy_registry(read) -> dict[str, dict]:
                     or b"10.1371/journal.pone.0147669.s002" not in license_bytes
                     or any(author.encode("ascii") not in license_bytes for author in HINDLIMB_AUTHORS)):
                 raise ValueError("Registered hindlimb attribution is missing")
+        if folder == "atlas-microct":
+            members = {entry.get("name"): entry.get("sha256") for entry in source.get("members", []) if isinstance(entry, dict)}
+            expected_microct = ["rosenhain2018-m01:Bed:1"] + [f"rosenhain2018-m01:Organ1:{index}" for index in range(1, len(MICROCT_CLASSES) + 1)]
+            if (source.get("id") != "rosenhain2018-native-microct" or source.get("doi") != "10.1038/sdata.2018.294"
+                    or source.get("datasetDoi") != "10.6084/m9.figshare.c.4224377.v1" or source.get("figshareItem") != 7058615
+                    or members.get("1_nativeCTdata/M01_0.25h/Organ1.img") != MICROCT_ORGAN1_SHA256
+                    or members.get("1_nativeCTdata/M01_0.25h/Bed.img") != MICROCT_BED_SHA256
+                    or source.get("license") != "CC0-1.0" or source.get("licenseUrl") != "https://creativecommons.org/publicdomain/zero/1.0/"
+                    or frame != MICROCT_FRAME or identifier != "rosenhain2018-m01-native-v1"
+                    or manifest["coordinateFrame"].get("voxelIndexToAssetScale") != 0.00028
+                    or manifest["coordinateFrame"].get("physicalCalibrationVerified") is not False
+                    or manifest["coordinateFrame"].get("anatomicalOrientationVerified") is not False
+                    or manifest["coordinateFrame"].get("registrationToDigimouse", False) is not None
+                    or manifest.get("assetUrl") != "/atlas-microct/rosenhain2018-m01.glb"
+                    or expected_ids != expected_microct):
+                raise ValueError("Micro-CT source, license, frame or class inventory is not registered")
+            for entry in manifest["structures"][1:]:
+                index = entry.get("sourceClassIndex")
+                if type(index) is not int or entry.get("sourceLabel") != MICROCT_CLASSES[index - 1]:
+                    raise ValueError("Micro-CT class names and indices do not match")
+            license_bytes = read(f"public/{folder}/LICENSE.md", MAX_GLB_JSON_BYTES)
+            if (not license_bytes or b"creativecommons.org/publicdomain/zero/1.0" not in license_bytes
+                    or b"10.1038/sdata.2018.294" not in license_bytes
+                    or any(author.encode("ascii") not in license_bytes for author in MICROCT_AUTHORS)):
+                raise ValueError("Registered micro-CT attribution is missing")
         path = anatomy_asset_path(manifest["assetUrl"], folder)
         size, digest = manifest["statistics"]["glbBytes"], manifest["statistics"]["glbSha256"]
         if (type(size) is not int or not 20 <= size <= MAX_REGISTERED_GLB_BYTES

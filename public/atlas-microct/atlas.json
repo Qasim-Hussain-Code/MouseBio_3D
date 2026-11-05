@@ -1,0 +1,578 @@
+{
+  "id": "rosenhain2018-m01-native-v1",
+  "title": "Rosenhain native micro-CT, mouse M01",
+  "assetUrl": "/atlas-microct/rosenhain2018-m01.glb",
+  "coordinateFrame": {
+    "id": "rosenhain2018-m01-ct280-native-v1",
+    "assetUnits": "metres",
+    "sourceUnits": "zero-based voxel indices",
+    "sourceVoxelSpacingMm": [
+      0.28,
+      0.28,
+      0.28
+    ],
+    "voxelIndexToAssetScale": 0.00028,
+    "origin": "Index(0,0,0) of the supplied Analyze images; no anatomical origin is established",
+    "axes": {
+      "x": "native storage x; anatomical direction unverified",
+      "y": "native storage y; anatomical direction unverified",
+      "z": "native storage z; anatomical direction unverified"
+    },
+    "anatomicalOrientationVerified": false,
+    "physicalCalibrationVerified": false,
+    "registrationToDigimouse": null
+  },
+  "source": {
+    "id": "rosenhain2018-native-microct",
+    "title": "A preclinical micro-computed tomography database including 3D whole body organ segmentations",
+    "displayName": "Rosenhain micro-CT",
+    "citationLabel": "Rosenhain et al., 2018",
+    "authors": [
+      "Stefanie Rosenhain",
+      "Zuzanna A. Magnuska",
+      "Grace G. Yamoah",
+      "Wa'el Al Rawashdeh",
+      "Fabian Kiessling",
+      "Felix Gremse"
+    ],
+    "doi": "10.1038/sdata.2018.294",
+    "publicationYear": 2018,
+    "journal": "Scientific Data 5, 180294",
+    "url": "https://doi.org/10.6084/m9.figshare.c.4224377.v1",
+    "datasetDoi": "10.6084/m9.figshare.c.4224377.v1",
+    "figshareItem": 7058615,
+    "downloadUrl": "https://ndownloader.figshare.com/files/12981293",
+    "archiveBytes": 4495345483,
+    "license": "CC0-1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "licenseEvidenceUrl": "https://api.figshare.com/v2/articles/7058615",
+    "licenseNote": "The figshare record of item 7058615 declares CC0 1.0 for the dataset; the article itself is CC BY 4.0. Attribution is retained.",
+    "members": [
+      {
+        "name": "1_nativeCTdata/M01_0.25h/Bed.cls",
+        "bytes": 158,
+        "crc32": "ffa095d3",
+        "sha256": "978610353c208ca881a1f7b9b21d85e65c2039f1d06f4188ed285aeb86e15cab"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/Bed.hdr",
+        "bytes": 348,
+        "crc32": "8275b7ac",
+        "sha256": "82c178036589e514ea24a2cafd2dcff234dec94e4ade70aa2567af61143f4a4c"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/Bed.img",
+        "bytes": 2982000,
+        "crc32": "f124c895",
+        "sha256": "98ff8ecf98eb57365498a85229f50d3c8867ea30f19b6bd2b2a80289a75620ef"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/CT280.hdr",
+        "bytes": 348,
+        "crc32": "f9d3b0ef",
+        "sha256": "d98e7a7a9645c27781cf13fcbb2492c3549bc97a9b97300d68c839523d5878dd"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/CT280.img",
+        "bytes": 5964000,
+        "crc32": "7a959f6a",
+        "sha256": "7d263f276b6ddec21f7704a3a3ab82a2e4c6620fdeceb8b06fe22acb0515c269"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/Organ1.cls",
+        "bytes": 299,
+        "crc32": "47734f0e",
+        "sha256": "bd6b07a775f73e96232dede1f194cf7cba513304381101e2777a9e1ddf5a0e97"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/Organ1.hdr",
+        "bytes": 348,
+        "crc32": "8275b7ac",
+        "sha256": "82c178036589e514ea24a2cafd2dcff234dec94e4ade70aa2567af61143f4a4c"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/Organ1.img",
+        "bytes": 2982000,
+        "crc32": "bd53f3e0",
+        "sha256": "61db0343fceea50b43159af348f5c780056ae45643a5f3d36d8ed55ea7589ffb"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/Organ2.cls",
+        "bytes": 326,
+        "crc32": "b85b1585",
+        "sha256": "c847093d9bde0b2fa8cea2826a18b1428178e42a7b20ebd7bfcf0d48fe2d5eb5"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/Organ2.hdr",
+        "bytes": 348,
+        "crc32": "8275b7ac",
+        "sha256": "82c178036589e514ea24a2cafd2dcff234dec94e4ade70aa2567af61143f4a4c"
+      },
+      {
+        "name": "1_nativeCTdata/M01_0.25h/Organ2.img",
+        "bytes": 2982000,
+        "crc32": "264793bc",
+        "sha256": "bc5442bca5ded7db69ffc2bc58021c6834ef46fc15342994fc07584a7d3f1570"
+      }
+    ],
+    "attribution": "Rosenhain S, Magnuska ZA, Yamoah GG, Al Rawashdeh W, Kiessling F, Gremse F. A preclinical micro-computed tomography database including 3D whole body organ segmentations. Scientific Data 5, 180294 (2018). Surfaces adapted by Qasim Hussain for MouseBio_3D.",
+    "methodology": "Native whole-body micro-CT (Tomoscope Duo, 65 kV) of female BALB/c nu/nu mice reconstructed at 28 micrometres and averaged to 0.28 mm; organs segmented in Imalytics Preclinical, semi-automatically for bone and lung and manually for the other organs.",
+    "modifications": [
+      "Binary interfaces of each Organ1 class and of bed class 1 on the original 0.28 mm grid",
+      "Outward triangle winding and area-weighted normals",
+      "Indexed glTF surfaces with the source class colours"
+    ]
+  },
+  "specimen": {
+    "scientificName": "Mus musculus",
+    "taxonomyId": "NCBITaxon:10090",
+    "sex": "female",
+    "strain": "BALB/c nu/nu (Charles River, Sulzfeld)",
+    "scope": "native micro-CT trunk field of view",
+    "count": 1,
+    "description": "One female BALB/c nu/nu mouse (M01) of the native dataset, scanned at the 0.25 h time point. Age and mass are not reported.",
+    "sourceReference": "https://doi.org/10.1038/sdata.2018.294"
+  },
+  "structures": [
+    {
+      "id": "rosenhain2018-m01:Bed:1",
+      "name": "Whole body",
+      "systems": [
+        "integumentary"
+      ],
+      "sourceLabel": "1",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Bed.img",
+      "sourceClassIndex": 1,
+      "meshNode": "rosenhain2018-m01:Bed:1",
+      "description": "Bed segmentation class 1, identified as the body (see bodyEvidence). Its outer surface is the body surface within the scanned field; organs lie inside it. It is not a separately segmented skin layer.",
+      "geometry": {
+        "vertices": 236368,
+        "triangles": 472780,
+        "boundsMeters": [
+          [
+            0.00686000008136034,
+            0.006020000204443932,
+            -0.00014000000373926014
+          ],
+          [
+            0.03598000109195709,
+            0.022260000929236412,
+            0.0558600015938282
+          ]
+        ],
+        "sourceVoxels": 619798,
+        "volumeMm3": 13605.8
+      },
+      "scale": "organism",
+      "color": "#659efd",
+      "defaultOpacity": 0.08,
+      "interSegmentationDice": null
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:1",
+      "name": "Bone",
+      "systems": [
+        "skeletal"
+      ],
+      "sourceLabel": "Bone",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 1,
+      "meshNode": "rosenhain2018-m01:Organ1:1",
+      "description": "Aggregate bone segmented semi-automatically by thresholding and region growing in the source study. Individual bones are not identified.",
+      "geometry": {
+        "vertices": 206680,
+        "triangles": 413800,
+        "boundsMeters": [
+          [
+            0.007980000227689743,
+            0.007420000154525042,
+            -0.00014000000373926014
+          ],
+          [
+            0.03514000028371811,
+            0.022539999336004257,
+            0.0558600015938282
+          ]
+        ],
+        "sourceVoxels": 89369,
+        "volumeMm3": 1961.8
+      },
+      "scale": "system",
+      "color": "#c9eeff",
+      "defaultOpacity": 0.35,
+      "interSegmentationDice": 0.437
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:2",
+      "name": "Lungs",
+      "systems": [
+        "respiratory"
+      ],
+      "sourceLabel": "Lung",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 2,
+      "meshNode": "rosenhain2018-m01:Organ1:2",
+      "description": "A source-segmented region from the first organ segmentation file of the scan, extracted on the original 0.28 mm grid. Paired organs share one source class; no laterality is assigned.",
+      "geometry": {
+        "vertices": 29366,
+        "triangles": 58740,
+        "boundsMeters": [
+          [
+            0.014139999635517597,
+            0.009379999712109566,
+            0.03514000028371811
+          ],
+          [
+            0.028139999136328697,
+            0.019179999828338623,
+            0.04830000177025795
+          ]
+        ],
+        "sourceVoxels": 12147,
+        "volumeMm3": 266.7
+      },
+      "scale": "organ",
+      "color": "#ffaaff",
+      "defaultOpacity": 1,
+      "interSegmentationDice": 0.813
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:3",
+      "name": "Heart",
+      "systems": [
+        "cardiovascular"
+      ],
+      "sourceLabel": "Heart",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 3,
+      "meshNode": "rosenhain2018-m01:Organ1:3",
+      "description": "A source-segmented region from the first organ segmentation file of the scan, extracted on the original 0.28 mm grid.",
+      "geometry": {
+        "vertices": 11250,
+        "triangles": 22496,
+        "boundsMeters": [
+          [
+            0.01889999955892563,
+            0.013580000028014183,
+            0.03821999952197075
+          ],
+          [
+            0.026739999651908875,
+            0.019179999828338623,
+            0.04718000069260597
+          ]
+        ],
+        "sourceVoxels": 9195,
+        "volumeMm3": 201.8
+      },
+      "scale": "organ",
+      "color": "#0000ff",
+      "defaultOpacity": 1,
+      "interSegmentationDice": 0.898
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:4",
+      "name": "Liver",
+      "systems": [
+        "digestive"
+      ],
+      "sourceLabel": "Liver",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 4,
+      "meshNode": "rosenhain2018-m01:Organ1:4",
+      "description": "A source-segmented region from the first organ segmentation file of the scan, extracted on the original 0.28 mm grid.",
+      "geometry": {
+        "vertices": 54172,
+        "triangles": 108348,
+        "boundsMeters": [
+          [
+            0.009100000374019146,
+            0.00965999998152256,
+            0.024779999628663063
+          ],
+          [
+            0.03290000185370445,
+            0.021700000390410423,
+            0.03962000086903572
+          ]
+        ],
+        "sourceVoxels": 72495,
+        "volumeMm3": 1591.4
+      },
+      "scale": "organ",
+      "color": "#3841aa",
+      "defaultOpacity": 1,
+      "interSegmentationDice": 0.833
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:5",
+      "name": "Intestine",
+      "systems": [
+        "digestive"
+      ],
+      "sourceLabel": "Intestine",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 5,
+      "meshNode": "rosenhain2018-m01:Organ1:5",
+      "description": "A source-segmented region from the first organ segmentation file of the scan, extracted on the original 0.28 mm grid.",
+      "geometry": {
+        "vertices": 55636,
+        "triangles": 111268,
+        "boundsMeters": [
+          [
+            0.007980000227689743,
+            0.011339999735355377,
+            0.009940000250935555
+          ],
+          [
+            0.03373999893665314,
+            0.021700000390410423,
+            0.02897999994456768
+          ]
+        ],
+        "sourceVoxels": 79511,
+        "volumeMm3": 1745.4
+      },
+      "scale": "organ",
+      "color": "#afebba",
+      "defaultOpacity": 1,
+      "interSegmentationDice": 0.731
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:6",
+      "name": "Bladder",
+      "systems": [
+        "urinary"
+      ],
+      "sourceLabel": "Bladder",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 6,
+      "meshNode": "rosenhain2018-m01:Organ1:6",
+      "description": "A source-segmented region from the first organ segmentation file of the scan, extracted on the original 0.28 mm grid.",
+      "geometry": {
+        "vertices": 3900,
+        "triangles": 7796,
+        "boundsMeters": [
+          [
+            0.019460000097751617,
+            0.016100000590085983,
+            0.005739999935030937
+          ],
+          [
+            0.02394000068306923,
+            0.020020000636577606,
+            0.011060000397264957
+          ]
+        ],
+        "sourceVoxels": 2324,
+        "volumeMm3": 51.0
+      },
+      "scale": "organ",
+      "color": "#0082b6",
+      "defaultOpacity": 1,
+      "interSegmentationDice": 0.889
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:7",
+      "name": "Spleen",
+      "systems": [
+        "lymphatic",
+        "immune"
+      ],
+      "sourceLabel": "Spleen",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 7,
+      "meshNode": "rosenhain2018-m01:Organ1:7",
+      "description": "A source-segmented region from the first organ segmentation file of the scan, extracted on the original 0.28 mm grid.",
+      "geometry": {
+        "vertices": 4160,
+        "triangles": 8316,
+        "boundsMeters": [
+          [
+            0.021980000659823418,
+            0.009100000374019146,
+            0.024779999628663063
+          ],
+          [
+            0.02897999994456768,
+            0.011620000004768372,
+            0.030939999967813492
+          ]
+        ],
+        "sourceVoxels": 1526,
+        "volumeMm3": 33.5
+      },
+      "scale": "organ",
+      "color": "#005500",
+      "defaultOpacity": 1,
+      "interSegmentationDice": 0.328
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:8",
+      "name": "Stomach",
+      "systems": [
+        "digestive"
+      ],
+      "sourceLabel": "Stomach",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 8,
+      "meshNode": "rosenhain2018-m01:Organ1:8",
+      "description": "A source-segmented region from the first organ segmentation file of the scan, extracted on the original 0.28 mm grid.",
+      "geometry": {
+        "vertices": 8770,
+        "triangles": 17536,
+        "boundsMeters": [
+          [
+            0.022260000929236412,
+            0.010219999589025974,
+            0.026739999651908875
+          ],
+          [
+            0.03206000104546547,
+            0.01498000044375658,
+            0.034299999475479126
+          ]
+        ],
+        "sourceVoxels": 5596,
+        "volumeMm3": 122.8
+      },
+      "scale": "organ",
+      "color": "#b0e6f1",
+      "defaultOpacity": 1,
+      "interSegmentationDice": 0.841
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:9",
+      "name": "Muscle (part of a thigh)",
+      "systems": [
+        "muscular"
+      ],
+      "sourceLabel": "Muscle",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 9,
+      "meshNode": "rosenhain2018-m01:Organ1:9",
+      "description": "The source study segmented a part of a thigh muscle only. It is not the musculature.",
+      "geometry": {
+        "vertices": 928,
+        "triangles": 1852,
+        "boundsMeters": [
+          [
+            0.03317999839782715,
+            0.016659999266266823,
+            0.006020000204443932
+          ],
+          [
+            0.03457999974489212,
+            0.01889999955892563,
+            0.00965999998152256
+          ]
+        ],
+        "sourceVoxels": 255,
+        "volumeMm3": 5.6
+      },
+      "scale": "organ",
+      "color": "#47cd6c",
+      "defaultOpacity": 1,
+      "interSegmentationDice": 0.5
+    },
+    {
+      "id": "rosenhain2018-m01:Organ1:10",
+      "name": "Kidneys",
+      "systems": [
+        "urinary"
+      ],
+      "sourceLabel": "Kidneys",
+      "sourceFile": "1_nativeCTdata/M01_0.25h/Organ1.img",
+      "sourceClassIndex": 10,
+      "meshNode": "rosenhain2018-m01:Organ1:10",
+      "description": "A source-segmented region from the first organ segmentation file of the scan, extracted on the original 0.28 mm grid. Paired organs share one source class; no laterality is assigned.",
+      "geometry": {
+        "vertices": 16904,
+        "triangles": 33800,
+        "boundsMeters": [
+          [
+            0.011339999735355377,
+            0.009100000374019146,
+            0.01834000088274479
+          ],
+          [
+            0.02897999994456768,
+            0.014419999904930592,
+            0.02954000048339367
+          ]
+        ],
+        "sourceVoxels": 12734,
+        "volumeMm3": 279.5
+      },
+      "scale": "organ",
+      "color": "#00ffff",
+      "defaultOpacity": 1,
+      "interSegmentationDice": 0.878
+    }
+  ],
+  "statistics": {
+    "structures": 11,
+    "triangles": 1256732,
+    "surfaceVerticesIncludingRegionBoundaries": 628134,
+    "glbBytes": 30166776,
+    "glbSha256": "c7a4233227f4b90aaa30f91d49390b2da7ad47e67acec1e72454a12cd815b6e3",
+    "sourceDimensions": [
+      142,
+      105,
+      200
+    ],
+    "sourceVoxelSpacingMm": [
+      0.28,
+      0.28,
+      0.28
+    ]
+  },
+  "bodyEvidence": {
+    "bedClass": 1,
+    "fractionOfOrgan1VoxelsInside": 0.9924,
+    "medianCtValue": 117,
+    "voxels": 619798,
+    "basis": "The bed segmentation names its classes only by number. Class 1 contains this fraction of all Organ1 organ voxels and has a soft-tissue median CT value, so it is treated as the body; the other classes lie outside the organs."
+  },
+  "interSegmentationAgreement": {
+    "method": "Dice coefficient between the class of the first (Organ1) and second (Organ2) segmentation files of this scan",
+    "values": {
+      "Bone": 0.437,
+      "Lung": 0.813,
+      "Heart": 0.898,
+      "Liver": 0.833,
+      "Intestine": 0.731,
+      "Bladder": 0.889,
+      "Spleen": 0.328,
+      "Stomach": 0.841,
+      "Muscle": 0.5,
+      "Kidneys": 0.878
+    }
+  },
+  "limitations": [
+    "One female BALB/c nu/nu mouse; this athymic, hairless strain is not generic normal anatomy, and no male, developmental, disease-specific or population-average anatomy is represented.",
+    "The scanned field of view is 39.8 by 29.4 by 56.0 mm, so the head, distal limbs and tail lie partly outside it and the body surface is open at the field edges.",
+    "Ten organ classes from the first segmentation file only; vessels, nerves, brain, glands and most muscles were not segmented. The muscle class covers part of a thigh.",
+    "The second segmentation file of the same scan agrees with the first by Dice coefficients from 0.33 (spleen) and 0.44 (bone) to 0.90 (heart); these differences are segmentation uncertainty.",
+    "The body is bed segmentation class 1, identified by containment of the organs and its attenuation, not by a source name.",
+    "No named anatomical orientation or independently verified physical calibration; raw voxel indices scaled by the declared 0.28 mm spacing define this separate frame.",
+    "No accepted transformation to any Digimouse frame. These surfaces must not be overlaid on another reference by matching coordinates or names.",
+    "The source study gave the mice a fluorescent probe at each time point; the native scans have no CT contrast agent.",
+    "These surfaces and numerical checks do not constitute independent anatomical expert review."
+  ],
+  "processing": {
+    "sourceVoxelSpacingMm": [
+      0.28,
+      0.28,
+      0.28
+    ],
+    "processingVoxelSpacingMm": [
+      0.28,
+      0.28,
+      0.28
+    ],
+    "method": "consistent indexed marching tetrahedra at binary isovalue 0.5 on the original grid",
+    "padding": "one background sample around each boundary",
+    "smoothing": false
+  }
+}

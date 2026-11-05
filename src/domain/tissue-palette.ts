@@ -21,7 +21,7 @@ export const SYSTEM_COLOURS: Readonly<Record<SystemId, string>> = Object.freeze(
 const TISSUE_COLOURS: readonly (readonly [RegExp, string])[] = Object.freeze([
   [/\badrenal\b/, '#e0b86d'],
   [/lachrymal|lacrimal|harderian/, '#d7b3a4'],
-  [/\bskin\b|body envelope|residual tissue|inside skin/, '#e3b5a4'],
+  [/\bskin\b|body envelope|residual tissue|inside skin|whole body/, '#e3b5a4'],
   [/\bskeleton\b|\bbone\b|\bskull\b|vertebra|\bfemur\b|\btibia\b|\bfibula\b|\bpelvis\b|fabella|\bpatella\b|\bfoot\b/, '#e9e2d2'],
   [/\bheart\b|ventric|atri/, '#a7343b'],
   [/\blung/, '#d4877f'],

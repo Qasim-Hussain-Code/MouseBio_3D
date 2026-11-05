@@ -141,11 +141,12 @@ def processing_grid(step, selected_labels=None):
     return grid, dims, bounds, counts, labels, aggregates
 
 
-def polygonize(grid, dims, bounds, label, step):
+def polygonize(grid, dims, bounds, label, step, spacing_m=SPACING_M):
+    """Binary interface of one label on a padded processing grid; spacing_m is the source voxel size in metres."""
     nx, ny, nz = dims
     plane_size = nx * ny
     node_count = nx * ny * nz
-    unit = step * SPACING_M
+    unit = step * spacing_m
     positions = array("f")
     normals = array("d")
     indices = array("I")
@@ -229,11 +230,11 @@ def polygonize(grid, dims, bounds, label, step):
 
 
 class GlbWriter:
-    def __init__(self):
+    def __init__(self, generator="MouseBio_3D reproducible volume converter",
+                 copyright="Digimouse USC/UCLA original authors; adaptation Qasim Hussain; CC BY-SA 4.0"):
         self.binary = bytearray()
         self.doc = {
-            "asset": {"version": "2.0", "generator": "MouseBio_3D reproducible volume converter",
-                      "copyright": "Digimouse USC/UCLA original authors; adaptation Qasim Hussain; CC BY-SA 4.0"},
+            "asset": {"version": "2.0", "generator": generator, "copyright": copyright},
             "scene": 0, "scenes": [{"nodes": []}], "nodes": [], "meshes": [],
             "materials": [], "accessors": [], "bufferViews": [], "buffers": [],
         }
@@ -255,19 +256,21 @@ class GlbWriter:
         self.doc["accessors"].append(accessor)
         return index
 
-    def add(self, label, name, positions, normals, indices):
+    def add(self, label, name, positions, normals, indices, structure_id=None, color=None):
+        """Append one region. Other sources pass their own structure ID and declared colour."""
         bounds = [[min(positions[axis::3]) for axis in range(3)], [max(positions[axis::3]) for axis in range(3)]]
         p = self.accessor(positions, 5126, "VEC3", 34962, bounds)
         n = self.accessor(normals, 5126, "VEC3", 34962)
         i = self.accessor(indices, 5125, "SCALAR", 34963)
-        color = REGION_COLORS[label]
+        structure_id = structure_id or f"digimouse-volume:{label}"
+        color = color or REGION_COLORS[label]
         rgb = [int(color[offset:offset + 2], 16) / 255 for offset in (1, 3, 5)]
         material = len(self.doc["materials"])
         self.doc["materials"].append({"name": name, "pbrMetallicRoughness": {"baseColorFactor": [*rgb, 1], "metallicFactor": 0, "roughnessFactor": 0.75}})
         mesh = len(self.doc["meshes"])
-        self.doc["meshes"].append({"name": f"digimouse-volume:{label}", "primitives": [{"attributes": {"POSITION": p, "NORMAL": n}, "indices": i, "material": material, "mode": 4}]})
+        self.doc["meshes"].append({"name": structure_id, "primitives": [{"attributes": {"POSITION": p, "NORMAL": n}, "indices": i, "material": material, "mode": 4}]})
         node = len(self.doc["nodes"])
-        self.doc["nodes"].append({"name": f"digimouse-volume:{label}", "mesh": mesh, "extras": {"structureId": f"digimouse-volume:{label}", "sourceLabel": label}})
+        self.doc["nodes"].append({"name": structure_id, "mesh": mesh, "extras": {"structureId": structure_id, "sourceLabel": label}})
         self.doc["scenes"][0]["nodes"].append(node)
         return bounds
 

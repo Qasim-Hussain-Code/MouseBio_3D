@@ -156,3 +156,46 @@ test('smoothing applies only to the voxel-derived Digimouse references, each wit
     assert.equal(smoothingAppliesTo({ id }), false, id);
   }
 });
+
+test('display normal diffusion matches area-weighted normals at zero passes and aligns noisy normals with the true surface', async () => {
+  const { displayVertexNormals, MAX_NORMAL_ITERATIONS, normalPassesFor } = await import('../src/domain/display-smoothing');
+  const sphere = noisySphere();
+  const position = sphere.getAttribute('position'), index = sphere.index!.array;
+  const reference = sphere.clone(); reference.computeVertexNormals();
+  const plain = displayVertexNormals(position.array, index, position.count, 0);
+  const expected = reference.getAttribute('normal');
+  for (let vertex = 0; vertex < position.count; vertex++) {
+    for (let axis = 0; axis < 3; axis++) assert.ok(Math.abs(plain[vertex * 3 + axis] - expected.array[vertex * 3 + axis]) < 1e-5);
+  }
+  // Mean angle between each normal and the radial direction, the normal of the underlying sphere.
+  const deviation = (normals: Float32Array) => {
+    let total = 0;
+    for (let vertex = 0; vertex < position.count; vertex++) {
+      const radial = new THREE.Vector3().fromBufferAttribute(position, vertex).normalize();
+      const normal = new THREE.Vector3(normals[vertex * 3], normals[vertex * 3 + 1], normals[vertex * 3 + 2]);
+      assert.ok(Math.abs(normal.length() - 1) < 1e-5);
+      total += radial.angleTo(normal);
+    }
+    return total / position.count;
+  };
+  // Many passes on this coarse sphere spread each normal over a large arc and bend it away from the surface.
+  assert.ok(deviation(displayVertexNormals(position.array, index, position.count, 20)) > deviation(plain));
+  // The size rule limits this surface to a few passes, which remove most of the noise.
+  const passes = normalPassesFor(position.array, index, 40);
+  assert.ok(passes >= 1 && passes <= 4, `passes ${passes}`);
+  const diffused = displayVertexNormals(position.array, index, position.count, passes);
+  assert.ok(deviation(diffused) < deviation(plain) * 0.6, `${deviation(plain)} -> ${deviation(diffused)}`);
+  // A finely tessellated sphere of the same size receives the full limit.
+  const fine = mergeVertices(new THREE.IcosahedronGeometry(1, 60));
+  assert.equal(normalPassesFor(fine.getAttribute('position').array, fine.index!.array, 40), 40);
+  assert.equal(normalPassesFor(fine.getAttribute('position').array, fine.index!.array, 0), 0);
+  assert.deepEqual([...sphere.getAttribute('position').array], [...position.array]);
+  assert.throws(() => displayVertexNormals(position.array, index, position.count, MAX_NORMAL_ITERATIONS + 1), /Normal smoothing passes/);
+  assert.throws(() => validateSmoothingOptions({ ...DISPLAY_SMOOTHING_VOLUME, normalIterations: -1 }), /Normal smoothing passes/);
+  assert.equal(DISPLAY_SMOOTHING_COARSE.normalIterations, undefined);
+  // The geometry wrapper stores exactly the size-limited display normals of its smoothed positions.
+  const smoothed = smoothSurfaceGeometry(sphere, DISPLAY_SMOOTHING_VOLUME);
+  const smoothedPositions = smoothed.getAttribute('position').array;
+  const expectedNormals = displayVertexNormals(smoothedPositions, index, position.count, normalPassesFor(smoothedPositions, index, DISPLAY_SMOOTHING_VOLUME.normalIterations!));
+  assert.deepEqual([...smoothed.getAttribute('normal').array], [...expectedNormals]);
+});

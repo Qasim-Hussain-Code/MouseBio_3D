@@ -10,14 +10,15 @@ import { physiologyProcessesForAtlas } from '../src/domain/physiology';
 test('shipped reference declarations bind each actual manifest without merging inventories', async () => {
   const catalog = buildReferenceCatalog(JSON.parse(await readFile(new URL('../data/anatomy-references.json', import.meta.url), 'utf8')));
   assert.equal(catalog.ok, true, catalog.errors.join(' '));
-  assert.equal(catalog.catalog.length, 7);
+  assert.equal(catalog.catalog.length, 8);
   for (const entry of catalog.catalog) {
     const atlas = JSON.parse(await readFile(new URL(`../public${entry.manifestUrl}`, import.meta.url), 'utf8')) as Atlas;
     assert.deepEqual(validateReferenceAtlas(entry, atlas), { ok: true, errors: [] });
     const opacity = referenceOpacity(atlas);
     assert.equal(Object.keys(opacity).length, atlas.structures.length);
     const skin = bodySurfaceIdFor(atlas);
-    assert.ok(atlas.structures.every((region) => opacity[region.id] === (region.id === skin ? SKIN_OPACITY : defaultStructureOpacity(region))));
+    const opaqueSkin = skin && atlas.id !== 'rosenhain2018-m01-native-v1' ? skin : null;
+    assert.ok(atlas.structures.every((region) => opacity[region.id] === (region.id === opaqueSkin ? SKIN_OPACITY : defaultStructureOpacity(region))));
     assert.equal(seeThroughSkinOpacity(atlas), skin ? defaultStructureOpacity(atlas.structures.find((region) => region.id === skin)!) : null);
     assert.equal(!!displayPostureFor(atlas), !!skin);
     assert.ok(atlas.structures.some((region) => region.id === initialReferenceSelection(atlas)));

@@ -93,6 +93,52 @@
     ]
   },
   {
+    "id": "rosenhain2018-m01-native-v1",
+    "title": "Micro-CT (female): 11 regions",
+    "manifestUrl": "/atlas-microct/atlas.json",
+    "coordinateFrameId": "rosenhain2018-m01-ct280-native-v1",
+    "assetSha256": "c7a4233227f4b90aaa30f91d49390b2da7ad47e67acec1e72454a12cd815b6e3",
+    "coverage": {
+      "regionCount": 11,
+      "systems": [
+        "cardiovascular",
+        "digestive",
+        "immune",
+        "integumentary",
+        "lymphatic",
+        "muscular",
+        "respiratory",
+        "skeletal",
+        "urinary"
+      ],
+      "description": "Body and ten organ classes, including the intestine and the bone of the trunk, from one native micro-CT scan of a female BALB/c nu/nu mouse; separate from the Digimouse references."
+    },
+    "processingResolution": {
+      "sourceVoxelSpacingMm": [
+        0.28,
+        0.28,
+        0.28
+      ],
+      "processingVoxelSpacingMm": [
+        0.28,
+        0.28,
+        0.28
+      ],
+      "method": "Binary interfaces of source segmentation classes on the original grid",
+      "limitations": [
+        "The source voxel spacing does not establish surface accuracy.",
+        "The scanned field covers the trunk; the head, distal limbs and tail are partly outside it.",
+        "No accepted registration to either Digimouse reference exists."
+      ]
+    },
+    "licenses": [
+      {
+        "identifier": "CC0-1.0",
+        "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+      }
+    ]
+  },
+  {
     "id": "charles2016-hindlimb-v1",
     "title": "Hindlimb: 44 source regions",
     "manifestUrl": "/atlas-hindlimb/atlas.json",
