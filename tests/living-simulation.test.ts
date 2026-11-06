@@ -250,3 +250,31 @@ test('the size of a pulse follows the radius of the tube', () => {
   const measured = tubeRadius(tube);
   assert.ok(Math.abs(measured - 0.0005) < 0.00005, String(measured));
 });
+
+test('a foot comes forward through the air with its leg bent, and goes back along the ground', () => {
+  const step = 0.002;
+  for (let seconds = 0; seconds < 2; seconds += 0.013) {
+    const now = walkAt(seconds, 1), next = walkAt(seconds + step, 1);
+    for (let leg = 0; leg < 4; leg++) {
+      // A swing above zero has the foot towards the tail, so a foot coming forward has a falling swing.
+      const movingForward = next.swing[leg] < now.swing[leg];
+      if (now.lift[leg] > 1e-5) assert.ok(movingForward, 'a lifted foot comes forward at ' + seconds + ' leg ' + leg);
+      if (!movingForward) { assert.ok(now.lift[leg] < 2e-5, 'a foot going back is on the ground'); assert.ok(Math.abs(now.bend[leg]) < 0.02, 'with its leg straight'); }
+    }
+    assert.ok(now.bend[0] <= 0 && now.bend[1] <= 0, 'the elbows bend one way');
+    assert.ok(now.bend[2] >= 0 && now.bend[3] >= 0, 'and the knees the other');
+  }
+});
+
+test('in a stride each foot is on the ground with its diagonal partner, and the walk starts and stops smoothly', () => {
+  for (let seconds = 0; seconds < 2; seconds += 0.017) {
+    const { lift } = walkAt(seconds, 1);
+    assert.ok(Math.abs(lift[0] - lift[3]) < 1e-9, 'right fore with left hind');
+    assert.ok(Math.abs(lift[1] - lift[2]) < 1e-9, 'left fore with right hind');
+    assert.ok(Math.min(lift[0], lift[1]) < 1e-9, 'one pair is always on the ground');
+  }
+  const still = walkAt(1.3, 0);
+  assert.equal(still.sway, 0);
+  assert.deepEqual(still.bend.map(Math.abs), [0, 0, 0, 0]);
+  assert.ok(Math.abs(walkAt(1.3, 0.01).sway) <= Math.abs(walkAt(1.3, 1).sway) * 0.0101);
+});

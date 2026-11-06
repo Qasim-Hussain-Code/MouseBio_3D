@@ -140,19 +140,31 @@ export interface WalkPose {
   readonly swing: readonly [number, number, number, number];
   /** How far each leg is lifted, in metres. */
   readonly lift: readonly [number, number, number, number];
+  /** How far each leg bends at its middle joint, in radians. The elbow and the knee bend opposite ways. */
+  readonly bend: readonly [number, number, number, number];
   /** How far the body rises, in metres. */
   readonly bob: number;
+  /** How far the middle of the trunk moves to one side, in metres. */
+  readonly sway: number;
 }
 
 /** Stepping on the spot, with diagonal legs together, as a trot. Its rate and the size of its steps are chosen for viewing, and it is not a measured gait. */
 export function walkAt(shownSeconds: number, amount: number): WalkPose {
   const cycle = 1.15 * shownSeconds;
-  const leg = (phase: number, size: number) => ({ swing: size * amount * Math.sin(TAU * (cycle + phase)), lift: 0.0011 * amount * Math.max(0, Math.cos(TAU * (cycle + phase))) });
-  const rightFore = leg(0, 0.2), leftFore = leg(0.5, 0.2), rightHind = leg(0.5, 0.24), leftHind = leg(0, 0.24);
+  // A swing above zero has the foot towards the tail. A foot on the ground moves that way as the body passes over it, and comes forward through the air, with its leg bent.
+  const leg = (phase: number, size: number, bend: number) => {
+    const inAir = Math.max(0, -Math.cos(TAU * (cycle + phase)));
+    return { swing: size * amount * Math.sin(TAU * (cycle + phase)), lift: 0.0011 * amount * inAir, bend: bend * amount * inAir };
+  };
+  // The elbow and the knee bend opposite ways.
+  const rightFore = leg(0, 0.2, -0.55), leftFore = leg(0.5, 0.2, -0.55), rightHind = leg(0.5, 0.24, 0.65), leftHind = leg(0, 0.24, 0.65);
   return {
     swing: [rightFore.swing, leftFore.swing, rightHind.swing, leftHind.swing],
     lift: [rightFore.lift, leftFore.lift, rightHind.lift, leftHind.lift],
+    bend: [rightFore.bend, leftFore.bend, rightHind.bend, leftHind.bend],
     bob: 0.00028 * amount * Math.sin(2 * TAU * cycle),
+    // The trunk curves a little to each side in time with the stride, and the head follows.
+    sway: 0.0009 * amount * Math.sin(TAU * cycle),
   };
 }
 

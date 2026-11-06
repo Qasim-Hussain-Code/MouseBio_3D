@@ -16,6 +16,9 @@ export interface JourneyLevel {
   readonly evidence: JourneyEvidence;
   readonly caption: string;
   readonly basis: readonly string[];
+  /** The file of measured atoms that this level shows, and how. */
+  readonly molecule?: string;
+  readonly moleculeView?: 'whole' | 'atoms';
 }
 
 export const JOURNEY_NOTICE = 'Data from this specimen end at about 0.1 mm. Everything in this view is representative and was not seen in this mouse.';
@@ -139,7 +142,7 @@ export type JourneyTissue = 'skin' | 'muscle' | 'nerve' | 'artery' | 'vein' | 'b
   | 'cartilage' | 'tendon' | 'membrane' | 'gland' | 'endocrine' | 'thyroid' | 'lymphoid' | 'colon' | 'stomach' | 'urothelium' | 'airway' | 'retina' | 'cornea' | 'lens' | 'tooth' | 'testis' | 'blood';
 
 /** Where a zoom goes below the cells of a tissue. A cell nucleus unless the pointer chooses another way. */
-export type JourneyTail = 'nucleus' | 'blood' | 'microbiota';
+export type JourneyTail = 'nucleus' | 'blood' | 'microbiota' | 'importer' | 'mitochondrion' | 'sarcomere' | 'collagen' | 'synapse' | 'axon' | 'antibody' | 'droplet' | 'disc' | 'crystallin' | 'water' | 'secretion' | 'surfactant' | 'cilium' | 'pump' | 'keratin';
 
 const SHARED_FROM = JOURNEY_LEVELS.findIndex((level) => level.id === 'nucleus');
 const SHARED = JOURNEY_LEVELS.slice(SHARED_FROM);
@@ -266,10 +269,135 @@ const ROUTES: Readonly<Record<Exclude<JourneyTissue, 'skin'>, { readonly label: 
 };
 
 const levelOf = (id: string) => JOURNEY_LEVELS.find((level) => level.id === id)!;
+const AGIP = 'Agip AA, Blaza JN, Bridges HR, et al. Cryo-EM structures of complex I from mouse heart mitochondria in two biochemically defined states. Nat Struct Mol Biol 2018;25(7):548-556. doi:10.1038/s41594-018-0073-1';
+const DAVIES = 'Davies KM, Strauss M, Daum B, et al. Macromolecular organization of ATP synthase and complex I in whole mitochondria. Proc Natl Acad Sci U S A 2011;108(34):14121-6. doi:10.1073/pnas.1103621108';
+const VON_DER_ECKEN = 'von der Ecken J, Muller M, Lehman W, et al. Structure of the F-actin-tropomyosin complex. Nature 2015;519(7541):114-7. doi:10.1038/nature14033';
+const GAUTEL = 'Gautel M, Djinovic-Carugo K. The sarcomeric cytoskeleton: from molecules to motion. J Exp Biol 2016;219(Pt 2):135-45. doi:10.1242/jeb.124941';
+const BELLA = 'Bella J, Eaton M, Brodsky B, Berman HM. Crystal and molecular structure of a collagen-like peptide at 1.9 A resolution. Science 1994;266(5182):75-81. doi:10.1126/science.7695699';
+const ORGEL = 'Orgel JP, Irving TC, Miller A, Wess TJ. Microfibrillar structure of type I collagen in situ. Proc Natl Acad Sci U S A 2006;103(24):9001-5. doi:10.1073/pnas.0502718103';
+const YU = 'Yu J, Rao P, Clark S, et al. Hippocampal AMPA receptor assemblies and mechanism of allosteric inhibition. Nature 2021;594(7863):448-453. doi:10.1038/s41586-021-03540-0';
+const HARRIS_WEINBERG = 'Harris KM, Weinberg RJ. Ultrastructure of synapses in the mammalian brain. Cold Spring Harb Perspect Biol 2012;4(5):a005587. doi:10.1101/cshperspect.a005587';
+const LONG = 'Long SB, Campbell EB, MacKinnon R. Crystal structure of a mammalian voltage-dependent Shaker family K+ channel. Science 2005;309(5736):897-903. doi:10.1126/science.1116269';
+const RASBAND = 'Rasband MN, Peles E. The nodes of Ranvier: molecular assembly and maintenance. Cold Spring Harb Perspect Biol 2015;8(3):a020495. doi:10.1101/cshperspect.a020495';
+const ARROYO = 'Arroyo EJ, Xu T, Poliak S, et al. Internodal specializations of myelinated axons in the central nervous system. Cell Tissue Res 2001;305(1):53-66. doi:10.1007/s004410100403';
+const HARRIS_ANTIBODY = 'Harris LJ, Larson SB, Hasel KW, McPherson A. Refined structure of an intact IgG2a monoclonal antibody. Biochemistry 1997;36(7):1581-97. doi:10.1021/bi962514+';
+const NUTT = 'Nutt SL, Hodgkin PD, Tarlinton DM, Corcoran LM. The generation of antibody-secreting plasma cells. Nat Rev Immunol 2015;15(3):160-71. doi:10.1038/nri3795';
+const XU = 'Xu Z, Bernlohr DA, Banaszak LJ. The adipocyte lipid-binding protein at 1.6-A resolution. Crystal structures of the apoprotein and with bound saturated and unsaturated fatty acids. J Biol Chem 1993;268(11):7874-84. PMID 8463311';
+const WALTHER = 'Walther TC, Farese RV. Lipid droplets and cellular lipid metabolism. Annu Rev Biochem 2012;81:687-714. doi:10.1146/annurev-biochem-061009-102430';
+const PALCZEWSKI = 'Palczewski K, Kumasaka T, Hori T, et al. Crystal structure of rhodopsin: a G protein-coupled receptor. Science 2000;289(5480):739-45. doi:10.1126/science.289.5480.739';
+const FOTIADIS = 'Fotiadis D, Liang Y, Filipek S, et al. Atomic-force microscopy: rhodopsin dimers in native disc membranes. Nature 2003;421(6919):127-8. doi:10.1038/421127a';
+const WU = 'Wu Z, Delaglio F, Wyatt K, Wistow G, Bax A. Solution structure of gammaS-crystallin by molecular fragment replacement NMR. Protein Sci 2005;14(12):3101-14. doi:10.1110/ps.051635205';
+const SUI = 'Sui H, Han BG, Lee JK, Walian P, Jap BK. Structural basis of water-specific transport through the AQP1 water channel. Nature 2001;414(6866):872-8. doi:10.1038/414872a';
+const NIELSEN = 'Nielsen S, Smith BL, Christensen EI, Knepper MA, Agre P. CHIP28 water channels are localized in constitutively water-permeable segments of the nephron. J Cell Biol 1993;120(2):371-83. doi:10.1083/jcb.120.2.371';
+const TIMM = 'Timm DE, Baker LJ, Mueller H, Zidek L, Novotny MV. Structural basis of pheromone binding to mouse major urinary protein (MUP-I). Protein Sci 2001;10(5):997-1004. doi:10.1110/ps.52201';
+const SEVER = 'Sever N, Milicic G, Bodnar NO, Wu X, Rapoport TA. Mechanism of lamellar body formation by lung surfactant protein B. Mol Cell 2021;81(1):49-66.e8. doi:10.1016/j.molcel.2020.10.042';
+const LOWE = 'Lowe J, Li H, Downing KH, Nogales E. Refined structure of alpha beta-tubulin at 3.5 A resolution. J Mol Biol 2001;313(5):1045-57. doi:10.1006/jmbi.2001.5077';
+const SATIR = 'Satir P, Christensen ST. Overview of structure and function of mammalian cilia. Annu Rev Physiol 2007;69:377-400. doi:10.1146/annurev.physiol.69.040705.141236';
+const ABE = 'Abe K, Irie K, Nakanishi H, Suzuki H, Fujiyoshi Y. Crystal structures of the gastric proton pump. Nature 2018;556(7700):214-218. doi:10.1038/s41586-018-0003-8';
+const FORTE = 'Forte JG, Zhu L. Apical recycling of the gastric parietal cell H,K-ATPase. Annu Rev Physiol 2010;72:273-96. doi:10.1146/annurev-physiol-021909-135744';
+const GLENWRIGHT = 'Glenwright AJ, Pothula KR, Bhamidimarri SP, et al. Structural basis for nutrient acquisition by dominant members of the human gut microbiota. Nature 2017;541(7637):407-411. doi:10.1038/nature20828';
+const ELDIRANY = 'Eldirany SA, Ho M, Hinbest AJ, Lomakin IB, Bunick CG. Human keratin 1/10-1B tetramer structures reveal a knob-pocket mechanism in intermediate filament assembly. EMBO J 2019;38(11):e100741. doi:10.15252/embj.2018100741';
+
 const FROM_ATOM = JOURNEY_LEVELS.slice(JOURNEY_LEVELS.findIndex((level) => level.id === 'atom'));
 /** The same view heights as the nucleus, the chromatin and the atoms of DNA, so that a level leads to the next the same way on every route. */
 const closeLevel = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 5e-6, startMetres: 9.5e-6, endMetres: 3.2e-7, evidence: 'simulated', caption: `${caption} Sizes, shapes and positions are estimates.`, basis });
-const fineLevel = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 3e-7, startMetres: 8e-7, endMetres: 1.6e-8, evidence: 'simulated', caption: `${caption} Sizes, counts and positions are estimates.`, basis });
+const fineLevel = (id: string, name: string, caption: string, basis: readonly string[], endMetres = 1.6e-8): JourneyLevel => ({ id, name, referenceMetres: 3e-7, startMetres: 8e-7, endMetres, evidence: 'simulated', caption: `${caption} Sizes, counts and positions are estimates.`, basis });
+
+/** A molecule whole and then the atoms round one chosen atom, at the same view heights as hemoglobin and the heme, so that they lead to the atom the same way on every route. */
+const moleculeLevels = (molecule: string, whole: string, wholeCaption: string, atoms: string, atomsCaption: string, basis: readonly string[], referenceMetres = 1.2e-8): readonly JourneyLevel[] => [
+  { id: `${molecule}-whole`, name: whole, referenceMetres, startMetres: referenceMetres * 3, endMetres: 3.5e-9, evidence: 'measured-elsewhere', caption: wholeCaption, basis, molecule, moleculeView: 'whole' },
+  { id: `${molecule}-atoms`, name: atoms, referenceMetres: 3e-9, startMetres: 6.5e-9, endMetres: 5e-10, evidence: 'measured-elsewhere', caption: `${atomsCaption} Positions come from the same entry, coloured by element, and bonds are inferred from the distances between them.`, basis, molecule, moleculeView: 'atoms' },
+];
+const NOT_THIS_MOUSE = 'It was not measured in this mouse.';
+
+/** Below the cells of a tissue, the way that leads to a measured molecule of its own. */
+const MOLECULE_TAILS = {
+  mitochondrion: [
+    closeLevel('mitochondrion-close', 'A mitochondrion', 'Mitochondria of a cell, each with an outer membrane and an inner membrane folded into cristae. Agip et al. describe complex I as working in this inner membrane.', [AGIP]),
+    fineLevel('mitochondrion-fine', 'A fold of the inner membrane', 'Davies et al. find long rows of ATP synthase dimers on the tightly curved edges of the folds, and complex I on their flat parts, in mitochondria from bovine heart, potato and fungi. Mouse mitochondria were not among those they examined.', [DAVIES], 3.4e-8),
+    ...moleculeLevels('complex-i', 'Mouse complex I', `Every atom is at its modelled position in Protein Data Bank entry 6G2J, from a map at 3.3 angstrom resolution by electron microscopy, of complex I from mouse heart mitochondria in the active state, with its 45 chains, cofactors and lipids. ${NOT_THIS_MOUSE}`, 'Atoms round an iron-sulfur cluster', 'The iron-sulfur cluster farthest from the flavin and what lies against it.', [AGIP], 2.6e-8),
+  ],
+  sarcomere: [
+    closeLevel('sarcomere-close', 'Sarcomeres', 'Sarcomeres in line along myofibrils, with the Z discs and M bands that Gautel and Djinovic-Carugo review, and mitochondria between the myofibrils. One sarcomere is drawn about 2 micrometres long.', [GAUTEL]),
+    fineLevel('sarcomere-fine', 'Thick and thin filaments', 'Half a sarcomere: thin filaments anchored at the Z disc overlap thick filaments of myosin, whose heads reach across. The sliding shown is an illustration, in time with the simulated heartbeat.', [GAUTEL, VON_DER_ECKEN]),
+    ...moleculeLevels('thin-filament', 'A thin filament', 'Every atom is at its modelled position in Protein Data Bank entry 3J8A, by electron microscopy, with actin at 3.7 angstrom and tropomyosin at 6.5 angstrom resolution. The actin is of rabbit skeletal muscle and the tropomyosin of mouse, so this is not wholly a mouse molecule.', 'Atoms round ADP', 'The ADP held in one actin and what lies against it.', [VON_DER_ECKEN]),
+  ],
+  collagen: [
+    closeLevel('collagen-close', 'Collagen fibrils', 'Fibrils side by side in ground substance. Orgel et al. note that fibrous collagens form the structural basis of the connective tissues of the heart, vessels, skin, cornea, bone and tendon. Collagens differ in type and in the thickness of their fibrils from tissue to tissue, and this view shows no particular one.', [ORGEL]),
+    fineLevel('collagen-fine', 'One fibril and its bands', 'A fibril with its repeating bands, from long molecules offset along it. Orgel et al. measure a repeat of about 67.8 nanometres in type I collagen of the rat, whose molecules pack quasi-hexagonally.', [ORGEL]),
+    ...moleculeLevels('collagen', 'A collagen triple helix', 'Every atom is at its measured position in a crystal at 1.85 angstrom resolution: Protein Data Bank entry 1CAG, three chains wound together as Bella et al. describe. It is a short synthetic peptide with the repeating pattern of collagen, standing in for the much longer molecules of the tissue, and it is not collagen from a mouse.', 'Atoms at the alanine', 'The alanine that replaces one glycine of the pattern in this peptide, where Bella et al. find the helix locally untwisted, and what lies against it.', [BELLA]),
+  ],
+  synapse: [
+    closeLevel('synapse-close', 'A synapse', 'An excitatory synapse on a dendritic spine among the crowded fibres of the brain, with the bouton, cleft and postsynaptic density that Harris and Weinberg review from the rodent brain.', [HARRIS_WEINBERG]),
+    fineLevel('synapse-fine', 'The synaptic cleft', 'Vesicles at the active zone across a narrow cleft from receptors in the postsynaptic density, which Harris and Weinberg describe as containing ligand-gated channels and a network of signalling molecules.', [HARRIS_WEINBERG]),
+    ...moleculeLevels('ampa-receptor', 'A mouse glutamate receptor', `Every atom is at its modelled position in Protein Data Bank entry 7LEP, from a map at 3.25 angstrom resolution by electron microscopy: an AMPA receptor purified from mouse hippocampus by Yu et al., with auxiliary subunits and bound inhibitors. It is a composite of the receptor types found there and does not include the outermost domains. ${NOT_THIS_MOUSE}`, 'Atoms round a bound inhibitor', 'A bound inhibitor and what lies against it.', [YU]),
+  ],
+  axon: [
+    closeLevel('axon-close', 'A node of Ranvier', 'A gap in the myelin along an axon. Rasband and Peles review the clustering of sodium and potassium channels that conduction depends on, and Arroyo et al. place the Shaker-type channels Kv1.1 and Kv1.2 in the juxtaparanodal membrane, beside the node, in mice and rats.', [RASBAND, ARROYO]),
+    fineLevel('axon-fine', 'The membrane of the axon', 'Potassium channels in the membrane of the axon where it lies under the myelin, with neurofilaments inside the axon.', [ARROYO, LONG]),
+    ...moleculeLevels('potassium-channel', 'A potassium channel', 'Every atom is at its measured position in a crystal at 2.9 angstrom resolution: Protein Data Bank entry 2A79, the channel Kv1.2 with its beta subunits, of the rat and not of the mouse. The four copies of the chain come from the biological assembly of the entry. Parts of the voltage sensors were built only as chains of unknown sequence.', 'Atoms round a potassium ion', 'A potassium ion in the pore and what lies against it. An ion on the axis of the pore belongs to all four copies and is shown once.', [LONG]),
+  ],
+  antibody: [
+    closeLevel('antibody-close', 'A plasma cell', 'A plasma cell, the antibody-secreting cell that Nutt et al. review, with the nucleus to one side and much of the cell taken up by rough endoplasmic reticulum.', [NUTT]),
+    fineLevel('antibody-fine', 'Inside the endoplasmic reticulum', 'A sheet of rough endoplasmic reticulum with ribosomes on its outer faces and antibodies in the space inside.', [NUTT]),
+    ...moleculeLevels('antibody', 'A mouse antibody', `Every atom is at its measured position in a crystal at 2.8 angstrom resolution: Protein Data Bank entry 1IGT, a whole mouse IgG2a antibody with its sugars, from a cultured line raised against a canine lymphoma, as Harris et al. report. ${NOT_THIS_MOUSE}`, 'Atoms round a sugar', 'The first sugar on a heavy chain and what lies against it.', [HARRIS_ANTIBODY]),
+  ],
+  droplet: [
+    closeLevel('droplet-close', 'The edge of a fat droplet', 'The cell membrane, a thin rim of cytoplasm and the edge of the large droplet. Walther and Farese describe a droplet as a core of neutral lipids in the cytoplasm.', [WALTHER]),
+    fineLevel('droplet-fine', 'The surface of a droplet', 'A single layer of lipid over the neutral lipid of the droplet, with small lipid-binding proteins in the cytoplasm beside it.', [WALTHER, XU]),
+    ...moleculeLevels('fatty-acid-protein', 'A protein carrying a fatty acid', `Every atom is at its measured position in a crystal at 1.6 angstrom resolution: Protein Data Bank entry 1LID, the adipocyte lipid-binding protein of mouse, made in bacteria, with oleic acid bound inside it, as Xu et al. report. ${NOT_THIS_MOUSE}`, 'Atoms of the fatty acid', 'The middle of the oleic acid and what lies against it.', [XU]),
+  ],
+  disc: [
+    closeLevel('disc-close', 'A rod outer segment', 'Stacks of discs on a stalk above an inner segment full of mitochondria, for the rods that Carter-Dawson and LaVail count as most of the photoreceptors of the mouse. Far fewer discs are drawn than exist, so that they can be told apart.', [CARTER_DAWSON]),
+    fineLevel('disc-fine', 'Discs and rhodopsin', 'Discs seen from the side, with rhodopsin crowded in their membranes. Fotiadis et al. saw rhodopsin as dimers in native disc membranes by atomic force microscopy.', [FOTIADIS]),
+    ...moleculeLevels('rhodopsin', 'Rhodopsin', 'Every atom is at its measured position in a crystal at 2.8 angstrom resolution: Protein Data Bank entry 1F88, rhodopsin of the cow and not of the mouse, in the dark, as Palczewski et al. report, with seven helices round its retinal. The two molecules are those of the crystal.', 'Atoms round retinal', 'The end of the retinal that is joined to the protein and what lies against it.', [PALCZEWSKI]),
+  ],
+  crystallin: [
+    closeLevel('crystallin-close', 'Inside a lens fibre', 'Flattened fibres in ordered rows, as Bassnett et al. describe, seen cut across. Mature fibres have lost their nuclei and other large organelles.', [BASSNETT]),
+    fineLevel('crystallin-fine', 'Crystallins', 'Proteins crowded closely in the cytoplasm of a fibre. The jostling is an illustration.', [BASSNETT, WU]),
+    ...moleculeLevels('crystallin', 'A mouse crystallin', `Atoms at their positions in Protein Data Bank entry 1ZWM, the first of twenty models of mouse gamma-S crystallin in solution by nuclear magnetic resonance, as Wu et al. report: two similar domains, with flexible parts that differ most between the models. It is a recombinant protein. ${NOT_THIS_MOUSE}`, 'Atoms in the middle of the protein', 'The carbon nearest the centre of the molecule and what lies against it.', [WU]),
+  ],
+  water: [
+    closeLevel('water-close', 'The brush border', 'Long microvilli of a kidney tubule cell facing the fluid of the tubule. Nielsen et al. find the water channel now called aquaporin 1 in the microvilli of the proximal tubule of the rat, at 3.8 percent of the protein of the brush border.', [NIELSEN]),
+    fineLevel('water-fine', 'A microvillus', 'A microvillus with a core of actin and water channels in its membrane. Their number is an estimate.', [NIELSEN]),
+    ...moleculeLevels('aquaporin', 'Aquaporin 1', 'Every atom is at its measured position in a crystal at 2.2 angstrom resolution: Protein Data Bank entry 1J4N, of the cow and not of the mouse. The four copies come from the biological assembly of the entry, and each has its own pore, as Sui et al. report.', 'Atoms at the narrowest part of a pore', 'Histidine 182, which Sui et al. find critical to letting only water through, and what lies against it.', [SUI]),
+  ],
+  secretion: [
+    closeLevel('secretion-close', 'The way out of a liver cell', 'Rough endoplasmic reticulum, a Golgi stack and vesicles on the way to the surface that faces the blood, among mitochondria and glycogen.', [TIMM]),
+    fineLevel('secretion-fine', 'A vesicle', 'A vesicle full of protein. Timm et al. purify major urinary protein from mouse liver, and passage through vesicles is the general way out for a secreted protein and was not studied by them.', [TIMM]),
+    ...moleculeLevels('urinary-protein', 'Mouse major urinary protein', `Every atom is at its measured position in a crystal at 2.0 angstrom resolution: Protein Data Bank entry 1I04, major urinary protein I purified from mouse liver. Timm et al. describe these proteins as carriers of volatile pheromones. ${NOT_THIS_MOUSE}`, 'Atoms inside the barrel', 'The carbon nearest the centre of the molecule and what lies against it.', [TIMM]),
+  ],
+  surfactant: [
+    closeLevel('surfactant-close', 'A lamellar body', 'Lamellar bodies in a type II cell. Sever et al. describe them as organelles of densely packed concentric membranes that store surfactant for secretion.', [SEVER]),
+    fineLevel('surfactant-fine', 'Layers of a lamellar body', 'Layers of membrane with protein between them. Sever et al. find that the mature middle domain of surfactant protein B generates these layers.', [SEVER]),
+    ...moleculeLevels('surfactant-protein', 'A domain of surfactant protein B', `Every atom is at its measured position in a crystal at 1.75 angstrom resolution: Protein Data Bank entry 6VZ0, a recombinant domain of the precursor of mouse surfactant protein B, and not the mature protein. The two molecules are those of the crystal. ${NOT_THIS_MOUSE}`, 'Atoms in the middle of the domain', 'The carbon nearest the centre of the two molecules and what lies against it.', [SEVER]),
+  ],
+  cilium: [
+    closeLevel('cilium-close', 'Cilia of the airway', 'Cilia rooted in basal bodies at the surface of a cell of the airway. Their beating is an illustration.', [SATIR, ROCK]),
+    fineLevel('cilium-fine', 'Across a cilium', 'Nine outer doublets of microtubules round a central pair, with dynein arms, the 9 + 2 pattern that Satir and Christensen describe for the motile cilia of mammalian epithelia.', [SATIR]),
+    ...moleculeLevels('tubulin', 'A dimer of tubulin', 'Every atom is at its modelled position in Protein Data Bank entry 1JFF, by electron crystallography at 3.5 angstrom resolution: alpha and beta tubulin of the cow and not of the mouse, in flat sheets and not a microtubule, held with the drug taxol, as Lowe et al. report.', 'Atoms round GTP', 'The GTP held by alpha tubulin and what lies against it.', [LOWE]),
+  ],
+  pump: [
+    closeLevel('pump-close', 'A parietal cell', 'A secretory canaliculus among mitochondria and tubulovesicles. Forte and Zhu review how, on stimulation, the tubulovesicle membranes carry the pumps to the secretory surface.', [FORTE]),
+    fineLevel('pump-fine', 'A membrane full of pumps', 'The membrane of a tubulovesicle, crowded with proton pumps. Their number is an estimate.', [FORTE, ABE]),
+    ...moleculeLevels('proton-pump', 'The gastric proton pump', 'Every atom is at its measured position in a crystal at 2.8 angstrom resolution: Protein Data Bank entry 5YLU, of the pig and not of the mouse, held by the drug vonoprazan. Abe et al. describe it as acidifying the gastric juice down to pH 1.', 'Atoms round the drug', 'The vonoprazan in the conduit of the pump and what lies against it.', [ABE]),
+  ],
+  keratin: [
+    closeLevel('keratin-close', 'Keratin filaments', 'Bundles of keratin filaments in a cell of the skin, running to the desmosomes that join it to the next. Simpson et al. review their part in the epidermis.', [SIMPSON]),
+    fineLevel('keratin-fine', 'One keratin filament', 'Filaments, each a rope of finer strands. How the strands are wound here is a sketch.', [ELDIRANY]),
+    ...moleculeLevels('keratin', 'Part of a keratin', 'Every atom is at its measured position in a crystal at 3.0 angstrom resolution: Protein Data Bank entry 6EC0, the coil 1B part of keratin 1 and keratin 10 of humans and not of the mouse, as Eldirany et al. report, assembled as a tetramer. It is a short part of a much longer filament.', 'Atoms in the middle of the coils', 'The carbon nearest the centre of the tetramer and what lies against it.', [ELDIRANY]),
+  ],
+} as const;
+
+/** The way that a tissue's own molecule lies on, which playing takes from that tissue. A tissue with none goes to a cell nucleus. */
+const OWN_WAYS: Partial<Readonly<Record<JourneyTissue, JourneyTail>>> = Object.freeze({
+  skin: 'keratin', muscle: 'sarcomere', heart: 'sarcomere', nerve: 'axon', artery: 'blood', vein: 'blood', blood: 'blood', bone: 'collagen', tendon: 'collagen', cartilage: 'collagen', cornea: 'collagen',
+  fat: 'droplet', liver: 'secretion', kidney: 'water', lung: 'surfactant', gut: 'microbiota', colon: 'microbiota', brain: 'synapse', lymphoid: 'antibody', retina: 'disc', lens: 'crystallin', airway: 'cilium', stomach: 'pump',
+});
+export const ownWayOf = (tissue: JourneyTissue): JourneyTail => OWN_WAYS[tissue] ?? 'nucleus';
+
+const MICROBES = closeLevel('microbes', 'Bacteria of the gut', 'Nguyen et al. report that the gut microbiota of mice and humans is dominated by two phyla, Bacteroidetes and Firmicutes. Johansson et al. place the bacteria of the colon in its outer mucus. Which bacteria these are is not stated, since no species was drawn from data.', [NGUYEN, JOHANSSON]);
+const BACTERIUM = fineLevel('bacterium', 'Inside a bacterium', 'A bacterium cut open, with an outer and an inner membrane and a thin wall between them, as in Gram-negative bacteria, many ribosomes, and DNA with no nucleus round it. Point at the outer membrane to go on to a molecule that sits in it.', [NGUYEN]);
 
 const TAILS: Readonly<Record<Exclude<JourneyTail, 'nucleus'>, readonly JourneyLevel[]>> = {
   blood: [
@@ -280,12 +408,33 @@ const TAILS: Readonly<Record<Exclude<JourneyTail, 'nucleus'>, readonly JourneyLe
     ...FROM_ATOM,
   ],
   microbiota: [
-    closeLevel('microbes', 'Bacteria of the gut', 'Nguyen et al. report that the gut microbiota of mice and humans is dominated by two phyla, Bacteroidetes and Firmicutes. Johansson et al. place the bacteria of the colon in its outer mucus. Which bacteria these are is not stated, since no species was drawn from data.', [NGUYEN, JOHANSSON]),
-    fineLevel('bacterium', 'Inside a bacterium', 'A bacterium cut open, with an outer and an inner membrane and a thin wall between them, as in Gram-negative bacteria, many ribosomes, and DNA with no nucleus round it.', [NGUYEN]),
+    MICROBES,
+    BACTERIUM,
     { id: 'bacterial-dna', name: 'Bacterial DNA', referenceMetres: 1.2e-8, startMetres: 3.5e-8, endMetres: 3.5e-9, evidence: 'schematic', caption: 'A double helix, with no histones as in a cell nucleus. It is a sketch and follows no sequence.', basis: [NGUYEN] },
     { ...levelOf('dna'), caption: 'Atoms of DNA at their measured positions, coloured by element. They come from the crystal of a mouse nucleosome, Protein Data Bank entry 5B1M, and not from a bacterium, because the chemistry of DNA is the same in both.' },
     ...FROM_ATOM,
   ],
+  importer: [
+    MICROBES,
+    BACTERIUM,
+    ...moleculeLevels('nutrient-importer', 'A nutrient importer of a gut bacterium', 'Every atom is at its measured position in a crystal at 2.75 angstrom resolution: Protein Data Bank entry 5FQ8, from Bacteroides thetaiotaomicron, a bacterium of the human gut. Glenwright et al. show SusC-like barrels in the outer membrane capped by SusD-like proteins, with a peptide bound between them. It is an example of the Bacteroidetes, and no claim is made that this species is in this mouse.', 'Atoms of the bound peptide', 'The peptide bound in the importer and what lies against it.', [GLENWRIGHT]),
+    ...FROM_ATOM,
+  ],
+  mitochondrion: [...MOLECULE_TAILS.mitochondrion, ...FROM_ATOM],
+  sarcomere: [...MOLECULE_TAILS.sarcomere, ...FROM_ATOM],
+  collagen: [...MOLECULE_TAILS.collagen, ...FROM_ATOM],
+  synapse: [...MOLECULE_TAILS.synapse, ...FROM_ATOM],
+  axon: [...MOLECULE_TAILS.axon, ...FROM_ATOM],
+  antibody: [...MOLECULE_TAILS.antibody, ...FROM_ATOM],
+  droplet: [...MOLECULE_TAILS.droplet, ...FROM_ATOM],
+  disc: [...MOLECULE_TAILS.disc, ...FROM_ATOM],
+  crystallin: [...MOLECULE_TAILS.crystallin, ...FROM_ATOM],
+  water: [...MOLECULE_TAILS.water, ...FROM_ATOM],
+  secretion: [...MOLECULE_TAILS.secretion, ...FROM_ATOM],
+  surfactant: [...MOLECULE_TAILS.surfactant, ...FROM_ATOM],
+  cilium: [...MOLECULE_TAILS.cilium, ...FROM_ATOM],
+  pump: [...MOLECULE_TAILS.pump, ...FROM_ATOM],
+  keratin: [...MOLECULE_TAILS.keratin, ...FROM_ATOM],
 };
 
 /** The levels of the zoom that starts from a tissue and goes on by a given way. */
@@ -303,6 +452,9 @@ export function journeyLevels(tissue: JourneyTissue = 'skin', tail: JourneyTail 
   if (tail === 'nucleus') return tissue === 'skin' ? JOURNEY_LEVELS : [...ROUTES[tissue].levels, ...SHARED];
   return [...(tissue === 'skin' ? JOURNEY_LEVELS.slice(0, SHARED_FROM) : ROUTES[tissue].levels), ...TAILS[tail]];
 }
+
+/** Every way down that has a level of its own, for checks. */
+export const JOURNEY_TAILS: readonly JourneyTail[] = Object.freeze(['nucleus', ...Object.keys(TAILS)] as JourneyTail[]);
 
 /** The tissue a structure of the living mouse is mostly made of, so that zooming into it goes on to its own cells. */
 export function journeyTissueOf(structure: { readonly id: string; readonly name: string; readonly systems: readonly string[] }): JourneyTissue | null {

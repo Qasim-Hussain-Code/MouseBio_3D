@@ -51,7 +51,12 @@ export const LIFE_SHARED = Object.freeze({
   uLifeFoot: { value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()] },
   uLifeSwing: { value: [0, 0, 0, 0] },
   uLifeLift: { value: [0, 0, 0, 0] },
+  /** The middle joint of each leg, and how far the leg bends there. */
+  uLifeKnee: { value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()] },
+  uLifeBend: { value: [0, 0, 0, 0] },
   uLifeBob: { value: 0 },
+  /** How far the middle of the trunk moves to the side. */
+  uLifeSway: { value: 0 },
   /** A poke: where, in which direction and how far the surface is pressed, and how far the whole animal starts. */
   uLifePoke: { value: new THREE.Vector3() },
   uLifePokeBy: { value: new THREE.Vector3() },
@@ -70,7 +75,7 @@ export interface LifeMeshUniforms {
 
 export const createLifeMeshUniforms = (): LifeMeshUniforms => ({ uLifeKind: { value: 0 }, uLifeAmount: { value: 0 }, uLifePivot: { value: new THREE.Vector3() }, uLifeAxial: { value: 0 } });
 
-const FOUR: Readonly<Record<string, string>> = { uLifeHip: 'vec3', uLifeFoot: 'vec3', uLifeSwing: 'float', uLifeLift: 'float' };
+const FOUR: Readonly<Record<string, string>> = { uLifeHip: 'vec3', uLifeFoot: 'vec3', uLifeKnee: 'vec3', uLifeSwing: 'float', uLifeLift: 'float', uLifeBend: 'float' };
 const TYPES: Readonly<Record<string, string>> = { uLifeOrigin: 'vec3', uLifeAxis: 'vec3', uLifeDorsal: 'vec3', uLifeLateral: 'vec3', uLifeBody: 'vec4', uLifeSpine: 'vec3', uLifeTrunk: 'vec2', uLifeHeart: 'vec3', uLifeTailBase: 'vec3', uLifeTailLine: 'vec3', uLifeNose: 'vec3', uLifePoke: 'vec3', uLifePokeBy: 'vec3' };
 
 export const LIFE_DECLARATIONS = [
@@ -127,9 +132,18 @@ vec3 mbLifeMove(vec3 p, vec3 n) {
   if (uLifeWalk > 0.0) {
     for (int i = 0; i < 4; i++) {
       float mbOnLeg = mbLeg(p, uLifeHip[i], uLifeFoot[i]);
-      if (mbOnLeg > 0.0) d += (cross(uLifeLateral, p - uLifeHip[i]) * uLifeSwing[i] + uLifeDorsal * uLifeLift[i]) * mbOnLeg;
+      if (mbOnLeg > 0.0) {
+        d += (cross(uLifeLateral, p - uLifeHip[i]) * uLifeSwing[i] + uLifeDorsal * uLifeLift[i]) * mbOnLeg;
+        // Below the middle joint the leg turns about that joint as well, so that it folds as it comes forward.
+        vec3 mbJoint = p - uLifeKnee[i];
+        float mbBelow = smoothstep(-0.0015, 0.0025, dot(mbJoint, uLifeKnee[i] - uLifeFoot[i]) / -length(uLifeKnee[i] - uLifeFoot[i]));
+        if (mbBelow > 0.0) d += (mbTurn(mbJoint, uLifeLateral, uLifeBend[i]) - mbJoint) * mbOnLeg * mbBelow;
+      }
     }
-    d += uLifeDorsal * uLifeBob * smoothstep(uLifeGround + 0.008, uLifeGround + 0.016, h);
+    float mbAboveLegs = smoothstep(uLifeGround + 0.008, uLifeGround + 0.016, h);
+    d += uLifeDorsal * uLifeBob * mbAboveLegs;
+    // The middle of the trunk and the two ends go opposite ways, as a slight curve along the back.
+    d += uLifeLateral * uLifeSway * mbAboveLegs * cos(3.14159 * clamp((a - uLifeBody.y) / max(uLifeBody.w - uLifeBody.x, 0.01), -1.0, 1.0));
   }
   if (uLifeStart != 0.0) {
     d += uLifeDorsal * uLifeStart * smoothstep(uLifeGround + 0.003, uLifeGround + 0.01, h);

@@ -127,6 +127,8 @@ export function createLifeRuntime(atlas: Atlas, meshes: ReadonlyMap<string, THRE
     const box = new THREE.Box3().setFromObject(upper), centre = box.getCenter(new THREE.Vector3());
     shared.uLifeHip.value[index].copy(centre).addScaledVector(dorsal, Math.abs(box.getSize(new THREE.Vector3()).dot(dorsal)) / 2);
     shared.uLifeFoot.value[index].copy(foot);
+    // The middle joint is taken as a little under half way down the line of the leg.
+    shared.uLifeKnee.value[index].copy(shared.uLifeHip.value[index]).lerp(foot, 0.45);
   });
 
   const ownBeat: { own: LifeMeshUniforms; rhythm: 'atria' | 'ventricles' | 'lungs' }[] = [];
@@ -206,8 +208,9 @@ export function createLifeRuntime(atlas: Atlas, meshes: ReadonlyMap<string, THRE
       if (walkAmount < 0.002 && !settings.walking) walkAmount = 0;
       if (settings.movement && walkAmount > 0) {
         const pose = walkAt(shown, walkAmount);
-        for (let leg = 0; leg < 4; leg++) { shared.uLifeSwing.value[leg] = pose.swing[leg]; shared.uLifeLift.value[leg] = pose.lift[leg]; }
+        for (let leg = 0; leg < 4; leg++) { shared.uLifeSwing.value[leg] = pose.swing[leg]; shared.uLifeLift.value[leg] = pose.lift[leg]; shared.uLifeBend.value[leg] = pose.bend[leg]; }
         shared.uLifeBob.value = pose.bob;
+        shared.uLifeSway.value = pose.sway;
         shared.uLifeWalk.value = walkAmount;
       } else shared.uLifeWalk.value = 0;
       // A poke presses the surface for a moment, and the whole animal starts and settles.

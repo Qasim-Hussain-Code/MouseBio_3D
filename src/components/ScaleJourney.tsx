@@ -1,17 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import {
-  EVIDENCE_LABEL, EVIDENCE_SHORT, formatLength, JOURNEY_NOTICE, journeyLevels, levelAim, levelAt, levelFade, levelHome, playStep, scaleBarLength,
+  EVIDENCE_LABEL, EVIDENCE_SHORT, formatLength, JOURNEY_NOTICE, journeyLevels, levelAim, levelAt, levelFade, levelHome, ownWayOf, playStep, scaleBarLength,
   type JourneyLevel, type JourneyTail, type JourneyTissue,
 } from '../domain/scale-journey';
 import { disposeScene, isNucleosomeData, JOURNEY_BUILDERS, type JourneyScene, type NucleosomeData } from '../viewer/scale-journey-scenes';
 import { TISSUE_BUILDERS } from '../viewer/tissue-scenes';
 import { MORE_TISSUE_BUILDERS } from '../viewer/more-tissue-scenes';
 import { DEEP_BUILDERS, HEMOGLOBIN_BUILDERS, isHemoglobinData, type HemoglobinData } from '../viewer/deep-scenes';
+import { buildMoleculeAtoms, buildMoleculeWhole, isMoleculeData, type MoleculeData } from '../viewer/molecule-scenes';
+import { ORGANELLE_BUILDERS, withWays } from '../viewer/organelle-scenes';
 import { lifeAt, rateLabel, type LifeSettings } from '../domain/living-simulation';
 
 const NUCLEOSOME_URL = '/scale-journey/nucleosome-5b1m.json';
 const HEMOGLOBIN_URL = '/scale-journey/hemoglobin-3hrw.json';
+const moleculeUrl = (key: string) => `/scale-journey/molecule-${key}.json`;
 const FIELD_OF_VIEW = 30;
 
 /** One step of the wheel changes the view by this factor per unit of wheel delta. */
@@ -47,7 +50,8 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
   const lifeRef = useRef(life);
   lifeRef.current = life;
   const [moving, setMoving] = useState(false);
-  const [tail, setTail] = useState<JourneyTail>('nucleus');
+  // Playing from a tissue goes on to the molecule that belongs to it. Otherwise the way is the one the pointer chooses.
+  const [tail, setTail] = useState<JourneyTail>(autoplay ? ownWayOf(tissue) : 'nucleus');
   const levels = useMemo(() => journeyLevels(tissue, tail), [tissue, tail]);
   const levelsRef = useRef(levels), tailRef = useRef(tail);
   levelsRef.current = levels; tailRef.current = tail;
@@ -65,6 +69,8 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
   const [dataState, setDataState] = useState<DataState>('loading');
   const [labels, setLabels] = useState<readonly ShownLabel[]>([]);
   const [showBasis, setShowBasis] = useState(false);
+  /** The ways on from the level in view, listed so that one can be chosen even when its place is out of view. */
+  const [ways, setWays] = useState<readonly { readonly tail: JourneyTail; readonly text: string }[]>([]);
   const exit = useRef(onExit);
   exit.current = onExit;
   const level = levelAt(viewMetres, levels);
@@ -91,6 +97,9 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
   const togglePlay = () => {
     if (playing) { setPlaying(null); return; }
     target.current = null;
+    // A way not yet chosen becomes the tissue's own, as long as that way still passes through the level in view.
+    const own = ownWayOf(tissue);
+    if (tailRef.current === 'nucleus' && own !== 'nucleus' && journeyLevels(tissue, own).some((entry) => entry.id === levelAt(view.current, levelsRef.current).id)) { tailRef.current = own; setTail(own); }
     // From the very bottom it plays back up. From anywhere else it plays on down.
     setPlaying(view.current <= levelsRef.current[levelsRef.current.length - 1].endMetres * 1.01 ? 'out' : 'in');
   };
@@ -124,6 +133,21 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
 
     let nucleosome: NucleosomeData | null = null, hemoglobin: HemoglobinData | null = null, hemoglobinAsked = false;
     let disposed = false;
+    const molecules = new Map<string, MoleculeData>(), moleculesAsked = new Set<string>();
+    const askForMolecule = (key: string) => {
+      if (moleculesAsked.has(key)) return;
+      moleculesAsked.add(key);
+      fetch(moleculeUrl(key)).then((response) => {
+        if (!response.ok) throw new Error('The measured structure could not be loaded.');
+        return response.json();
+      }).then((value: unknown) => {
+        if (disposed) return;
+        if (!isMoleculeData(value, key)) throw new Error('The measured structure is not valid.');
+        molecules.set(key, value);
+        setDataState('ready');
+        dirty.current = true;
+      }).catch(() => { if (!disposed) setDataState('failed'); });
+    };
     const askForHemoglobin = () => {
       if (hemoglobinAsked) return;
       hemoglobinAsked = true;
@@ -162,10 +186,12 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
     const ensure = (entry: JourneyLevel): JourneyScene | null => {
       const existing = built.get(entry.id);
       if (existing) return existing;
-      const tissueScene = TISSUE_BUILDERS[entry.id] ?? MORE_TISSUE_BUILDERS[entry.id] ?? DEEP_BUILDERS[entry.id];
+      const tissueScene = TISSUE_BUILDERS[entry.id] ?? MORE_TISSUE_BUILDERS[entry.id] ?? DEEP_BUILDERS[entry.id] ?? ORGANELLE_BUILDERS[entry.id];
       if (HEMOGLOBIN_BUILDERS[entry.id] && !hemoglobin) askForHemoglobin();
-      const made = tissueScene ? tissueScene() : HEMOGLOBIN_BUILDERS[entry.id] ? (hemoglobin ? HEMOGLOBIN_BUILDERS[entry.id](hemoglobin) : null) : JOURNEY_BUILDERS[entry.id]?.(nucleosome) ?? null;
-      if (!made) return null;
+      const atoms = entry.molecule ? molecules.get(entry.molecule) : undefined;
+      const drawn = entry.molecule ? (atoms ? (entry.moleculeView === 'atoms' ? buildMoleculeAtoms(atoms) : buildMoleculeWhole(atoms, entry.referenceMetres * 1e10)) : null) : tissueScene ? tissueScene() : HEMOGLOBIN_BUILDERS[entry.id] ? (hemoglobin ? HEMOGLOBIN_BUILDERS[entry.id](hemoglobin) : null) : JOURNEY_BUILDERS[entry.id]?.(nucleosome) ?? null;
+      if (!drawn) return null;
+      const made = withWays(entry.id, drawn);
       if (made.cut) {
         const world = new THREE.Plane();
         worldCuts.set(made.cut, world);
@@ -199,7 +225,7 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
     const chooseWay = () => {
       const entry = levelAt(view.current, levelsRef.current), item = built.get(entry.id);
       if (!item?.branches?.length) return;
-      const options: { tail: JourneyTail; at: THREE.Vector3 }[] = [{ tail: 'nucleus', at: item.focus }, ...item.branches];
+      const options: { tail: JourneyTail; at: THREE.Vector3 }[] = [{ tail: item.homeTail ?? 'nucleus', at: item.focus }, ...item.branches];
       let best = options[0], closest = Infinity;
       for (const option of options) {
         place3.copy(option.at).applyMatrix4(item.group.matrixWorld).project(camera);
@@ -285,6 +311,8 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
       const levels = levelsRef.current;
       const here = levelAt(metres, levels);
       if (here !== lastLevel) { lastLevel = here; pan.current = { x: 0, y: 0 }; }
+      // The atoms of a way are fetched as soon as the way is taken, so that they are there when the zoom arrives.
+      for (const entry of levels) if (entry.molecule) askForMolecule(entry.molecule);
       for (const [id, item] of built) if (!levels.some((entry) => entry.id === id)) item.group.visible = false;
       for (const entry of levels) {
         const fade = levelFade(entry, metres, levels);
@@ -310,6 +338,8 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
       }
       renderer.render(scene, camera);
       setMoving(!!(leading as JourneyScene | null)?.animate && !!lifeRef.current?.on);
+      const shownScene = leading as JourneyScene | null, shownWays = shownScene?.branches?.length ? [{ tail: shownScene.homeTail ?? 'nucleus', text: shownScene.homeTail ? 'Its DNA' : here.id.endsWith('-block') ? 'Its cells' : 'A cell nucleus' }, ...shownScene.branches.map((branch) => ({ tail: branch.tail, text: branch.text }))] : [];
+      setWays((previous) => (previous.length === shownWays.length && previous.every((item, i) => item.tail === shownWays[i].tail) ? previous : shownWays));
       const width = element.clientWidth, height = element.clientHeight;
       const shown: ShownLabel[] = [];
       if (leading && leadingFade > 0.7) {
@@ -353,7 +383,7 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
 
   const bar = scaleBarLength(viewMetres);
   const index = levels.indexOf(level);
-  const needsData = ['nucleosome', 'dna', 'hemoglobin', 'heme'].includes(level.id);
+  const needsData = !!level.molecule || ['nucleosome', 'dna', 'hemoglobin', 'heme'].includes(level.id);
   return <div className="scale-journey" ref={dialog} role="region" aria-label={`Zoom from ${from ?? 'skin'} to the smallest known structure`} tabIndex={-1} data-view-metres={viewMetres}>
     <div className="scale-journey-stage">
       <div className="scale-journey-canvas" ref={host} />
@@ -388,6 +418,7 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
       {place && <small className="scale-journey-place">{place}</small>}
       {from && <strong className="scale-journey-from">{from}</strong>}
       {levels.map((entry) => <button key={entry.id} aria-pressed={entry === level} onClick={() => goTo(entry)}><span>{entry.name}</span><small>{formatLength(levelHome(entry, levels))}</small></button>)}
+      {ways.length > 0 && <div className="scale-journey-ways" role="group" aria-label="Ways on from this level">{ways.map((way) => <button key={way.tail} className="scale-journey-way" aria-pressed={way.tail === tail} onClick={() => { tailRef.current = way.tail; setTail(way.tail); dirty.current = true; }}>{way.text}</button>)}</div>}
     </nav>
   </div>;
 }

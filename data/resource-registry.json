@@ -1343,6 +1343,324 @@
       "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
     },
     {
+      "id": "pdb-7lep-yu2021",
+      "title": "The composite LBD-TMD structure combined from all hippocampal AMPAR subtypes at 3.25 angstrom resolution",
+      "landingPage": "https://www.rcsb.org/structure/7LEP",
+      "publication": {
+        "year": 2021,
+        "authors": [
+          "Yu J",
+          "Rao P",
+          "Clark S",
+          "et al."
+        ],
+        "series": "Gouaux E. Hippocampal AMPA receptor assemblies and mechanism of allosteric inhibition. Nature 2021;594(7863):448-453, doi:10.1038/s41586-021-03540-0"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-ampa-receptor.json. Water and hydrogen are left out. Purified from mouse hippocampus and held with bound inhibitors. A composite of the subtypes found there, without the outer part of the receptor. It is not from the Digimouse specimen."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-1igt-harris1997",
+      "title": "Structure of immunoglobulin",
+      "landingPage": "https://www.rcsb.org/structure/1IGT",
+      "publication": {
+        "year": 1997,
+        "authors": [
+          "Harris LJ",
+          "Larson SB",
+          "Hasel KW",
+          "et al."
+        ],
+        "series": "Biochemistry 1997;36(7):1581-97, doi:10.1021/bi962514+"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-antibody.json. Water and hydrogen are left out. A monoclonal mouse IgG2a raised against canine lymphoma, from a cultured line. It is not from the Digimouse specimen."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-1j4n-sui2001",
+      "title": "Crystal structure of the AQP1 water channel",
+      "landingPage": "https://www.rcsb.org/structure/1J4N",
+      "publication": {
+        "year": 2001,
+        "authors": [
+          "Sui H",
+          "Han BG",
+          "Lee JK",
+          "et al."
+        ],
+        "series": "Nature 2001;414(6866):872-8, doi:10.1038/414872a"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-aquaporin.json. Water and hydrogen are left out. Aquaporin 1 of the cow. The biological assembly has four copies of the chain, and each has its own pore."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-1cag-bella1994",
+      "title": "Crystal and molecular structure of a collagen-like peptide at 1.9 angstrom resolution",
+      "landingPage": "https://www.rcsb.org/structure/1CAG",
+      "publication": {
+        "year": 1994,
+        "authors": [
+          "Bella J",
+          "Eaton M",
+          "Brodsky B",
+          "et al."
+        ],
+        "series": "A resolution. Science 1994;266(5182):75-81, doi:10.1126/science.7695699"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-collagen.json. Water and hydrogen are left out. A synthetic peptide with the repeating pattern of collagen and one glycine replaced by alanine. It is a short stand-in and is not collagen from a mouse."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-6g2j-agip2018",
+      "title": "Mouse mitochondrial complex I in the active state",
+      "landingPage": "https://www.rcsb.org/structure/6G2J",
+      "publication": {
+        "year": 2018,
+        "authors": [
+          "Agip AA",
+          "Blaza JN",
+          "Bridges HR",
+          "et al."
+        ],
+        "series": "EM structures of complex I from mouse heart mitochondria in two biochemically defined states. Nat Struct Mol Biol 2018;25(7):548-556, doi:10.1038/s41594-018-0073-1"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-complex-i.json. Water and hydrogen are left out. From the mitochondria of mouse heart. It is not from the Digimouse specimen."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-1zwm-wu2005",
+      "title": "NMR structure of murine gamma-S crystallin",
+      "landingPage": "https://www.rcsb.org/structure/1ZWM",
+      "publication": {
+        "year": 2005,
+        "authors": [
+          "Wu Z",
+          "Delaglio F",
+          "Wyatt K",
+          "et al."
+        ],
+        "series": "NMR. Protein Sci 2005;14(12):3101-14, doi:10.1110/ps.051635205"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-crystallin.json. Water and hydrogen are left out. A recombinant protein in solution. The first of the twenty models of the entry, which differ most in the flexible parts."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-1lid-xu1993",
+      "title": "The adipocyte lipid-binding protein at 1.6 angstrom resolution: crystal structure with bound oleic acid",
+      "landingPage": "https://www.rcsb.org/structure/1LID",
+      "publication": {
+        "year": 1993,
+        "authors": [
+          "Xu Z",
+          "Bernlohr DA",
+          "Banaszak LJ"
+        ],
+        "series": "A resolution. Crystal structures of the apoprotein and with bound saturated and unsaturated fatty acids. J Biol Chem 1993;268(11):7874-84, PMID 8463311"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-fatty-acid-protein.json. Water and hydrogen are left out. A recombinant protein with oleic acid bound inside it. It is not from the Digimouse specimen."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-6ec0-eldirany2019",
+      "title": "Crystal structure of the wild-type heterocomplex between coil 1B domains of human intermediate filament proteins keratin 1 (KRT1) and keratin 10 (KRT10)",
+      "landingPage": "https://www.rcsb.org/structure/6EC0",
+      "publication": {
+        "year": 2019,
+        "authors": [
+          "Eldirany SA",
+          "Ho M",
+          "Hinbest AJ",
+          "et al."
+        ],
+        "series": "EMBO J 2019;38(11):e100741, doi:10.15252/embj.2018100741"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-keratin.json. Water and hydrogen are left out. A short part of keratins of humans, and not of the mouse, made in bacteria. The biological assembly of the entry has two copies of each chain, the tetramer that the authors report."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-5fq8-glenwright2017",
+      "title": "Crystal structure of the SusCD complex BT2261-2264 from Bacteroides thetaiotaomicron",
+      "landingPage": "https://www.rcsb.org/structure/5FQ8",
+      "publication": {
+        "year": 2017,
+        "authors": [
+          "Glenwright AJ",
+          "Pothula KR",
+          "Bhamidimarri SP",
+          "et al."
+        ],
+        "series": "Berg B. Structural basis for nutrient acquisition by dominant members of the human gut microbiota. Nature 2017;541(7637):407-411, doi:10.1038/nature20828"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-nutrient-importer.json. Water and hydrogen are left out. From a species of bacterium of the human gut, chosen as an example of Bacteroidetes. No claim is made that this species is in this mouse."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-2a79-long2005",
+      "title": "Mammalian Shaker Kv1.2 potassium channel-beta subunit complex",
+      "landingPage": "https://www.rcsb.org/structure/2A79",
+      "publication": {
+        "year": 2005,
+        "authors": [
+          "Long SB",
+          "Campbell EB",
+          "MacKinnon R"
+        ],
+        "series": "Science 2005;309(5736):897-903, doi:10.1126/science.1116269"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-potassium-channel.json. Water and hydrogen are left out. A channel of the rat, made in yeast, and the channel of the mouse is not known from this entry. The biological assembly has four copies of each chain. Parts of the voltage sensors were built only as chains of unknown sequence."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-5ylu-abe2018",
+      "title": "Crystal structure of the gastric proton pump complexed with vonoprazan",
+      "landingPage": "https://www.rcsb.org/structure/5YLU",
+      "publication": {
+        "year": 2018,
+        "authors": [
+          "Abe K",
+          "Irie K",
+          "Nakanishi H",
+          "et al."
+        ],
+        "series": "Fujiyoshi Y. Crystal structures of the gastric proton pump. Nature 2018;556(7700):214-218, doi:10.1038/s41586-018-0003-8"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-proton-pump.json. Water and hydrogen are left out. The pump of the pig, with the blocking drug vonoprazan."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-1f88-palczewski2000",
+      "title": "Crystal structure of bovine rhodopsin",
+      "landingPage": "https://www.rcsb.org/structure/1F88",
+      "publication": {
+        "year": 2000,
+        "authors": [
+          "Palczewski K",
+          "Kumasaka T",
+          "Hori T",
+          "et al."
+        ],
+        "series": "Science 2000;289(5480):739-45, doi:10.1126/science.289.5480.739"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-rhodopsin.json. Water and hydrogen are left out. Rhodopsin of the cow, purified from retinas, in the dark state. The two molecules are those of the crystal."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-6vz0-sever2021",
+      "title": "C-terminal domain of mouse surfactant protein B crystallized at high pH",
+      "landingPage": "https://www.rcsb.org/structure/6VZ0",
+      "publication": {
+        "year": 2021,
+        "authors": [
+          "Sever N",
+          "Milicic G",
+          "Bodnar NO",
+          "et al."
+        ],
+        "series": "Rapoport TA. Mechanism of Lamellar Body Formation by Lung Surfactant Protein B. Mol Cell 2021;81(1):49-66.e8, doi:10.1016/j.molcel.2020.10.042"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-surfactant-protein.json. Water and hydrogen are left out. A recombinant domain of the precursor of surfactant protein B, and not the mature protein. The two molecules are those of the crystal."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-3j8a-vonderecken2015",
+      "title": "Structure of the F-actin-tropomyosin complex",
+      "landingPage": "https://www.rcsb.org/structure/3J8A",
+      "publication": {
+        "year": 2015,
+        "authors": [
+          "von der Ecken J",
+          "Muller M",
+          "Lehman W",
+          "et al."
+        ],
+        "series": "Nature 2015;519(7541):114-7, doi:10.1038/nature14033"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-thin-filament.json. Water and hydrogen are left out. A filament assembled from purified proteins. The actin is of rabbit and the tropomyosin of mouse. Tropomyosin was resolved to 6.5 angstrom only."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-1jff-lowe2001",
+      "title": "Refined structure of alpha-beta tubulin from zinc-induced sheets stabilized with taxol",
+      "landingPage": "https://www.rcsb.org/structure/1JFF",
+      "publication": {
+        "year": 2001,
+        "authors": [
+          "Lowe J",
+          "Li H",
+          "Downing KH",
+          "et al."
+        ],
+        "series": "A resolution. J Mol Biol 2001;313(5):1045-57, doi:10.1006/jmbi.2001.5077"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-tubulin.json. Water and hydrogen are left out. Tubulin of the cow, from flat sheets and not a microtubule, held with the drug taxol."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-1i04-timm2001",
+      "title": "Crystal structure of mouse major urinary protein-I from mouse liver",
+      "landingPage": "https://www.rcsb.org/structure/1I04",
+      "publication": {
+        "year": 2001,
+        "authors": [
+          "Timm DE",
+          "Baker LJ",
+          "Mueller H",
+          "et al."
+        ],
+        "series": "Protein Sci 2001;10(5):997-1004, doi:10.1110/ps.52201"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-urinary-protein.json. Water and hydrogen are left out. Purified from mouse liver. It is not from the Digimouse specimen."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
       "id": "simpson2011-skin",
       "title": "Deconstructing the skin: cytoarchitectural determinants of epidermal morphogenesis",
       "landingPage": "https://doi.org/10.1038/nrm3175",

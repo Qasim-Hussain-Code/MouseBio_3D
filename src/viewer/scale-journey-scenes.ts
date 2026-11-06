@@ -19,6 +19,8 @@ export interface JourneyScene {
   readonly animate?: (motion: TissueMotion) => void;
   /** Places from which the zoom can go another way than to the focus. The one nearest the pointer is taken. */
   readonly branches?: readonly JourneyBranch[];
+  /** The way that the focus lies on, when it is not the cell nucleus. */
+  readonly homeTail?: JourneyTail;
 }
 
 export interface JourneyBranch { readonly tail: JourneyTail; readonly text: string; readonly at: THREE.Vector3 }

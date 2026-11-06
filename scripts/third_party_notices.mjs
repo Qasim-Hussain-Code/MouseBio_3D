@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const root = new URL('../', import.meta.url);
@@ -24,6 +24,10 @@ parts.push("\nMVN1 regional cortical vascular polyline derivative: CC BY 4.0.\nS
 parts.push("\nBondarenko 2004 apical mouse ventricular-cell model adaptation: CC BY 3.0.\nBondarenko VE, Szigeti GP, Bett GCL, Kim SJ and Rasmusson RL. Computer model of action potential of mouse ventricular myocytes. Am J Physiol Heart Circ Physiol. 2004;287:H1378-H1403. doi:10.1152/ajpheart.00185.2003.\nCellML credits: Catherine Lloyd, Penny J Noble and James R Lawson. Repository: Lloyd CM, Lawson JR, Hunter PJ and Nielsen PF. The CellML Model Repository. Bioinformatics. 2008;24:2122-2123. doi:10.1093/bioinformatics/btn390.\nSource revision: 94d9d4f47495d86fec040f5439c7e3a4ffccb611.\nLicense: https://creativecommons.org/licenses/by/3.0/\nAdaptation: Qasim Hussain, MouseBio_3D. Original contact and editor metadata omitted. An optional mathematical transition substitution is disclosed separately from the archived source equations. No independent physiological validation is claimed. See models/bondarenko-apical/LICENSE.md. Original numerical integration and interface code: MIT.\n");
 parts.push("\nProtein Data Bank entry 3HRW, atoms used by the zoom into a red cell: CC0 1.0, as stated in the wwPDB usage policies.\nSundaresan SS, Ramesh P, Shobana N, Vinuchakkaravarthy T, Yasien S, Ponnuswamy MNG. Crystal structure of hemoglobin from mouse (Mus musculus) compared with those from other small animals and humans. Acta Crystallogr F Struct Biol Commun 2021;77(Pt 4):113-120. doi:10.1107/S2053230X2100306X\n");
 parts.push("\nProtein Data Bank entry 5B1M, atoms used by the zoom from skin to the proton: CC0 1.0, as stated in the wwPDB usage policies.\nUeda J, Harada A, Urahama T, et al. Testis-specific histone variant H3t gene is essential for entry into spermatogenesis. Cell Rep 2017;18(3):593-600. doi:10.1016/j.celrep.2016.12.065. https://www.rcsb.org/structure/5B1M\n");
+for (const name of (await readdir(new URL('public/scale-journey/', root))).filter((file) => /^molecule-.*\.json$/.test(file)).sort()) {
+  const { source } = JSON.parse(await readFile(new URL(`public/scale-journey/${name}`, root), 'utf8'));
+  parts.push(`\nProtein Data Bank entry ${source.entry}, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.\n${source.citation}\n${source.note}`);
+}
 const expected = parts.join('\n');
 const destination = new URL('public/THIRD_PARTY_NOTICES.txt', root);
 if (process.argv.includes('--check')) {

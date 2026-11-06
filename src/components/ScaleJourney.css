@@ -37,3 +37,11 @@
 .scale-journey-place{padding:0 6px;font-size:10px;color:#6b7771}
 .scale-journey-from{padding:0 6px 4px;font-size:12px;font-weight:600}
 .scale-journey button:focus-visible{outline:2px solid #1c6b56;outline-offset:1px}
+
+/* The name of the level stays readable over a crowded view. */
+.scale-journey-title { padding: 3px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.86); }
+
+/* The ways on from the level in view. */
+.scale-journey-ways { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; padding-top: 6px; border-top: 1px solid #dfe5e2; }
+.scale-journey-ladder .scale-journey-way { display: inline-block; width: auto; padding: 2px 8px; border: 1px solid #c9d6d0; border-radius: 10px; background: #fff; color: #27453a; font-size: 11px; line-height: 1.35; text-align: left; }
+.scale-journey-ladder .scale-journey-way[aria-pressed="true"] { border-color: #2f6b57; background: #2f6b57; color: #fff; }
