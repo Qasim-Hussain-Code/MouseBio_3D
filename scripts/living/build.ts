@@ -15,10 +15,10 @@ import { BONES, partitionBones, ribCourses, smallBoneAt } from './bones';
 import { buildInteriors } from './interiors';
 import { buildTrees } from './organ-trees';
 import { buildBodySurface, nearestOnTube, underSkin, type LimbTube, type UnderSkin } from './exterior';
-import { clusterSurface, extractSurface, maskBox } from './extract';
+import { clusterSurface, extractSurface, maskBox, mergeSurfaces, tube } from './extract';
 import { flowLinesOf, FLOW_NOTICE } from './flow-paths';
 import { writeGlb, type GlbSurface } from './glb';
-import { boneOfVoxel, JOINTS, type Vec3 } from './rig';
+import { add, boneOfVoxel, cross, JOINTS, scale, unit, type Vec3 } from './rig';
 import { components, dilate, erode, voxelIndex, type Grid } from './volume';
 import type { Surface } from './surface-nets';
 import { buildAttachments } from './attachments';
@@ -174,6 +174,101 @@ function build(plan: Plan): Surface {
 
 fs.mkdirSync(OUT, { recursive: true });
 const surfaces: GlbSurface[] = [];
+/** The surfaces built so far, in the frame of the stance, for what is placed on or in them. */
+const builtSurfaces = new Map<string, Surface>();
+
+/** A core along the shaft of a bone, on its centre line and under half of its thickness there, both measured from its own surface. */
+function shaftCore(bone: Surface): Surface {
+  const count = bone.positions.length / 3;
+  const mean: Vec3 = [0, 0, 0];
+  for (let i = 0; i < count; i++) for (let k = 0; k < 3; k++) mean[k] += bone.positions[3 * i + k] / count;
+  // The long axis, by repeated multiplication with the scatter of the points.
+  let axis: Vec3 = [1, 1, 1];
+  for (let round = 0; round < 24; round++) {
+    const next: Vec3 = [0, 0, 0];
+    for (let i = 0; i < count; i += 3) {
+      const d: Vec3 = [bone.positions[3 * i] - mean[0], bone.positions[3 * i + 1] - mean[1], bone.positions[3 * i + 2] - mean[2]];
+      const along = d[0] * axis[0] + d[1] * axis[1] + d[2] * axis[2];
+      for (let k = 0; k < 3; k++) next[k] += d[k] * along;
+    }
+    const size = Math.hypot(next[0], next[1], next[2]) || 1;
+    axis = [next[0] / size, next[1] / size, next[2] / size];
+  }
+  let low = Infinity, high = -Infinity;
+  const place = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    place[i] = (bone.positions[3 * i] - mean[0]) * axis[0] + (bone.positions[3 * i + 1] - mean[1]) * axis[1] + (bone.positions[3 * i + 2] - mean[2]) * axis[2];
+    low = Math.min(low, place[i]); high = Math.max(high, place[i]);
+  }
+  const BINS = 9, points: Vec3[] = [], radii: number[] = [];
+  for (let bin = 0; bin < BINS; bin++) {
+    const from = low + (high - low) * (0.16 + 0.68 * bin / BINS), to = low + (high - low) * (0.16 + 0.68 * (bin + 1) / BINS);
+    const centre: Vec3 = [0, 0, 0]; let inside = 0;
+    for (let i = 0; i < count; i++) if (place[i] >= from && place[i] < to) { inside += 1; for (let k = 0; k < 3; k++) centre[k] += bone.positions[3 * i + k]; }
+    if (!inside) continue;
+    for (let k = 0; k < 3; k++) centre[k] /= inside;
+    const distances: number[] = [];
+    for (let i = 0; i < count; i++) if (place[i] >= from && place[i] < to) distances.push(Math.hypot(bone.positions[3 * i] - centre[0], bone.positions[3 * i + 1] - centre[1], bone.positions[3 * i + 2] - centre[2]));
+    distances.sort((left, right) => left - right);
+    points.push(centre);
+    radii.push(Math.max(0.6, 0.42 * distances[Math.floor(distances.length * 0.25)]));
+  }
+  return tube(points, radii, 10);
+}
+
+/** Points spread out over surfaces, each as far as can be from the others, the same every time. */
+function spreadPoints(on: readonly Surface[], wanted: number): { readonly at: Vec3; readonly normal: Vec3 }[] {
+  const pool: { at: Vec3; normal: Vec3; gap: number }[] = [];
+  for (const surface of on) {
+    const stride = Math.max(1, Math.floor(surface.positions.length / 3 / (wanted * 12)));
+    for (let i = 0; i < surface.positions.length / 3; i += stride) pool.push({ at: [surface.positions[3 * i], surface.positions[3 * i + 1], surface.positions[3 * i + 2]], normal: [surface.normals[3 * i], surface.normals[3 * i + 1], surface.normals[3 * i + 2]], gap: Infinity });
+  }
+  const chosen: { at: Vec3; normal: Vec3 }[] = [];
+  let next = pool[0];
+  while (chosen.length < wanted) {
+    chosen.push({ at: next.at, normal: next.normal });
+    let best = next, widest = -1;
+    for (const item of pool) {
+      item.gap = Math.min(item.gap, Math.hypot(item.at[0] - next.at[0], item.at[1] - next.at[1], item.at[2] - next.at[2]));
+      if (item.gap > widest) { widest = item.gap; best = item; }
+    }
+    next = best;
+  }
+  return chosen;
+}
+
+/** Flattened patches lying on a surface, each turned to face out from it. */
+function surfacePatches(on: readonly Surface[], count: number, radii: readonly [number, number, number]): Surface {
+  return mergeSurfaces(spreadPoints(on, count).map(({ at, normal }) => {
+    const n = unit(normal), u = unit(Math.abs(n[2]) < 0.9 ? cross(n, [0, 0, 1]) : cross(n, [1, 0, 0])), v = cross(n, u);
+    const positions: number[] = [], normals: number[] = [], indices: number[] = [];
+    const ROWS = 8, COLUMNS = 14;
+    for (let r = 0; r <= ROWS; r++) for (let c = 0; c <= COLUMNS; c++) {
+      const theta = Math.PI * r / ROWS, phi = 2 * Math.PI * c / COLUMNS;
+      const a = Math.sin(theta) * Math.cos(phi), b = Math.sin(theta) * Math.sin(phi), d = Math.cos(theta);
+      for (let k = 0; k < 3; k++) { positions.push(at[k] + radii[0] * a * u[k] + radii[1] * b * v[k] + radii[2] * d * n[k]); normals.push(a * u[k] + b * v[k] + d * n[k]); }
+    }
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLUMNS; c++) { const p = r * (COLUMNS + 1) + c, q = p + COLUMNS + 1; indices.push(p, q, p + 1, p + 1, q, q + 1); }
+    return { positions: Float32Array.from(positions), normals: Float32Array.from(normals), indices: Uint32Array.from(indices) } as Surface;
+  }));
+}
+
+/** A net of thin strands on surfaces, joining each spread point to its two nearest neighbours. */
+function surfaceNet(on: readonly Surface[], count: number, radius: number): Surface {
+  const points = spreadPoints(on, count);
+  const strands: Surface[] = [], done = new Set<string>();
+  for (let index = 0; index < points.length; index++) {
+    const nearest = points.map((item, other) => ({ other, gap: other === index ? Infinity : Math.hypot(item.at[0] - points[index].at[0], item.at[1] - points[index].at[1], item.at[2] - points[index].at[2]) })).sort((left, right) => left.gap - right.gap).slice(0, 2);
+    for (const { other, gap } of nearest) {
+      const key = index < other ? index + ':' + other : other + ':' + index;
+      if (done.has(key) || gap > 40) continue;
+      done.add(key);
+      const lift = (p: { at: Vec3; normal: Vec3 }): Vec3 => add(p.at, scale(unit(p.normal), 0.7));
+      strands.push(tube([lift(points[index]), lift(points[other])], [radius, radius], 3));
+    }
+  }
+  return mergeSurfaces(strands);
+}
 const records: Record<string, unknown>[] = [];
 const toMetres = (values: Float32Array) => { const out = new Float32Array(values.length); for (let i = 0; i < values.length; i++) out[i] = values[i] * METRES; return out; };
 
@@ -267,7 +362,7 @@ function pressIntoLimbs(surface: Surface): Surface {
 const LEFT_WHERE_THEY_ARE = new Set(['living:irises', 'living:lenses', 'living:retinas', 'living:tail-vessels', 'living:tail-vertebrae', 'living:panniculus']);
 const UNDER_SKIN_CLEARANCE = 1.5;
 function keepUnderSkin(id: string, plan: Plan, surface: Surface): Surface {
-  if (plan.kind === 'skin' || plan.kind === 'attachment' || plan.kind === 'bone' || LEFT_WHERE_THEY_ARE.has(id)) return surface;
+  if (plan.kind === 'skin' || plan.kind === 'attachment' || plan.kind === 'bone' || plan.kind === 'marrow' || plan.kind === 'patches' || plan.kind === 'net' || LEFT_WHERE_THEY_ARE.has(id)) return surface;
   skinSurface();
   const j = posture.pose.joints;
   const pawLevel = Math.max(j.wristR[2], j.wristL[2], j.ankleR[2], j.ankleL[2]) + 4;
@@ -288,16 +383,20 @@ const musclePartition = partitionMuscles(grid, (i) => tissues[i] === TRACED.musc
 log('muscles', [...musclePartition.counts].join(','));
 const muscleScanSurfaces = new Map<number, Surface>();
 const flowLines: ReturnType<typeof flowLinesOf> = [];
-const carriesFlow = (id: string, systems: readonly string[]) => id === 'living:lymph-vessels' || systems.includes('arterial-venous') || (systems.includes('nervous') && /nerve|plexus|cord|trunks|roots/.test(id));
+const carriesFlow = (id: string, systems: readonly string[]) => id === 'living:lymph-vessels' || systems.includes('arterial-venous') || (systems.includes('nervous') && /nerve|(?<!enteric-)plexus|cord|trunks|roots/.test(id));
 for (const structure of STRUCTURES) {
   const surface = keepUnderSkin(structure.id, structure.plan, structure.plan.kind === 'attachment' ? attachments.parts[structure.plan.part]
     : structure.plan.kind === 'internal' ? (LIMB_PARTS.has(structure.plan.part) ? deformSurface : deformAxial)(internal[structure.plan.part], posture)
       : structure.plan.kind === 'bone' ? boneStance(structure.plan.index)
+      : structure.plan.kind === 'marrow' ? mergeSurfaces(structure.plan.bones.map((id) => shaftCore(builtSurfaces.get(id)!)))
+      : structure.plan.kind === 'patches' ? surfacePatches(structure.plan.on.map((id) => builtSurfaces.get(id)!), structure.plan.count, structure.plan.radii)
+      : structure.plan.kind === 'net' ? surfaceNet(structure.plan.on.map((id) => builtSurfaces.get(id)!), structure.plan.points, structure.plan.radius)
       : structure.plan.kind === 'tree' ? deformAxial(trees[structure.plan.part], posture)
       : structure.plan.kind === 'muscle' ? (PRESSED_MUSCLES.has(MUSCLES[structure.plan.index].id) ? pressIntoLimbs(deformSurface(muscleScan(structure.plan.index), posture)) : (MUSCLES[structure.plan.index].group === 'head' ? deformAxial : deformSurface)(muscleScan(structure.plan.index), posture))
         : structure.plan.kind === 'muscle-rest' ? deformSurface(muscleSurface(musclePartition, UNNAMED), posture)
           : structure.plan.kind === 'panniculus' ? panniculus() : build(structure.plan));
   if (!surface || !surface.indices.length) throw new Error(`No surface for ${structure.id}`);
+  builtSurfaces.set(structure.id, surface);
   const marks = { joints: posture.pose.joints, eyes: attachments.eyes, earRoots: attachments.earRoots, tip: attachments.tip, mouth: [...attachments.mouth, ...attachments.openings] };
   const hair = structure.plan.kind === 'skin' ? bodyCoat(surface, marks) : structure.plan.kind === 'attachment' ? shortCoat(structure.plan.part, surface, marks) : undefined;
   const fibre = structure.plan.kind === 'muscle' ? fibreOf(structure.plan.index, surface) : undefined;

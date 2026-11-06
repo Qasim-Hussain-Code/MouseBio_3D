@@ -12765,6 +12765,275 @@
    }
   },
   {
+   "id": "living:articular-cartilage",
+   "name": "Articular cartilage of the large joints",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#cfdbe6",
+   "exterior": false,
+   "description": "Simulated. A smooth cap where the bones meet at each hip, knee, ankle, shoulder, elbow and wrist. Oliviero et al. describe articular cartilage over the subchondral bone of the mouse knee. Its shape and size are estimates, and it is drawn as one rounded cap for each joint. Not measured from this specimen.",
+   "basis": [
+    "Oliviero S, Millard E, Chen Z, et al. Accuracy of in vivo microCT imaging in assessing the microstructural properties of the mouse tibia subchondral bone. Front Endocrinol (Lausanne) 2023;13:1016321. doi:10.3389/fendo.2022.1016321",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:articular-cartilage",
+   "geometry": {
+    "vertices": 1980,
+    "triangles": 3024,
+    "boundsMeters": [
+     [
+      0.007448092103004456,
+      0.02830757200717926,
+      -0.006399999838322401
+     ],
+     [
+      0.028846120461821556,
+      0.07718410342931747,
+      0.011800000444054604
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:menisci",
+   "name": "Menisci of the knees",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#d7dfe4",
+   "exterior": false,
+   "description": "Simulated. A crescent of cartilage on each side of each knee, between the femur and the tibia. Oliviero et al. work on the medial meniscus of the mouse knee. Their courses and sizes are estimates. Not measured from this specimen.",
+   "basis": [
+    "Oliviero S, Millard E, Chen Z, et al. Accuracy of in vivo microCT imaging in assessing the microstructural properties of the mouse tibia subchondral bone. Front Endocrinol (Lausanne) 2023;13:1016321. doi:10.3389/fendo.2022.1016321"
+   ],
+   "meshNode": "living:menisci",
+   "geometry": {
+    "vertices": 272,
+    "triangles": 528,
+    "boundsMeters": [
+     [
+      0.007756688632071018,
+      0.06250014156103134,
+      0.0028504233341664076
+     ],
+     [
+      0.028494616970419884,
+      0.06410333514213562,
+      0.003906554542481899
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:patellar-tendons",
+   "name": "Patellar tendons",
+   "systems": [
+    "muscular"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e6dfcf",
+   "exterior": false,
+   "description": "Simulated. A tendon from each patella to the front of the tibia. Dyment et al. describe the patellar tendon of the adult mouse, with aligned collagen fibrils and a thin paratenon round it. Its course and size are estimates. Not measured from this specimen.",
+   "basis": [
+    "Dyment NA, Liu CF, Kazemi N, et al. The paratenon contributes to scleraxis-expressing cells during patellar tendon healing. PLoS One 2013;8(3):e59944. doi:10.1371/journal.pone.0059944"
+   ],
+   "meshNode": "living:patellar-tendons",
+   "geometry": {
+    "vertices": 220,
+    "triangles": 432,
+    "boundsMeters": [
+     [
+      0.007934755645692348,
+      0.062080103904008865,
+      0.0014368669362738729
+     ],
+     [
+      0.028322750702500343,
+      0.06591329723596573,
+      0.0030158720910549164
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:marrow",
+   "name": "Marrow of the long bones",
+   "systems": [
+    "skeletal"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#a8423e",
+   "exterior": false,
+   "description": "Simulated. A core inside the shaft of each femur, tibia and humerus, on the centre line of the traced bone and under half of its measured thickness at each place. Jilka describes a mouse skeleton of cortical bone and marrow. The source images do not divide the marrow from the bone, and the true cavity is not measured. Not measured from this specimen.",
+   "basis": [
+    "Jilka RL. The relevance of mouse models for investigating age-related bone loss in humans. J Gerontol A Biol Sci Med Sci 2013;68(10):1209-17. doi:10.1093/gerona/glt046"
+   ],
+   "meshNode": "living:marrow",
+   "geometry": {
+    "vertices": 552,
+    "triangles": 1080,
+    "boundsMeters": [
+     [
+      0.006400844547897577,
+      0.03046194463968277,
+      -0.003847622312605381
+     ],
+     [
+      0.02889285236597061,
+      0.07417161762714386,
+      0.009452960453927517
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:peyers-patches",
+   "name": "Peyer's patches",
+   "systems": [
+    "digestive",
+    "lymphatic"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e4cda8",
+   "exterior": false,
+   "description": "Simulated. Pale flat patches of lymphoid tissue on the small intestine. Sauter et al. study them in the mouse gut. Nine are drawn, spread out over the traced surface, and their number, places and sizes are estimates. Not measured from this specimen.",
+   "basis": [
+    "Sauter KA, Pridans C, Sehgal A, et al. The MacBlue binary transgene (csf1r-gal4VP16/UAS-ECFP) provides a novel marker for visualisation of subsets of monocytes, macrophages and dendritic cells and responsiveness to CSF1 administration. PLoS One 2014;9(8):e105429. doi:10.1371/journal.pone.0105429"
+   ],
+   "meshNode": "living:peyers-patches",
+   "geometry": {
+    "vertices": 1215,
+    "triangles": 2016,
+    "boundsMeters": [
+     [
+      0.0055074626579880714,
+      0.05196069926023483,
+      0.0027495280373841524
+     ],
+     [
+      0.030173948034644127,
+      0.06725075840950012,
+      0.014066861011087894
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:enteric-plexus",
+   "name": "Enteric nerve plexus",
+   "systems": [
+    "nervous",
+    "digestive"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e9d98f",
+   "exterior": false,
+   "description": "Simulated. A net of thin strands on the small intestine, caecum and colon, for the nervous system of the gut that Furness reviews. The real net lies in the wall of the gut, in two layers that are not divided here, and no strand follows a real one. Not measured from this specimen.",
+   "basis": [
+    "Furness JB. The enteric nervous system and neurogastroenterology. Nat Rev Gastroenterol Hepatol 2012;9(5):286-94. doi:10.1038/nrgastro.2012.32"
+   ],
+   "meshNode": "living:enteric-plexus",
+   "geometry": {
+    "vertices": 14824,
+    "triangles": 22236,
+    "boundsMeters": [
+     [
+      0.005150404758751392,
+      0.05219569057226181,
+      -0.0004357429570518434
+     ],
+     [
+      0.031173845753073692,
+      0.0791754201054573,
+      0.014995898120105267
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:vomeronasal-organs",
+   "name": "Vomeronasal organs",
+   "systems": [
+    "sensory",
+    "respiratory"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#d9a9a0",
+   "exterior": false,
+   "description": "Simulated. A paired narrow tube low on each side of the nasal septum. Kimoto et al. place the organ at the base of the nasal septum in mice and describe it as sensing pheromones. Its length and width are estimates. Not measured from this specimen.",
+   "basis": [
+    "Kimoto H, Haga S, Sato K, Touhara K. Sex-specific peptides from exocrine glands stimulate mouse vomeronasal sensory neurons. Nature 2005;437(7060):898-901. doi:10.1038/nature04033"
+   ],
+   "meshNode": "living:vomeronasal-organs",
+   "geometry": {
+    "vertices": 84,
+    "triangles": 160,
+    "boundsMeters": [
+     [
+      0.018743617460131645,
+      0.008040355518460274,
+      0.010480178520083427
+     ],
+     [
+      0.019563358277082443,
+      0.01123675238341093,
+      0.011684006080031395
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:meibomian-glands",
+   "name": "Meibomian glands",
+   "systems": [
+    "sensory",
+    "integumentary"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e4d39c",
+   "exterior": false,
+   "description": "Simulated. Rows of short glands in the upper and lower eyelids. Mauris et al. find their acini in both tarsal plates of the mouse. Eight are drawn in each lid, and their number and size are estimates. Not measured from this specimen.",
+   "basis": [
+    "Mauris J, Dieckow J, Schob S, et al. Loss of CD147 results in impaired epithelial cell differentiation and malformation of the meibomian gland. Cell Death Dis 2015;6(4):e1726. doi:10.1038/cddis.2015.98"
+   ],
+   "meshNode": "living:meibomian-glands",
+   "geometry": {
+    "vertices": 704,
+    "triangles": 1280,
+    "boundsMeters": [
+     [
+      0.012593819759786129,
+      0.014204180799424648,
+      0.01316104270517826
+     ],
+     [
+      0.026132330298423767,
+      0.01737525500357151,
+      0.01686733216047287
+     ]
+    ]
+   }
+  },
+  {
    "id": "living:foot-bones",
    "name": "Hind foot bones beyond the scan",
    "systems": [
@@ -12800,10 +13069,10 @@
   }
  ],
  "statistics": {
-  "structures": 377,
-  "triangles": 2249220,
-  "glbBytes": 48958832,
-  "glbSha256": "450291d1d5208e9d0a394248ec071a38f0b89b1b798f6436674f37a4919eb0a9",
+  "structures": 385,
+  "triangles": 2279976,
+  "glbBytes": 49625924,
+  "glbSha256": "82318c778f45fea8ac7a58904b0b659ae5b48ec582b410e0e06839f1af3b4b75",
   "sourceVoxelSpacingMm": [
    0.1,
    0.1,

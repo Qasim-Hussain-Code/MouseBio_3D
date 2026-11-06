@@ -348,7 +348,10 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
         for (const label of [...ways, ...scene.labels.map((item) => ({ text: item.text, at: item.at, way: undefined as JourneyTail | undefined }))]) {
           anchor.copy(label.at).applyMatrix4(scene.group.matrixWorld).project(camera);
           const x = (anchor.x + 1) / 2 * width, y = (1 - anchor.y) / 2 * height;
-          if (anchor.z < 1 && x > 40 && x < width - 40 && y > 36 && y < height - 8) shown.push({ text: label.text, x: Math.round(x), y: Math.round(y), way: label.way });
+          // A label that would lie under the list of levels is left out, since the list would cover it.
+          const panel = element.closest('.scale-journey')?.querySelector('.scale-journey-ladder')?.getBoundingClientRect(), box = element.getBoundingClientRect();
+          const covered = !!panel && x + box.left < panel.right + 60 && y + box.top < panel.bottom + 12;
+          if (anchor.z < 1 && x > 40 && x < width - 40 && y > 36 && y < height - 8 && !covered) shown.push({ text: label.text, x: Math.round(x), y: Math.round(y), way: label.way });
         }
       }
       const placed = separateLabels(shown);

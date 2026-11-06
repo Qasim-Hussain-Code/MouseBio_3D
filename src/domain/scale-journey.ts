@@ -460,6 +460,12 @@ export const JOURNEY_TAILS: readonly JourneyTail[] = Object.freeze(['nucleus', .
 export function journeyTissueOf(structure: { readonly id: string; readonly name: string; readonly systems: readonly string[] }): JourneyTissue | null {
   const id = structure.id.replace(/^living:/, ''), has = (system: string) => structure.systems.includes(system);
   if (id === 'fat' || id === 'brown-fat') return 'fat';
+  if (id === 'marrow') return 'blood';
+  if (id === 'articular-cartilage' || id === 'menisci') return 'cartilage';
+  if (id === 'patellar-tendons') return 'tendon';
+  if (id === 'peyers-patches') return 'lymphoid';
+  if (id === 'meibomian-glands') return 'gland';
+  if (id === 'vomeronasal-organs') return 'airway';
   if (['skin', 'pinnae', 'tail', 'forepaws', 'hindpaws', 'claws', 'vibrissae', 'nose', 'lips', 'eyelids', 'openings', 'penis'].includes(id)) return 'skin';
   if (['intervertebral-discs', 'xiphoid-cartilage', 'tracheal-rings'].includes(id)) return 'cartilage';
   if (id === 'calcaneal-tendons') return 'tendon';

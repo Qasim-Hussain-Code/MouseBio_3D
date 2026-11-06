@@ -1,6 +1,6 @@
 # What the living mouse model holds and leaves out
 
-This list describes the static [living mouse model](living-mouse.md) of 377 structures: 36 source-labelled, 152 traced from the source images and 189 simulated. Being listed means that a structure is present in some form. It does not mean that the structure has been reviewed by an anatomist, which none has. A model of one male specimen cannot show what differs in other mice.
+This list describes the static [living mouse model](living-mouse.md) of 385 structures: 36 source-labelled, 152 traced from the source images and 189 simulated. Being listed means that a structure is present in some form. It does not mean that the structure has been reviewed by an anatomist, which none has. A model of one male specimen cannot show what differs in other mice.
 
 ## Held by the model
 
@@ -23,11 +23,11 @@ This list describes the static [living mouse model](living-mouse.md) of 377 stru
 
 These are known to exist and are not in the model. The list is not complete.
 
-- **Skeleton and joints:** articular cartilage, menisci, joint capsules, ligaments, marrow cavities, and the separate carpal, metacarpal and phalangeal bones of the fore paw.
+- **Skeleton and joints:** joint capsules, ligaments other than the patellar tendons, the articular cartilage of joints other than the hip, knee, ankle, shoulder, elbow and wrist, marrow outside the shafts of the femur, tibia and humerus, and the separate carpal, metacarpal and phalangeal bones of the fore paw.
 - **Skull:** the ethmoid, vomer and lacrimal bones as separate bones.
 - **Muscle and tendon:** tendons other than the calcaneal tendons, muscles of the tongue, pharynx, soft palate and paws, and the individual muscles now held in groups.
-- **Gut:** the duodenum, jejunum and ileum as separate structures, the wall layers of the gut, and Peyer's patches.
-- **Glands of the head and skin:** Meibomian glands, the vomeronasal organ and the gland of the ear canal.
-- **Nerve and vessel:** autonomic and enteric plexuses, named vessels and nerves of the paws and digits, which are simple courses, and small vessels, nerves and lymphatics in general. No simulated tree follows a real vessel.
+- **Gut:** the duodenum, jejunum and ileum as separate structures, and the wall layers of the gut.
+- **Glands of the head and skin:** the gland of the ear canal.
+- **Nerve and vessel:** autonomic plexuses, the division of the enteric plexus into its two layers, named vessels and nerves of the paws and digits, which are simple courses, and small vessels, nerves and lymphatics in general. No simulated tree follows a real vessel.
 - **Other sexes and ages:** the female tract and mammary glands, because the specimen is an adult male.
 - **Tissue and cell detail in the anatomical model:** there is none below about 0.1 mm. [The zoom below the layers](scale-journey.md) illustrates such scales for every structure, by way of thirty kinds of tissue, with [a measured molecule for most of them](scale-journey.md#a-molecule-for-each-tissue), and is not data from this specimen. A route is the nearest kind of tissue and not always an exact match.

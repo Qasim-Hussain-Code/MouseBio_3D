@@ -130,7 +130,7 @@ test('every structure declares its evidence, its basis and, when simulated, says
     }
     if (structure.evidence === 'traced') assert.match(structure.description!, /[Tt]raced|isosurface|outer surface/, structure.id);
     if (structure.division) assert.match(structure.description!, /estimate/, structure.id);
-    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles|O'Connell|Fuller|Marques|Stuelsatz|Sakabe|Kochi|Rigaud|Shields/, reference);
+    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles|O'Connell|Fuller|Marques|Stuelsatz|Sakabe|Kochi|Rigaud|Shields|Oliviero|Dyment|Jilka|Sauter|Furness|Kimoto|Mauris/, reference);
   }
   assert.ok(counts.source >= 15 && counts.traced >= 5 && counts.simulated >= 30, JSON.stringify(counts));
 });
@@ -258,4 +258,36 @@ test('the coat needs hair directions, scatters hairs by area, skips bare skin an
 
 test('the model opens with its body surface selected', () => {
   assert.equal(initialReferenceSelection(atlas), 'living:skin');
+});
+
+test('the joints, marrow and small parts lie where they are described, and say what they are', () => {
+  const NEW = ['articular-cartilage', 'menisci', 'patellar-tendons', 'marrow', 'peyers-patches', 'enteric-plexus', 'vomeronasal-organs', 'meibomian-glands'];
+  for (const name of NEW) {
+    const structure = atlas.structures.find((item) => item.id === 'living:' + name)!;
+    assert.ok(structure, name);
+    assert.equal(structure.evidence, 'simulated', name);
+    assert.match(structure.description!, /^Simulated\./, name);
+    assert.match(structure.description!, /Not measured from this specimen\.$/, name);
+    assert.equal(structure.exterior, false, name);
+    assert.ok(structure.basis!.some((source) => /doi:10\.\d+\//.test(source)), name + ' names a source');
+  }
+  const near = (id: string, others: readonly string[], most: number, every = 7) => {
+    const targets = others.flatMap((other) => verticesOf('living:' + other));
+    const points = verticesOf('living:' + id);
+    for (let index = 0; index < points.length; index += every) assert.ok(nearestTo(points[index], targets) < most, id + ' vertex ' + index + ' is ' + nearestTo(points[index], targets).toFixed(2) + ' mm from ' + others.join());
+  };
+  // Marrow is close inside the long bones: never further from a surface of bone than the thickness of the shaft, and inside their bounds.
+  const bones = ['bone-femur-r', 'bone-femur-l', 'bone-tibia-r', 'bone-tibia-l', 'bone-humerus-r', 'bone-humerus-l'];
+  near('marrow', bones, 1.2, 11);
+  const boxes = bones.map((bone) => (atlas.structures.find((item) => item.id === 'living:' + bone) as unknown as { geometry: { boundsMeters: number[][] } }).geometry.boundsMeters);
+  for (const point of verticesOf('living:marrow')) {
+    assert.ok(boxes.some(([low, high]) => point.every((value, axis) => value >= low[axis] * 1000 - 0.15 && value <= high[axis] * 1000 + 0.15)), 'marrow at ' + point.map((value) => value.toFixed(1)));
+  }
+  near('peyers-patches', ['small-intestine'], 1.6, 13);
+  near('enteric-plexus', ['small-intestine', 'caecum', 'colon'], 1.2, 97);
+  near('menisci', ['bone-femur-r', 'bone-femur-l', 'bone-tibia-r', 'bone-tibia-l'], 2.5, 5);
+  near('patellar-tendons', ['patellae', 'bone-tibia-r', 'bone-tibia-l'], 2.5, 5);
+  near('meibomian-glands', ['eyes'], 0.6, 5);
+  near('vomeronasal-organs', ['bone-premaxilla', 'bone-maxilla'], 1.2, 3);
+  near('vomeronasal-organs', ['nasal-cavities'], 1, 3);
 });

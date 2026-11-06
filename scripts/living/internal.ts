@@ -258,13 +258,6 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, rib
   // The nasal cavities on either side of a septum, with sizes read section by section from colour sections of the specimen: y, height of the middle, half width and half height.
   // The dark passages are visible there, but the CT does not resolve them well enough to trace, so this shape is an estimate. They lead back above the palate to the pharynx.
   const NOSE = 191;
-  const NASAL_SECTIONS: readonly (readonly [number, number, number, number])[] = [[78, 50, 2.5, 3], [92, 58, 4.2, 7], [110, 77, 6, 10], [130, 84, 7, 16], [150, 84, 6, 16], [170, 81, 3.4, 5], [190, 78, 2.6, 3], [205, 76, 2.4, 2.2]];
-  const nasalAt = (y: number): readonly [number, number, number, number] => {
-    const after = NASAL_SECTIONS.findIndex((section) => section[0] >= y);
-    if (after <= 0) return NASAL_SECTIONS[0];
-    const a = NASAL_SECTIONS[after - 1], b = NASAL_SECTIONS[after], t = (y - a[0]) / (b[0] - a[0]);
-    return [y, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t];
-  };
   const nasalCavities = mergeSurfaces([
     ...[-1, 1].flatMap((sign) => Array.from({ length: 22 }, (_, i) => {
       const [y, z, halfWidth, halfHeight] = nasalAt(78 + i * 6);
@@ -556,3 +549,12 @@ function buildDiaphragm(grid: Grid, labels: Uint8Array): Surface {
   }
   return surfaceNets(smoothField(field, local, 1), local, 0, [0, yLow, 0], cell);
 }
+
+/** A section of one nasal cavity along the snout, in voxels: its place along the body, the height of its middle, its half width and its half height. */
+const NASAL_SECTIONS: readonly (readonly [number, number, number, number])[] = [[78, 50, 2.5, 3], [92, 58, 4.2, 7], [110, 77, 6, 10], [130, 84, 7, 16], [150, 84, 6, 16], [170, 81, 3.4, 5], [190, 78, 2.6, 3], [205, 76, 2.4, 2.2]];
+export const nasalAt = (y: number): readonly [number, number, number, number] => {
+  const after = NASAL_SECTIONS.findIndex((section) => section[0] >= y);
+  if (after <= 0) return NASAL_SECTIONS[0];
+  const a = NASAL_SECTIONS[after - 1], b = NASAL_SECTIONS[after], t = (y - a[0]) / (b[0] - a[0]);
+  return [y, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t];
+};

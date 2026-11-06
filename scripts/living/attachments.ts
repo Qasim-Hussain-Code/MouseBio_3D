@@ -4,7 +4,7 @@
  * All coordinates are source voxels of 0.1 mm, in the stance frame.
  */
 import { vertexNormals, type PostureField } from './posture';
-import { route } from './internal';
+import { nasalAt, route } from './internal';
 import { add, applyRigid, cross, dot, length, rotate, scale, sub, unit, type RigidTransform, type Vec3 } from './rig';
 import { mergeSurfaces, tube } from './extract';
 import { curve } from './internal';
@@ -571,7 +571,57 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
       sphere(add(knee, scale(back, 12)), [1.8, 1.8, 1.8], 8, 10),
     ];
   };
+  // A rounded cap of cartilage where the bones meet, sized to the joint by estimate.
+  const jointCaps = mergeSurfaces(([
+    [joints.hipR, 7], [joints.hipL, 7], [joints.kneeR, 9], [joints.kneeL, 9], [joints.ankleR, 5], [joints.ankleL, 5],
+    [joints.shoulderR, 7], [joints.shoulderL, 7], [joints.elbowR, 6], [joints.elbowL, 6], [joints.wristR, 4], [joints.wristL, 4],
+  ] as const).map(([at, radius]) => sphere(at as Vec3, [radius, radius, radius], 10, 14)));
+  // A crescent on each side of the knee, in the plane between the femur and the tibia.
+  const kneeCrescents = (hip: Vec3, knee: Vec3, ankle: Vec3): Surface[] => {
+    const thigh = unit(sub(hip, knee)), shank = unit(sub(ankle, knee));
+    const outward = unit(cross(thigh, shank)), front = scale(unit(add(thigh, shank)), -1);
+    return [-1, 1].map((side) => {
+      const middle = add(knee, scale(outward, side * 5));
+      const arc = Array.from({ length: 11 }, (_, i): Vec3 => {
+        const t = (-1.8 + 3.6 * i / 10);
+        return add(middle, add(scale(front, Math.cos(t) * 5), scale(outward, side * Math.sin(t) * 1.8)));
+      });
+      return tube(arc, arc.map((_, i) => 1 + 0.8 * Math.sin(Math.PI * i / 10)), 6);
+    });
+  };
+  // From the lower edge of the patella to the front of the tibia. Its course is an estimate.
+  const patellarTendon = (hip: Vec3, knee: Vec3, ankle: Vec3): Surface => {
+    const thigh = unit(sub(hip, knee)), shank = unit(sub(ankle, knee));
+    const front = scale(unit(add(thigh, shank)), -1);
+    const along = unit(add(thigh, scale(shank, -1)));
+    const from = add(add(knee, scale(front, 11)), scale(along, -8));
+    const to = add(add(knee, scale(sub(ankle, knee), 0.2)), scale(front, 5));
+    return route([from, add(from.map((value, k) => (value + to[k]) / 2) as unknown as Vec3, scale(front, 0.8)), to], 1.5, 1.2, 8);
+  };
+  // A narrow tube low on each side of the septum, just under the floor of the simulated nasal cavity and over the premaxilla. Its length and width are estimates.
+  const vomeronasal = (side: -1 | 1): Surface => {
+    const points = [0, 1, 2, 3, 4].map((i): Vec3 => { const y = 90 + i * 7, [, middle, , half] = nasalAt(y); return [tip[0] + side * 2.6, y, middle - half - 2.5]; });
+    return tube(points, [0.7, 1.2, 1.5, 1.2, 0.6], 8);
+  };
+  // Short glands in a row in each lid, under the skin over the globe. Their number and size are estimates.
+  const meibomian = (centre: Vec3, out: Vec3): Surface[] => {
+    const up0: Vec3 = [0, 0, 1];
+    const up = unit(sub(up0, scale(out, dot(up0, out)))), across = cross(out, up);
+    const glands: Surface[] = [];
+    for (const lid of [0, Math.PI]) for (let i = 0; i < 8; i++) {
+      const phi = lid + (-0.85 + 1.7 * i / 7);
+      const direction = (theta: number): Vec3 => add(scale(out, Math.cos(theta)), add(scale(up, Math.sin(theta) * Math.cos(phi)), scale(across, Math.sin(theta) * Math.sin(phi))));
+      const points = [0.75, 0.95, 1.15, 1.35].map((theta): Vec3 => add(centre, scale(direction(theta), eyeRadius * 1.09)));
+      glands.push(tube(points, [0.4, 0.55, 0.55, 0.4], 5));
+    }
+    return glands;
+  };
   const parts: Record<AttachmentPart, Surface> = {
+    'articular-cartilage': jointCaps,
+    menisci: mergeSurfaces([...kneeCrescents(joints.hipR, joints.kneeR, joints.ankleR), ...kneeCrescents(joints.hipL, joints.kneeL, joints.ankleL)]),
+    'patellar-tendons': mergeSurfaces([patellarTendon(joints.hipR, joints.kneeR, joints.ankleR), patellarTendon(joints.hipL, joints.kneeL, joints.ankleL)]),
+    'vomeronasal-organs': moved(mergeSurfaces([vomeronasal(-1), vomeronasal(1)]), head),
+    'meibomian-glands': moved(mergeSurfaces([...meibomian(eyeLeft, eyeOutR), ...meibomian(eyeRight, eyeOutL)]), head),
     eyes: moved(mergeSurfaces([sphere(eyeLeft, [eyeRadius, eyeRadius, eyeRadius]), sphere(eyeRight, [eyeRadius, eyeRadius, eyeRadius])]), head),
     eyelids: moved(mergeSurfaces([eyelid(eyeLeft, unit([-0.86, 0, 0.5]), eyeRadius), eyelid(eyeRight, unit([0.86, 0, 0.5]), eyeRadius)]), head),
     corneas: bothEyes('cornea'), irises: bothEyes('iris'), lenses: bothEyes('lens'), retinas: bothEyes('retina'),
