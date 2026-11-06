@@ -84,7 +84,7 @@ export const BONE_SEGMENTS: readonly BoneSegment[] = [
  */
 const TARGETS = {
   humerus: [-0.18, 0.76, -0.62], forearm: [0.02, -0.85, -0.52],
-  femur: [-0.3, -0.72, -0.62], tibia: [-0.04, 0.85, -0.53],
+  femur: [-0.3, -0.87, -0.3], tibia: [-0.04, 0.85, -0.53],
 } as const satisfies Record<string, Vec3>;
 
 const mirror = (v: Vec3): Vec3 => [-v[0], v[1], v[2]];
@@ -92,8 +92,8 @@ const mirror = (v: Vec3): Vec3 => [-v[0], v[1], v[2]];
  * The scan lies stretched out. The simulated posture tucks the rump down and lifts the head, each by a rotation about
  * a pivot on the vertebral column, so that the back rounds as in a standing mouse. Soft tissue blends across the bends.
  */
-export const PELVIS_BEND = { pivot: [180, 640, 165] as Vec3, degrees: 24, fromY: 570, toY: 700 };
-export const HEAD_BEND = { pivot: [180, 290, 110] as Vec3, degrees: 13, fromY: 320, toY: 255 };
+export const PELVIS_BEND = { pivot: [180, 640, 165] as Vec3, degrees: 24, fromY: 535, toY: 725 };
+export const HEAD_BEND = { pivot: [180, 290, 110] as Vec3, degrees: 16, fromY: 320, toY: 255 };
 
 /** A rotation about the native x axis; positive turns +y towards -z. */
 function pitch(degrees: number): Quat {
@@ -101,8 +101,8 @@ function pitch(degrees: number): Quat {
   return [-Math.sin(half), 0, 0, Math.cos(half)];
 }
 
-/** The chosen ground, 5.3 mm below the scanned table: the belly of a crouching mouse clears it by a few millimetres. */
-export const GROUND_Z = -53;
+/** The chosen ground, 7.2 mm below the scanned table, so that the knee stays high against the flank and the ankle comes to lie under the hip. This is a choice, not a measurement. */
+export const GROUND_Z = -72;
 const WRIST_HEIGHT = 12, ANKLE_HEIGHT = 18;
 
 export interface StancePose {

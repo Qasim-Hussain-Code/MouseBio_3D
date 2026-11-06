@@ -124,6 +124,31 @@ async function openApp() {
   return view;
 }
 
+test('all layers together opens beside the mouse, declares itself a display, and closes again', async () => {
+  window.history.replaceState(null, '', '/');
+  expectedRequests = ['/atlas-living/atlas.json'];
+  const view = render(createElement(App));
+  await view.findByRole('heading', { name: 'Explore the mouse' }, { timeout: 10_000 });
+  await view.findByText(/WebGL could not start/, undefined, { timeout: 10_000 });
+  showTab(view, 'Layers');
+  const start = view.getAllByRole('button', { name: /Show all layers together/ });
+  assert.equal(start.length, 2);
+  fireEvent.click(start[0]);
+  const panel = await view.findByRole('region', { name: 'All layers together' });
+  assert.equal((within(panel).getByRole('slider', { name: 'How far the layers are open' }) as HTMLInputElement).value, '100');
+  assert.equal(within(panel).getByRole('button', { name: 'Whole side' }).getAttribute('aria-pressed'), 'true');
+  assert.ok(within(panel).getByText(/not a dissection of an animal/));
+  for (const place of ['Head', 'Neck', 'Chest', 'Abdomen', 'Hip', 'Shoulder', 'Fore limb', 'Thigh', 'Shank']) assert.ok(within(panel).getByRole('button', { name: place }), place);
+  fireEvent.click(within(panel).getByRole('button', { name: 'Thigh' }));
+  assert.equal(within(panel).getByRole('button', { name: 'Thigh' }).getAttribute('aria-pressed'), 'true');
+  fireEvent.click(within(panel).getByRole('checkbox', { name: 'Fold the skin back' }));
+  assert.equal((within(panel).getByRole('checkbox', { name: 'Fold the skin back' }) as HTMLInputElement).checked, true);
+  assert.equal(view.queryAllByRole('button', { name: /Show all layers together/ }).length, 0);
+  fireEvent.click(within(panel).getByRole('button', { name: 'Close' }));
+  assert.equal(view.queryByRole('region', { name: 'All layers together' }), null);
+  assert.equal(view.getAllByRole('button', { name: /Show all layers together/ }).length, 2);
+});
+
 test('the living mouse opens first and marks the evidence of every structure', async () => {
   window.history.replaceState(null, '', '/');
   expectedRequests = ['/atlas-living/atlas.json'];
@@ -145,9 +170,20 @@ test('the living mouse opens first and marks the evidence of every structure', a
   assert.equal(simulated.checked, true);
   fireEvent.click(simulated);
   assert.equal(simulated.checked, false);
+  // The coat is simulated, so it goes and returns with its class.
+  assert.equal((view.getByRole('combobox', { name: 'Simulated coat' }) as HTMLSelectElement).value, 'none');
   const saved = await savedView(view);
   assert.ok(saved.hidden.includes('living:aorta'));
   assert.ok(!saved.hidden.includes('living:heart-lv'));
+  fireEvent.click(view.getByRole('checkbox', { name: 'Simulated structures' }));
+  assert.equal((view.getByRole('combobox', { name: 'Simulated coat' }) as HTMLSelectElement).value, 'agouti');
+  // A step of the stack is highlighted, and a section can be opened and is closed by the next step.
+  fireEvent.click(view.getByRole('button', { name: /^Skeleton/ }));
+  assert.equal(view.getByRole('button', { name: /^Skeleton/ }).getAttribute('aria-pressed'), 'true');
+  fireEvent.click(view.getByRole('button', { name: 'Cut through the body' }));
+  assert.equal((view.getByRole('combobox', { name: 'Section axis' }) as HTMLSelectElement).value, 'y');
+  fireEvent.click(view.getByRole('button', { name: /^Coat/ }));
+  assert.equal((view.getByRole('combobox', { name: 'Section axis' }) as HTMLSelectElement).value, 'off');
 });
 
 test('specimen and citation UI uses declared metadata rather than a hardcoded Digimouse description', async () => {

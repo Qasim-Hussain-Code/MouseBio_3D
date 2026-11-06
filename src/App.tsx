@@ -1,14 +1,17 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { declaresEvidence, DIVISION_NOTE, EVIDENCE_NOTES, evidenceGroups, evidenceOf, toggledEvidence } from './domain/evidence';
 import { EvidenceChip, EvidenceFilter } from './components/EvidenceControls';
 import { LayerStack } from './components/LayerStack';
-import { layerStops, type LayerStopId } from './domain/living-layers';
+import { journeyTissueOf, type JourneyTissue } from './domain/scale-journey';
+import { AllLayers } from './components/AllLayers';
+import { dissectionAppliesTo, type DissectionPlaceId, type DissectionSettings } from './domain/dissection';
+import { layerStops, matchingStop } from './domain/living-layers';
 import {
   SYSTEMS, physiologyProcessesForAtlas, MAX_VIEW_STATE_BYTES, compareConditions, exportExperimentalCsv, exportExperimentalJson, exportViewState, parseViewState, parseExperimentalCsv,
   parseExperimentalJson, summarizeMeasurements, type Atlas, type DatasetMetadata,
   type ExperimentalMeasurement, type ExplorationMode, type ImportResult, type MeasurementSummary,
 } from './domain';
-import type { CameraPose, SectionImageStatus, ViewerHandle, ViewerSettings } from './viewer/ViewerCanvas';
+import type { CameraPose, DissectionReport, SectionImageStatus, ViewerHandle, ViewerSettings } from './viewer/ViewerCanvas';
 import type { CoatId } from './viewer/fur';
 import { sectionImagesApplyTo, type SectionImageChoice } from './domain/section-images';
 import { measurementColors } from './domain/visualization';
@@ -57,8 +60,15 @@ import { displayColour, type ColourScheme } from './domain/tissue-palette';
 
 const referenceCatalog = buildReferenceCatalog([...constructedCatalogData, ...referenceCatalogData]);
 const DEFAULT_REFERENCE_ID = 'mousebio-living-v1';
+/** A long constructed reference is listed by system. Source references keep the order of their manifests. */
+function orderedStructures(atlas: Atlas, grouped: boolean) {
+  if (!grouped) return atlas.structures;
+  const rank = (structure: Atlas['structures'][number]) => { const at = SYSTEMS.findIndex((system) => system.id === structure.systems[0]); return at < 0 ? SYSTEMS.length : at; };
+  return [...atlas.structures].map((structure, index) => ({ structure, index })).sort((a, b) => rank(a.structure) - rank(b.structure) || a.index - b.index).map((entry) => entry.structure);
+}
 
 const ViewerCanvas = lazy(() => import('./viewer/ViewerCanvas').then((module) => ({ default: module.ViewerCanvas })));
+const ScaleJourney = lazy(() => import('./components/ScaleJourney'));
 const viewerLoading = <div className="viewer-status" role="status">Loading the 3D renderer</div>;
 
 function Icon({ name, size = 18 }: { name: string; size?: number }) {
@@ -119,11 +129,15 @@ export default function App() {
   const [allLabels,setAllLabels]=useState(false);
   const [surfaceDisplay,setSurfaceDisplay]=useState<SurfaceDisplay>('smoothed');
   const [colourScheme,setColourScheme]=useState<ColourScheme>('tissue');
+  const [journeyOpen,setJourneyOpen]=useState(false);
+  const [journeyFrom,setJourneyFrom]=useState<{tissue:JourneyTissue;name:string}|null>(null);
+  const [dissection,setDissection]=useState<DissectionSettings|null>(null);
+  const [dissectionPlace,setDissectionPlace]=useState<DissectionPlaceId|null>('side');
+  const [dissectionReport,setDissectionReport]=useState<DissectionReport|null>(null);
   const [sectionImage,setSectionImage]=useState<SectionImageChoice>('cryosection');
   const [sectionStatus,setSectionStatus]=useState<SectionImageStatus>({status:'idle'});
   const [displayOpen,setDisplayOpen]=useState(false);
   const [coat,setCoat]=useState<CoatId>('agouti');
-  const [layerStop,setLayerStop]=useState<LayerStopId|null>('coat');
   const pendingCut = useRef(false);
   const [navigatorOpen,setNavigatorOpen]=useState(false);
   // A side column on wide screens; below 901 px the inspector is an overlay drawer.
@@ -253,7 +267,21 @@ export default function App() {
     structureId: selected, measurement: first.measurement, unit: first.unit, timePoint: first.timePoint,
     conditionA: activeA, conditionB: activeB,
   }) : null;
-  const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels, sectionImage: mode === 'comparative' ? 'none' : sectionImage, coat };
+  const settings: ViewerSettings = { selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels, sectionImage: mode === 'comparative' ? 'none' : sectionImage, coat, dissection: mode === 'comparative' ? null : dissection };
+  const openAllLayers = () => {
+    if (!atlas) return;
+    setHidden([]); setOpacity(referenceOpacity(atlas)); setClipAxis('off'); setAutoRotate(false); setActiveGroup(''); setAllLabels(true);
+    setDissection({ opening: 1, folded: false, cutOrgans: false }); setDissectionPlace('side'); viewer.current?.placeDissection('side');
+    setNavigatorTab('systems'); setInspectorOpen(false);
+  };
+  /** Go on from a structure to the cells of its tissue, where a route has been made for that tissue. */
+  const zoomIntoStructure = (id: string) => {
+    const structure = atlas?.structures.find((item) => item.id === id);
+    const tissue = structure ? journeyTissueOf(structure) : null;
+    if (!structure || !tissue) { if (structure) setNotice(`No zoom into the tissue of ${structure.name} has been made yet.`); return; }
+    setJourneyFrom({ tissue, name: structure.name }); setJourneyOpen(true);
+  };
+  const closeAllLayers = () => { setDissection(null); setDissectionReport(null); setAllLabels(false); viewer.current?.reset(); };
   const toggleHidden = (id: string) => { isolation.current = null; setActiveGroup(''); pendingGroupFocus.current = null; setHidden((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); };
   /** Make opaque skin see-through so that regions inside the body can be seen. Returns whether it changed. */
   const peelSkin = () => {
@@ -298,7 +326,8 @@ export default function App() {
   /** Open the source images on a central section through the specimen, facing the camera towards the cut. */
   const cutSpecimen = () => {
     setSectionImage((previous) => previous === 'none' ? 'cryosection' : previous);
-    setClipPosition(50); setClipAxis('y'); setDisplayOpen(true); setNavigatorOpen(false);
+    // On a model that stands in a posture, the middle of its bounds is not the middle of the body, because the tail and limbs reach to one side.
+    setClipPosition(viewer.current?.bodyCentrePercent('y') ?? 50); setClipAxis('y'); if (!layerStack.length) setDisplayOpen(true); setNavigatorOpen(false);
     viewer.current?.viewCutFace('y');
   };
   const viewerReady = (details: ViewerDiagnostics) => {
@@ -542,17 +571,20 @@ export default function App() {
       </div>
       <div id="navigator-structures" role="tabpanel" aria-labelledby="navigator-tab-structures" hidden={navigatorTab!=='structures'} className="navigator-pane">
         <label className="search-field"><Icon name="search" size={16}/><input ref={searchInput} type="search" placeholder="Search structures or source IDs" aria-label="Find a structure or ID" value={query} onChange={event=>setQuery(event.target.value)}/><kbd>/</kbd></label>
-        <div className="structure-toolbar"><span><span>{visibleCount} visible {visibleCount === 1 ? 'region' : 'regions'}</span> <small>of {atlas.structures.length}</small></span><button className="text-button" onClick={showAll}>Show all</button></div>
-        <div className="structure-list">{atlas.structures.filter((structure) => `${structure.name} ${structure.id} ${structure.sourceLabel}`.toLowerCase().includes(query.toLowerCase())).map((structure) => <div key={structure.id} className={`structure-row ${selected === structure.id ? 'selected' : ''} ${hidden.includes(structure.id) ? 'is-hidden' : ''}`}>
+        <div className="structure-toolbar"><span><span>{visibleCount} visible {evidenceShown ? (visibleCount === 1 ? 'structure' : 'structures') : (visibleCount === 1 ? 'region' : 'regions')}</span> <small>of {atlas.structures.length}</small></span><button className="text-button" onClick={showAll}>Show all</button></div>
+        <div className="structure-list">{orderedStructures(atlas, evidenceShown).filter((structure) => `${structure.name} ${structure.id} ${structure.sourceLabel}`.toLowerCase().includes(query.toLowerCase())).map((structure, index, list) => <Fragment key={structure.id}>{evidenceShown && (index === 0 || list[index - 1].systems[0] !== structure.systems[0]) && <h4 className="structure-group">{SYSTEMS.find((system) => system.id === structure.systems[0])?.name ?? structure.systems[0]}</h4>}<div className={`structure-row ${selected === structure.id ? 'selected' : ''} ${hidden.includes(structure.id) ? 'is-hidden' : ''}`}>
           <button className="structure-name" onClick={() => select(structure.id)} aria-pressed={selected === structure.id}><span className={`structure-dot system-${structure.systems[0]}`} style={{ backgroundColor: displayColour(structure, colourScheme) }} /><span>{structure.name}<small>{structure.id}</small>{evidenceShown&&<EvidenceChip structure={structure}/>}</span></button>
           <button className="visibility-button" aria-label={`${hidden.includes(structure.id) ? 'Show' : 'Hide'} ${structure.name}`} onClick={() => toggleHidden(structure.id)}><Icon name={hidden.includes(structure.id) ? 'hidden' : 'eye'} size={15} /></button>
-        </div>)}
+        </div></Fragment>)}
         {!atlas.structures.some(region=>`${region.name} ${region.id} ${region.sourceLabel}`.toLowerCase().includes(query.toLowerCase()))&&<p className="empty-small">No matching source record.</p>}
         </div>
       </div>
       <div id="navigator-systems" role="tabpanel" aria-labelledby="navigator-tab-systems" hidden={navigatorTab!=='systems'} className="navigator-pane">
-        {layerStack.length>0&&<LayerStack stops={layerStack} active={layerStop} onChoose={(stop)=>{setHidden([...stop.hidden]);setOpacity({...stop.opacity});setCoat(stop.coat?'agouti':'none');setLayerStop(stop.id);setActiveGroup('');}}/>}
-        {evidenceShown&&<EvidenceFilter groups={evidenceGroups(atlas,hidden)} onToggle={(group)=>setHidden((current)=>toggledEvidence(current,group))}/>}
+        {dissectionAppliesTo(atlas)&&mode!=='comparative'&&<AllLayers settings={dissection} place={dissectionPlace} report={dissectionReport} selected={selected} namesShown={allLabels} onOpen={openAllLayers} onClose={closeAllLayers} onChange={setDissection} onPlace={(place)=>{setDissectionPlace(place);viewer.current?.placeDissection(place);}} onNames={setAllLabels} onSelect={setSelected}/>}
+        {layerStack.length>0&&<LayerStack stops={layerStack} active={matchingStop(layerStack,hidden,opacity,coat!=='none')} onChoose={(stop)=>{setDissection(null);setDissectionReport(null);setHidden([...stop.hidden]);setOpacity({...stop.opacity});setCoat((previous)=>stop.coat?(previous==='none'?'agouti':previous):'none');setClipAxis('off');setActiveGroup('');}}/>}
+        {layerStack.length>0&&<button className="secondary-button section-cut-button layer-cut" onClick={cutSpecimen}>Cut through the body</button>}
+        {layerStack.length>0&&<button className="secondary-button section-cut-button layer-cut" onClick={()=>setJourneyOpen(true)}>Zoom from skin to atoms</button>}
+        {evidenceShown&&<EvidenceFilter groups={evidenceGroups(atlas,hidden)} onToggle={(group)=>{setHidden((current)=>toggledEvidence(current,group));if(group.evidence==='simulated')setCoat(group.visible===group.ids.length?'none':'agouti');}}/>}
         <SystemLayers atlas={atlas} hidden={hidden} opacity={opacity} onToggleSystem={toggleSystem} onIsolateSystem={isolateSystem} onShowAll={showAll} unit={evidenceShown?'structures':'source regions'}/>
         {hasBodyEnvelope&&<button className="secondary-button" onClick={showOrgans} aria-label="Organs visibility preset">Reveal organs</button>}
         {sectionImages&&<button className="secondary-button section-cut-button" onClick={cutSpecimen}>Cut through the specimen</button>}
@@ -597,12 +629,14 @@ export default function App() {
           <label><input type="checkbox" checked={focusOnSelection} onChange={event=>setFocusOnSelection(event.target.checked)}/> Focus on selection</label>
           <label><input type="checkbox" checked={autoRotate} disabled={mode==='comparative'} onChange={event=>setAutoRotate(event.target.checked)}/> Auto-rotate</label>
           {smoothing&&<label title={`Taubin smoothing, ${smoothing.iterations} iterations; removes the processing-grid staircase and adds no resolution`}><input type="checkbox" checked={surfaceDisplay==='smoothed'} onChange={event=>setSurfaceDisplay(event.target.checked?'smoothed':'source')}/> Smooth voxel surfaces (display only)</label>}
-          <label>Colours <select aria-label="Display colour scheme" value={colourScheme} onChange={event=>setColourScheme(event.target.value as ColourScheme)}><option value="tissue">Tissue-like display colours</option><option value="source">Manifest colours</option></select></label>{atlas.id==='mousebio-living-v1'&&<label className="coat-choice">Coat<select aria-label="Simulated coat" value={coat} onChange={(event)=>setCoat(event.target.value as CoatId)}><option value="agouti">Agouti, simulated</option><option value="black">Black, simulated</option><option value="albino">Albino, simulated</option><option value="none">None, skin only</option></select></label>}
+          <label>Colours <select aria-label="Display colour scheme" value={colourScheme} onChange={event=>setColourScheme(event.target.value as ColourScheme)}><option value="tissue">Tissue-like display colours</option><option value="source">Manifest colours</option><option value="contrast">Contrasting colours</option></select></label>{atlas.id==='mousebio-living-v1'&&<label className="coat-choice">Coat<select aria-label="Simulated coat" value={coat} onChange={(event)=>setCoat(event.target.value as CoatId)}><option value="agouti">Agouti, simulated</option><option value="black">Black, simulated</option><option value="albino">Albino, simulated</option><option value="none">None, skin only</option></select></label>}
                 <div className="section-bar"><Icon name="layers" size={18} /><div><strong>Virtual section</strong><small>{sectionImages&&sectionImage!=='none'&&mode!=='comparative'?'Source images of this specimen on the cut':'Surface clipping, without tissue reconstruction'}</small></div><select aria-label="Section axis" value={clipAxis} onChange={(event) => chooseSectionAxis(event.target.value as typeof clipAxis)}><option value="off">No section</option><option value="x">Display X</option><option value="y">Display Y</option><option value="z">Display Z</option></select><input type="range" aria-label="Section position" min="0" max="100" value={clipPosition} disabled={clipAxis === 'off'} onChange={(event) => setClipPosition(+event.target.value)} /><span>{clipPosition}%</span>{sectionImages&&<label className="section-image-choice">Cut face <select aria-label="Cut face image" value={sectionImage} disabled={mode==='comparative'} onChange={event=>setSectionImage(event.target.value as SectionImageChoice)}><option value="cryosection">Specimen photograph</option><option value="ct">CT</option><option value="none">None</option></select>{clipAxis!=='off'&&sectionImage!=='none'&&sectionStatus.status==='loading'&&<small>Loading images</small>}{clipAxis!=='off'&&sectionImage!=='none'&&sectionStatus.status==='failed'&&<small role="alert">Images unavailable</small>}</label>}</div>
         </details><div className="canvas-pair">
-          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} pathSignal={mode==='living'&&pathSignal?.referenceId===atlas.id?pathSignal:undefined} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} onAutoRotateEnd={()=>setAutoRotate(false)} onSectionImageStatus={setSectionStatus} /></Suspense></div>
+          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} onZoomToSkin={()=>setJourneyOpen(true)} onZoomToStructure={zoomIntoStructure} onDissectionReport={setDissectionReport} atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} pathSignal={mode==='living'&&pathSignal?.referenceId===atlas.id?pathSignal:undefined} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} onAutoRotateEnd={()=>setAutoRotate(false)} onSectionImageStatus={setSectionStatus} /></Suspense></div>
           {mode === 'comparative' && <div className="canvas-cell"><div className="condition-label"><span>B</span>{activeB || 'Reference anatomy'}</div><Suspense fallback={viewerLoading}><ViewerCanvas atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} settings={{ ...settings, colors: colorB }} onSelect={select} handle={compareViewer} onStatus={(status) => setViewerState((previous) => ({ ...previous, secondary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>}
         </div>
+        {dissectionAppliesTo(atlas)&&mode!=='comparative'&&!dissection&&<button type="button" className="all-layers-open" onClick={openAllLayers}>Show all layers together</button>}
+        {journeyOpen&&layerStack.length>0&&<Suspense fallback={null}><ScaleJourney tissue={journeyFrom?.tissue} from={journeyFrom?.name} onExit={()=>{setJourneyOpen(false);setJourneyFrom(null);viewer.current?.zoom(1.6);}}/></Suspense>}
         <div className="camera-pad" role="group" aria-label="Camera controls"><button aria-label="Pan display up" onClick={()=>viewer.current?.pan(0,.1)}>↑</button><button aria-label="Zoom in" onClick={()=>viewer.current?.zoom(.8)}>+</button><button aria-label="Pan display left" onClick={()=>viewer.current?.pan(-.1,0)}>←</button><button aria-label="Reset camera" onClick={()=>viewer.current?.reset()}>⌖</button><button aria-label="Pan display right" onClick={()=>viewer.current?.pan(.1,0)}>→</button><button aria-label="Pan display down" onClick={()=>viewer.current?.pan(0,-.1)}>↓</button><button aria-label="Zoom out" onClick={()=>viewer.current?.zoom(1.25)}>−</button></div><div className="view-controls"><span className="control-divider" />{(['x', 'y', 'z'] as const).map((axis) => <button className="viewer-button axis-button" key={axis} aria-label={`View along display ${axis} axis`} title={`Display ${axis.toUpperCase()} axis; not an anatomical direction`} onClick={() => viewer.current?.view(axis)}>{axis.toUpperCase()}</button>)}<span className="control-divider" /><button className={`viewer-button ${labels ? 'active' : ''}`} aria-label="Toggle selected structure label" aria-pressed={labels} onClick={() => setLabels(!labels)}>Aa</button><button className={`viewer-button label-all-button ${allLabels ? 'active' : ''}`} aria-label="Label all displayed regions" title="Label all displayed regions without overlaps" aria-pressed={allLabels} onClick={() => setAllLabels(!allLabels)}>All</button></div>
         {shownGroups.length > 0 && (mode === 'experimental' || mode === 'comparative') && <div className="quantitative-legend"><strong>Mean {first?.measurement}</strong><span>{first?.unit} · {first?.timePoint}</span><div className="color-ramp" /><div className="legend-numbers"><span>{format(min)}</span><span>{format(max)}</span></div><small>Unmapped regions keep their display colours</small></div>}
         <div className="viewport-bottom"><span>Drag to rotate <i /> Scroll to zoom <i /> Click to select</span><span className="display-frame">Display axes · orientation unverified</span></div>
@@ -615,7 +649,7 @@ export default function App() {
             {neuralSignals && <><span><i style={{ background: CIRCUIT_COLORS['neural-efferent'] }} />Efferent nerve signal</span>{livingCircuits.edges.some((edge) => edge.kind === 'neural-afferent') && <span><i style={{ background: CIRCUIT_COLORS['neural-afferent'] }} />Afferent nerve signal</span>}</>}
             <small>Teaching colours. Tracer and pulse speeds are arbitrary display rates.</small></div></>}
       </section>
-        <SelectionTools selected={selectedStructure??null} hidden={!!selectedStructure&&(hidden.includes(selectedStructure.id)||(opacity[selectedStructure.id]??defaultStructureOpacity(selectedStructure))<=0)} opacity={selectedStructure?(opacity[selectedStructure.id]??defaultStructureOpacity(selectedStructure)):1} isolated={!!isolation.current} onFocus={()=>viewer.current?.focus()} onToggleHidden={()=>{if(!selectedStructure)return;if(!hidden.includes(selectedStructure.id)&&(opacity[selectedStructure.id]??1)<=0)setOpacity(previous=>({...previous,[selectedStructure.id]:1}));else toggleHidden(selectedStructure.id);}} onIsolate={isolate} onOpacityChange={value=>{if(!selectedStructure)return;setActiveGroup('');pendingGroupFocus.current=null;setOpacity(previous=>({...previous,[selectedStructure.id]:value}));}} onOpenDetails={()=>openInspector('structure')}/>
+        <SelectionTools onZoomIn={selectedStructure&&layerStack.length>0&&journeyTissueOf(selectedStructure)?()=>zoomIntoStructure(selectedStructure.id):undefined} selected={selectedStructure??null} hidden={!!selectedStructure&&(hidden.includes(selectedStructure.id)||(opacity[selectedStructure.id]??defaultStructureOpacity(selectedStructure))<=0)} opacity={selectedStructure?(opacity[selectedStructure.id]??defaultStructureOpacity(selectedStructure)):1} isolated={!!isolation.current} onFocus={()=>viewer.current?.focus()} onToggleHidden={()=>{if(!selectedStructure)return;if(!hidden.includes(selectedStructure.id)&&(opacity[selectedStructure.id]??1)<=0)setOpacity(previous=>({...previous,[selectedStructure.id]:1}));else toggleHidden(selectedStructure.id);}} onIsolate={isolate} onOpacityChange={value=>{if(!selectedStructure)return;setActiveGroup('');pendingGroupFocus.current=null;setOpacity(previous=>({...previous,[selectedStructure.id]:value}));}} onOpenDetails={()=>openInspector('structure')}/>
       </div>
 
       {mode === 'living' && (availableMotion.length > 0 ? <div className="living-panel"><div className="living-controls"><button className="play-button" aria-label={playing ? 'Pause physiology' : 'Play physiology'} onClick={() => setPlaying(!playing)}><Icon name={playing ? 'pause' : 'play'} size={17} /></button><div><strong>Educational playback</strong><small>Arbitrary display timing and amplitude</small></div><label className="speed-control">Speed<select value={speed} onChange={(event) => setSpeed(+event.target.value)} aria-label="Playback speed">{[...new Set([0.25, 0.5, 1, 2, 4, speed])].sort((a, b) => a - b).map((value) => <option key={value} value={value}>{value}x</option>)}</select></label></div><div className="process-options"><label><input type="checkbox" checked={cardiac && hasCardiacMotion} disabled={!hasCardiacMotion} onChange={() => setCardiac(!cardiac)} /> Cardiac contraction</label><label><input type="checkbox" checked={respiratory && hasRespiratoryMotion} disabled={!hasRespiratoryMotion} onChange={() => setRespiratory(!respiratory)} /> Respiratory motion</label><span>{livingCircuits.ok ? 'Schematic tracers show route order only. No blood-flow simulation is implemented for this reference' : 'No blood-flow simulation is implemented for this reference'}</span></div>

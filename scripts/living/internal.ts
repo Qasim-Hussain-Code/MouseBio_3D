@@ -9,7 +9,8 @@
  */
 import { mergeSurfaces, tube } from './extract';
 import type { Landmarks } from './landmarks';
-import { add, JOINTS, unit, type Vec3 } from './rig';
+import { add, JOINTS, scale, unit, type Vec3 } from './rig';
+import { VERTEBRAE, type RibLines } from './bones';
 import { surfaceNets, type Surface } from './surface-nets';
 import { smoothField, voxelIndex, type Grid } from './volume';
 
@@ -66,15 +67,36 @@ function limbRoute(joints: readonly Vec3[], offset: Vec3, r0: number, r1: number
 }
 
 export type InternalPart =
-  | 'aorta' | 'head-arteries' | 'forelimb-arteries' | 'coronary-arteries' | 'visceral-arteries' | 'hindlimb-arteries'
-  | 'caudal-vena-cava' | 'cranial-veins' | 'forelimb-veins' | 'hindlimb-veins' | 'portal-veins'
-  | 'spinal-cord' | 'spinal-nerves' | 'forelimb-nerves' | 'hindlimb-nerves' | 'vagus-phrenic' | 'cranial-nerves'
-  | 'trachea' | 'diaphragm' | 'oesophagus' | 'tongue' | 'salivary-glands' | 'gall-bladder'
+  | 'aorta' | 'innominate-artery' | 'common-carotid-arteries' | 'internal-carotid-arteries' | 'external-carotid-arteries' | 'coronary-arteries'
+  | 'coeliac-arteries' | 'superior-mesenteric-artery' | 'renal-artery-stems' | 'testicular-arteries' | 'inferior-mesenteric-artery'
+  | 'caudal-vena-cava' | 'superior-venae-cavae' | 'external-jugular-veins' | 'internal-jugular-veins' | 'azygos-vein' | 'portal-vein' | 'renal-vein-stems' | 'hepatic-vein-stems'
+  | 'spinal-cord' | 'cervical-nerves' | 'thoracic-nerves' | 'lumbar-nerves' | 'sacral-nerves' | 'vagus-nerves' | 'phrenic-nerves'
+  | 'optic-nerves' | 'trigeminal-roots' | 'ophthalmic-nerves' | 'maxillary-nerves' | 'mandibular-nerves' | 'facial-nerves'
+  | 'olfactory-nerves' | 'oculomotor-nerves' | 'trochlear-nerves' | 'abducens-nerves' | 'vestibulocochlear-nerves' | 'glossopharyngeal-nerves' | 'accessory-nerves' | 'hypoglossal-nerves'
+  | 'cervical-lymph-nodes' | 'axillary-lymph-nodes' | 'brachial-lymph-nodes' | 'inguinal-lymph-nodes' | 'sciatic-lymph-nodes' | 'mediastinal-lymph-nodes' | 'pyloric-lymph-nodes' | 'renal-lymph-nodes' | 'lumbar-lymph-nodes' | 'mesenteric-lymph-node' | 'caudal-lymph-node'
+  | 'trachea' | 'diaphragm' | 'oesophagus' | 'tongue' | 'submandibular-glands' | 'sublingual-glands' | 'parotid-glands' | 'nasal-cavities' | 'turbinals' | 'soft-palate' | 'pharynx' | 'gall-bladder'
   | 'ureters' | 'male-ducts' | 'seminal-vesicles' | 'prostate' | 'preputial-glands' | 'penis'
-  | 'thyroid' | 'thymus' | 'pituitary' | 'lymph-nodes' | 'lymph-vessels' | 'cerebral-base';
+  | 'thyroid' | 'thymus' | 'pituitary' | 'lymph-vessels' | 'cerebral-base'
+  | 'incisors' | 'molars' | 'root-ganglia' | 'sympathetic-trunks' | 'inner-ears'
+  | 'intervertebral-discs' | 'xiphoid-cartilage' | 'intercostal-arteries' | 'intercostal-veins'
+  | 'middle-ears' | 'pineal' | 'parathyroids' | 'mammary-arteries' | 'mammary-veins'
+  | 'larynx' | 'tracheal-rings' | 'bile-ducts' | 'pancreatic-ducts' | 'brown-fat' | 'accessory-glands' | 'brain-ventricles';
 
-export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks): Record<InternalPart, Surface> {
+export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, ribLines: RibLines): Record<InternalPart, Surface> {
   const s = (y: number) => lm.spineAt(y);
+  // Superficial structures are held under the surface of the specimen: a point moves towards a place inside the body until it lies the given depth within the labels.
+  const inBody = (p: Vec3) => {
+    const x = Math.round(p[0]), y = Math.round(p[1]), z = Math.round(p[2]);
+    return x >= 0 && y >= 0 && z >= 0 && x < grid.nx && y < grid.ny && z < grid.nz && labels[voxelIndex(grid, x, y, z)] !== 0;
+  };
+  const under = (p: Vec3, towards: Vec3, depth: number): Vec3 => {
+    const reach: readonly Vec3[] = [[0, 0, 0], [depth, 0, 0], [-depth, 0, 0], [0, depth, 0], [0, -depth, 0], [0, 0, depth], [0, 0, -depth]];
+    for (let t = 0; t <= 1; t += 0.02) {
+      const q = mix(p, towards, t);
+      if (reach.every((step) => inBody(add(q, step)))) return q;
+    }
+    return towards;
+  };
   const aortaAt = (y: number): Vec3 => [s(y).x + 7, y, s(y).ventralZ - 8];
   const cavaAt = (y: number): Vec3 => [s(y).x - 9, y, s(y).ventralZ - 9];
   const kidneyR = lm.label(19, 'low'), kidneyL = lm.label(19, 'high');
@@ -86,16 +108,10 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks): Re
   const descending = [400, 450, 500, 550, 600, 650, 700, 735].map(aortaAt);
   const aorta = route([[190, 392, 88], [190, 368, 86], crest, [203, 358, 84], [194, 380, 94], ...descending], 5.2, 3.6);
   const innominate: Vec3 = [176, 336, 74];
-  const headArteries = mergeSurfaces([
-    route([crest, [186, 345, 76], innominate], 3, 2.6),
-    route([innominate, [170, 300, 70], [165, 262, 72]], 2.2, 1.9), route([crest, [205, 320, 72], [207, 285, 70], [206, 262, 74]], 2.2, 1.9),
-    route([[165, 262, 72], [158, 235, 92], [165, 220, 100]], 1.6, 1.1, 6), route([[165, 262, 72], [146, 240, 62], [132, 205, 52]], 1.6, 0.9, 6),
-    route([[206, 262, 74], [212, 235, 92], [205, 220, 100]], 1.6, 1.1, 6), route([[206, 262, 74], [224, 240, 62], [238, 205, 52]], 1.6, 0.9, 6),
-  ]);
-  const forelimbArteries = mergeSurfaces([
-    route([innominate, [150, 326, 80], [130, 312, 90], add(J.shoulderR, [-3, 6, -8]), mix(J.shoulderR, J.elbowR, 0.5), add(J.elbowR, [6, -4, 2]), mix(J.elbowR, J.wristR, 0.5), add(J.wristR, [3, 0, 2])], 2.2, 0.9, 6),
-    route([[203, 358, 84], [222, 336, 88], [238, 312, 96], add(J.shoulderL, [3, 6, -8]), mix(J.shoulderL, J.elbowL, 0.5), add(J.elbowL, [-6, -4, 2]), mix(J.elbowL, J.wristL, 0.5), add(J.wristL, [-3, 0, 2])], 2.2, 0.9, 6),
-  ]);
+  const innominateArtery = route([crest, [186, 345, 76], innominate], 3, 2.6);
+  const commonCarotids = mergeSurfaces([route([innominate, [170, 300, 70], [165, 262, 72]], 2.2, 1.9), route([crest, [205, 320, 72], [207, 285, 70], [206, 262, 74]], 2.2, 1.9)]);
+  const internalCarotids = mergeSurfaces([route([[165, 262, 72], [158, 235, 92], [165, 220, 100]], 1.6, 1.1, 6), route([[206, 262, 74], [212, 235, 92], [205, 220, 100]], 1.6, 1.1, 6)]);
+  const externalCarotids = mergeSurfaces([route([[165, 262, 72], [146, 240, 62], [132, 205, 52]], 1.6, 0.9, 6), route([[206, 262, 74], [224, 240, 62], [238, 205, 52]], 1.6, 0.9, 6)]);
   // Coronary arteries run on the surface of the source heart label.
   const heart = lm.label(9);
   const onHeart = (phi: number, theta: number): Vec3 => {
@@ -111,53 +127,48 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks): Re
     const middle: Vec3 = [178, 615, 90];
     return [middle, add(middle, [Math.sin(angle) * 42, 18 + Math.cos(angle) * 34, -12 + index * 2]), add(middle, [Math.sin(angle) * 82, 22 + Math.cos(angle) * 62, -26 + index * 3])];
   };
-  const visceral = mergeSurfaces([
+  const coeliacArteries = mergeSurfaces([
     route([coeliac, add(coeliac, [2, 8, -22]), [194, 515, 108]], 2.1, 1.5, 6),
     route([[194, 515, 108], [185, 500, 98], [165, 500, 80]], 1.3, 0.8, 6),
     route([[194, 515, 108], [222, 530, 118], lm.label(16).centroid], 1.3, 0.8, 6),
     route([[194, 515, 108], [212, 520, 104], stomach.centroid], 1.0, 0.7, 6),
+  ]);
+  const superiorMesenteric = mergeSurfaces([
     route([sma, add(sma, [-2, 22, -28]), [178, 615, 90]], 2.3, 1.7, 6),
     ...[0, 1, 2, 3, 4, 5].map((index) => route(fan(index), 1.1, 0.4, 5)),
+  ]);
+  const renalArteryStems = mergeSurfaces([
     route([aortaAt(585), [150, 590, s(590).ventralZ - 12], add(kidneyR.centroid, [16, 0, -3])], 1.9, 1.3, 6),
     route([aortaAt(600), [205, 604, s(600).ventralZ - 12], add(kidneyL.centroid, [-16, 0, -3])], 1.9, 1.3, 6),
+  ]);
+  const testicularArteries = mergeSurfaces([
     route([genital, [168, 700, 90], [150, 760, 62], testisR.centroid], 0.9, 0.6, 5),
     route([genital, [198, 690, 92], [212, 730, 66], testisL.centroid], 0.9, 0.6, 5),
-    route([ima, add(ima, [-2, 26, -16]), [182, 770, 96]], 1.3, 0.7, 6),
   ]);
-  const bifurcation = aortaAt(735);
-  const hindlimb = mergeSurfaces([
-    route([bifurcation, [160, 755, 100], add(J.hipR, [8, 2, -14]), mix(J.hipR, J.kneeR, 0.5), add(J.kneeR, [6, 6, 0]), mix(J.kneeR, J.ankleR, 0.5), add(J.ankleR, [2, -2, 2])], 2.4, 1.0, 6),
-    route([bifurcation, [204, 755, 104], add(J.hipL, [-8, 2, -14]), mix(J.hipL, J.kneeL, 0.5), add(J.kneeL, [-6, 6, 0]), mix(J.kneeL, J.ankleL, 0.5), add(J.ankleL, [-2, -2, 2])], 2.4, 1.0, 6),
-    route([bifurcation, ...[770, 800, 830, 860].map((y): Vec3 => [s(y).x, y, s(y).ventralZ - 5])], 1.5, 0.9, 6),
-  ]);
+  const inferiorMesenteric = route([ima, add(ima, [-2, 26, -16]), [182, 770, 96]], 1.3, 0.7, 6);
 
   // Veins. The caudal vena cava lies to the right of the column and the aorta, after Hummel et al.
   const caudalVenaCava = route([cavaAt(735), cavaAt(690), cavaAt(640), cavaAt(590), [170, 540, 145], [172, 490, 118], [174, 440, 92], [176, 400, 84]], 4.6, 5.2);
-  const azygos = route([[172, 545, s(545).ventralZ - 6], ...[500, 460, 420, 390].map((y): Vec3 => [s(y).x - 7, y, s(y).ventralZ - 6]), [172, 375, 92]], 1.5, 1.2, 6);
+  // The azygos vein runs on the left of the aorta and joins the left superior vena cava: Cook figure 95.
+  const azygos = route([...[525, 500, 460, 420].map((y): Vec3 => [s(y).x + 14, y, s(y).ventralZ - 6]), [s(395).x + 17, 395, s(395).ventralZ - 8], [208, 382, 84]], 1.2, 1.5, 6);
   // Two superior venae cavae, right and left, each formed by jugular and subclavian veins: Cook figure 90.
   const junctionR: Vec3 = [146, 336, 74], junctionL: Vec3 = [216, 336, 74];
-  const cranial = mergeSurfaces([
-    route([[172, 392, 82], [158, 365, 80], junctionR], 3.4, 3), route([[204, 396, 86], [216, 368, 80], junctionL], 3.4, 3),
-    route([junctionR, [128, 300, 56], [114, 250, 44], [118, 215, 40]], 2.6, 1.3, 6), route([junctionL, [234, 300, 56], [248, 250, 44], [244, 215, 40]], 2.6, 1.3, 6),
-    route([junctionR, [160, 300, 66], [157, 262, 78]], 1.5, 1.1, 6), route([junctionL, [202, 300, 66], [205, 262, 78]], 1.5, 1.1, 6),
-    azygos,
+  const superiorVenaeCavae = mergeSurfaces([route([[172, 392, 82], [158, 365, 80], junctionR], 3.4, 3), route([[204, 396, 86], [216, 368, 80], junctionL], 3.4, 3)]);
+  const externalJugulars = mergeSurfaces([
+    route([junctionR, under([128, 300, 56], [150, 300, 66], 3), under([114, 250, 44], [150, 250, 66], 3), under([118, 215, 40], [150, 215, 58], 3)], 2.6, 1.3, 6),
+    route([junctionL, under([234, 300, 56], [212, 300, 66], 3), under([248, 250, 44], [212, 250, 66], 3), under([244, 215, 40], [212, 215, 58], 3)], 2.6, 1.3, 6),
   ]);
-  const forelimbVeins = mergeSurfaces([
-    route([junctionR, [128, 318, 76], add(J.shoulderR, [-6, 10, -14]), mix(J.shoulderR, J.elbowR, 0.5), add(J.elbowR, [3, -8, 0]), mix(J.elbowR, J.wristR, 0.5), add(J.wristR, [-3, 0, 0])], 2.3, 0.9, 6),
-    route([junctionL, [234, 318, 76], add(J.shoulderL, [6, 10, -14]), mix(J.shoulderL, J.elbowL, 0.5), add(J.elbowL, [-3, -8, 0]), mix(J.elbowL, J.wristL, 0.5), add(J.wristL, [3, 0, 0])], 2.3, 0.9, 6),
-  ]);
-  const hindlimbVeins = mergeSurfaces([
-    route([cavaAt(735), [152, 758, 92], add(J.hipR, [6, 8, -20]), mix(J.hipR, J.kneeR, 0.5), add(J.kneeR, [3, 10, -3]), mix(J.kneeR, J.ankleR, 0.5), add(J.ankleR, [-2, -2, -1])], 2.6, 1, 6),
-    route([cavaAt(735), [206, 758, 96], add(J.hipL, [-6, 8, -20]), mix(J.hipL, J.kneeL, 0.5), add(J.kneeL, [-3, 10, -3]), mix(J.kneeL, J.ankleL, 0.5), add(J.ankleL, [2, -2, -1])], 2.6, 1, 6),
-  ]);
-  const portal = mergeSurfaces([
+  const internalJugulars = mergeSurfaces([route([junctionR, [160, 300, 66], [157, 262, 78]], 1.5, 1.1, 6), route([junctionL, [202, 300, 66], [205, 262, 78]], 1.5, 1.1, 6)]);
+  const portalVein = mergeSurfaces([
     route([[178, 625, 88], [180, 590, 96], [186, 545, 104], [176, 510, 104]], 2.6, 2.8),
     ...[0, 1, 2, 3].map((index) => route(fan(index * 1.6).map((p) => add(p, [3, 4, -2])), 1.2, 0.5, 5)),
     route([[186, 545, 104], [224, 555, 122], spleen.centroid], 1.3, 0.9, 6),
+  ]);
+  const renalVeinStems = mergeSurfaces([
     route([add(kidneyR.centroid, [16, 3, -4]), [150, 598, s(590).ventralZ - 14], cavaAt(592)], 1.6, 2, 6),
     route([add(kidneyL.centroid, [-16, 3, -4]), [205, 606, s(600).ventralZ - 16], cavaAt(598)], 1.6, 2, 6),
-    route([[172, 490, 118], [150, 485, 100], [128, 500, 82]], 2, 1, 6), route([[172, 490, 118], [200, 482, 100], [226, 498, 86]], 2, 1, 6),
   ]);
+  const hepaticVeinStems = mergeSurfaces([route([[172, 490, 118], [150, 485, 100], [128, 500, 82]], 2, 1, 6), route([[172, 490, 118], [200, 482, 100], [226, 498, 86]], 2, 1, 6)]);
 
   // Spinal cord: the course follows the vertebral canal measured in the CT; radius is an estimate with cervical and lumbar enlargements.
   const cordPoints: Vec3[] = [], cordRadii: number[] = [];
@@ -173,78 +184,109 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks): Re
   const levels: { y: number; kind: 'c' | 't' | 'l' | 's' }[] = [];
   const spread = (from: number, to: number, count: number, kind: 'c' | 't' | 'l' | 's') => { for (let i = 0; i < count; i++) levels.push({ y: from + (to - from) * (i + 0.5) / count, kind }); };
   spread(295, 345, 8, 'c'); spread(345, 590, 13, 't'); spread(590, 720, 6, 'l'); spread(720, 800, 4, 's');
-  const nerves: Surface[] = [];
+  const nerves: Record<'c' | 't' | 'l' | 's', Surface[]> = { c: [], t: [], l: [], s: [] };
   for (const level of levels) for (const side of [-1, 1] as const) {
     const sample = s(level.y);
     const root: Vec3 = [sample.x, level.y, sample.canalZ];
     const reach = level.kind === 't' ? 82 : level.kind === 'c' ? 34 : 42;
     const fall = level.kind === 't' ? 62 : 26;
-    nerves.push(route([root, [root[0] + side * 12, level.y + 2, root[2] - 4], [root[0] + side * reach * 0.6, level.y + 10, root[2] - fall * 0.35], [root[0] + side * reach, level.y + 22, root[2] - fall]], 0.85, 0.35, 5));
+    nerves[level.kind].push(route([root, [root[0] + side * 12, level.y + 2, root[2] - 4], [root[0] + side * reach * 0.6, level.y + 10, root[2] - fall * 0.35], under([root[0] + side * reach, level.y + 22, root[2] - fall], [root[0] + side * 12, level.y + 22, root[2] - fall], 2)], 0.85, 0.35, 5));
   }
-  const plexus = (side: 'R' | 'L') => {
-    const sign = side === 'R' ? -1 : 1, shoulder = side === 'R' ? J.shoulderR : J.shoulderL, elbow = side === 'R' ? J.elbowR : J.elbowL, wrist = side === 'R' ? J.wristR : J.wristL;
-    const gather: Vec3 = add(shoulder, [sign * -10, 16, -6]);
-    const roots = [318, 328, 338, 348, 358].map((y) => route([[s(y).x, y, s(y).canalZ], [s(y).x + sign * 22, y + 4, s(y).canalZ - 10], gather], 0.9, 0.9, 5));
-    return [...roots,
-      route([gather, mix(shoulder, elbow, 0.5), add(elbow, [sign * -5, -3, 3]), mix(elbow, wrist, 0.5), add(wrist, [sign * -2, 0, 3])], 1, 0.5, 5),
-      route([gather, add(mix(shoulder, elbow, 0.5), [0, 3, 4]), add(elbow, [sign * 2, 4, 5]), add(mix(elbow, wrist, 0.5), [sign * 2, 0, 3]), add(wrist, [sign * 3, 0, 3])], 0.9, 0.45, 5),
-      route([gather, add(mix(shoulder, elbow, 0.45), [0, 5, 7]), add(elbow, [sign * 4, 0, 8])], 0.9, 0.5, 5),
-    ];
-  };
-  const sacralPlexus = (side: 'R' | 'L') => {
-    const sign = side === 'R' ? -1 : 1, hip = side === 'R' ? J.hipR : J.hipL, knee = side === 'R' ? J.kneeR : J.kneeL, ankle = side === 'R' ? J.ankleR : J.ankleL;
-    const gather: Vec3 = add(hip, [sign * -12, 14, 4]);
-    const roots = [690, 710, 730, 750].map((y) => route([[s(y).x, y, s(y).canalZ], [s(y).x + sign * 24, y + 8, s(y).canalZ - 8], gather], 1, 1, 5));
-    return [...roots,
-      // The sciatic nerve runs behind the femur and divides above the knee.
-      route([gather, add(mix(hip, knee, 0.5), [0, 9, 6]), add(mix(hip, knee, 0.85), [0, 8, 3])], 1.5, 1.2, 6),
-      route([add(mix(hip, knee, 0.85), [0, 8, 3]), add(knee, [sign * -4, 12, 2]), add(mix(knee, ankle, 0.5), [sign * -3, 0, 4]), add(ankle, [sign * -3, 0, 3])], 1, 0.5, 5),
-      route([add(mix(hip, knee, 0.85), [0, 8, 3]), add(knee, [sign * 2, 8, -3]), add(mix(knee, ankle, 0.5), [sign * 3, 0, -3]), add(ankle, [sign * 2, -3, 2])], 0.9, 0.45, 5),
-      // The femoral nerve runs in front of the thigh.
-      route([[s(700).x + sign * 18, 700, s(700).ventralZ - 2], add(hip, [sign * -4, -8, -12]), add(mix(hip, knee, 0.55), [0, -7, -6])], 1, 0.5, 5),
-    ];
-  };
-  const vagus = (side: 'R' | 'L'): Surface[] => {
+  const vagus = (side: 'R' | 'L') => {
     const x = side === 'R' ? 160 : 202, sign = side === 'R' ? -1 : 1;
     const main = route([[M + sign * 16, 262, 108], [x, 262, 80], [x + sign * -2, 300, 72], [x + sign * -6, 345, 74], [M + sign * 10, 400, 100], [M + sign * 8, 460, 128], [200 + sign * 6, 505, 132]], 0.8, 0.5, 5);
     const phrenic = route([[s(325).x + sign * 20, 325, 96], [x + sign * 6, 345, 78], [M + sign * 42, 400, 60], [M + sign * 44, 440, 70]], 0.5, 0.35, 5);
-    return [main, phrenic];
+    return { main, phrenic };
   };
   const eyes = [lm.label(3, 'low'), lm.label(3, 'high')];
   const chiasm: Vec3 = [189, 198, 92];
-  const cranialNerves = mergeSurfaces([
-    route([eyes[0].centroid, [172, 175, 96], chiasm], 0.9, 0.9, 6), route([eyes[1].centroid, [206, 175, 96], chiasm], 0.9, 0.9, 6), route([chiasm, [189, 215, 95]], 1, 0.9, 6),
-    ...[-1, 1].flatMap((sign) => {
-      const ganglion: Vec3 = [M + sign * 24, 222, 86];
-      return [
-        route([[M + sign * 12, 240, 100], ganglion], 1.5, 1.5, 6),
-        route([ganglion, [M + sign * 32, 180, 92], [M + sign * 36, 140, 90]], 0.8, 0.4, 5),
-        route([ganglion, [M + sign * 30, 170, 74], [M + sign * 26, 110, 62], [M + sign * 22, 80, 54]], 1, 0.5, 5),
-        route([ganglion, [M + sign * 30, 200, 62], [M + sign * 22, 150, 40]], 0.9, 0.45, 5),
-        route([[M + sign * 16, 245, 104], [M + sign * 46, 240, 80], [M + sign * 44, 190, 62], [M + sign * 34, 120, 56]], 0.7, 0.35, 5),
-      ];
-    }),
-  ]);
+  const opticNerves = mergeSurfaces([route([eyes[0].centroid, [172, 175, 96], chiasm], 0.9, 0.9, 6), route([eyes[1].centroid, [206, 175, 96], chiasm], 0.9, 0.9, 6), route([chiasm, [189, 215, 95]], 1, 0.9, 6)]);
+  const HEAD = 189;
+  const eachSide = (make: (sign: number) => Surface) => mergeSurfaces([-1, 1].map(make));
+  const ganglionAt = (sign: number): Vec3 => [HEAD + sign * 24, 222, 86];
+  const trigeminalRoots = eachSide((sign) => route([[HEAD + sign * 12, 240, 100], ganglionAt(sign)], 1.5, 1.5, 6));
+  const ophthalmicNerves = eachSide((sign) => route([ganglionAt(sign), [HEAD + sign * 32, 180, 92], [HEAD + sign * 36, 140, 90]], 0.8, 0.4, 5));
+  const maxillaryNerves = eachSide((sign) => route([ganglionAt(sign), [HEAD + sign * 30, 170, 74], [HEAD + sign * 26, 110, 62], [HEAD + sign * 22, 90, 50]], 1, 0.5, 5));
+  const mandibularNerves = eachSide((sign) => route([ganglionAt(sign), [HEAD + sign * 30, 200, 62], [HEAD + sign * 18, 150, 28]], 0.9, 0.45, 5));
+  const facialNerves = eachSide((sign) => route([[HEAD + sign * 16, 245, 104], [HEAD + sign * 46, 240, 80], [HEAD + sign * 44, 190, 62], [HEAD + sign * 34, 120, 56]], 0.7, 0.35, 5));
 
-  // Respiratory: larynx and a ringed trachea with its bronchi. The rings follow Cook figure 46.
-  const trachealPoints = curve([[190, 262, 66], [189, 300, 70], [188, 345, 70], [186, 385, 90]], 1.5);
+  // Respiratory. Sections of the specimen show the midline of the neck near x 183, a tube near z 80 taken as the oesophagus, and the hyoid at y 243 to 261 with small calcified
+  // patches behind it at y 263 to 275, taken as the larynx. The trachea is collapsed in the specimen and cannot be followed, so its course is an estimate.
+  const NECK = 183;
+  const trachealPoints = curve([[NECK + 1, 282, 71], [NECK, 300, 72], [NECK, 345, 72], [186, 385, 90]], 1.5);
   const trachea = mergeSurfaces([
-    tube(trachealPoints, trachealPoints.map((_, i) => 6.2 + 0.7 * Math.sin(i * 1.6)), 12),
+    tube(trachealPoints, trachealPoints.map(() => 4.9), 12),
     route([[186, 385, 90], [160, 410, 104], [136, 432, 110]], 4.2, 2.2, 8), route([[186, 385, 90], [210, 408, 106], [222, 432, 120]], 4.2, 2.2, 8),
     route([[160, 410, 104], [150, 395, 112]], 2.4, 1.5, 6), route([[160, 410, 104], [150, 432, 92]], 2.4, 1.5, 6), route([[210, 408, 106], [222, 395, 118]], 2.4, 1.5, 6),
-    blob([190, 250, 66], [12, 16, 11]),
   ]);
-  const oesophagus = route([[189, 250, 84], [187, 300, 84], [187, 355, 80], [186, 410, 104], [190, 460, 128], [204, 508, 136]], 4.6, 4.2, 10);
+  // Cartilage rings, incomplete dorsally, as Hummel et al. describe. The gap faces the oesophagus.
+  const trachealRings = (() => {
+    const rings: Surface[] = [];
+    for (let i = 3; i < trachealPoints.length - 2; i += 3) {
+      const here = trachealPoints[i], axis = unit([trachealPoints[i + 1][0] - trachealPoints[i - 1][0], trachealPoints[i + 1][1] - trachealPoints[i - 1][1], trachealPoints[i + 1][2] - trachealPoints[i - 1][2]]);
+      const across = unit([1, 0, -axis[0]]);
+      const dorsal = unit([axis[1] * across[2] - axis[2] * across[1], axis[2] * across[0] - axis[0] * across[2], axis[0] * across[1] - axis[1] * across[0]]);
+      const up = dorsal[2] >= 0 ? dorsal : scale(dorsal, -1);
+      const arc = Array.from({ length: 19 }, (_, k): Vec3 => { const t = -2.45 + 4.9 * k / 18; return add(here, add(scale(up, 5.5 * Math.cos(t)), scale(across, 5.5 * Math.sin(t)))); });
+      rings.push(tube(arc, arc.map(() => 0.72), 6));
+    }
+    return mergeSurfaces(rings);
+  })();
+  // The larynx: thyroid and cricoid cartilages, paired arytenoids and the triangular epiglottis named by Hummel et al.
+  const larynx = mergeSurfaces([
+    blob([NECK + 1, 268, 66], [10, 9, 6]), blob([NECK + 1 - 7, 268, 72], [3, 8, 7]), blob([NECK + 1 + 7, 268, 72], [3, 8, 7]),
+    route(Array.from({ length: 13 }, (_, i): Vec3 => { const t = 2 * Math.PI * i / 12; return [NECK + 1 + 7 * Math.sin(t), 278, 72 + 7 * Math.cos(t)]; }), 1.5, 1.5, 6),
+    blob([NECK - 2, 266, 80], [2.2, 3, 3]), blob([NECK + 4, 266, 80], [2.2, 3, 3]),
+    route([[NECK + 1, 262, 74], [NECK + 1, 255, 78], [NECK + 1, 249, 80]], 5, 0.5, 8),
+  ]);
+  // Usually one parathyroid near the dorsolateral border of each thyroid lobe: Hummel et al.
+  const parathyroids = mergeSurfaces([blob([NECK - 11, 288, 75], [1.5, 2.2, 1.3], 6, 8), blob([NECK + 11, 288, 75], [1.5, 2.2, 1.3], 6, 8)]);
+  const oesophagus = route([[NECK, 262, 84], [NECK, 300, 81], [184, 355, 80], [186, 410, 104], [190, 460, 128], [204, 508, 136]], 4.6, 4.2, 10);
 
-  const tongue = mergeSurfaces([route([[188, 88, 40], [188, 120, 42], [188, 160, 46], [188, 205, 52]], 7, 10, 12), blob([188, 86, 40], [7, 7, 5])]);
-  const salivary = mergeSurfaces([-1, 1].flatMap((sign) => [
-    blob([M + sign * 22, 292, 46], [17, 30, 13]), blob([M + sign * 26, 312, 46], [9, 14, 9]), blob([M + sign * 58, 268, 74], [12, 27, 19]),
+  // The tongue fills the floor of the mouth behind the lower incisors.
+  const tongue = mergeSurfaces([route([[189, 114, 32], [189, 135, 37], [189, 165, 43], [189, 205, 54]], 6, 10, 12), blob([189, 112, 32], [6, 6, 4])]);
+  // Three pairs of salivary glands, as Hummel et al. describe them. The submandibular glands are large and compact in the ventral neck, the sublingual glands small, flattened and pressed
+  // against their ventral anterolateral surfaces, and the parotids diffuse and lobulated, from the ears to the clavicles. Sizes and the places of the lobules are estimates.
+  const submandibular = mergeSurfaces([-1, 1].map((sign) => blob([M + sign * 26, 292, 63], [15, 28, 11])));
+  const sublingual = mergeSurfaces([-1, 1].map((sign) => blob([M + sign * 35, 272.5, 58.5], [5.5, 9, 3], 8, 12)));
+  const parotid = mergeSurfaces([-1, 1].flatMap((sign) => Array.from({ length: 16 }, (_, i) => {
+    const centre = mix([M + sign * 52, 250, 78], [M + sign * 46, 325, 66], i / 15);
+    const radius = 4.5 + 1.5 * Math.sin(i * 1.3);
+    const lobule = add(centre, [sign * 6 * Math.sin(i * 2.3), 3 * Math.sin(i * 3.1), 9 * Math.cos(i * 1.7)]);
+    return blob(under(lobule, [M + sign * 24, lobule[1], 72], radius + 1), [radius, radius * 1.2, radius], 6, 8);
+  })));
+  // The nasal cavities on either side of a septum, with sizes read section by section from colour sections of the specimen: y, height of the middle, half width and half height.
+  // The dark passages are visible there, but the CT does not resolve them well enough to trace, so this shape is an estimate. They lead back above the palate to the pharynx.
+  const NOSE = 191;
+  const NASAL_SECTIONS: readonly (readonly [number, number, number, number])[] = [[78, 50, 2.5, 3], [92, 58, 4.2, 7], [110, 77, 6, 10], [130, 84, 7, 16], [150, 84, 6, 16], [170, 81, 3.4, 5], [190, 78, 2.6, 3], [205, 76, 2.4, 2.2]];
+  const nasalAt = (y: number): readonly [number, number, number, number] => {
+    const after = NASAL_SECTIONS.findIndex((section) => section[0] >= y);
+    if (after <= 0) return NASAL_SECTIONS[0];
+    const a = NASAL_SECTIONS[after - 1], b = NASAL_SECTIONS[after], t = (y - a[0]) / (b[0] - a[0]);
+    return [y, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t];
+  };
+  const nasalCavities = mergeSurfaces([
+    ...[-1, 1].flatMap((sign) => Array.from({ length: 22 }, (_, i) => {
+      const [y, z, halfWidth, halfHeight] = nasalAt(78 + i * 6);
+      return blob([NOSE + sign * (halfWidth + 0.8), y, z], [halfWidth, 5.5, halfHeight], 8, 10);
+    })),
+    route([[188, 205, 76], [187, 225, 76], [186, 240, 78], [185, 248, 81]], 2.3, 2.3, 8),
+  ]);
+  // Two sets of bony ridges on each side, the dorsal and lateral turbinals: Hummel et al. Their courses are estimates within the simulated cavities.
+  const turbinals = mergeSurfaces([-1, 1].flatMap((sign) => [
+    route([[NOSE + sign * 3.5, 96, 67], [NOSE + sign * 4.5, 112, 83], [NOSE + sign * 5, 130, 93], [NOSE + sign * 4.5, 152, 92]], 1.2, 0.8, 7),
+    route([[NOSE + sign * 7, 100, 62], [NOSE + sign * 10.5, 112, 71], [NOSE + sign * 11.5, 130, 76], [NOSE + sign * 8.5, 150, 75]], 1.7, 1, 7),
+    route([[NOSE + sign * 8, 104, 69], [NOSE + sign * 11, 116, 76], [NOSE + sign * 11, 132, 81], [NOSE + sign * 8.5, 150, 80]], 1.1, 0.7, 7),
   ]));
+  // The soft palate continues the bony palate, which ends near y 208 in the CT, and the pharynx is a small chamber behind the oral cavity: Hummel et al.
+  const softPalate = blob([187, 226, 71.5], [15, 19, 2.2], 8, 14);
+  const pharynx = blob([185, 254, 84], [9, 11, 4.5], 10, 14);
   const gallBladder = route([[170, 492, 34], [172, 505, 36], [176, 515, 44]], 5, 1.4, 10);
   const ureters = mergeSurfaces([
     route([add(kidneyR.centroid, [14, 5, -8]), [146, 640, 118], [150, 680, 90], add(bladder.centroid, [-10, 8, 24])], 1, 0.8, 6),
     route([add(kidneyL.centroid, [-14, 5, -8]), [205, 650, 118], [192, 685, 92], add(bladder.centroid, [12, 8, 24])], 1, 0.8, 6),
-    route([add(bladder.centroid, [4, 36, -2]), [176, 770, 42], [178, 820, 32], [178, 860, 26]], 1.7, 1.2, 6),
+    // The urethra runs back through the pelvis above the pubic bone seen in the CT, and round the back of it.
+    route([add(bladder.centroid, [4, 36, -2]), [174, 770, 72], [178, 812, 74], [180, 838, 62], [176, 840, 46]], 1.7, 1.3, 6),
   ]);
   const ducts = (testis: { centroid: Vec3; min: Vec3; max: Vec3 }, sign: -1 | 1): Surface[] => {
     const c = testis.centroid;
@@ -262,22 +304,35 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks): Re
     route([[M + sign * 11, 742, 56], [M + sign * 26, 716, 76], [M + sign * 30, 695, 88]], 3, 1.8, 8),
   ]));
   const prostate = mergeSurfaces([blob([174, 750, 50], [15, 11, 11]), blob([174, 752, 66], [14, 10, 6])]);
-  const preputial = mergeSurfaces([blob([164, 846, 24], [8, 15, 6]), blob([194, 846, 24], [8, 15, 6])]);
-  const penis = route([[178, 815, 30], [178, 850, 24], [178, 880, 24]], 5.5, 3.6, 10);
-  const thyroid = mergeSurfaces([blob([178, 288, 67], [5, 14, 8]), blob([201, 288, 67], [5, 14, 8]), route([[178, 292, 62], [201, 292, 62]], 1.6, 1.6, 6)]);
+  // The penis forms a hairpin. The os penis in the CT tapers from y 784 back to y 812 close under the skin, and sections show a dark ring round its base, so the body runs forward below
+  // the pubic bone to a flexure near y 770, and the glans turns back from there.
+  const preputial = mergeSurfaces([blob([157, 770, 20], [8, 13, 3.5]), blob([177, 770, 20], [7, 13, 3.5])]);
+  const penis = route([[176, 840, 46], [172, 815, 40], [167, 785, 38], [163, 768, 31], [165, 776, 22], [169, 790, 16], [170, 806, 11.5], [170, 816, 10]], 4.2, 2.8, 12);
+  const accessoryGlands = mergeSurfaces([
+    blob([170, 838, 54], [5, 7, 4]), blob([188, 838, 54], [5, 7, 4]),
+    blob([170, 745, 54], [3, 6, 3]), blob([180, 745, 54], [3, 6, 3]),
+  ]);
+  const thyroid = mergeSurfaces([blob([NECK - 8, 292, 70], [3.6, 12, 6.5]), blob([NECK + 8, 292, 70], [3.6, 12, 6.5]), route([[NECK - 8, 296, 64.5], [NECK + 8, 296, 64.5]], 1.4, 1.4, 6)]);
   const thymus = mergeSurfaces([blob([170, 345, 62], [17, 26, 14]), blob([208, 345, 62], [17, 26, 14])]);
   const pituitary = blob([189, 216, 91], [6, 4.4, 3]);
 
   // Lymph nodes by the list and locations in Hummel et al. Each is an estimated body at the described location.
   const node = (centre: Vec3, radius: number, stretch = 1): Surface => blob(centre, [radius, radius * stretch, radius], 8, 12);
   const pair = (p: Vec3, radius: number, stretch = 1): Surface[] => [node(p, radius, stretch), node(mirror(p), radius, stretch)];
-  const lymph = mergeSurfaces([
-    ...pair([158, 266, 34], 5, 1.4), ...pair([176, 300, 58], 3.5, 1.3), ...pair([108, 345, 66], 7, 1.2),
-    node(add(mix(J.shoulderR, J.elbowR, 0.55), [0, -7, -7]), 5.5, 1.2), node(add(mix(J.shoulderL, J.elbowL, 0.55), [0, -7, -7]), 5.5, 1.2),
-    ...pair([92, 735, 40], 8, 1.3), ...pair([106, 800, 92], 3.8), ...pair([176, 372, 96], 3.6), node([190, 392, 104], 3.4),
-    node([214, 566, 112], 4, 1.2), node([224, 574, 116], 3.6, 1.2), node([150, 608, 132], 3.2), node([205, 615, 134], 3.2),
-    ...pair([172, 725, s(725).ventralZ - 15], 3), node([186, 640, 82], 5.5, 2.6), node([182, 752, s(750).ventralZ - 12], 2.8),
-  ]);
+  const mandibularNode = under([158, 266, 34], [168, 266, 60], 5.5);
+  const lymphNodes = {
+    'cervical-lymph-nodes': mergeSurfaces([...pair(mandibularNode, 5, 1.4), ...pair([176, 300, 58], 3.5, 1.3)]),
+    'axillary-lymph-nodes': mergeSurfaces(pair([108, 345, 66], 7, 1.2)),
+    'brachial-lymph-nodes': mergeSurfaces([node(add(mix(J.shoulderR, J.elbowR, 0.55), [0, -7, -7]), 5.5, 1.2), node(add(mix(J.shoulderL, J.elbowL, 0.55), [0, -7, -7]), 5.5, 1.2)]),
+    'inguinal-lymph-nodes': mergeSurfaces(pair([92, 735, 40], 8, 1.3)),
+    'sciatic-lymph-nodes': mergeSurfaces(pair([106, 800, 92], 3.8)),
+    'mediastinal-lymph-nodes': mergeSurfaces([...pair([176, 372, 96], 3.6), node([190, 392, 104], 3.4)]),
+    'pyloric-lymph-nodes': mergeSurfaces([node([214, 566, 112], 4, 1.2), node([224, 574, 116], 3.6, 1.2)]),
+    'renal-lymph-nodes': mergeSurfaces([node([150, 608, 132], 3.2), node([205, 615, 134], 3.2)]),
+    'lumbar-lymph-nodes': mergeSurfaces(pair([172, 725, s(725).ventralZ - 15], 3)),
+    'mesenteric-lymph-node': node([186, 640, 82], 5.5, 2.6),
+    'caudal-lymph-node': node([182, 752, s(750).ventralZ - 12], 2.8),
+  };
 
   // Lymph trunks gather towards a cisterna beside the aorta, and the thoracic duct carries them to the left venous angle.
   const cisterna: Vec3 = [s(610).x - 2, 610, s(610).ventralZ - 12];
@@ -290,8 +345,8 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks): Re
     route([[270, 735, 40], [232, 735, 80], [190, 725, s(725).ventralZ - 15]], 0.4, 0.5, 5),
     route([[108, 345, 66], [128, 340, 70], junctionR], 0.4, 0.5, 5),
     route([[254, 345, 66], [234, 340, 70], junctionL], 0.4, 0.5, 5),
-    route([[158, 266, 34], [160, 300, 54], junctionR], 0.35, 0.5, 5),
-    route([[204, 266, 34], [202, 300, 54], junctionL], 0.35, 0.5, 5),
+    route([mandibularNode, [160, 300, 54], junctionR], 0.35, 0.5, 5),
+    route([mirror(mandibularNode), [202, 300, 54], junctionL], 0.35, 0.5, 5),
   ]);
   // The vertebral arteries join as the basilar artery under the medulla, which ends in a ring at the base of the brain, after Cook figures 87 and 88.
   const ring = Array.from({ length: 13 }, (_, i): Vec3 => { const angle = 2 * Math.PI * i / 12; return [189 + 13 * Math.cos(angle), 203 + 16 * Math.sin(angle), 87]; });
@@ -302,15 +357,149 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks): Re
     route([[165, 220, 96], [176, 205, 88]], 0.9, 0.8, 5), route([[205, 220, 96], [202, 205, 88]], 0.9, 0.8, 5),
   ]);
 
+  // Teeth are placed in the jaws seen in the CT, whose 8-bit values do not separate teeth from bone. The upper incisors end near y 90 and z 18, the lower near y 100 and z 26,
+  // and the rows of molars lie near y 165 to 190, either side of the midline of the skull, about where the jaws meet.
+  const SKULL = 189.5;
+  const incisors = mergeSurfaces([-1, 1].flatMap((sign) => [
+    route([[SKULL + sign * 4, 122, 82], [SKULL + sign * 4, 108, 62], [SKULL + sign * 3.5, 97, 40], [SKULL + sign * 3, 90, 19]], 2.6, 1.1, 8),
+    route([[SKULL + sign * 7, 175, 22], [SKULL + sign * 6, 140, 19], [SKULL + sign * 4, 112, 20], [SKULL + sign * 3, 100, 26]], 2.6, 1, 8),
+  ]));
+  const molars = mergeSurfaces([-1, 1].flatMap((sign) => ([[168, 6, 4.6], [179, 4.8, 4.1], [188, 3.4, 3.4]] as const).flatMap(([y, long, wide]) => [
+    blob([SKULL + sign * 18, y, 56], [wide, long, 4.4], 8, 10), blob([SKULL + sign * 18, y, 43], [wide, long, 4.4], 8, 10),
+  ])));
+  // A ganglion on each dorsal root, at the levels used for the spinal nerves.
+  const ganglia = mergeSurfaces(levels.flatMap((level) => [-1, 1].map((side) => {
+    const sample = s(level.y);
+    return blob([sample.x + side * 12, level.y + 2, sample.canalZ - 4], [2.2, 2.6, 2.2], 6, 8);
+  })));
+  // Beaded chains beside the column, under the vertebral bodies.
+  const sympathetic = mergeSurfaces([-1, 1].flatMap((side) => {
+    const line = [300, 380, 460, 540, 620, 700, 780].map((y): Vec3 => [s(y).x + side * 11, y, s(y).ventralZ - 3]);
+    const beads = levels.map((level): Surface => blob([s(level.y).x + side * 11, level.y, s(level.y).ventralZ - 3], [1.1, 1.5, 1.1], 5, 6));
+    return [route(line, 0.4, 0.4, 4), ...beads];
+  }));
+  // Inside each tympanic bulla: an ear canal from the external auditory meatus seen in the CT, a tympanic membrane, and a chain of three ossicles to the cochlea. Their sizes are estimates.
+  const middleEar = (sign: -1 | 1): Surface[] => {
+    const HEAD = 189.5;
+    const membrane: Vec3 = [HEAD + sign * 38, 241, 100];
+    return [
+      tube([add(membrane, [sign * 0.5, 0, 0]), add(membrane, [sign * 2, 0, 0.5]), [HEAD + sign * 50, 243, 110], [HEAD + sign * 55.5, 245.5, 125]], [4.2, 4.4, 4.4, 5], 12),
+      blob(membrane, [0.5, 8.5, 8.5], 6, 16),
+      route([add(membrane, [sign * -0.8, 0, -5]), add(membrane, [sign * -1.6, 0, 1]), add(membrane, [sign * -3, 1, 5])], 0.6, 1.1, 6),
+      blob(add(membrane, [sign * -4.6, 1.2, 5.6]), [1.5, 1.8, 1.4], 6, 8),
+      route([add(membrane, [sign * -5.2, 2, 4.6]), add(membrane, [sign * -7, 2.6, 2.4])], 0.5, 0.45, 5),
+      route([add(membrane, [sign * -7, 2.6, 2.4]), [HEAD + sign * 30.5, 243.5, 100]], 0.7, 0.9, 6),
+    ];
+  };
+  // A coiled cochlea and three loops beside it, in each temporal region. Only their rough position is known here.
+  const innerEar = (sign: -1 | 1): Surface[] => {
+    // In the temporal region of the head, medial to the tympanic bulla seen in the CT.
+    const centre: Vec3 = [189 + sign * 30, 243, 92];
+    const coil = Array.from({ length: 26 }, (_, i): Vec3 => { const a = i * 0.72, r = 5.4 - i * 0.16; return [centre[0] + sign * i * 0.22, centre[1] + r * Math.cos(a), centre[2] + r * Math.sin(a)]; });
+    const loop = (axis: 0 | 1 | 2): Vec3[] => Array.from({ length: 11 }, (_, i): Vec3 => { const a = i * 0.56, p = 4.4 * Math.cos(a), q = 4.4 * Math.sin(a); return axis === 0 ? [centre[0], centre[1] + 9 + p, centre[2] + 6 + q] : axis === 1 ? [centre[0] + p, centre[1] + 9, centre[2] + 6 + q] : [centre[0] + p, centre[1] + 9 + q, centre[2] + 6]; });
+    return [route(coil, 1, 0.5, 5), route(loop(0), 0.5, 0.5, 5), route(loop(1), 0.5, 0.5, 5), route(loop(2), 0.5, 0.5, 5)];
+  };
+
+  // The hepatic ducts and the cystic duct from the gall bladder form the common bile duct, which crosses part of the pancreas to the duodenum: Cook figure 61 and Hummel et al.
+  const bileUnion: Vec3 = [180, 532, 66], duodenalEnd: Vec3 = [182, 575, 100];
+  const bileDucts = mergeSurfaces([
+    route([[176, 515, 44], [178, 524, 56], bileUnion], 0.8, 0.8, 6),
+    route([[150, 515, 72], [165, 526, 70], bileUnion], 0.7, 0.8, 6), route([[206, 512, 76], [192, 526, 72], bileUnion], 0.7, 0.8, 6),
+    route([bileUnion, [181, 555, 84], duodenalEnd], 0.9, 0.9, 6),
+  ]);
+  // Several excretory ducts join the bile duct as it crosses the pancreas, and at least one enters the duodenum by itself: Hummel et al.
+  const pancreaticDucts = mergeSurfaces([
+    route([[212, 590, 124], [196, 578, 108], [181, 562, 90]], 0.5, 0.6, 5),
+    route([[198, 612, 130], [190, 590, 112], [182, 570, 96]], 0.5, 0.6, 5),
+    route([[185, 596, 124], [186, 584, 108], [186, 578, 102]], 0.5, 0.6, 5),
+  ]);
+  // Hummel et al. name brown fat between the scapulae, in the axillae, along the jugular veins, near the thymus, along the thoracic aorta, at the hilus of the kidney and beside the urethra.
+  const brownFat = mergeSurfaces([
+    blob([166, 365, 168], [13, 26, 8]), blob([196, 365, 168], [13, 26, 8]),
+    blob([112, 352, 84], [9, 14, 7]), blob([250, 352, 84], [9, 14, 7]),
+    blob([150, 290, 58], [6, 16, 5]), blob([214, 290, 58], [6, 16, 5]),
+    blob([160, 345, 90], [5, 8, 4]), blob([206, 345, 90], [5, 8, 4]),
+    route([...[415, 445, 475, 505].map(aortaAt)].map((p) => add(p, [5, 0, -2])), 1.6, 1.2, 6),
+    blob(add(kidneyR.centroid, [24, 2, -8]), [5, 7, 4]), blob(add(kidneyL.centroid, [-24, 2, -8]), [5, 7, 4]),
+    blob([170, 790, 80], [4, 12, 3]), blob([186, 790, 80], [4, 12, 3]),
+  ]);
+  // The ventricles of the brain, placed on the source brain labels after the description of the rat in Greene. The midline of the head is near x 189.
+  const brainMiddle = 189;
+  const ventricles = mergeSurfaces([
+    ...[-1, 1].flatMap((sign) => [
+      route([[brainMiddle + sign * 9, 192, 134], [brainMiddle + sign * 20, 205, 144], [brainMiddle + sign * 30, 224, 138], [brainMiddle + sign * 33, 232, 118]], 1.7, 0.9, 6),
+      route([[brainMiddle + sign * 9, 192, 134], [brainMiddle + sign * 3, 202, 124], [brainMiddle, 208, 118]], 0.9, 0.9, 5),
+    ]),
+    blob([brainMiddle, 214, 112], [1.1, 10, 10], 8, 12),
+    route([[brainMiddle, 224, 118], [brainMiddle, 238, 124], [brainMiddle, 250, 126]], 0.7, 0.7, 5),
+    blob([brainMiddle, 258, 124], [6, 6, 1.8], 8, 12),
+  ]);
+  // The cranial nerves not drawn with the others, simplified, from the brain stem to their targets, after the description of the rat in Greene.
+  const eyeOn = (sign: number) => eyes[sign < 0 ? 0 : 1].centroid;
+  const olfactoryNerves = eachSide((sign) => route([[brainMiddle + sign * 6, 166, 104], [brainMiddle + sign * 7, 148, 100], [brainMiddle + sign * 7, 128, 92]], 0.6, 0.3, 5));
+  const oculomotorNerves = eachSide((sign) => route([[brainMiddle + sign * 4, 232, 100], [brainMiddle + sign * 18, 205, 96], eyeOn(sign)], 0.5, 0.3, 5));
+  const trochlearNerves = eachSide((sign) => route([[brainMiddle + sign * 6, 245, 112], [brainMiddle + sign * 26, 210, 101], eyeOn(sign)], 0.35, 0.25, 5));
+  const abducensNerves = eachSide((sign) => route([[brainMiddle + sign * 3, 252, 100], [brainMiddle + sign * 20, 210, 92], eyeOn(sign)], 0.35, 0.25, 5));
+  const vestibulocochlearNerves = eachSide((sign) => route([[brainMiddle + sign * 12, 255, 104], [brainMiddle + sign * 30, 243, 92]], 0.7, 0.6, 5));
+  const glossopharyngealNerves = eachSide((sign) => route([[brainMiddle + sign * 11, 262, 100], [brainMiddle + sign * 14, 256, 80], [NECK + sign * 6, 256, 76]], 0.4, 0.3, 5));
+  const accessoryNerves = eachSide((sign) => route([[brainMiddle + sign * 9, 270, 100], [brainMiddle + sign * 22, 292, 84], [brainMiddle + sign * 40, 318, 96]], 0.4, 0.3, 5));
+  const hypoglossalNerves = eachSide((sign) => route([[brainMiddle + sign * 6, 275, 98], [brainMiddle + sign * 14, 250, 66], [188 + sign * 5, 190, 50]], 0.5, 0.3, 5));
+
+  // A disc in each gap of the column. There is none between the atlas and axis, or between the fused sacral vertebrae.
+  const discs = VERTEBRAE.slice(1).flatMap((vertebra, i): Surface[] => {
+    if (vertebra.id === 'c2' || /^s[234]$/.test(vertebra.id)) return [];
+    const y = vertebra.from, here = s(y), before = s(y - 6), after = s(y + 6);
+    const axis = unit([after.x - before.x, 12, ((after.ventralZ + after.canalZ) - (before.ventralZ + before.canalZ)) / 2]);
+    const centre: Vec3 = [here.x, y, (here.ventralZ + here.canalZ) / 2 - 1];
+    const radius = Math.max(5, (here.canalZ - here.ventralZ) / 2 + 0.5);
+    const thickness = Math.max(0.9, Math.min(2.2, (VERTEBRAE[i].to - VERTEBRAE[i].from) / 12));
+    return [tube([add(centre, scale(axis, -thickness)), centre, add(centre, scale(axis, thickness))], [radius * 0.9, radius, radius * 0.9], 18)];
+  });
+
+  // Intercostal vessels run along the caudal border of each rib, whose course is measured in the CT, on its inner side. From the fifth rib back the arteries leave
+  // the aorta and the veins join the azygos; the second to fourth come from a highest intercostal vessel further forward: Cook figure 95.
+  const inward = (p: Vec3, caudal: number): Vec3 => {
+    const toward = unit([s(p[1]).x - p[0], 0, 105 - p[2]]);
+    return add(p, [toward[0] * 1.4, caudal, toward[2] * 1.4]);
+  };
+  const azygosAt = (y: number): Vec3 => [s(y).x + 14, y, s(y).ventralZ - 6];
+  const intercostal = (origin: (rib: number, y: number) => Vec3, caudal: number, radius: number) => mergeSurfaces((['r', 'l'] as const).flatMap((side) => ribLines[side].flatMap((line, index): Surface[] => {
+    const rib = index + 1;
+    if (rib === 1 || line.length < 3) return [];
+    const course = line.slice(0, 26).map((p) => inward(p, caudal));
+    return [route([origin(rib, line[0][1]), ...course.filter((_, i) => i % 2 === 0 || i === course.length - 1)], radius, radius * 0.5, 5)];
+  })));
+  const highestArtery = (y: number): Vec3 => [s(y).x + (y < 0 ? 0 : -13), y, s(y).ventralZ - 6];
+  const intercostalArteries = mergeSurfaces([
+    intercostal((rib, y) => rib >= 5 ? aortaAt(y) : highestArtery(y), 3, 0.55),
+    route([[s(340).x - 13, 340, s(340).ventralZ - 6], ...[355, 370, 385].map(highestArtery)], 0.7, 0.5, 5),
+    route([[s(340).x + 13, 340, s(340).ventralZ - 6], ...[355, 370, 385].map((y): Vec3 => [s(y).x + 13, y, s(y).ventralZ - 6])], 0.7, 0.5, 5),
+  ]);
+  const intercostalVeins = intercostal((rib, y) => rib >= 5 ? azygosAt(y) : [s(y).x - 11, y, s(y).ventralZ - 5], 4.8, 0.6);
+
   return {
+    'middle-ears': mergeSurfaces([...middleEar(-1), ...middleEar(1)]),
+    // A very small cone on the dorsal surface of the brain between cerebrum and cerebellum: Hummel et al.
+    pineal: route([[189, 232, 150], [189, 235, 153], [189, 237.5, 155.5]], 2.3, 0.5, 8),
+    parathyroids,
+    // Beside the sternum on each side, from the subclavian vessels: Cook figures 91 and 95.
+    'mammary-arteries': mergeSurfaces([route([[150, 326, 80], [166, 345, 64], [168, 400, 52], [169, 480, 50]], 0.8, 0.45, 5), route([[222, 336, 88], [196, 345, 64], [194, 400, 52], [193, 480, 50]], 0.8, 0.45, 5)]),
+    'mammary-veins': mergeSurfaces([route([[146, 336, 74], [163, 345, 62], [165, 400, 50], [166, 480, 48]], 0.9, 0.5, 5), route([[216, 336, 74], [199, 345, 62], [197, 400, 50], [196, 480, 48]], 0.9, 0.5, 5)]),
+    larynx, 'tracheal-rings': trachealRings, 'bile-ducts': bileDucts, 'pancreatic-ducts': pancreaticDucts, 'brown-fat': brownFat, 'accessory-glands': accessoryGlands, 'brain-ventricles': ventricles,     'intervertebral-discs': mergeSurfaces(discs),
+    'xiphoid-cartilage': mergeSurfaces([blob([181, 512, 37], [14, 15, 1.6], 10, 16), route([[181, 498, 38], [181, 503, 37.5]], 2.4, 2.8, 8)]),
+    'intercostal-arteries': intercostalArteries, 'intercostal-veins': intercostalVeins,
+    incisors, molars, 'root-ganglia': ganglia, 'sympathetic-trunks': sympathetic, 'inner-ears': mergeSurfaces([...innerEar(-1), ...innerEar(1)]),
     'lymph-vessels': lymphVessels, 'cerebral-base': cerebralBase,
-    aorta, 'head-arteries': headArteries, 'forelimb-arteries': forelimbArteries, 'coronary-arteries': coronary, 'visceral-arteries': visceral, 'hindlimb-arteries': hindlimb,
-    'caudal-vena-cava': caudalVenaCava, 'cranial-veins': cranial, 'forelimb-veins': forelimbVeins, 'hindlimb-veins': hindlimbVeins, 'portal-veins': portal,
-    'spinal-cord': spinalCord, 'spinal-nerves': mergeSurfaces(nerves), 'forelimb-nerves': mergeSurfaces([...plexus('R'), ...plexus('L')]), 'hindlimb-nerves': mergeSurfaces([...sacralPlexus('R'), ...sacralPlexus('L')]),
-    'vagus-phrenic': mergeSurfaces([...vagus('R'), ...vagus('L')]), 'cranial-nerves': cranialNerves,
-    trachea, diaphragm: buildDiaphragm(grid, labels), oesophagus, tongue, 'salivary-glands': salivary, 'gall-bladder': gallBladder,
+    aorta, 'innominate-artery': innominateArtery, 'common-carotid-arteries': commonCarotids, 'internal-carotid-arteries': internalCarotids, 'external-carotid-arteries': externalCarotids, 'coronary-arteries': coronary,
+    'coeliac-arteries': coeliacArteries, 'superior-mesenteric-artery': superiorMesenteric, 'renal-artery-stems': renalArteryStems, 'testicular-arteries': testicularArteries, 'inferior-mesenteric-artery': inferiorMesenteric,
+    'caudal-vena-cava': caudalVenaCava, 'superior-venae-cavae': superiorVenaeCavae, 'external-jugular-veins': externalJugulars, 'internal-jugular-veins': internalJugulars, 'azygos-vein': azygos, 'portal-vein': portalVein, 'renal-vein-stems': renalVeinStems, 'hepatic-vein-stems': hepaticVeinStems,
+    'spinal-cord': spinalCord, 'cervical-nerves': mergeSurfaces(nerves.c), 'thoracic-nerves': mergeSurfaces(nerves.t), 'lumbar-nerves': mergeSurfaces(nerves.l), 'sacral-nerves': mergeSurfaces(nerves.s),
+    'vagus-nerves': mergeSurfaces([vagus('R').main, vagus('L').main]), 'phrenic-nerves': mergeSurfaces([vagus('R').phrenic, vagus('L').phrenic]),
+    'optic-nerves': opticNerves, 'trigeminal-roots': trigeminalRoots, 'ophthalmic-nerves': ophthalmicNerves, 'maxillary-nerves': maxillaryNerves, 'mandibular-nerves': mandibularNerves, 'facial-nerves': facialNerves,
+    'olfactory-nerves': olfactoryNerves, 'oculomotor-nerves': oculomotorNerves, 'trochlear-nerves': trochlearNerves, 'abducens-nerves': abducensNerves, 'vestibulocochlear-nerves': vestibulocochlearNerves, 'glossopharyngeal-nerves': glossopharyngealNerves, 'accessory-nerves': accessoryNerves, 'hypoglossal-nerves': hypoglossalNerves,
+    trachea, diaphragm: buildDiaphragm(grid, labels), oesophagus, tongue, 'submandibular-glands': submandibular, 'sublingual-glands': sublingual, 'parotid-glands': parotid, 'nasal-cavities': nasalCavities, turbinals, 'soft-palate': softPalate, pharynx, 'gall-bladder': gallBladder,
     ureters, 'male-ducts': maleDucts, 'seminal-vesicles': seminal, prostate, 'preputial-glands': preputial, penis,
-    thyroid, thymus, pituitary, 'lymph-nodes': lymph,
+    thyroid, thymus, pituitary, ...lymphNodes,
   };
 }
 

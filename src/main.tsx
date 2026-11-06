@@ -14,6 +14,8 @@ import './components/CardiacCellPanel.css';
 import './components/SelectionTools.css';
 import './components/SystemLayers.css';
 import './components/Workbench.css';
+import './components/ScaleJourney.css';
+import './components/AllLayers.css';
 
 import './components/SourceSignalPanel.css';
 import './components/LivingCircuits.css';

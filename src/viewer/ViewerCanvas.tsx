@@ -6,17 +6,20 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { surfaceShadingOf, SURFACE_PRESENTATION, SKIN_PRESENTATION } from './surface-shading';
+import { installSurfaceShading, surfaceShadingOf, SURFACE_PRESENTATION, SKIN_PRESENTATION, type SurfaceShadingUniforms } from './surface-shading';
+import { DISSECTION_PLACES, DISSECTION_TIERS, dissectionAppliesTo, dissectionTier, namesToShow, orderHere, placeNameFromBone, tierFold, tierRadius, type DissectionPlaceId, type DissectionSettings, type DissectionTierId, type HereItem } from '../domain/dissection';
+import { findInWindow, foldMatrix, insideWindow, throughSurface, type WindowShape } from './dissection-window';
+import { createIdPass, createOpeningMark, type SeenStructure } from './id-pass';
 import { createContactShadow, type ContactShadow } from './contact-shadow';
-import { COATS, createFur, type CoatId, type FurLayer } from './fur';
-import { labelWithEvidence } from '../domain/evidence';
+import { COATS, createFur, fineHairOptions, hasFurAttribute, type CoatId, type FurLayer } from './fur';
+import { declaresEvidence, labelWithEvidence } from '../domain/evidence';
 import { createSectionImagePlane, cutFaceView, loadSectionVolume, type SectionImagePlane } from './section-image';
 import { sectionImagesApplyTo, type SectionImageChoice, type SectionImageId } from '../domain/section-images';
 import { bodySurfaceIdFor, displayPostureFor } from '../domain/display-pose';
 import { smoothingOptionsFor, smoothSurfaceGeometries } from './surface-smoothing';
 import type { SurfaceDisplay } from '../domain/display-smoothing';
 import { displayColour, type ColourScheme } from '../domain/tissue-palette';
-import { layoutLabels, leaderEnd, type LabelCandidate, type PlacedLabel } from './label-layout';
+import { layoutLabels, layoutPlate, leaderEnd, type LabelCandidate, type PlacedLabel } from './label-layout';
 import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas } from '../domain';
 import { coveredBySkin, defaultStructureOpacity, OPAQUE_SKIN } from '../domain/reference-display';
 import { RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
@@ -27,7 +30,7 @@ import { renderDiagnostics, type ViewerDiagnostics } from './viewer-diagnostics'
 import { traceSampleFocusBounds } from './trace-sample-focus';
 import { sourcePolylinePathBounds } from './polyline-focus';
 import { panViewerCamera, viewerNavigationKey, zoomViewerCamera } from './viewer-navigation';
-import { applyCameraPose, captureCameraPose, createDisplayClipPlane, DISPLAY_ROTATION_Z, fitCameraToBounds, focusCameraOnRegions, isPointRetainedByClipPlane, recenterRegionGeometry, type CameraPose } from './scene-utils';
+import { applyCameraPose, captureCameraPose, clipPercentAt, createDisplayClipPlane, DISPLAY_ROTATION_Z, fitCameraToBounds, focusCameraOnRegions, isPointRetainedByClipPlane, recenterRegionGeometry, type CameraPose } from './scene-utils';
 
 export type { CameraPose } from './scene-utils';
 export type ViewerSettings = {
@@ -57,9 +60,13 @@ export type ViewerSettings = {
   sectionImage?: SectionImageChoice;
   /** Simulated coat on a body surface that carries hair directions. Defaults to agouti. */
   coat?: CoatId;
+  /** All layers shown together, opened at one place. Absent means closed. */
+  dissection?: DissectionSettings | null;
 };
+/** What lies at the opened place, from the outside inwards. */
+export type DissectionReport = { place: string; items: HereItem[] };
 export type SectionImageStatus = { status: 'idle' | 'loading' | 'ready' | 'failed'; id?: SectionImageId };
-export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean; viewCutFace: (axis: 'x' | 'y' | 'z') => void };
+export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean; viewCutFace: (axis: 'x' | 'y' | 'z') => void; bodyCentrePercent: (axis: 'x' | 'y' | 'z') => number | null; placeDissection: (place: DissectionPlaceId) => void };
 type Props = {
   atlas: Atlas;
   pathSignal?:PathSignalDisplay;
@@ -77,17 +84,24 @@ type Props = {
   /** The user started a pointer interaction while the view was rotating automatically. */
   onAutoRotateEnd?: () => void;
   onSectionImageStatus?: (status: SectionImageStatus) => void;
+  /** The user has zoomed on to the visible skin of a standing animal. */
+  onZoomToSkin?: () => void;
+  /** With the layers open, the user has zoomed right on to a structure in the middle of the view. */
+  onZoomToStructure?: (id: string) => void;
+  /** The opened place has changed. */
+  onDissectionReport?: (report: DissectionReport | null) => void;
 };
 
-export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace, pathSignal, onAutoRotateEnd, onSectionImageStatus }: Props) {
+export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace, pathSignal, onAutoRotateEnd, onSectionImageStatus , onZoomToSkin, onZoomToStructure, onDissectionReport }: Props) {
   const host = useRef<HTMLDivElement>(null);
-  const latest = useRef({ pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus });
-  latest.current = { pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus };
+  const latest = useRef({ pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus, onZoomToSkin, onZoomToStructure, onDissectionReport });
+  latest.current = { pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus, onZoomToSkin, onZoomToStructure, onDissectionReport };
   const engine = useRef<{ apply: () => void; setPose: (pose: CameraPose) => void; setDetail: () => void } | null>(null);
   const [status, setStatus] = useState('Loading reference geometry');
   const [failure, setFailure] = useState(false);
   const [label, setLabel] = useState<{ x: number; y: number; name: string } | null>(null);
   const [labelSet, setLabelSet] = useState<{ labels: PlacedLabel[]; width: number; height: number }>({ labels: [], width: 0, height: 0 });
+  const [hovered, setHovered] = useState<{ x: number; y: number; name: string } | null>(null);
 
   useEffect(() => {
     if (!host.current) return;
@@ -98,7 +112,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let disposed = false;
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power', stencil: true });
     } catch {
       setFailure(true);
       onStatus?.('failed');
@@ -187,6 +201,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let lastLabelSet = '', lastLabelSetAt = 0;
     let shadow: ContactShadow | null = null, shadowDirty = true;
     let fur: FurLayer | null = null;
+    const fineHair: FurLayer[] = [];
     let interacting = false, slowFrames = 0, lastFrameAt = 0;
     let sectionRoot: THREE.Object3D | null = null, sectionPlane: SectionImagePlane | null = null;
     let sectionShown: SectionImageId | null = null, sectionFailed: SectionImageId | null = null;
@@ -239,6 +254,16 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       lastLabelSetAt = timestamp;
       const width = element.clientWidth, height = element.clientHeight;
       const candidates: LabelCandidate[] = [];
+      if (windowActive()) {
+        // On the opened animal the names stand beside it, and each line ends on a part of the structure that can be seen. They wait while the view moves.
+        const here = new Set(lastFound.map((item) => item.id));
+        const rows = seenNow && !seenStale ? namesToShow(seenNow.filter((item) => here.has(item.id)).map((item) => ({ ...item, tier: tierOf(item.id) })), current.selected) : [];
+        const plate = rows.map((item) => ({ id: item.id, name: labelWithEvidence(atlas.structures.find((entry) => entry.id === item.id)!), x: item.x * width, y: item.y * height, depth: 0, priority: item.rank }));
+        const placed = layoutPlate(plate.slice(0, 26), { width, height, columnWidth: Math.min(205, width * 0.2), topLeft: 104, topRight: 176, bottomLeft: 206, bottomRight: 190 });
+        const signature = `${width}x${height}|plate|${placed.map((item) => `${item.id}:${item.left},${item.top}`).join('|')}`;
+        if (signature !== lastLabelSet) { lastLabelSet = signature; setLabelSet({ labels: placed, width, height }); }
+        return;
+      }
       const covered = skinCovers(current);
       for (const [id, mesh] of meshes) {
         if (!mesh.visible || (covered && id !== skinId)) continue;
@@ -282,6 +307,314 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     };
 
     const clip = new THREE.Plane();
+    // All layers together: the shape of the opening, how far it is open now, and the folded copies of the outer layers.
+    const dissectable = dissectionAppliesTo(atlas) && !!posture && !!skinId;
+    const tiers = new Map<string, DissectionTierId>();
+    const tierOf = (id: string): DissectionTierId => {
+      let tier = tiers.get(id);
+      if (!tier) { tier = dissectionTier(atlas.structures.find((item) => item.id === id)!); tiers.set(id, tier); }
+      return tier;
+    };
+    let windowShape: WindowShape | null = null, windowOpening = 0;
+    const idPass = createIdPass();
+    let lastWindowSettings = '', lastSeenIds = '';
+    let seenNow: SeenStructure[] | null = null, seenStale = true, seenChangedAt = 0, lastFound: HereItem[] = [], lastPlace = '';
+    /** Something that changes what is seen has happened; it is looked at again when the view has been still for a moment. */
+    const markSeenStale = () => { seenStale = true; seenChangedAt = performance.now(); };
+    let cameraMove: { from: CameraPose; to: CameraPose; t: number } | null = null;
+    const foldRoots = new Map<DissectionTierId, THREE.Group>();
+    const folds = new Map<string, THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>();
+    const reducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function windowActive() { return dissectable && !!windowShape && windowOpening > 0.001; }
+    const skinIsOpaque = (current: ViewerSettings) => !!skinId && !current.hidden.includes(skinId) && (current.opacity[skinId] ?? defaultOpacity(skinId)) >= OPAQUE_SKIN;
+    /** Radius of the opening in a layer as it stands now. */
+    const openRadius = (id: string, current: ViewerSettings) => windowShape && current.dissection && windowActive() ? tierRadius(tierOf(id), windowShape.radius, { ...current.dissection, opening: windowOpening }) : 0;
+    const foldedCopy = (id: string, mesh: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>) => {
+      let copy = folds.get(id);
+      if (copy) { if (copy.geometry !== mesh.geometry) copy.geometry = mesh.geometry; return copy; }
+      const material = mesh.material.clone();
+      material.userData = {};
+      installSurfaceShading(material);
+      copy = new THREE.Mesh(mesh.geometry, material);
+      copy.userData.structureId = id;
+      copy.matrixAutoUpdate = false;
+      folds.set(id, copy);
+      return copy;
+    };
+    const foldRootFor = (tier: DissectionTierId) => {
+      let root = foldRoots.get(tier);
+      if (!root) { root = new THREE.Group(); root.matrixAutoUpdate = false; scene.add(root); foldRoots.set(tier, root); }
+      return root;
+    };
+    const INNER_OF_SKIN = new THREE.Color('#ecc9bb');
+    // Inside the animal is seen only through the opening: where the part of an outer surface that was taken out would have been, a mark is left, and everything further in is drawn only on that mark.
+    // So a soft part or a measured bone that reaches the skin of a slender simulated limb stays hidden, as it would under whole skin.
+    const openingMarks = new Map<string, THREE.Mesh>();
+    const openingMarkFor = (id: string, mesh: THREE.Mesh, shading: SurfaceShadingUniforms) => {
+      let mark = openingMarks.get(id);
+      if (!mark) {
+        mark = createOpeningMark(mesh.geometry, windowUniforms(shading));
+        openingMarks.set(id, mark);
+        mesh.add(mark);
+      }
+      if (mark.geometry !== mesh.geometry) mark.geometry = mesh.geometry;
+      return mark;
+    };
+    /** Set every layer's opening, and fold back what has been taken out. */
+    const syncWindow = (current: ViewerSettings) => {
+      const shape = windowShape, on = windowActive();
+      const roots = new Map<DissectionTierId, THREE.Matrix4>();
+      for (const root of foldRoots.values()) root.visible = false;
+      for (const [id, mesh] of meshes) {
+        if (!(mesh instanceof THREE.Mesh)) continue;
+        const shading = surfaceShadingOf(mesh.material);
+        if (!shading) continue;
+        const radius = on ? openRadius(id, current) : 0;
+        const tier = tierOf(id);
+        shading.uWinOn.value = radius > 0 ? 1 : 0;
+        const covering = on && !!shape && skinIsOpaque(current);
+        const outer = tier === 'skin';
+        mesh.material.stencilWrite = covering && !outer;
+        mesh.material.stencilFunc = THREE.EqualStencilFunc;
+        mesh.material.stencilRef = 1;
+        if (outer) mesh.renderOrder = covering ? -2 : mesh.renderOrder;
+        const fold = folds.get(id);
+        if (fold) fold.visible = false;
+        const existingMark = openingMarks.get(id);
+        if (existingMark) existingMark.visible = false;
+        if (radius <= 0 || !shape) continue;
+        if (covering && outer) openingMarkFor(id, mesh, shading).visible = true;
+        shading.uWinA.value.copy(shape.a); shading.uWinB.value.copy(shape.b); shading.uWinN.value.copy(shape.normal);
+        shading.uWinDepth.value = shape.depth; shading.uWinFront.value = shape.front; shading.uWinRadius.value = radius; shading.uWinInvert.value = 0;
+        shading.uSolidCut.value = 1;
+        shading.uInner.value.copy(tier === 'skin' ? INNER_OF_SKIN : mesh.material.color).multiplyScalar(tier === 'skin' ? 1 : 0.78); shading.uInnerOn.value = 1;
+        const degrees = current.dissection ? tierFold(tier, { ...current.dissection, opening: windowOpening }) : 0;
+        if (radius <= 0 || degrees <= 0 || !mesh.visible || mesh.layers.mask !== 1) continue;
+        // A folded layer is a second drawing of the same surface, keeping only what was taken out and turned about the top of its opening.
+        const base = DISSECTION_TIERS.find((item) => item.id === tier)!.width * shape.radius;
+        let matrix = roots.get(tier);
+        if (!matrix) { matrix = foldMatrix(shape, base, degrees); roots.set(tier, matrix); const root = foldRootFor(tier); root.matrix.copy(matrix); root.matrixWorldNeedsUpdate = true; root.visible = true; }
+        const copy = foldedCopy(id, mesh);
+        const root = foldRootFor(tier);
+        if (copy.parent !== root) root.add(copy);
+        mesh.updateWorldMatrix(true, false);
+        copy.matrix.copy(mesh.matrixWorld);
+        copy.matrixWorldNeedsUpdate = true;
+        copy.visible = true;
+        copy.material.color.copy(mesh.material.color);
+        copy.material.opacity = mesh.material.opacity;
+        copy.material.transparent = mesh.material.transparent;
+        copy.material.depthWrite = mesh.material.depthWrite;
+        copy.renderOrder = mesh.renderOrder;
+        const own = surfaceShadingOf(copy.material)!;
+        own.uWinOn.value = 1; own.uWinA.value.copy(shape.a); own.uWinB.value.copy(shape.b); own.uWinN.value.copy(shape.normal);
+        own.uWinDepth.value = shape.depth; own.uWinFront.value = shape.front; own.uWinRadius.value = radius; own.uWinInvert.value = 1;
+        own.uWinBack.value.copy(matrix).invert();
+        own.uSolidCut.value = 1;
+        own.uRim.value = shading.uRim.value;
+        own.uCoatOn.value = shading.uCoatOn.value; own.uUnderBelly.value.copy(shading.uUnderBelly.value);
+        own.uInner.value.copy(shading.uInner.value); own.uInnerOn.value = 1;
+      }
+      if (fur) {
+        const radius = on && shape && current.dissection ? tierRadius('skin', shape.radius, { ...current.dissection, opening: windowOpening }) : 0;
+        const opening = radius > 0 && shape ? { a: shape.a, b: shape.b, normal: shape.normal, depth: shape.depth, front: shape.front, radius } : null;
+        for (const layer of [fur, ...fineHair]) layer.setWindow(opening);
+      }
+    };
+    const windowUniforms = (uniforms: SurfaceShadingUniforms) => ({ uWinOn: uniforms.uWinOn, uWinA: uniforms.uWinA, uWinB: uniforms.uWinB, uWinN: uniforms.uWinN, uWinDepth: uniforms.uWinDepth, uWinFront: uniforms.uWinFront, uWinRadius: uniforms.uWinRadius, uWinInvert: uniforms.uWinInvert, uWinBack: uniforms.uWinBack });
+    const shownSurfaces = function* (current: ViewerSettings) {
+      for (const [id, mesh] of meshes) if (mesh instanceof THREE.Mesh && !current.hidden.includes(id) && (current.opacity[id] ?? defaultOpacity(id)) > 0) yield [id, mesh] as const;
+    };
+    /** Say what lies at the place, from the structures themselves, and keep a point of each for its label. */
+    const reportWindow = (placeName: string | null, limbName?: string) => {
+      const current = latest.current.settings;
+      if (!windowShape) { latest.current.onDissectionReport?.(null); return; }
+      const found = findInWindow(windowShape, windowShape.radius, shownSurfaces(current));
+      const items = orderHere(found.map((item) => {
+        const structure = atlas.structures.find((entry) => entry.id === item.id)!;
+        return { id: item.id, name: structure.name, tier: tierOf(item.id), evidence: structure.evidence, depth: item.depth };
+      }));
+      let place = placeName;
+      if (!place) {
+        const middle = new THREE.Vector3().addVectors(windowShape.a, windowShape.b).multiplyScalar(0.5);
+        let nearest = Infinity, bone = '', boneName = '';
+        for (const structure of atlas.structures) {
+          if (!structure.systems.includes('skeletal')) continue;
+          const mesh = meshes.get(structure.id); if (!mesh) continue;
+          const distance = new THREE.Box3().setFromObject(mesh).distanceToPoint(middle);
+          if (distance < nearest) { nearest = distance; bone = structure.id; boneName = structure.name; }
+        }
+        place = placeNameFromBone(bone, boneName);
+        // A limb that was asked for by name keeps that name, with the side it lies on.
+        if (limbName) { const side = /^(Right|Left) /.exec(place)?.[1]; place = side ? `${side} ${limbName}` : limbName[0].toUpperCase() + limbName.slice(1); }
+      }
+      lastFound = items; lastPlace = place;
+      markSeenStale();
+      latest.current.onDissectionReport?.({ place, items });
+    };
+    /** Draw once off screen to learn what can be seen, then say so and place the names. */
+    const lookAtWhatIsSeen = (current: ViewerSettings) => {
+      const entries = [...meshes].flatMap(([id, mesh]) => {
+        if (!(mesh instanceof THREE.Mesh) || !mesh.visible || mesh.layers.mask !== 1 || mesh.material.opacity < 0.5) return [];
+        const uniforms = surfaceShadingOf(mesh.material);
+        if (!uniforms) return [];
+        const own = { id, mesh: mesh as THREE.Mesh, uniforms: windowUniforms(uniforms), masked: mesh.material.stencilWrite };
+        const fold = folds.get(id);
+        return fold?.visible && fold.parent?.visible ? [own, { id, mesh: fold as THREE.Mesh, uniforms: windowUniforms(surfaceShadingOf(fold.material)!), masked: false }] : [own];
+      });
+      const size = new THREE.Vector2();
+      renderer.getSize(size);
+      const seen = idPass.render(renderer, scene, camera, entries, [...openingMarks.values()].filter((mark) => mark.visible), Math.max(1, Math.floor(size.x / 2)), Math.max(1, Math.floor(size.y / 2)));
+      // A structure drawn twice, folded and in place, is one structure: the larger part in view stands for it.
+      const merged = new Map<string, SeenStructure>();
+      for (const item of seen) { const other = merged.get(item.id); merged.set(item.id, other ? { ...(item.pixels > other.pixels ? item : other), pixels: item.pixels + other.pixels } : item); }
+      seenNow = [...merged.values()];
+      seenStale = false;
+      element.dataset.dissection = 'settled';
+      lastLabelSetAt = 0;
+      syncAllLabels(current, performance.now());
+      const seenIds = new Set(merged.keys());
+      const signature = lastFound.filter((item) => seenIds.has(item.id)).map((item) => item.id).join('|') + '@' + lastPlace;
+      if (lastFound.length && signature !== lastSeenIds) {
+        lastSeenIds = signature;
+        latest.current.onDissectionReport?.({ place: lastPlace, items: lastFound.map((item) => ({ ...item, seen: seenIds.has(item.id) })) });
+      }
+    };
+    /** Build the opening from a middle point, an outward direction and a radius, on this animal's own surface. */
+    const makeWindow = (middle: THREE.Vector3, outward: THREE.Vector3, halfAlong: THREE.Vector3, wanted: number, limb: boolean, axis: THREE.Vector3, surfaceMesh?: THREE.Mesh): WindowShape | null => {
+      const skin = surfaceMesh ?? (skinId ? meshes.get(skinId) : undefined);
+      if (!(skin instanceof THREE.Mesh) || !posture) return null;
+      const dorsal = new THREE.Vector3(...posture.up);
+      const normal = outward.clone().normalize();
+      const up = dorsal.clone().addScaledVector(normal, -dorsal.dot(normal));
+      if (up.lengthSq() < 0.04) up.copy(axis).addScaledVector(normal, -axis.dot(normal));
+      up.normalize();
+      const across = new THREE.Vector3().crossVectors(up, normal).normalize();
+      const reach = radius * 3;
+      const at = (point: THREE.Vector3) => throughSurface(skin, point.clone().addScaledVector(normal, reach), normal.clone().negate());
+      const centre = at(middle);
+      if (!centre) return null;
+      const surface = centre.entry.dot(normal);
+      const place = (point: THREE.Vector3) => point.clone().addScaledVector(normal, surface - point.dot(normal));
+      const segment = halfAlong.clone().addScaledVector(normal, -halfAlong.dot(normal));
+      const a = place(middle.clone().sub(segment)), b = place(middle.clone().add(segment));
+      const direction = segment.lengthSq() > 1e-10 ? segment.clone().normalize() : across;
+      // The folded layers turn on a line parallel to the back, so that they stand clear of the animal.
+      const hingeUp = limb ? up.clone().addScaledVector(direction, -up.dot(direction)).normalize() : up;
+      // The opening must lie on the body; find how far the surface reaches towards the back.
+      const mid = place(middle);
+      let top = 0;
+      for (const step of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]) { if (!at(mid.clone().addScaledVector(hingeUp, wanted * step))) break; top = wanted * step; }
+      const size = limb ? wanted : Math.min(wanted, Math.max(top * 0.92, wanted * 0.5));
+      const hinges = new Map<number, number>();
+      const hinge = (open: number) => {
+        let depth = hinges.get(open);
+        if (depth === undefined) { const rim = at(mid.clone().addScaledVector(hingeUp, open)); depth = rim ? surface - rim.entry.dot(normal) : 0; hinges.set(open, depth); }
+        return depth;
+      };
+      const spine = meshes.get('living:bone-t10');
+      const midline = spine ? new THREE.Box3().setFromObject(spine).getCenter(new THREE.Vector3()).dot(normal) : surface - centre.exit / 2;
+      // A limb is opened to about its middle, even where it lies against the trunk; the trunk and head to just short of the midline.
+      const depth = limb ? Math.min(Math.max(centre.exit * 0.56, 0.0015), 0.0055) : Math.max(surface - midline - 0.0012, centre.exit * 0.42);
+      return { a, b, normal, up: hingeUp, along: direction.clone().addScaledVector(hingeUp, -direction.dot(hingeUp)).normalize(), radius: size, depth, front: limb ? 0.006 : radius, hinge };
+    };
+    const bodyFrame = () => {
+      const centre = (id: string) => { const mesh = meshes.get('living:' + id); return mesh ? new THREE.Box3().setFromObject(mesh).getCenter(new THREE.Vector3()) : null; };
+      const dorsal = new THREE.Vector3(...(posture?.up ?? [0, 0, 1]));
+      const head = centre('bone-c2'), tail = centre('bone-l6');
+      const axis = head && tail ? tail.clone().sub(head) : new THREE.Vector3(0, 1, 0);
+      axis.addScaledVector(dorsal, -axis.dot(dorsal)).normalize();
+      const lateral = new THREE.Vector3().crossVectors(axis, dorsal).normalize();
+      const toCamera = camera.position.clone().sub(controls.target);
+      return { centre, dorsal, axis, outward: toCamera.dot(lateral) >= 0 ? lateral : lateral.clone().negate() };
+    };
+    /** Look at the opening a little from above, with room for the folded layers. */
+    const lookAtWindow = (shape: WindowShape, folded: boolean, whole: boolean) => {
+      const middle = new THREE.Vector3().addVectors(shape.a, shape.b).multiplyScalar(0.5).addScaledVector(shape.normal, -Math.min(shape.depth, shape.radius) * 0.4);
+      const span = Math.max(shape.radius, shape.a.distanceTo(shape.b) / 2 + shape.radius * 0.6);
+      const target = middle.clone().addScaledVector(shape.up, folded ? shape.radius * (whole ? 0.72 : 0.3) : 0);
+      const direction = shape.normal.clone().multiplyScalar(0.93).addScaledVector(shape.up, 0.3).normalize();
+      const position = target.clone().addScaledVector(direction, span * (whole ? (folded ? 6.8 : 5.8) : folded ? 5 : 4.6));
+      const from = captureCameraPose(camera, controls.target);
+      const to: CameraPose = { ...from, position: position.toArray() as CameraPose['position'], target: target.toArray() as CameraPose['target'], up: [...(posture?.up ?? [0, 0, 1])] as CameraPose['up'] };
+      if (reducedMotion) setPose(to); else cameraMove = { from, to, t: 0 };
+    };
+    const placeWindow = (place: DissectionPlaceId) => {
+      const definition = DISSECTION_PLACES.find((item) => item.id === place);
+      if (!definition || !dissectable) return;
+      const frame = bodyFrame();
+      const nearer = (id: string) => {
+        const candidates = [frame.centre(id + '-r'), frame.centre(id + '-l')].filter((value): value is THREE.Vector3 => !!value);
+        if (candidates.length) return candidates.sort((left, right) => right.dot(frame.outward) - left.dot(frame.outward))[0];
+        return frame.centre(id);
+      };
+      let middle: THREE.Vector3 | null = null, half = new THREE.Vector3(), wanted = definition.width * 0.012;
+      if (place === 'side') {
+        const front = frame.centre('heart-lv'), back = frame.centre('bladder');
+        if (!front || !back) return;
+        middle = new THREE.Vector3().addVectors(front, back).multiplyScalar(0.5);
+        half = back.clone().sub(front).multiplyScalar(0.46);
+        wanted = 0.0115;
+      } else {
+        const anchors = (place === 'chest' ? ['lung-left', 'lung-r-middle', 'heart-lv'] : place === 'abdomen' ? ['small-intestine', 'caecum', 'colon'] : place === 'neck' ? ['bone-c3', 'bone-c5', 'larynx', 'thyroid'] : definition.bones)
+          .map(nearer).filter((value): value is THREE.Vector3 => !!value);
+        if (!anchors.length) return;
+        middle = anchors.reduce((sum, value) => sum.add(value), new THREE.Vector3()).multiplyScalar(1 / anchors.length);
+        if (definition.limb) {
+          // The named bones on the side nearer the camera, or the one piece if a bone is not paired.
+          const boxOf = (id: string) => {
+            const single = meshes.get('living:' + id);
+            if (single) return new THREE.Box3().setFromObject(single);
+            const pair = (['-r', '-l'] as const).map((end) => new THREE.Box3().setFromObject(meshes.get('living:' + id + end)!));
+            return pair.sort((left, right) => right.getCenter(new THREE.Vector3()).dot(frame.outward) - left.getCenter(new THREE.Vector3()).dot(frame.outward))[0];
+          };
+          const whole = boxOf(definition.bones[0]).union(boxOf(definition.bones[definition.bones.length - 1])), size = whole.getSize(new THREE.Vector3());
+          middle = whole.getCenter(new THREE.Vector3());
+          // Along the longest extent of the limb, seen from the side.
+          const extents: [THREE.Vector3, number][] = [[new THREE.Vector3(1, 0, 0), size.x], [new THREE.Vector3(0, 1, 0), size.y], [new THREE.Vector3(0, 0, 1), size.z]];
+          const flat = extents.filter(([axis]) => Math.abs(axis.dot(frame.outward)) < 0.7).sort((left, right) => right[1] - left[1])[0];
+          half = flat[0].clone().multiplyScalar(Math.min(flat[1] * 0.34, wanted * 3));
+          // A curved part, whose bounds lie outside it, is opened at its own point nearest their middle.
+          const curved = definition.id === 'tail' ? meshes.get('living:' + definition.bones[0]) : undefined;
+          if (curved instanceof THREE.Mesh) {
+            const position = curved.geometry.getAttribute('position'), point = new THREE.Vector3(), best = new THREE.Vector3();
+            let nearest = Infinity;
+            curved.updateWorldMatrix(true, false);
+            for (let index = 0; index < position.count; index++) {
+              point.fromBufferAttribute(position, index).applyMatrix4(curved.matrixWorld);
+              const distance = point.distanceToSquared(middle);
+              if (distance < nearest) { nearest = distance; best.copy(point); }
+            }
+            middle = best;
+            half = new THREE.Vector3();
+          }
+        }
+      }
+      if (!middle) return;
+      const surface = definition.surface ? meshes.get('living:' + definition.surface) : undefined;
+      windowShape = makeWindow(middle, frame.outward, half, wanted, !!definition.limb, frame.axis, surface instanceof THREE.Mesh ? surface : undefined);
+      if (!windowShape) return;
+      syncWindow(latest.current.settings);
+      lookAtWindow(windowShape, !!latest.current.settings.dissection?.folded, place === 'side');
+      reportWindow(definition.limb ? null : definition.name, definition.limb ? definition.name.toLowerCase() : undefined);
+      dirty = true; shadowDirty = true;
+    };
+    /** Open at the point clicked on the outside of the animal. */
+    const placeWindowAt = (point: THREE.Vector3, faceNormal: THREE.Vector3, surface: THREE.Mesh) => {
+      const frame = bodyFrame();
+      const toCamera = camera.position.clone().sub(point).normalize();
+      const outward = faceNormal.clone().multiplyScalar(0.55).addScaledVector(toCamera, 0.45).normalize();
+      const through = throughSurface(surface, point.clone().addScaledVector(outward, radius), outward.clone().negate());
+      const slender = !!through && through.exit < 0.012;
+      // An opening is no wider than the part it is made in, so that a paw is not opened as if it were the flank.
+      const wanted = Math.max(slender ? 0.0018 : 0.004, Math.min(slender && through ? through.exit * 1.1 : 0.012, camera.position.distanceTo(point) * 0.1));
+      const shape = makeWindow(point, outward, new THREE.Vector3(), wanted, slender, frame.axis, surface);
+      if (!shape) return;
+      windowShape = shape;
+      syncWindow(latest.current.settings);
+      reportWindow(null);
+      dirty = true; shadowDirty = true;
+    };
     const defaultOpacity =(id: string) => defaultStructureOpacity(atlas.structures.find((structure) => structure.id === id)!);
     const apply = () => {
       const current = latest.current.settings;
@@ -297,6 +630,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         const shading = surfaceShadingOf(mesh.material);
         if (shading) {
           shading.uRim.value = id === current.selected ? 1 : 0;
+          shading.uSolidCut.value = current.clipAxis !== 'off' && declaresEvidence(atlas) ? 1 : 0;
           // A translucent envelope fades where it faces the camera and keeps its silhouette.
           shading.uGhost.value = opacity < 1 && structure.systems.includes('integumentary') ? SURFACE_PRESENTATION.ghostStrength : 0;
         }
@@ -305,18 +639,35 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       // Covered regions leave the rendered and picked layer only, so that overlays and Fit visible still treat them as shown.
       const skinMesh = skinId ? meshes.get(skinId) : undefined;
       const skinOpacity = skinId ? current.opacity[skinId] ?? defaultOpacity(skinId) : 0;
-      for (const [id, mesh] of meshes) mesh.layers.set(coveredBySkin(id, skinId, !!skinMesh?.visible, skinOpacity, current.clipAxis, atlas.structures.find((item) => item.id === id)?.exterior) ? 1 : 0);
+      const coverClip = windowActive() ? 'opened' : current.clipAxis;
+      for (const [id, mesh] of meshes) mesh.layers.set(coveredBySkin(id, skinId, !!skinMesh?.visible, skinOpacity, coverClip, atlas.structures.find((item) => item.id === id)?.exterior) ? 1 : 0);
       if (fur) {
         const coat = current.coat ?? 'agouti';
-        fur.mesh.visible = coat !== 'none' && !!skinMesh?.visible && skinOpacity >= OPAQUE_SKIN;
-        if (coat !== 'none') {
-          fur.setCoat(coat);
-          if (fur.mesh.visible && skinMesh instanceof THREE.Mesh) skinMesh.material.color.set(COATS[coat].under);
+        const shown = coat !== 'none' && !!skinMesh?.visible && skinOpacity >= OPAQUE_SKIN;
+        for (const layer of [fur, ...fineHair]) {
+          layer.mesh.visible = shown;
+          if (coat !== 'none') layer.setCoat(coat);
+          layer.setClipping(current.clipAxis === 'off' ? [] : [clip]);
         }
-        fur.setClipping(current.clipAxis === 'off' ? [] : [clip]);
+        const skinShading = skinMesh instanceof THREE.Mesh ? surfaceShadingOf(skinMesh.material) : null;
+        if (skinShading) skinShading.uCoatOn.value = shown ? 1 : 0;
+        if (coat !== 'none' && shown) {
+          if (skinMesh instanceof THREE.Mesh) skinMesh.material.color.set(COATS[coat].under);
+          skinShading?.uUnderBelly.value.set(COATS[coat].underBelly);
+          // Ears, tail, paws and nose take the skin colour that goes with the coat, unless a colour has been chosen for them.
+          if ((current.colourScheme ?? 'tissue') === 'tissue') for (const [id, colour] of Object.entries(COATS[coat].parts)) {
+            const part = meshes.get(id);
+            if (part instanceof THREE.Mesh && !current.colors[id]) part.material.color.set(colour);
+          }
+        }
       }
       if (current.clipAxis !== 'off') clip.copy(createDisplayClipPlane(current.clipAxis, current.clipPosition, radius));
       applySurfaceDisplay();
+      if (dissectable) {
+        syncWindow(current);
+        const wanted = JSON.stringify([current.hidden, current.opacity, current.dissection, current.colors]);
+        if (wanted !== lastWindowSettings) { lastWindowSettings = wanted; markSeenStale(); }
+      }
       syncSectionImage(current);
       dirty = true; shadowDirty = true;
     };
@@ -345,6 +696,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     }
     const announcePose = () => {
       dirty = true;
+      if (dissectable) markSeenStale();
       if (!syncing && loaded) latest.current.onCameraChange?.(captureCameraPose(camera, controls.target));
     };
     controls.addEventListener('change', announcePose);
@@ -423,11 +775,22 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         dirty = true;
         return true;
       },
+      bodyCentrePercent(axis) {
+        const body = loaded && posture?.frameOnBody && skinId ? meshes.get(skinId) : undefined;
+        if (!body) return null;
+        const centre = new THREE.Box3().setFromObject(body).getCenter(new THREE.Vector3());
+        return Math.round(clipPercentAt(centre[axis], radius) * 10) / 10;
+      },
+      placeDissection(place) {
+        if (loaded) placeWindow(place);
+      },
       viewCutFace(axis) {
         if (!loaded || !posture) return;
         controls.target.set(0, 0, 0);
+        const framedBody = posture.frameOnBody && skinId ? meshes.get(skinId) : undefined;
+        if (framedBody) new THREE.Box3().setFromObject(framedBody).getCenter(controls.target);
         camera.up.set(...posture.up);
-        camera.position.copy(cutFaceView(axis)).multiplyScalar(radius * posture.distance);
+        camera.position.copy(cutFaceView(axis)).multiplyScalar(radius * posture.distance).add(controls.target);
         controls.update(); dirty = true;
       },
       view(axis) {
@@ -470,7 +833,10 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         if (!structure || meshes.has(structure.id)) throw new Error('Reference region identity is missing or duplicated.');
         const { previousGeometry } = recenterRegionGeometry(object); previousGeometry.dispose();
         const region = prepareRegionMaterial(object);
-        if (structure.id === skinId && region.material instanceof THREE.MeshPhysicalMaterial) Object.assign(region.material, SKIN_PRESENTATION, { sheenColor: new THREE.Color(SKIN_PRESENTATION.sheenColor) });
+        if (structure.id === skinId && region.material instanceof THREE.MeshPhysicalMaterial) {
+          Object.assign(region.material, SKIN_PRESENTATION, { sheenColor: new THREE.Color(SKIN_PRESENTATION.sheenColor) });
+          if (region.geometry.getAttribute('_coat')) region.material.defines = { ...region.material.defines, USE_COAT: 1 };
+        }
         region.userData.structureId = structure.id;
         meshes.set(structure.id, region);
         region.updateWorldMatrix(true, false);
@@ -498,9 +864,33 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       controls.maxDistance = radius * 12;
       if (posture) { shadow = createContactShadow(bounds, new THREE.Vector3(...posture.up)); if (shadow) scene.add(shadow.group); }
       controls.addEventListener('start', () => { interacting = true; });
-      controls.addEventListener('end', () => { interacting = false; if (fur && fur.detail() < 1) { fur.setDetail(1); dirty = true; } });
+      controls.addEventListener('end', () => { interacting = false; if (fur && fur.detail() < 1) { for (const layer of [fur, ...fineHair]) layer.setDetail(1); dirty = true; } });
+      // Zooming on to the visible skin of a standing animal hands over to the scale journey. Everything below this point is representative and comes from no reference.
+      const surfaceRay = new THREE.Raycaster();
+      renderer.domElement.addEventListener('wheel', (event) => {
+        // With the layers open, zooming right on to a structure goes on to the cells of its tissue.
+        if (event.deltaY < 0 && windowActive() && !seenStale && camera.position.distanceTo(controls.target) < radius * 0.12) {
+          const inMiddle = idPass.at(0.5, 0.5);
+          if (inMiddle && inMiddle !== skinId) latest.current.onZoomToStructure?.(inMiddle);
+          return;
+        }
+        const body = skinId ? meshes.get(skinId) : undefined;
+        const onSkin = latest.current.onZoomToSkin;
+        if (event.deltaY >= 0 || !posture || !onSkin || !(body instanceof THREE.Mesh) || !body.visible || body.layers.mask !== 1 || latest.current.settings.clipAxis !== 'off' || windowActive()) return;
+        surfaceRay.set(camera.position, controls.target.clone().sub(camera.position).normalize());
+        surfaceRay.layers.mask = 1;
+        const nearest = surfaceRay.intersectObject(body, false)[0];
+        if (nearest && nearest.distance < radius * 0.14) onSkin();
+      }, { passive: true });
       const skinForCoat = skinId ? meshes.get(skinId) : undefined;
-      if (posture && skinForCoat instanceof THREE.Mesh) fur = createFur(skinForCoat, new THREE.Vector3(...posture.up));
+      if (posture && skinForCoat instanceof THREE.Mesh) {
+        fur = createFur(skinForCoat);
+        if (fur) for (const [id, mesh] of meshes) {
+          if (id === skinId || !(mesh instanceof THREE.Mesh) || !hasFurAttribute(mesh.geometry)) continue;
+          const layer = createFur(mesh, fineHairOptions(id));
+          if (layer) fineHair.push(layer);
+        }
+      }
       display.visible = true;
       loaded = true;
       if (latest.current.cameraPose) setPose(latest.current.cameraPose);
@@ -535,8 +925,22 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       const candidates = [...meshes.values()].filter((mesh) => mesh.visible && mesh.material.opacity > 0.15);
       raycaster.near = camera.near; raycaster.far = camera.far;
       const activeClip = latest.current.settings.clipAxis === 'off' ? null : clip;
-      const hits: THREE.Intersection[] = raycaster.intersectObjects(candidates.filter((region) => region instanceof THREE.Mesh), false)
-        .filter((hit) => !activeClip || isPointRetainedByClipPlane(hit.point, activeClip));
+      const opened = windowActive() ? windowShape : null;
+      // With the layers open, what was seen at that point is already known, so the click needs no search unless it opens a new place.
+      if (opened && !seenStale && !cameraMove) {
+        const id = idPass.at((event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height);
+        if (id && tierOf(id) !== 'skin') { latest.current.onSelect(id); return; }
+        if (!id) return;
+      }
+      const shownFolds = opened ? [...folds.values()].filter((fold) => fold.visible && fold.parent?.visible) : [];
+      const hits: THREE.Intersection[] = raycaster.intersectObjects([...candidates.filter((region) => region instanceof THREE.Mesh), ...shownFolds], false)
+        .filter((hit) => !activeClip || isPointRetainedByClipPlane(hit.point, activeClip))
+        .filter((hit) => {
+          if (!opened) return true;
+          const id = hit.object.userData.structureId as string, current = latest.current.settings;
+          if (folds.get(id) === hit.object) return insideWindow(opened, hit.point.clone().applyMatrix4(hit.object.parent!.matrix.clone().invert()), openRadius(id, current));
+          return !insideWindow(opened, hit.point, openRadius(id, current));
+        });
       const threshold = linePickingThreshold(camera, controls.target, rect.height);
       if (threshold !== null) {
         raycaster.params.Line.threshold = threshold;
@@ -547,6 +951,11 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       }
       hits.sort((left, right) => left.distance - right.distance);
       const hit = hits[0];
+      // On the outside of the animal a click opens the layers there; on anything inside it names what was clicked.
+      if (hit && opened && hit.face && hit.object instanceof THREE.Mesh && folds.get(hit.object.userData.structureId) !== hit.object && tierOf(hit.object.userData.structureId) === 'skin') {
+        placeWindowAt(hit.point, hit.face.normal.clone().transformDirection(hit.object.matrixWorld), hit.object);
+        return;
+      }
       if (hit) latest.current.onSelect(hit.object.userData.structureId);
     };
     const keydown = (event: KeyboardEvent) => {
@@ -558,6 +967,14 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       else if (command.kind === 'zoom') handle.current?.zoom(command.factor);
       else handle.current?.pan(command.dx, command.dy);
     };
+    const hover = (event: PointerEvent) => {
+      if (!windowActive() || seenStale || event.buttons) { setHovered((value) => value ? null : value); return; }
+      const rect = renderer.domElement.getBoundingClientRect();
+      const id = idPass.at((event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height);
+      const structure = id ? atlas.structures.find((item) => item.id === id) : undefined;
+      setHovered(structure ? { x: event.clientX - rect.left, y: event.clientY - rect.top, name: labelWithEvidence(structure) } : null);
+    };
+    renderer.domElement.addEventListener('pointermove', hover);
     renderer.domElement.addEventListener('pointerdown', down);
     renderer.domElement.addEventListener('pointerup', up);
     renderer.domElement.addEventListener('keydown', keydown);
@@ -572,10 +989,30 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     observer.observe(element);
     const loop = (timestamp: number) => {
       frame = requestAnimationFrame(loop);
-      const delta = Math.min(Math.max((timestamp - lastFrame) / 1000, 0), 0.1);
+      const realDelta = Math.max((timestamp - lastFrame) / 1000, 0);
+      const delta = Math.min(realDelta, 0.1);
       lastFrame = timestamp;
       const current = latest.current.settings;
       if (controls.autoRotate !== !!current.autoRotate) controls.autoRotate = !!current.autoRotate;
+      if (dissectable && loaded) {
+        const wantedOpening = current.dissection?.opening ?? 0;
+        if (wantedOpening > 0 && !windowShape) placeWindow('side');
+        if (windowOpening !== wantedOpening) {
+          const reach = reducedMotion ? 1 : realDelta * 0.5;
+          const wasActive = windowActive();
+          windowOpening = Math.abs(wantedOpening - windowOpening) <= reach ? wantedOpening : windowOpening + Math.sign(wantedOpening - windowOpening) * reach;
+          if (windowActive() !== wasActive) apply(); else syncWindow(current);
+          dirty = true; shadowDirty = true; markSeenStale();
+        }
+        if (cameraMove) {
+          cameraMove.t = Math.min(1, cameraMove.t + realDelta / 0.9);
+          const ease = cameraMove.t * cameraMove.t * (3 - 2 * cameraMove.t);
+          const blend = (from: readonly number[], to: readonly number[]) => from.map((value, index) => value + (to[index] - value) * ease);
+          setPose({ ...cameraMove.to, position: blend(cameraMove.from.position, cameraMove.to.position) as CameraPose['position'], target: blend(cameraMove.from.target, cameraMove.to.target) as CameraPose['target'] });
+          markSeenStale();
+          if (cameraMove.t >= 1) { cameraMove = null; announcePose(); }
+        }
+      }
       if (controls.autoRotate && loaded && !document.hidden) {
         // Automatic rotation does not report poses; the last pose is announced when the user takes over.
         syncing = true; controls.update(delta); syncing = false; dirty = true;
@@ -610,15 +1047,19 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         const scale = !current.living ? 1 : cardiacRegions.has(id) ? physiology.cardiacScale : respiratoryRegions.has(id) ? physiology.respiratoryScale : 1;
         if (mesh.scale.x !== scale) { mesh.scale.setScalar(scale); dirty = true; }
       }
+      if (windowActive() && seenStale && !dirty && !cameraMove && !interacting && performance.now() - seenChangedAt > 240 && !document.hidden) lookAtWhatIsSeen(current);
       if (dirty && !document.hidden) {
         if (shadow && shadowDirty) {
           const sectionVisible = sectionPlane?.mesh.visible ?? false;
           const coatVisible = fur?.mesh.visible ?? false;
           if (sectionPlane) sectionPlane.mesh.visible = false;
-          if (fur) fur.mesh.visible = false;
+          for (const layer of fur ? [fur, ...fineHair] : []) layer.mesh.visible = false;
+          const foldedShown = [...foldRoots.values(), ...openingMarks.values()].filter((item) => item.visible);
+          for (const item of foldedShown) item.visible = false;
           shadow.render(renderer, scene, current.clipAxis === 'off' ? [] : [clip]);
+          for (const item of foldedShown) item.visible = true;
           if (sectionPlane) sectionPlane.mesh.visible = sectionVisible;
-          if (fur) fur.mesh.visible = coatVisible;
+          for (const layer of fur ? [fur, ...fineHair] : []) layer.mesh.visible = coatVisible;
           shadowDirty = false;
         }
         // A machine that struggles draws fewer hairs while the view moves, and the full coat once it stops.
@@ -627,15 +1068,17 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
           const now = performance.now();
           if (moving && lastFrameAt && now - lastFrameAt < 500) {
             slowFrames = now - lastFrameAt > 50 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
-            if (slowFrames >= 3) { fur.setDetail(fur.detail() * 0.6); slowFrames = 0; }
+            if (slowFrames >= 3) { const detail = fur.detail() * 0.6; for (const layer of [fur, ...fineHair]) layer.setDetail(detail); slowFrames = 0; }
           }
           lastFrameAt = now;
         }
         renderer.render(scene, camera);
         dirty = false;
-        syncAllLabels(current, timestamp);
+        if (dissectable && windowActive() && seenStale) { element.dataset.dissection = 'moving'; if (lastLabelSet) { lastLabelSet = ''; setLabelSet({ labels: [], width: 0, height: 0 }); } }
+        else syncAllLabels(current, timestamp);
         const selected = meshes.get(current.selected ?? '');
-        if (selected?.visible && current.labels && !current.allLabels && !(skinCovers(current) && current.selected !== skinId)) {
+        // On a model standing as a whole animal, the body surface is the animal itself, and a label at its middle would only cover it.
+        if (selected?.visible && current.labels && !current.allLabels && !(skinCovers(current) && current.selected !== skinId) && !(posture && current.selected === skinId)) {
           const anchor = regionLabelCenter(selected);
           if (!anchor) { setLabel(null); lastLabel = ""; return; }
           const point = anchor.project(camera);
@@ -658,6 +1101,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       cancelAnimationFrame(frame);
       observer.disconnect();
       controls.dispose();
+      idPass.dispose();
+      renderer.domElement.removeEventListener('pointermove', hover);
       renderer.domElement.removeEventListener('pointerdown', down);
       renderer.domElement.removeEventListener('pointerup', up);
       renderer.domElement.removeEventListener('keydown', keydown);
@@ -684,8 +1129,11 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       <svg className="label-leaders" width={labelSet.width} height={labelSet.height} aria-hidden="true">
         {labelSet.labels.map((item) => { const end = leaderEnd(item); return <line key={item.id} x1={item.anchorX} y1={item.anchorY} x2={end.x} y2={end.y} />; })}
       </svg>
-      {labelSet.labels.map((item) => <div key={item.id} className={`model-label model-label--placed ${item.id === settings.selected ? 'is-selected' : ''}`}
+      {labelSet.labels.map((item) => settings.dissection
+        ? <button type="button" key={item.id} className={`model-label--plate ${item.id === settings.selected ? 'is-selected' : ''}`} style={{ left: item.left, top: item.top, width: item.width, height: item.height }} onClick={() => onSelect(item.id)}>{item.name}</button>
+        : <div key={item.id} className={`model-label model-label--placed ${item.id === settings.selected ? 'is-selected' : ''}`}
         style={{ left: item.left, top: item.top, width: item.width, height: item.height }}>{item.name}</div>)}
     </>}
+    {hovered && !status && <div className="model-label model-label--hover" style={{ left: hovered.x, top: hovered.y }}>{hovered.name}</div>}
   </div>;
 }

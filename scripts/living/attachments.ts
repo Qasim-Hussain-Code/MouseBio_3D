@@ -4,8 +4,10 @@
  * All coordinates are source voxels of 0.1 mm, in the stance frame.
  */
 import { vertexNormals, type PostureField } from './posture';
+import { route } from './internal';
 import { add, applyRigid, cross, dot, length, rotate, scale, sub, unit, type RigidTransform, type Vec3 } from './rig';
 import { mergeSurfaces, tube } from './extract';
+import { curve } from './internal';
 import { surfaceNets, type Surface } from './surface-nets';
 import { smoothField, voxelIndex, type Grid } from './volume';
 import type { AttachmentPart } from './structures';
@@ -58,16 +60,17 @@ function tinted(surface: Surface, tint: (p: Vec3, n: Vec3) => Vec3): Surface {
   return { ...surface, colors };
 }
 
-/** Lids round the visible part of the globe, slightly almond-shaped. */
+/** Lids on the visible part of the globe: an almond-shaped line that lies on its surface. */
 function eyelid(centre: Vec3, outward: Vec3, radius: number): Surface {
   const along = unit(sub([0, 1, 0], scale(outward, dot([0, 1, 0], outward))));
   const across = unit(cross(outward, along));
-  const middle = add(centre, scale(outward, radius * 0.42));
   const points: Vec3[] = [], radii: number[] = [];
-  for (let i = 0; i <= 36; i++) {
-    const angle = 2 * Math.PI * i / 36;
-    points.push(add(add(middle, scale(along, Math.cos(angle) * radius * 0.98)), scale(across, Math.sin(angle) * radius * 0.84)));
-    radii.push(2.1);
+  for (let i = 0; i <= 48; i++) {
+    const angle = 2 * Math.PI * i / 48;
+    const a = Math.cos(angle) * radius * 0.92, b = Math.sin(angle) * radius * 0.7 * (1 - 0.28 * Math.cos(angle) ** 2);
+    const height = Math.sqrt(Math.max(0, radius * radius - a * a - b * b));
+    points.push(add(add(add(centre, scale(along, a)), scale(across, b)), scale(outward, height)));
+    radii.push(1.25);
   }
   return tube(points, radii, 8);
 }
@@ -123,8 +126,21 @@ function digits(frame: PawFrame, layout: readonly (readonly [number, number, num
   });
 }
 
+/** An artery and vein along each digit from the middle of the paw, with a nerve beside them, on the side of the sole, as simple courses. */
+function digitalRoutes(frame: PawFrame, digitList: readonly Digit[], from: number): { arteries: Surface[]; veins: Surface[]; nerves: Surface[] } {
+  const along = (digit: Digit, across: number, drop: number): Vec3[] => {
+    const shift = (p: Vec3, reach: number) => add(add(p, scale(frame.lateral, across * reach)), scale(frame.up, -drop * reach));
+    return [inPaw(frame, from, across * 2, 4), inPaw(frame, (from + dot(sub(digit.base, frame.origin), frame.forward)) / 2, dot(sub(digit.base, frame.origin), frame.lateral) * 0.6, 4), shift(digit.base, 1), shift(digit.knuckle, 1), shift(digit.tip, 0.7)];
+  };
+  return {
+    arteries: digitList.map((digit) => route(along(digit, -1.2, 1), 0.5, 0.22, 5)),
+    veins: digitList.map((digit) => route(along(digit, 0.3, 1.2), 0.55, 0.25, 5)),
+    nerves: digitList.map((digit) => route(along(digit, 1.5, 1), 0.42, 0.2, 5)),
+  };
+}
+
 /** The back of the fore paw and four digits with a small pollex, after Cook figure 6. */
-function forepaw(wrist: Vec3, side: -1 | 1, ground: number): { skin: Surface; claws: Surface[] } {
+function forepaw(wrist: Vec3, side: -1 | 1, ground: number): { skin: Surface; claws: Surface[]; routes: ReturnType<typeof digitalRoutes> } {
   // Spacing and lengths follow the digit bones in the CT of the scanned paw, which lay palm down as this one does.
   const frame = pawFrame(wrist, side, ground, 0);
   const digitList = digits(frame, [[-15, 24, 28, -3], [-5, 26, 40, -1], [5, 26, 39, 1], [15, 22, 24, 3]]);
@@ -144,11 +160,11 @@ function forepaw(wrist: Vec3, side: -1 | 1, ground: number): { skin: Surface; cl
   });
   const claws = digitList.map((digit) => clawOn(digit.tip, unit(sub(digit.tip, digit.knuckle)), frame.up, 2.4, 11));
   claws.push(sphere(inPaw(frame, 20, -18, 3), [1.8, 2.2, 0.7], 8, 12));
-  return { skin, claws };
+  return { skin, claws, routes: digitalRoutes(frame, digitList, -6) };
 }
 
 /** The hind paw is long and narrow with five digits, after Cook figure 7. The heel sits under the ankle. */
-function hindpaw(ankle: Vec3, side: -1 | 1, ground: number): { skin: Surface; claws: Surface[]; bones: Surface[] } {
+function hindpaw(ankle: Vec3, side: -1 | 1, ground: number): { skin: Surface; claws: Surface[]; bones: Surface[]; heel: Vec3; routes: ReturnType<typeof digitalRoutes> } {
   const frame = pawFrame(ankle, side, ground);
   frame.origin = [ankle[0], ankle[1], ground + 7];
   const digitList = digits(frame, [[-14, 62, 24, -7], [-6.5, 72, 34, -2], [0, 74, 37, 0], [6.5, 72, 34, 2], [14, 58, 28, 7]]);
@@ -180,7 +196,7 @@ function hindpaw(ankle: Vec3, side: -1 | 1, ground: number): { skin: Surface; cl
       return shafts;
     }),
   ];
-  return { skin, claws: digitList.map((digit) => clawOn(digit.tip, unit(sub(digit.tip, digit.knuckle)), frame.up, 2.6, 13)), bones };
+  return { skin, claws: digitList.map((digit) => clawOn(digit.tip, unit(sub(digit.tip, digit.knuckle)), frame.up, 2.6, 13)), bones, heel: inPaw(frame, -20, 0, 8), routes: digitalRoutes(frame, digitList, -10) };
 }
 
 /** A claw curving down from the digit tip. */
@@ -196,16 +212,18 @@ function clawOn(tip: Vec3, forward: Vec3, up: Vec3, radius: number, len: number)
 
 /**
  * A thin cupped sheet, after Cook figures 4 and 5, built from a polar grid so that its rim is smooth.
- * The outline is a rounded oval narrowing to the root, the middle is a shallow bowl with a fold near the base,
- * and the sheet thins towards the rim.
+ * The outline is a rounded oval narrowing to the root, and the middle is a shallow bowl. As in figure 5, a dark opening
+ * lies low on the front of the bowl with a ridge behind it, the rim rolls a little forwards, and the sheet thins towards the rim.
  */
 function pinna(root: Vec3, side: -1 | 1): Surface {
-  const out = unit([side * 0.55, 0.22, 0.8]);     // from the root towards the rim, up and outwards
-  const face = unit([side * 0.5, -0.85, 0.05]);   // the concave side faces forwards and outwards
+  const out = unit([side * 0.5, 0.2, 0.84]);      // from the root towards the rim, up and outwards
+  const face = unit([side * 0.62, -0.78, 0.05]);  // the concave side faces forwards and outwards
   const across = unit(cross(out, face));
   const faceTrue = unit(cross(across, out));
-  const width = 84, height = 96, cup = 20;
-  const rings = 26, segments = 72;
+  // Which way along `across` is towards the nose differs between the two ears.
+  const front = dot(across, [0, -1, 0]) >= 0 ? 1 : -1;
+  const width = 78, height = 88, cup = 19;
+  const rings = 30, segments = 76;
   const centre = add(root, scale(out, height * 0.46));
   const outline = (theta: number) => {
     // Rounded above, narrowing towards the root below.
@@ -213,60 +231,62 @@ function pinna(root: Vec3, side: -1 | 1): Surface {
     const narrow = v < 0 ? 1 - 0.42 * v * v : 1;
     return [u * width * 0.5 * narrow, v * height * (v < 0 ? 0.46 : 0.54)] as const;
   };
-  const sheet = (r: number, u: number, v: number) => {
-    const fold = 2.6 * Math.exp(-(((u - 6) / 8) ** 2)) * Math.max(0, 1 - Math.abs(v + 20) / 30);
-    const antihelix = 1.1 * Math.exp(-(((r - 0.82) / 0.1) ** 2));
-    return cup * (1 - r * r) - cup * 0.3 + fold + antihelix;
+  const opening = (u: number, v: number) => Math.exp(-(((front * u - 8) / 8) ** 2) - (((v + 24) / 11) ** 2));
+  const funnel = (u: number, v: number) => Math.exp(-(((front * u - 5) / 24) ** 2) - (((v + 12) / 28) ** 2));
+  const sheet = (r: number, u: number, v: number, theta: number) => {
+    const ridge = 2.4 * Math.exp(-(((front * u + 13) / 8) ** 2)) * Math.max(0, 1 - Math.abs(v + 16) / 26);
+    const rim = 1.3 * Math.exp(-(((r - 0.88) / 0.09) ** 2));
+    const wave = 0.8 * Math.sin(theta * 3 + 1) * r * r * r;
+    return cup * (1 - r * r) - cup * 0.28 + 8 * opening(u, v) - ridge - rim + wave;
   };
   const positions: number[] = [];
   const indices: number[] = [];
+  const shades: number[] = [];
   const point = (r: number, theta: number, offset: number): Vec3 => {
     const [ou, ov] = outline(theta);
     const u = ou * r, v = ov * r;
-    return add(add(add(centre, scale(across, u)), scale(out, v)), scale(faceTrue, -sheet(r, u, v) + offset));
+    return add(add(add(centre, scale(across, u)), scale(out, v)), scale(faceTrue, -sheet(r, u, v, theta) + offset));
   };
   const thickness = (r: number) => 0.55 + 1.05 * (1 - r) ** 0.7;
-  // Inner face, outer face, each from the centre point outwards.
+  const shadeOf = (r: number, theta: number, inner: boolean) => {
+    const [ou, ov] = outline(theta);
+    const vein = 1 - 0.1 * Math.max(0, Math.sin(theta * 11 + r * 7)) ** 8 * r;
+    if (!inner) return 0.74 * vein;
+    // Darker into the bowl and pale at the rim, where light comes through the thin sheet.
+    return (0.82 + 0.26 * r * r) * (1 - 0.42 * funnel(ou * r, ov * r)) * (1 - 0.92 * opening(ou * r, ov * r)) * vein;
+  };
+  // Each face runs from the centre outwards. Windings are chosen so that normals point away from the sheet.
   const pushFace = (sign: 1 | -1) => {
     const base = positions.length / 3;
     const c = point(0, 0, sign * thickness(0));
     positions.push(c[0], c[1], c[2]);
+    shades.push(shadeOf(0, 0, sign > 0));
     for (let ring = 1; ring <= rings; ring++) for (let s = 0; s < segments; s++) {
       const r = ring / rings, theta = 2 * Math.PI * s / segments;
       const p = point(r, theta, sign * thickness(r));
       positions.push(p[0], p[1], p[2]);
+      shades.push(shadeOf(r, theta, sign > 0));
     }
     const at = (ring: number, s: number) => base + 1 + (ring - 1) * segments + (s % segments);
     for (let s = 0; s < segments; s++) {
-      if (sign > 0) indices.push(base, at(1, s + 1), at(1, s)); else indices.push(base, at(1, s), at(1, s + 1));
+      if (sign > 0) indices.push(base, at(1, s), at(1, s + 1)); else indices.push(base, at(1, s + 1), at(1, s));
       for (let ring = 1; ring < rings; ring++) {
         const a = at(ring, s), b = at(ring, s + 1), c2 = at(ring + 1, s), d = at(ring + 1, s + 1);
-        if (sign > 0) indices.push(a, b, c2, b, d, c2); else indices.push(a, c2, b, b, c2, d);
+        if (sign > 0) indices.push(a, c2, b, b, c2, d); else indices.push(a, b, c2, b, d, c2);
       }
     }
     return (s: number) => at(rings, s);
   };
-  const front = pushFace(-1), back = pushFace(1);
-  for (let s = 0; s < segments; s++) indices.push(front(s), front(s + 1), back(s), front(s + 1), back(s + 1), back(s));
+  const concave = pushFace(1), convex = pushFace(-1);
+  for (let s = 0; s < segments; s++) indices.push(concave(s), convex(s), concave(s + 1), concave(s + 1), convex(s), convex(s + 1));
   const positionArray = Float32Array.from(positions), indexArray = Uint32Array.from(indices);
   const colors = new Float32Array(positionArray.length);
-  const faceVertices = (positionArray.length / 3) / 2;
-  for (let i = 0; i < positionArray.length / 3; i++) {
-    const inner = i < faceVertices;
-    const local = i % faceVertices;
-    const ring = local === 0 ? 0 : Math.floor((local - 1) / segments) + 1;
-    const s = local === 0 ? 0 : (local - 1) % segments;
-    const r = ring / rings, theta = 2 * Math.PI * s / segments;
-    const vein = 1 - 0.1 * Math.max(0, Math.sin(theta * 11 + r * 7)) ** 8 * r;
-    const concha = 1 - 0.34 * Math.exp(-(((r - 0.1) / 0.32) ** 2));
-    const shade = (inner ? concha : 0.66) * vein;
-    colors[3 * i] = shade; colors[3 * i + 1] = shade * (inner ? 0.97 : 0.9); colors[3 * i + 2] = shade * (inner ? 0.97 : 0.88);
-  }
+  shades.forEach((shade, i) => { colors[3 * i] = shade; colors[3 * i + 1] = shade * 0.96; colors[3 * i + 2] = shade * 0.95; });
   return { positions: positionArray, normals: vertexNormals(positionArray, indexArray), indices: indexArray, colors };
 }
 
 /** The tail runs along the caudal vertebrae measured in the CT, then falls to the ground and curves. */
-function buildTail(landmarks: Landmarks, ground: number, totalLength: number, pelvis: RigidTransform): { skin: Surface; vertebrae: Surface } {
+function buildTail(landmarks: Landmarks, ground: number, totalLength: number, pelvis: RigidTransform): { skin: Surface; vertebrae: Surface; vessels: Surface } {
   const points: Vec3[] = [], radii: number[] = [];
   const ringStep = 3.2;
   const measured: Vec3[] = [];
@@ -289,8 +309,8 @@ function buildTail(landmarks: Landmarks, ground: number, totalLength: number, pe
     p = add(p, scale(dir, ringStep / 2));
     if (p[2] < rest) p = [p[0], p[1], rest];
   }
-  // Hummel et al. count 27 to 30 caudal vertebrae. About eight lie in the CT; the others are simple shafts along the tail.
-  const count = 20;
+  // Hummel et al. count 27 to 30 caudal vertebrae. Five lie in the CT; the others are simple shafts along the tail.
+  const count = 23;
   const first = measured.length, shafts: Surface[] = [];
   const usable = points.length - first - 4;
   for (let k = 0; k < count; k++) {
@@ -309,18 +329,47 @@ function buildTail(landmarks: Landmarks, ground: number, totalLength: number, pe
     const value = ring * (1 - 0.3 * upward);
     colors[at] = value; colors[at + 1] = value * 0.96; colors[at + 2] = value * 0.94;
   }
-  return { skin: { ...skin, colors }, vertebrae: mergeSurfaces(shafts) };
+  // The middle caudal vessels run under the vertebrae, side by side. Their position within the tail is an estimate.
+  const vesselLine = (side: number) => {
+    const line: Vec3[] = [], lineRadii: number[] = [];
+    for (let i = 0; i < points.length; i += 8) {
+      const r = radii[i];
+      line.push(add(points[i], [side * r * 0.14, 0, -r * 0.58]));
+      lineRadii.push(Math.max(0.2, r * 0.09));
+    }
+    return tube(line, lineRadii, 5);
+  };
+  return { skin: { ...skin, colors }, vertebrae: mergeSurfaces(shafts), vessels: mergeSurfaces([vesselLine(-1), vesselLine(1)]) };
 }
 
-/** A whisker: a tapering hair sweeping out from its follicle. */
+/** A whisker: a hair sweeping out from its follicle, curving along its length and tapering to a fine point. */
 function hair(rootAt: Vec3, direction: Vec3, droop: Vec3, len: number, radius: number): Surface {
   const points: Vec3[] = [], radii: number[] = [];
-  for (let i = 0; i <= 12; i++) {
-    const t = i / 12;
+  for (let i = 0; i <= 14; i++) {
+    const t = i / 14;
     points.push(add(rootAt, add(scale(direction, len * t), scale(droop, len * t * t))));
-    radii.push(radius * (1 - t) + 0.05);
+    radii.push(radius * (1 - t) ** 1.25 + 0.035);
   }
   return tube(points, radii, 5);
+}
+
+/** The bare nose pad: two lobes with a groove between them and a comma-shaped nostril in each, dark inside. */
+function nosePad(centre: Vec3): Surface {
+  const nostrils = [-1, 1].map((side) => [add(centre, [side * 5.4, -6.4, 1.4]), add(centre, [side * 7.2, -4.2, -0.6])] as const);
+  const surface = sculpt([add(centre, [-16, -14, -12]), add(centre, [16, 12, 12])], 0.55, (p) => {
+    const body = smoothUnion(8 - length(sub(p, add(centre, [-4.4, 0, 0]))), 8 - length(sub(p, add(centre, [4.4, 0, 0]))), 3.4);
+    // A groove down the middle of the pad, deepening towards the lip.
+    const groove = Math.abs(p[0] - centre[0]) - 0.5 - 0.1 * Math.max(0, centre[2] - p[2]);
+    let value = -smoothUnion(-body, -Math.max(groove, centre[1] - 3 - p[1]), 0.8);
+    for (const [a, b] of nostrils) value = Math.min(value, -capsule(p, a, b, 1.7, 1.2));
+    return value;
+  }, 0);
+  return tinted(surface, (p) => {
+    const inNostril = Math.max(...nostrils.map(([a, b]) => capsule(p, a, b, 2.1, 1.6)));
+    const inGroove = Math.max(0, 1 - Math.abs(p[0] - centre[0]) / 1.4) * (p[1] < centre[1] - 3 ? 1 : 0);
+    const value = (1 - 0.86 * Math.max(0, Math.min(1, (inNostril + 0.5) / 1.2))) * (1 - 0.35 * inGroove);
+    return [value, value * 0.92, value * 0.9];
+  });
 }
 
 /** The foremost labelled point of the snout. */
@@ -348,7 +397,7 @@ function eyePositions(context: Context): { left: Vec3; right: Vec3 } {
   return { left: mean(totals[0]), right: mean(totals[1]) };
 }
 
-export interface AttachmentResult { readonly parts: Record<AttachmentPart, Surface>; readonly eyes: readonly [Vec3, Vec3]; readonly earRoots: readonly [Vec3, Vec3]; readonly tip: Vec3 }
+export interface AttachmentResult { readonly parts: Record<AttachmentPart, Surface>; readonly eyes: readonly [Vec3, Vec3]; readonly earRoots: readonly [Vec3, Vec3]; readonly tip: Vec3; readonly mouth: readonly Vec3[]; readonly openings: readonly Vec3[] }
 
 export function buildAttachments(posture: PostureField, context: Context): AttachmentResult {
   const { joints, groundZ } = posture.pose;
@@ -376,14 +425,33 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
   const foreR = forepaw(joints.wristR, -1, groundZ), foreL = forepaw(joints.wristL, 1, groundZ);
   const hindR = hindpaw(joints.ankleR, -1, groundZ), hindL = hindpaw(joints.ankleL, 1, groundZ);
 
-  // Ear roots lie behind and above the eyes, on the side of the skull.
-  const earR: Vec3 = [midX - 60, eyes.left[1] + 92, eyes.left[2] + 46];
-  const earL: Vec3 = [midX + 60, eyes.right[1] + 92, eyes.right[2] + 46];
+  // Ear roots lie on the side of the head above the external auditory meatus, which the CT shows at about y 240 and z 100.
+  const earR: Vec3 = [midX - 60, eyes.left[1] + 92, eyes.left[2] + 20];
+  const earL: Vec3 = [midX + 60, eyes.right[1] + 92, eyes.right[2] + 20];
 
-  const nose = (() => {
-    const centre: Vec3 = [tip[0], tip[1] + 7, tip[2] + 3];
-    return mergeSurfaces([sphere(centre, [9.5, 9, 7.5]), sphere(add(centre, [-6, -5, 0]), [4.2, 4.2, 4.2], 10, 14), sphere(add(centre, [6, -5, 0]), [4.2, 4.2, 4.2], 10, 14)]);
-  })();
+  const nose = nosePad([tip[0], tip[1] + 7, tip[2] + 3]);
+
+  // The mouth line runs along the side of the snout low on the upper lip, as in Cook figure 5, read off the outer surface of the labels.
+  const mouthLine = (side: -1 | 1): Vec3[] => {
+    const line: Vec3[] = [];
+    const last = (eyes.left[1] + eyes.right[1]) / 2 + 6;
+    for (let y = tip[1] + 16; y <= last; y += 5) {
+      const column = context.landmarks.bodyColumn(midX, y);
+      if (!column) continue;
+      const z = column.low + 0.15 * (column.high - column.low);
+      let x = midX;
+      while (Math.abs(x - midX) < 90 && context.labels[voxelIndex(context.grid, Math.round(x + side), Math.round(y), Math.round(z))]) x += side;
+      line.push([x + side * 0.4, y, z]);
+    }
+    return line;
+  };
+  const mouthSides = [mouthLine(-1), mouthLine(1)];
+  // The two sides meet under the groove of the nose pad.
+  const front: Vec3 = [midX, tip[1] + 11, Math.min(mouthSides[0][0][2], mouthSides[1][0][2]) + 2];
+  const lips = mergeSurfaces(mouthSides.map((line) => {
+    const points = curve([front, ...line]);
+    return tube(points, points.map((_, i) => 0.42 + 0.34 * Math.sin(Math.PI * i / (points.length - 1))), 6);
+  }));
 
   // Whisker groups, after Cook figure 5. Mystacial rows lie on the side of the snout and sweep backwards and out.
   const rng = random(19650607);
@@ -392,10 +460,12 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
     for (let row = 0; row < 5; row++) for (let column = 0; column < 7; column++) {
       if ((row === 0 || row === 4) && column > 4) continue;
       const root: Vec3 = [tip[0] + side * (15 + column * 3.4 + row * 1.5), tip[1] + 22 + column * 9, tip[2] + 7 - row * 5.2];
-      const spreadUp = (2 - row) * 0.24 + (rng() - 0.5) * 0.1;
-      const direction = unit([side * (0.8 + rng() * 0.1), 0.18 + column * 0.11 + rng() * 0.08, spreadUp]);
-      const len = 70 + column * 24 + rng() * 25;
-      whiskers.push(hair(root, direction, [side * -0.05, 0.16, -0.1], len, 0.42 + column * 0.04));
+      // Upper rows fan upwards and lower rows downwards, and all curve back along the face, as in figure 5.
+      const spreadUp = (2 - row) * 0.34 + (rng() - 0.5) * 0.08;
+      // The head is pitched in the stance, so they are lifted to fan about the horizontal.
+      const direction = unit([side * (0.72 + rng() * 0.08), 0.42 + column * 0.07 + rng() * 0.06, spreadUp + 0.2]);
+      const len = 62 + column * 20 + rng() * 16;
+      whiskers.push(hair(root, direction, [side * -0.08, 0.2, -0.05 - spreadUp * 0.12], len, 0.4 + column * 0.04));
     }
     // Superciliary, above the eye.
     const eye = side < 0 ? eyeLeft : eyeRight;
@@ -408,11 +478,113 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
 
   const tail = buildTail(context.landmarks, groundZ, 800, posture.pose.transforms.pelvis);
   const head = posture.pose.transforms.head;
+  const pelvis = posture.pose.transforms.pelvis;
+
+  // Inside each globe, from the back: a dark inner coat, a lens that nearly fills the globe, an iris and, on the front, a cornea over about half of its surface.
+  const eyeInner = (centre: Vec3, out: Vec3, part: 'retina' | 'lens' | 'iris' | 'cornea'): Surface => {
+    if (part === 'retina') return sphere(centre, [eyeRadius * 0.92, eyeRadius * 0.92, eyeRadius * 0.92], 14, 20);
+    if (part === 'lens') { const r = eyeRadius * 0.68; return sphere(add(centre, scale(out, eyeRadius * 0.18)), [r, r, r], 14, 20); }
+    const along = unit(sub([0, 1, 0], scale(out, dot([0, 1, 0], out)))), across = unit(cross(out, along));
+    if (part === 'iris') {
+      const middle = add(centre, scale(out, eyeRadius * 0.72));
+      const loop = Array.from({ length: 25 }, (_, i): Vec3 => { const t = 2 * Math.PI * i / 24; return add(middle, add(scale(along, Math.cos(t) * eyeRadius * 0.55), scale(across, Math.sin(t) * eyeRadius * 0.55))); });
+      return tube(loop, loop.map(() => eyeRadius * 0.11), 8);
+    }
+    const positions: number[] = [], normals: number[] = [], indices: number[] = [];
+    const rows = 12, columns = 28, shell = eyeRadius * 1.012, limit = Math.PI / 2;
+    for (let r = 0; r <= rows; r++) for (let c = 0; c <= columns; c++) {
+      const theta = limit * r / rows, phi = 2 * Math.PI * c / columns;
+      const n = add(scale(out, Math.cos(theta)), add(scale(along, Math.sin(theta) * Math.cos(phi)), scale(across, Math.sin(theta) * Math.sin(phi))));
+      const p = add(centre, scale(n, shell));
+      positions.push(p[0], p[1], p[2]); normals.push(n[0], n[1], n[2]);
+    }
+    const at = (r: number, c: number) => r * (columns + 1) + c;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < columns; c++) indices.push(at(r, c), at(r + 1, c), at(r, c + 1), at(r, c + 1), at(r + 1, c), at(r + 1, c + 1));
+    return { positions: Float32Array.from(positions), normals: Float32Array.from(normals), indices: Uint32Array.from(indices) };
+  };
+  const eyeOutR = unit([-0.86, 0, 0.5]), eyeOutL = unit([0.86, 0, 0.5]);
+  const bothEyes = (part: 'retina' | 'lens' | 'iris' | 'cornea') => moved(mergeSurfaces([eyeInner(eyeLeft, eyeOutR, part), eyeInner(eyeRight, eyeOutL, part)]), head);
+  // Four recti, two obliques and a retractor bulbi round each globe. Marques et al. name these muscles in the mouse, and four and two are the usual mammalian numbers. Courses and sizes are estimates.
+  const eyeMuscles = (centre: Vec3, out: Vec3): Surface[] => {
+    const along: Vec3 = [0, 1, 0];
+    const up = unit(cross(out, along));
+    const apex = add(centre, scale(out, -eyeRadius * 2));
+    const round = (angle: number, back: number, reach: number): Vec3 => add(add(centre, scale(out, -eyeRadius * back)), add(scale(along, Math.cos(angle) * eyeRadius * reach), scale(up, Math.sin(angle) * eyeRadius * reach)));
+    return [
+      ...[0, 1, 2, 3].map((quarter) => {
+        const angle = quarter * Math.PI / 2;
+        return route([apex, round(angle, 1.2, 0.78), round(angle, 0.45, 1.06), round(angle, 0.02, 1.03)], 1.9, 1.3, 8);
+      }),
+      ...[0, 1, 2, 3].map((quarter) => {
+        const angle = Math.PI / 4 + quarter * Math.PI / 2;
+        return route([apex, round(angle, 1.4, 0.5), round(angle, 0.86, 0.6)], 1.2, 0.8, 6);
+      }),
+      route([apex, round(2.2, 1, 1.12), round(2.2, 0.3, 1.2), round(1.7, 0.02, 1.03)], 1.2, 1, 7),
+      route([round(-2.4, 0.55, 1.2), round(-1.6, 0.2, 1.1), round(-0.6, 0.02, 1.03)], 1.3, 1, 7),
+    ];
+  };
+  // The calcaneal tendon runs from the gastrocnemius down the back of the shank to the heel. Its course and size are estimates.
+  const calcanealTendon = (hip: Vec3, knee: Vec3, ankle: Vec3, heel: Vec3): Surface => {
+    const shank = unit(sub(ankle, knee));
+    const bend = add(unit(sub(hip, knee)), shank);
+    const back = unit(sub(bend, scale(shank, dot(bend, shank))));
+    const down = (t: number, offset: number) => add(add(knee, scale(sub(ankle, knee), t)), scale(back, offset));
+    return route([down(0.55, 6), down(0.8, 5), down(1, 4.5), heel], 1.8, 1.3, 8);
+  };
+  // A horseshoe behind each globe, open towards the outer corner of the eye.
+  const harderian = (centre: Vec3, out: Vec3): Surface => {
+    const along: Vec3 = [0, 1, 0];
+    const up = unit(cross(out, along));
+    const arc = Array.from({ length: 19 }, (_, i): Vec3 => {
+      const t = -2.2 + 4.4 * i / 18;
+      return add(add(centre, scale(out, -eyeRadius * 0.95)), add(scale(along, -Math.cos(t) * eyeRadius * 0.82), scale(up, Math.sin(t) * eyeRadius * 0.95)));
+    });
+    return tube(arc, arc.map((_, i) => 3.2 + 2.2 * Math.sin(Math.PI * i / 18)), 10);
+  };
+  // Dark rings at the openings on the body surface, found by leaving the labels from inside the body.
+  const leaving = (start: Vec3, direction: Vec3): Vec3 => {
+    let p = start;
+    for (let i = 0; i < 120; i++) {
+      const q = add(p, direction);
+      if (!context.labels[voxelIndex(context.grid, Math.round(q[0]), Math.round(q[1]), Math.round(q[2]))]) break;
+      p = q;
+    }
+    return p;
+  };
+  const anus = leaving([177, 884, 52], [0, 1, 0]);
+  const preputial = leaving([170, 815, 16], [0, 0, -1]);
+  const openingRing = (centre: Vec3, axis: Vec3, radius: number): Surface => {
+    const a = unit(axis), u = unit(Math.abs(a[2]) < 0.9 ? cross(a, [0, 0, 1]) : cross(a, [0, 1, 0])), v = cross(a, u);
+    const loop = Array.from({ length: 21 }, (_, i): Vec3 => { const t = 2 * Math.PI * i / 20; return add(centre, add(scale(u, Math.cos(t) * radius), scale(v, Math.sin(t) * radius))); });
+    return mergeSurfaces([tube(loop, loop.map(() => radius * 0.42), 6), sphere(centre, [radius * 0.8, radius * 0.8, radius * 0.8], 8, 10)]);
+  };
+  const openingPoints = [applyRigid(pelvis, anus), applyRigid(pelvis, preputial)];
+  // A patella on the front of each knee and a fabella behind it, placed on the bisector of the bent joint in the stance.
+  const kneeBones = (hip: Vec3, knee: Vec3, ankle: Vec3): Surface[] => {
+    const thigh = unit(sub(hip, knee)), shank = unit(sub(ankle, knee));
+    const back = unit(add(thigh, shank));
+    const front = scale(back, -1);
+    const patellaAt = add(knee, scale(front, 11));
+    const along = unit(add(thigh, scale(shank, -1)));
+    return [
+      tube([add(patellaAt, scale(along, 10)), add(patellaAt, scale(along, 3)), add(patellaAt, scale(along, -4)), add(patellaAt, scale(along, -10))], [1.2, 3.4, 3.2, 1], 10),
+      sphere(add(knee, scale(back, 12)), [1.8, 1.8, 1.8], 8, 10),
+    ];
+  };
   const parts: Record<AttachmentPart, Surface> = {
     eyes: moved(mergeSurfaces([sphere(eyeLeft, [eyeRadius, eyeRadius, eyeRadius]), sphere(eyeRight, [eyeRadius, eyeRadius, eyeRadius])]), head),
     eyelids: moved(mergeSurfaces([eyelid(eyeLeft, unit([-0.86, 0, 0.5]), eyeRadius), eyelid(eyeRight, unit([0.86, 0, 0.5]), eyeRadius)]), head),
+    corneas: bothEyes('cornea'), irises: bothEyes('iris'), lenses: bothEyes('lens'), retinas: bothEyes('retina'),
+    'harderian-glands': moved(mergeSurfaces([harderian(eyeLeft, eyeOutR), harderian(eyeRight, eyeOutL)]), head),
+    'intraorbital-glands': moved(mergeSurfaces([sphere(add(eyeLeft, [0, eyeRadius * 1.25, -3]), [4, 6, 3], 8, 12), sphere(add(eyeRight, [0, eyeRadius * 1.25, -3]), [4, 6, 3], 8, 12)]), head),
+    'tail-vessels': tail.vessels,
+    patellae: mergeSurfaces([...kneeBones(joints.hipR, joints.kneeR, joints.ankleR), ...kneeBones(joints.hipL, joints.kneeL, joints.ankleL)]),
+    'calcaneal-tendons': mergeSurfaces([calcanealTendon(joints.hipR, joints.kneeR, joints.ankleR, hindR.heel), calcanealTendon(joints.hipL, joints.kneeL, joints.ankleL, hindL.heel)]),
+    'extraocular-muscles': moved(mergeSurfaces([...eyeMuscles(eyeLeft, eyeOutR), ...eyeMuscles(eyeRight, eyeOutL)]), head),
+    openings: moved(mergeSurfaces([openingRing(anus, [0, 1, 0], 2.8), openingRing(preputial, [0, 0.3, -1], 2)]), pelvis),
     pinnae: moved(mergeSurfaces([pinna(earR, -1), pinna(earL, 1)]), head),
     nose: moved(nose, head),
+    lips: moved(lips, head),
     vibrissae: moved(mergeSurfaces(whiskers), head),
     forepaws: tinted(mergeSurfaces([foreR.skin, foreL.skin]), padTint(groundZ)),
     hindpaws: tinted(mergeSurfaces([hindR.skin, hindL.skin]), padTint(groundZ)),
@@ -420,6 +592,9 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
     tail: tail.skin,
     'tail-vertebrae': tail.vertebrae,
     'foot-bones': mergeSurfaces([...hindR.bones, ...hindL.bones]),
+    'paw-arteries': mergeSurfaces([foreR, foreL, hindR, hindL].flatMap((paw) => paw.routes.arteries)),
+    'paw-veins': mergeSurfaces([foreR, foreL, hindR, hindL].flatMap((paw) => paw.routes.veins)),
+    'paw-nerves': mergeSurfaces([foreR, foreL, hindR, hindL].flatMap((paw) => paw.routes.nerves)),
   };
-  return { parts, eyes: [applyRigid(head, eyeLeft), applyRigid(head, eyeRight)], earRoots: [applyRigid(head, earR), applyRigid(head, earL)], tip: applyRigid(head, tip) };
+  return { parts, eyes: [applyRigid(head, eyeLeft), applyRigid(head, eyeRight)], earRoots: [applyRigid(head, earR), applyRigid(head, earL)], tip: applyRigid(head, tip), mouth: [...mouthSides[0], ...mouthSides[1]].map((point) => applyRigid(head, point)), openings: openingPoints };
 }

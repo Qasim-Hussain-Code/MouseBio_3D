@@ -187,6 +187,11 @@ export function createDisplayClipPlane(axis: DisplayAxis, positionPercent: numbe
   return new THREE.Plane(normal, (positionPercent / 100 * 2 - 1) * radius);
 }
 
+/** The position of a display clip plane that passes through a coordinate along its axis. */
+export function clipPercentAt(coordinate: number, radius: number): number {
+  return Math.max(0, Math.min(100, (coordinate / radius + 1) / 2 * 100));
+}
+
 /** Ray picking can use the same retained half-space as surface rendering. */
 export function isPointRetainedByClipPlane(point: THREE.Vector3, plane: THREE.Plane): boolean {
   finiteVector(point, 'Display point');

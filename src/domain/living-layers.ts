@@ -24,6 +24,16 @@ const isVessel = (structure: Structure) => has(structure, 'cardiovascular') || h
 const isNerve = (structure: Structure) => has(structure, 'nervous');
 const FAINT_SKELETON = 0.14;
 
+/** The step that matches what is shown now, if any. */
+export function matchingStop(stops: readonly LayerStop[], hidden: readonly string[], opacity: Readonly<Record<string, number>>, coatShown: boolean): LayerStopId | null {
+  const shown = new Set(hidden);
+  for (const stop of stops) {
+    if (stop.coat !== coatShown || stop.hidden.length !== shown.size || !stop.hidden.every((id) => shown.has(id))) continue;
+    if (Object.entries(stop.opacity).every(([id, value]) => Math.abs((opacity[id] ?? value) - value) < 0.005)) return stop.id;
+  }
+  return null;
+}
+
 export function layerStops(atlas: Pick<Atlas, 'structures' | 'id'>): LayerStop[] {
   if (atlas.id !== 'mousebio-living-v1') return [];
   const { structures } = atlas;

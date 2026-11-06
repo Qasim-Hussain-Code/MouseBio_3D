@@ -45,6 +45,8 @@ export function seeThroughSkinOpacity(atlas: Atlas): number | null {
 }
 
 export function initialReferenceSelection(atlas: Atlas): string | null {
-  return atlas.structures.find((structure) => structure.systems.includes('cardiovascular'))?.id
+  // A model that shows a whole animal opens on its body surface, which is what the viewer first shows.
+  const bodySurface = atlas.structures.some((structure) => structure.evidence) ? bodySurfaceIdFor(atlas) : null;
+  return bodySurface ?? atlas.structures.find((structure) => structure.systems.includes('cardiovascular'))?.id
     ?? atlas.structures[0]?.id ?? null;
 }

@@ -9,19 +9,22 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { buildPosture, deformAxial, deformRigid, deformSurface, type PostureField } from './posture';
-import { BONES, partitionBones } from './bones';
+import { buildPosture, deformAxial, deformRigid, deformSurface, vertexNormals, type PostureField } from './posture';
+import { bodyCoat, shortCoat } from './coat';
+import { BONES, partitionBones, ribCourses, smallBoneAt } from './bones';
+import { buildInteriors } from './interiors';
 import { buildTrees } from './organ-trees';
-import { buildBodySurface } from './exterior';
+import { buildBodySurface, nearestOnTube, underSkin, type LimbTube, type UnderSkin } from './exterior';
 import { clusterSurface, extractSurface, maskBox } from './extract';
 import { writeGlb, type GlbSurface } from './glb';
 import { boneOfVoxel, JOINTS, type Vec3 } from './rig';
 import { components, dilate, erode, voxelIndex, type Grid } from './volume';
 import type { Surface } from './surface-nets';
 import { buildAttachments } from './attachments';
-import { STRUCTURES, type Plan } from './structures';
+import { HEART, MIDDLE_X, STOMACH, STRUCTURES, type Plan } from './structures';
 import { TRACED, traceTissues } from './trace';
 import { buildInternal } from './internal';
+import { buildLimbRoutes } from './limb-routes';
 import { measureLandmarks } from './landmarks';
 import { fibreAttribute, MUSCLES, muscleSurface, partitionMuscles, UNNAMED } from './muscles';
 
@@ -68,13 +71,14 @@ else {
 }
 
 const SHELLS: Record<string, ReadonlySet<number>> = { pericardium: new Set([9]), pleura: new Set([21]), meninges: new Set([4, 5, 6, 7, 8, 10]) };
-const LIMB_PARTS = new Set(['forelimb-arteries', 'hindlimb-arteries', 'forelimb-veins', 'hindlimb-veins', 'forelimb-nerves', 'hindlimb-nerves', 'lymph-nodes']);
+const LIMB_PARTS = new Set(['cervical-lymph-nodes', 'axillary-lymph-nodes', 'brachial-lymph-nodes', 'inguinal-lymph-nodes', 'sciatic-lymph-nodes', 'mediastinal-lymph-nodes', 'pyloric-lymph-nodes', 'renal-lymph-nodes', 'lumbar-lymph-nodes', 'mesenteric-lymph-node', 'caudal-lymph-node']);
 
 /**
  * The traced gut divided by estimate: 1 the caecum, the largest thick part on the left of the abdomen;
  * 2 the colon and rectum, behind the bladder; 3 the rest, which is mostly small intestine.
  */
 let gutCache: Uint8Array | null = null;
+const GUT_SPECK_VOXELS = 6000;
 function gutParts(): Uint8Array {
   if (gutCache) return gutCache;
   const gut = new Uint8Array(voxels);
@@ -82,6 +86,10 @@ function gutParts(): Uint8Array {
   const free = new Uint8Array(voxels);
   for (let i = 0; i < voxels; i++) free[i] = labels[i] === 1 ? 1 : 0;
   const grown = dilate(gut, grid, 2, free);
+  // Pieces of the same colours elsewhere are not gut: one lay in the forelimb, one in the thigh and one on the ventral midline below the bladder, where the colon does not run.
+  const pieces = components(grown, grid);
+  const speck = new Set(pieces.list.filter((piece) => piece.size < GUT_SPECK_VOXELS).map((piece) => piece.id));
+  log('gut specks removed', speck.size);
   const thick = dilate(erode(gut, grid, 13), grid, 13, gut);
   const { ids, list } = components(thick, grid);
   const caecum = list.find((item) => item.centroid[0] > 190)?.id ?? -1;
@@ -89,7 +97,7 @@ function gutParts(): Uint8Array {
   const out = new Uint8Array(voxels);
   for (let z = 0; z < nz; z++) for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
     const at = voxelIndex(grid, x, y, z);
-    if (!grown[at]) continue;
+    if (!grown[at] || speck.has(pieces.ids[at])) continue;
     out[at] = ids[at] === caecum ? 1 : y > 720 ? 2 : 3;
   }
   // The wall grown round the caecum goes with the caecum.
@@ -97,12 +105,21 @@ function gutParts(): Uint8Array {
   return out;
 }
 
+let skinCache: Surface | null = null;
+let limbTubes: readonly LimbTube[] = [];
+let skinField: UnderSkin | null = null;
+function skinSurface(): Surface {
+  if (skinCache) return skinCache;
+  const exterior = buildBodySurface(grid, body, bone, posture);
+  limbTubes = exterior.tubes;
+  skinField = exterior.under;
+  log('shank radii', exterior.shanks.map((shank) => shank.radii.map((r) => r.toFixed(1)).join('/')).join(' '));
+  skinCache = exterior.surface;
+  return skinCache;
+}
+
 function build(plan: Plan): Surface {
-  if (plan.kind === 'skin') {
-    const exterior = buildBodySurface(grid, body, posture);
-    log('shank radii', exterior.shanks.map((shank) => shank.radii.map((r) => r.toFixed(1)).join('/')).join(' '));
-    return exterior.surface;
-  }
+  if (plan.kind === 'skin') return skinSurface();
   if (plan.kind === 'traced') {
     const value = TRACED[plan.tissue];
     let mask: Uint8Array<ArrayBufferLike> = new Uint8Array(voxels);
@@ -161,8 +178,6 @@ const toMetres = (values: Float32Array) => { const out = new Float32Array(values
 
 const landmarks = measureLandmarks(grid, labels, ct);
 const attachments = buildAttachments(posture, { labels, grid, landmarks });
-const internal = buildInternal(grid, labels, landmarks);
-log('internal');
 const trees = buildTrees(grid, labels, landmarks, (i) => gutParts()[i] !== 0);
 log('trees', Object.entries(trees).map(([name, surface]) => `${name} ${surface.indices.length / 3}`).join(', '));
 // Named bones from the CT, with the same test for bone as before: the source label and nearby CT bone outside the labelled body.
@@ -174,35 +189,145 @@ const inForePaw = (i: number) => {
   const bone = boneOfVoxel([x, y, z]);
   return bone === 'manusR' || bone === 'manusL';
 };
-const bonePart = partitionBones(grid, (i) => ct[i] >= 140 && (!!allowedBone[i] || (!!near[i] && !labels[i] && inForePaw(i))), landmarks);
+// Small bones that the source skeleton label leaves out are read directly from the CT, with a stricter test because they lie in soft tissue.
+const inSmallBone = (i: number) => {
+  if (ct[i] < 170) return false;
+  const x = i % nx, rest = (i - x) / nx, y = rest % ny, z = (rest - y) / ny;
+  return smallBoneAt(x, y, z) !== undefined;
+};
+const bonePart = partitionBones(grid, (i) => inSmallBone(i) || (ct[i] >= 140 && (!!allowedBone[i] || (!!near[i] && !labels[i] && inForePaw(i)))), landmarks);
 log('bones');
+const ribLines = ribCourses(grid, bonePart);
+log('rib courses', ribLines.r.map((line) => line.length).join(','), ribLines.l.map((line) => line.length).join(','));
+const limbRoutes = buildLimbRoutes(landmarks);
+for (const part of Object.keys(limbRoutes)) LIMB_PARTS.add(part);
+const internal = { ...buildInternal(grid, labels, landmarks, ribLines), ...limbRoutes, ...buildInteriors(grid, labels, landmarks, { heart: HEART, stomach: STOMACH, kidneyLimitX: MIDDLE_X }, [190, 392, 88], [176, 372, 84]) };
+log('internal');
+// Nothing simulated inside the body may reach far beyond the surface of the specimen, which would show through the skin. Vertices within half a millimetre are allowed, for openings at the surface.
+const nearBody = dilate(body, grid, 5);
+for (const [name, surface] of Object.entries(internal)) {
+  let beyond = 0;
+  const count = surface.positions.length / 3;
+  for (let v = 0; v < count; v++) {
+    const x = Math.round(surface.positions[3 * v]), y = Math.round(surface.positions[3 * v + 1]), z = Math.round(surface.positions[3 * v + 2]);
+    if (x < 0 || y < 0 || z < 0 || x >= nx || y >= ny || z >= nz || !nearBody[voxelIndex(grid, x, y, z)]) beyond++;
+  }
+  if (beyond / count > 0.001) throw new Error(`${name} lies outside the body: ${beyond} of ${count} vertices`);
+}
+// One pass finds the extent of every bone, because there are many of them.
+const boneBoxes = BONES.map((): [number, number, number, number, number, number] => [nx, -1, ny, -1, nz, -1]);
+for (let z = 0, i = 0; z < nz; z++) for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++, i++) {
+  const value = bonePart[i];
+  if (!value) continue;
+  const box = boneBoxes[value - 1];
+  if (x < box[0]) box[0] = x; if (x > box[1]) box[1] = x;
+  if (y < box[2]) box[2] = y; if (y > box[3]) box[3] = y;
+  if (z < box[4]) box[4] = z; if (z > box[5]) box[5] = z;
+}
+log('bone voxels', BONES.map((bone, index) => `${bone.id}:${(boneBoxes[index][1] - boneBoxes[index][0] + 1)}x${(boneBoxes[index][3] - boneBoxes[index][2] + 1)}x${(boneBoxes[index][5] - boneBoxes[index][4] + 1)}`).join(' '));
 function boneStance(index: number): Surface {
   const wanted = index + 1;
-  const box = maskBox(grid, (i) => bonePart[i] === wanted);
-  const scan = clusterSurface(extractSurface(grid, (i) => bonePart[i] === wanted ? ct[i] : 0, box, { step: 2, radius: 0, isovalue: 172 }), 2.7);
+  // Bones of the trunk and head are small and thin, so they keep the full grid. Limb bones are longer and move as rigid pieces.
+  const scan = BONES[index].rigid
+    ? clusterSurface(extractSurface(grid, (i) => bonePart[i] === wanted ? ct[i] : 0, boneBoxes[index], { step: 2, radius: 0, isovalue: 172 }), 2.7)
+    : clusterSurface(extractSurface(grid, (i) => bonePart[i] === wanted ? ct[i] : 0, boneBoxes[index], { step: 1, radius: 0, isovalue: 172 }), 1.9);
   const rigid = BONES[index].rigid;
   return rigid ? deformRigid(scan, posture.pose.transforms[rigid]) : deformAxial(scan, posture);
 }
+/**
+ * The scanned shanks and forearms lay pressed flat, so their traced muscles are wider than the slender simulated limbs. Their
+ * outer parts are drawn in towards the middle of the limb until they lie under the skin, smoothly, so that muscles keep their order.
+ * Bones are not moved, because they are measured and rigid.
+ */
+const SKIN_CLEARANCE = 2.5;
+function pressIntoLimbs(surface: Surface): Surface {
+  skinSurface();
+  const positions = surface.positions.slice();
+  for (let i = 0; i < positions.length; i += 3) {
+    const p: Vec3 = [positions[i], positions[i + 1], positions[i + 2]];
+    let found = nearestOnTube(limbTubes[0], p);
+    for (let k = 1; k < limbTubes.length; k++) { const other = nearestOnTube(limbTubes[k], p); if (other.distance < found.distance) found = other; }
+    const room = found.radius - SKIN_CLEARANCE;
+    const start = room * 0.55;
+    if (found.distance <= start || room <= 0) continue;
+    const pressed = start + (room - start) * (1 - Math.exp(-(found.distance - start) / (room - start)));
+    // Near the knee or elbow the limb meets the body, whose surface is not the limb's.
+    const t = Math.max(0, Math.min(1, (found.along - 0.04) / 0.14));
+    const distance = found.distance + (pressed - found.distance) * t * t * (3 - 2 * t);
+    const factor = distance / found.distance;
+    for (let k = 0; k < 3; k++) positions[i + k] = found.centre[k] + (p[k] - found.centre[k]) * factor;
+  }
+  return { ...surface, positions };
+}
+/**
+ * Soft tissue carried into the stance can end up a little outside the skin. Such points are moved to just under it. Bones stay where
+ * they are, because they are measured and rigid, and so do the parts that belong below the wrists and ankles, in the eyes and in the tail, whose own surfaces close them.
+ */
+const LEFT_WHERE_THEY_ARE = new Set(['living:irises', 'living:lenses', 'living:retinas', 'living:tail-vessels', 'living:tail-vertebrae', 'living:panniculus']);
+const UNDER_SKIN_CLEARANCE = 1.5;
+function keepUnderSkin(id: string, plan: Plan, surface: Surface): Surface {
+  if (plan.kind === 'skin' || plan.kind === 'attachment' || plan.kind === 'bone' || LEFT_WHERE_THEY_ARE.has(id)) return surface;
+  skinSurface();
+  const j = posture.pose.joints;
+  const pawLevel = Math.max(j.wristR[2], j.wristL[2], j.ankleR[2], j.ankleL[2]) + 4;
+  const positions = surface.positions.slice();
+  let moved = 0;
+  for (let i = 0; i < positions.length; i += 3) {
+    if (positions[i + 2] < pawLevel) continue;
+    const p: Vec3 = [positions[i], positions[i + 1], positions[i + 2]];
+    const q = underSkin(skinField!, p, UNDER_SKIN_CLEARANCE);
+    if (q !== p) { positions[i] = q[0]; positions[i + 1] = q[1]; positions[i + 2] = q[2]; moved++; }
+  }
+  if (!moved) return surface;
+  log('under skin', id, moved);
+  return { ...surface, positions, normals: vertexNormals(positions, surface.indices) };
+}
+const PRESSED_MUSCLES = new Set(['gastrocnemius', 'soleus', 'tibialis', 'peroneals', 'deep-flexors', 'forearm-extensors', 'forearm-flexors']);
 const musclePartition = partitionMuscles(grid, (i) => tissues[i] === TRACED.muscle, landmarks);
 log('muscles', [...musclePartition.counts].join(','));
 const muscleScanSurfaces = new Map<number, Surface>();
 for (const structure of STRUCTURES) {
-  const surface = structure.plan.kind === 'attachment' ? attachments.parts[structure.plan.part]
+  const surface = keepUnderSkin(structure.id, structure.plan, structure.plan.kind === 'attachment' ? attachments.parts[structure.plan.part]
     : structure.plan.kind === 'internal' ? (LIMB_PARTS.has(structure.plan.part) ? deformSurface : deformAxial)(internal[structure.plan.part], posture)
       : structure.plan.kind === 'bone' ? boneStance(structure.plan.index)
       : structure.plan.kind === 'tree' ? deformAxial(trees[structure.plan.part], posture)
-      : structure.plan.kind === 'muscle' ? (MUSCLES[structure.plan.index].group === 'head' ? deformAxial : deformSurface)(muscleScan(structure.plan.index), posture)
-        : structure.plan.kind === 'muscle-rest' ? deformSurface(muscleSurface(musclePartition, UNNAMED), posture) : build(structure.plan);
+      : structure.plan.kind === 'muscle' ? (PRESSED_MUSCLES.has(MUSCLES[structure.plan.index].id) ? pressIntoLimbs(deformSurface(muscleScan(structure.plan.index), posture)) : (MUSCLES[structure.plan.index].group === 'head' ? deformAxial : deformSurface)(muscleScan(structure.plan.index), posture))
+        : structure.plan.kind === 'muscle-rest' ? deformSurface(muscleSurface(musclePartition, UNNAMED), posture)
+          : structure.plan.kind === 'panniculus' ? panniculus() : build(structure.plan));
   if (!surface || !surface.indices.length) throw new Error(`No surface for ${structure.id}`);
-  const fur = structure.plan.kind === 'skin' ? furAttribute(surface) : undefined;
+  const marks = { joints: posture.pose.joints, eyes: attachments.eyes, earRoots: attachments.earRoots, tip: attachments.tip, mouth: [...attachments.mouth, ...attachments.openings] };
+  const hair = structure.plan.kind === 'skin' ? bodyCoat(surface, marks) : structure.plan.kind === 'attachment' ? shortCoat(structure.plan.part, surface, marks) : undefined;
   const fibre = structure.plan.kind === 'muscle' ? fibreOf(structure.plan.index, surface) : undefined;
-  surfaces.push({ id: structure.id, name: structure.name, positions: toMetres(surface.positions), normals: surface.normals, indices: surface.indices, fur, fibre, colors: surface.colors });
+  surfaces.push({ id: structure.id, name: structure.name, positions: toMetres(surface.positions), normals: surface.normals, indices: surface.indices, fur: hair?.fur, coat: hair?.coat, fibre, colors: surface.colors });
   const { plan: _plan, ...record } = structure;
   const positions = toMetres(surface.positions);
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
   for (let i = 0; i < positions.length; i += 3) for (let k = 0; k < 3; k++) { min[k] = Math.min(min[k], positions[i + k]); max[k] = Math.max(max[k], positions[i + k]); }
   records.push({ ...record, meshNode: structure.id, geometry: { vertices: positions.length / 3, triangles: surface.indices.length / 3, boundsMeters: [min, max] } });
   log(structure.id, surface.positions.length / 3, surface.indices.length / 3);
+}
+
+/** A sheet just under the skin of the head, neck and trunk, taken from the body surface itself. Hummel et al. describe it there and not on the limbs. */
+function panniculus(): Surface {
+  const skin = skinSurface();
+  const j = posture.pose.joints;
+  const limbs: readonly (readonly [Vec3, Vec3])[] = [[j.shoulderR, j.elbowR], [j.elbowR, j.wristR], [j.shoulderL, j.elbowL], [j.elbowL, j.wristL], [j.hipR, j.kneeR], [j.kneeR, j.ankleR], [j.hipL, j.kneeL], [j.kneeL, j.ankleL]];
+  const count = skin.positions.length / 3;
+  const positions = new Float32Array(skin.positions.length), keep = new Uint8Array(count);
+  for (let i = 0; i < count; i++) {
+    const p: Vec3 = [skin.positions[3 * i], skin.positions[3 * i + 1], skin.positions[3 * i + 2]];
+    let limbDistance = Infinity;
+    for (const [a, b] of limbs) {
+      const ax = b[0] - a[0], ay = b[1] - a[1], az = b[2] - a[2];
+      const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * ax + (p[1] - a[1]) * ay + (p[2] - a[2]) * az) / (ax * ax + ay * ay + az * az)));
+      limbDistance = Math.min(limbDistance, Math.hypot(p[0] - a[0] - ax * t, p[1] - a[1] - ay * t, p[2] - a[2] - az * t));
+    }
+    keep[i] = limbDistance > 34 ? 1 : 0;
+    for (let k = 0; k < 3; k++) positions[3 * i + k] = skin.positions[3 * i + k] - 4 * skin.normals[3 * i + k];
+  }
+  const kept: number[] = [];
+  for (let t = 0; t < skin.indices.length; t += 3) if (keep[skin.indices[t]] && keep[skin.indices[t + 1]] && keep[skin.indices[t + 2]]) kept.push(skin.indices[t], skin.indices[t + 1], skin.indices[t + 2]);
+  return clusterSurface({ positions, normals: skin.normals, indices: Uint32Array.from(kept) }, 5);
 }
 
 /** Scan-frame surfaces of muscles are kept to find the direction of their fibres after the posture moves them. */
@@ -226,35 +351,6 @@ function fibreOf(index: number, stance: Surface): Float32Array {
     const dx = ahead[3 * i] - stance.positions[3 * i], dy = ahead[3 * i + 1] - stance.positions[3 * i + 1], dz = ahead[3 * i + 2] - stance.positions[3 * i + 2];
     const n = Math.hypot(dx, dy, dz) || 1;
     out[4 * i] = dx / n; out[4 * i + 1] = dy / n; out[4 * i + 2] = dz / n; out[4 * i + 3] = tendon[i];
-  }
-  return out;
-}
-
-/** xyz is the combing direction of the hair, tangent to the surface; w is the relative hair length, zero on bare skin. */
-function furAttribute(surface: Surface): Float32Array {
-  const count = surface.positions.length / 3;
-  const out = new Float32Array(4 * count);
-  const nose = attachments.tip;
-  for (let i = 0; i < count; i++) {
-    const x = surface.positions[3 * i], y = surface.positions[3 * i + 1], z = surface.positions[3 * i + 2];
-    const nx0 = surface.normals[3 * i], ny0 = surface.normals[3 * i + 1], nz0 = surface.normals[3 * i + 2];
-    // Backwards along the body and down the flanks and limbs.
-    let dx = 0, dy = 1, dz = -0.35;
-    const ventral = Math.max(0, Math.min(1, (40 - z) / 60));
-    dy -= ventral * 0.6; dz -= ventral * 1.2;
-    const along = dx * nx0 + dy * ny0 + dz * nz0;
-    dx -= along * nx0; dy -= along * ny0; dz -= along * nz0;
-    const n = Math.hypot(dx, dy, dz) || 1;
-    const fromNose = Math.hypot(x - nose[0], y - nose[1], z - nose[2]);
-    const face = Math.max(0.3, Math.min(1, (fromNose - 20) / 110));
-    // Short hair round the eyes and ear roots, so that they stand clear of the coat.
-    const near = (points: readonly Vec3[], inner: number, outer: number) => Math.min(...points.map((point) => Math.max(0, Math.min(1, (Math.hypot(x - point[0], y - point[1], z - point[2]) - inner) / (outer - inner)))));
-    const clear = near(attachments.eyes, 15, 42) * near(attachments.earRoots, 8, 34);
-    const belly = z < 20 ? 0.85 : 1;
-    // Hair shortens towards the wrists and ankles, where the bare paws begin.
-    const j = posture.pose.joints;
-    const low = near([j.wristR, j.wristL, j.ankleR, j.ankleL], 4, 26);
-    out[4 * i] = dx / n; out[4 * i + 1] = dy / n; out[4 * i + 2] = dz / n; out[4 * i + 3] = Math.max(0, face * belly * low * clear);
   }
   return out;
 }

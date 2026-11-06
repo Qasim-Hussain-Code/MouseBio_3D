@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import type { Atlas, Structure } from '../src/domain/types';
-import { displayColour, hasSourceDeclaredColour, SYSTEM_COLOURS, tissueColour } from '../src/domain/tissue-palette';
+import { contrastColour, displayColour, hasSourceDeclaredColour, SYSTEM_COLOURS, tissueColour } from '../src/domain/tissue-palette';
 import { SYSTEMS } from '../src/domain/types';
 
 const load = async (path: string) => JSON.parse(await readFile(new URL(path, import.meta.url), 'utf8')) as Atlas;
@@ -53,4 +53,12 @@ test('unrecognised labels fall back to the manifest colour or the system colour'
   assert.equal(displayColour({ ...base, systems: [] } as unknown as Structure), '#9ba5a1');
   assert.equal(tissueColour({ name: 'Adrenal glands', sourceLabel: 'adrenal glands' }), '#e0b86d', 'specific labels match before generic gland');
   assert.equal(tissueColour({ name: 'Trigeminal V ganglion', sourceLabel: 'EMAPA:1' }), '#e2d58a');
+});
+
+test('contrasting colours depend only on the identifier and tell neighbours apart', () => {
+  const structure = { id: 'living:bone-t5', name: 'Thoracic vertebra 5', systems: ['skeletal'], sourceLabel: 'CT bone', meshNode: 'x' } as Parameters<typeof displayColour>[0];
+  assert.equal(displayColour(structure, 'contrast'), contrastColour('living:bone-t5'));
+  assert.match(contrastColour('living:bone-t5'), /^#[0-9a-f]{6}$/);
+  const neighbours = Array.from({ length: 13 }, (_, i) => contrastColour(`living:bone-t${i + 1}`));
+  assert.ok(new Set(neighbours).size >= 12, neighbours.join());
 });

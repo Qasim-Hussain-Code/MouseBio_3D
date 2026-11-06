@@ -201,3 +201,7 @@ CellML credits: Catherine Lloyd, Penny J Noble and James R Lawson. Repository: L
 Source revision: 94d9d4f47495d86fec040f5439c7e3a4ffccb611.
 License: https://creativecommons.org/licenses/by/3.0/
 Adaptation: Qasim Hussain, MouseBio_3D. Original contact and editor metadata omitted. An optional mathematical transition substitution is disclosed separately from the archived source equations. No independent physiological validation is claimed. See models/bondarenko-apical/LICENSE.md. Original numerical integration and interface code: MIT.
+
+
+Protein Data Bank entry 5B1M, atoms used by the zoom from skin to the proton: CC0 1.0, as stated in the wwPDB usage policies.
+Ueda J, Harada A, Urahama T, et al. Testis-specific histone variant H3t gene is essential for entry into spermatogenesis. Cell Rep 2017;18(3):593-600. doi:10.1016/j.celrep.2016.12.065. https://www.rcsb.org/structure/5B1M

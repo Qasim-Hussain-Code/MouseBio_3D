@@ -54,6 +54,51 @@ function overlaps(a: PlacedLabel, b: PlacedLabel, margin: number): boolean {
     && a.top < b.top + b.height + margin && b.top < a.top + a.height + margin;
 }
 
+/** Names in two columns beside the view, as on an anatomical plate, each with a line to what it names. */
+export interface PlateOptions {
+  readonly width: number;
+  readonly height: number;
+  readonly columnWidth: number;
+  /** Space kept clear at the top and bottom of each column, for the controls that lie over the view. */
+  readonly topLeft: number;
+  readonly topRight: number;
+  readonly bottomLeft: number;
+  readonly bottomRight: number;
+}
+
+const PLATE_GLYPH = 5.5, PLATE_PADDING = 8, PLATE_LINE = 13, PLATE_GAP = 3;
+
+export function layoutPlate(candidates: readonly LabelCandidate[], options: PlateOptions): PlacedLabel[] {
+  const { width, height, columnWidth, topLeft, topRight, bottomLeft, bottomRight } = options;
+  if (width < columnWidth * 2.5 || height <= 0) return [];
+  const heightOf = (name: string) => Math.ceil((name.length * PLATE_GLYPH) / (columnWidth - PLATE_PADDING * 2)) * PLATE_LINE + 6;
+  const room = { left: Math.max(0, height - bottomLeft - topLeft), right: Math.max(0, height - bottomRight - topRight) };
+  const columns: { left: LabelCandidate[]; right: LabelCandidate[] } = { left: [], right: [] };
+  const used = { left: 0, right: 0 };
+  // The selection first, then in order of priority. A name goes to the side it lies nearer, or the other side if that is full.
+  for (const candidate of [...candidates].sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id))) {
+    if (candidate.x < 0 || candidate.y < 0 || candidate.x > width || candidate.y > height) continue;
+    const size = heightOf(candidate.name) + PLATE_GAP;
+    const near = candidate.x < width / 2 ? 'left' : 'right', far = near === 'left' ? 'right' : 'left';
+    const side = used[near] + size <= room[near] ? near : used[far] + size <= room[far] ? far : null;
+    if (!side) continue;
+    columns[side].push(candidate); used[side] += size;
+  }
+  const placed: PlacedLabel[] = [];
+  for (const side of ['left', 'right'] as const) {
+    // In order of height on the screen, so that the lines do not cross more than they must.
+    const list = columns[side].sort((a, b) => a.y - b.y);
+    const start = side === 'left' ? topLeft : topRight;
+    let top = start + Math.max(0, (room[side] - used[side]) / 2);
+    for (const item of list) {
+      const boxHeight = heightOf(item.name);
+      placed.push({ id: item.id, name: item.name, anchorX: item.x, anchorY: item.y, left: side === 'left' ? 8 : width - columnWidth - 8, top: Math.round(top), width: columnWidth, height: boxHeight });
+      top += boxHeight + PLATE_GAP;
+    }
+  }
+  return placed;
+}
+
 /** Estimate the label box for a name. Deterministic and independent of fonts. */
 export function estimateLabelSize(name: string, options: LabelLayoutOptions): { width: number; height: number } {
   const glyph = options.glyphWidth ?? DEFAULTS.glyphWidth, padding = options.paddingX ?? DEFAULTS.paddingX;

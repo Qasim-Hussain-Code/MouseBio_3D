@@ -10,7 +10,7 @@ import { surfaceMeasures } from '../scripts/living/surface-nets';
 import { classifyVoxel, TRACED } from '../scripts/living/trace';
 import { declaresEvidence, evidenceGroups, evidenceMark, evidenceOf, labelWithEvidence, toggledEvidence } from '../src/domain/evidence';
 import { bodySurfaceIdFor, displayPostureFor, opensAsSkin } from '../src/domain/display-pose';
-import { coveredBySkin } from '../src/domain/reference-display';
+import { coveredBySkin, initialReferenceSelection } from '../src/domain/reference-display';
 import type { Atlas } from '../src/domain/types';
 import { COATS, createFur, FUR_DISPLAY, hasFurAttribute, scatterHairs } from '../src/viewer/fur';
 
@@ -21,6 +21,85 @@ const glbDocument = () => {
   const length = glb.readUInt32LE(12);
   return JSON.parse(glb.subarray(20, 20 + length).toString('utf8')) as { nodes: { mesh: number; extras: { structureId: string } }[]; meshes: { primitives: { attributes: Record<string, number>; indices: number }[] }[]; accessors: { count: number }[] };
 };
+
+/** Vertices of one structure, in millimetres, read from the binary part of the file. */
+const verticesOf = (id: string): number[][] => {
+  const length = glb.readUInt32LE(12);
+  const document = JSON.parse(glb.subarray(20, 20 + length).toString('utf8')) as {
+    nodes: { mesh: number; extras: { structureId: string } }[]; meshes: { primitives: { attributes: Record<string, number> }[] }[];
+    accessors: { bufferView: number; byteOffset?: number; count: number }[]; bufferViews: { byteOffset?: number; byteStride?: number }[];
+  };
+  const node = document.nodes.find((entry) => entry.extras.structureId === id);
+  assert.ok(node, id);
+  const accessor = document.accessors[document.meshes[node.mesh].primitives[0].attributes.POSITION];
+  const view = document.bufferViews[accessor.bufferView];
+  const start = 20 + length + 8 + (view.byteOffset ?? 0) + (accessor.byteOffset ?? 0), stride = view.byteStride ?? 12;
+  return Array.from({ length: accessor.count }, (_, i) => [0, 4, 8].map((step) => glb.readFloatLE(start + i * stride + step) * 1000));
+};
+const nearestTo = (point: number[], others: number[][]) => others.reduce((best, other) => Math.min(best, Math.hypot(point[0] - other[0], point[1] - other[1], point[2] - other[2])), Infinity);
+
+test('the fibulae are traced apart from the tibiae, and each patella lies at a knee', () => {
+  const named = (id: string) => atlas.structures.find((structure) => structure.id === id)!;
+  for (const side of ['r', 'l']) {
+    const fibula = named(`living:bone-fibula-${side}`), tibia = named(`living:bone-tibia-${side}`);
+    assert.equal(fibula.evidence, 'traced');
+    assert.match(fibula.description ?? '', /estimates/);
+    assert.doesNotMatch(tibia.name, /fibula/);
+    const away = verticesOf(fibula.id).filter((point, index) => index % 3 === 0);
+    const shin = verticesOf(tibia.id);
+    assert.ok(away.filter((point) => nearestTo(point, shin) > 0.8).length > away.length / 2, 'most of a fibula lies away from the tibia');
+  }
+  const patellae = named('living:patellae');
+  assert.equal(patellae.evidence, 'simulated');
+  assert.ok(patellae.basis?.length);
+  const femurs = [verticesOf('living:bone-femur-r'), verticesOf('living:bone-femur-l')];
+  for (const point of verticesOf(patellae.id).filter((_, index) => index % 11 === 0)) {
+    assert.ok(Math.min(...femurs.map((femur) => nearestTo(point, femur))) < 2, 'a patella lies against a femur');
+  }
+});
+
+test('the nose, throat and salivary glands follow their stated source, and the salivary glands are three pairs', () => {
+  const hummel = /^Hummel KP/;
+  for (const id of ['submandibular-glands', 'sublingual-glands', 'parotid-glands', 'nasal-cavities', 'turbinals', 'soft-palate', 'pharynx']) {
+    const structure = atlas.structures.find((entry) => entry.id === `living:${id}`);
+    assert.ok(structure, id);
+    assert.equal(structure.evidence, 'simulated');
+    assert.match(structure.description ?? '', /^Simulated\./);
+    assert.ok(structure.basis?.some((reference) => hummel.test(reference)), id);
+  }
+  assert.equal(atlas.structures.find((entry) => entry.id === 'living:salivary-glands'), undefined);
+  const centre = (id: string) => {
+    const points = verticesOf(id);
+    return [0, 1, 2].map((axis) => points.reduce((sum, point) => sum + point[axis], 0) / points.length);
+  };
+  // The body lies along the second axis, with the head towards low values.
+  assert.ok(centre('living:sublingual-glands')[1] < centre('living:submandibular-glands')[1], 'the sublingual glands lie in front of the submandibular glands');
+  assert.ok(centre('living:nasal-cavities')[1] < centre('living:pharynx')[1], 'the nasal cavities lie in front of the pharynx');
+});
+
+test('the gut holds no piece far from the abdomen, and the muscles of the eye and calcaneal tendons name their basis', () => {
+  const skin = verticesOf('living:skin');
+  const middle = skin.reduce((sum, point) => sum + point[0], 0) / skin.length;
+  for (const point of verticesOf('living:colon')) assert.ok(Math.abs(point[0] - middle) < 5, 'the colon stays near the midline');
+  for (const point of verticesOf('living:small-intestine')) assert.ok(point[1] > 45, 'the small intestine stays behind the chest');
+  for (const [id, reference] of [['extraocular-muscles', /^Marques MJ/], ['calcaneal-tendons', /^Sakabe T/]] as const) {
+    const structure = atlas.structures.find((entry) => entry.id === `living:${id}`);
+    assert.ok(structure, id);
+    assert.equal(structure.evidence, 'simulated');
+    assert.match(structure.description ?? '', /^Simulated\./);
+    assert.ok(structure.basis?.some((item) => reference.test(item)), id);
+  }
+});
+
+test('the new small structures are marked as simulated and name their basis', () => {
+  for (const id of ['middle-ears', 'pineal', 'parathyroids', 'adrenal-medullae', 'mammary-arteries', 'mammary-veins']) {
+    const structure = atlas.structures.find((entry) => entry.id === `living:${id}`);
+    assert.ok(structure, id);
+    assert.equal(structure.evidence, 'simulated');
+    assert.match(structure.description ?? '', /^Simulated\./);
+    assert.ok(structure.basis?.length);
+  }
+});
 
 test('the manifest binds the exact geometry, and the geometry holds exactly the declared structures', () => {
   assert.equal(atlas.statistics.glbBytes, glb.length);
@@ -51,7 +130,7 @@ test('every structure declares its evidence, its basis and, when simulated, says
     }
     if (structure.evidence === 'traced') assert.match(structure.description!, /[Tt]raced|isosurface|outer surface/, structure.id);
     if (structure.division) assert.match(structure.description!, /estimate/, structure.id);
-    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles/, reference);
+    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles|O'Connell|Fuller|Marques|Stuelsatz|Sakabe|Kochi|Rigaud|Shields/, reference);
   }
   assert.ok(counts.source >= 15 && counts.traced >= 5 && counts.simulated >= 30, JSON.stringify(counts));
 });
@@ -103,7 +182,7 @@ test('the living mouse opens as skin with exterior parts outside it, and inner p
   assert.equal(displayPostureFor(atlas)?.frameOnBody, true);
   const exterior = atlas.structures.filter((structure) => structure.exterior).map((structure) => structure.id);
   for (const id of ['living:eyes', 'living:pinnae', 'living:vibrissae', 'living:forepaws', 'living:hindpaws', 'living:tail', 'living:nose', 'living:claws']) assert.ok(exterior.includes(id), id);
-  for (const id of ['living:heart-lv', 'living:aorta', 'living:bone-skull', 'living:spinal-cord']) assert.ok(!exterior.includes(id), id);
+  for (const id of ['living:heart-lv', 'living:aorta', 'living:bone-frontal', 'living:spinal-cord']) assert.ok(!exterior.includes(id), id);
   assert.equal(coveredBySkin('living:aorta', 'living:skin', true, 1, 'off', false), true);
   assert.equal(coveredBySkin('living:eyes', 'living:skin', true, 1, 'off', true), false);
 });
@@ -140,14 +219,14 @@ test('routes pass through their control points, taper, and close; bodies have th
 test('the coat needs hair directions, scatters hairs by area, skips bare skin and repeats exactly', () => {
   const bare = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
   assert.equal(hasFurAttribute(bare.geometry), false);
-  assert.equal(createFur(bare, new THREE.Vector3(0, 0, 1)), null);
+  assert.equal(createFur(bare), null);
   const geometry = new THREE.BoxGeometry(0.01, 0.01, 0.01);
   const vertices = geometry.getAttribute('position').count;
   const directions = new Float32Array(4 * vertices);
   for (let i = 0; i < vertices; i++) directions.set([0, 1, 0, geometry.getAttribute('position').getX(i) > 0 ? 1 : 1], 4 * i);
   geometry.setAttribute('_fur', new THREE.BufferAttribute(directions, 4));
   const skin = new THREE.Mesh(geometry);
-  const fur = createFur(skin, new THREE.Vector3(0, 0, 1))!;
+  const fur = createFur(skin)!;
   assert.ok(fur);
   const instanced = fur.mesh.geometry as THREE.InstancedBufferGeometry;
   // Six faces of 1 cm: 600 square millimetres at the stated density.
@@ -175,4 +254,8 @@ test('the coat needs hair directions, scatters hairs by area, skips bare skin an
   fur.dispose();
   assert.equal(skin.children.length, 0);
   assert.ok(geometry.getAttribute('position'), 'the skin keeps its geometry');
+});
+
+test('the model opens with its body surface selected', () => {
+  assert.equal(initialReferenceSelection(atlas), 'living:skin');
 });

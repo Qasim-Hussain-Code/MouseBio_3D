@@ -1263,6 +1263,254 @@
         "notes": "Cited as a description of rat anatomy for nerves; no figure or text is redistributed. It describes the rat, not the mouse."
       },
       "decision": "descriptive_basis_for_simulated_nerves_nothing_redistributed"
+    },
+    {
+      "id": "oconnell2007-disc-geometry",
+      "title": "Comparison of animals used in disc research to human lumbar disc geometry",
+      "landingPage": "https://doi.org/10.1097/01.brs.0000253961.40910.c1",
+      "publication": {
+        "year": 2007,
+        "authors": [
+          "Grace D O'Connell",
+          "Edward J Vresilovic",
+          "Dawn M Elliott"
+        ],
+        "journal": "Spine",
+        "doi": "10.1097/01.brs.0000253961.40910.c1"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a description of intervertebral discs in the mouse, among other animals; no figure, table or text is redistributed, and no value from it is used."
+      },
+      "decision": "descriptive_basis_for_simulated_discs_nothing_redistributed"
+    },
+    {
+      "id": "fuller1966-neural-sensory-motor",
+      "title": "Neural, Sensory, and Motor Functions",
+      "landingPage": "https://www.informatics.jax.org/greenbook/chapters/chapter32.shtml",
+      "publication": {
+        "year": 1966,
+        "authors": [
+          "John L. Fuller",
+          "Richard E. Wimer"
+        ],
+        "series": "Chapter 32 of Biology of the Laboratory Mouse, 2nd edition, edited by Earl L. Green"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a description of the mouse eye; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_simulated_eye_layers_nothing_redistributed"
+    },
+    {
+      "id": "pdb-5b1m-ueda2017",
+      "title": "The mouse nucleosome structure containing H3.1",
+      "landingPage": "https://www.rcsb.org/structure/5B1M",
+      "publication": {
+        "year": 2017,
+        "authors": [
+          "Ueda J",
+          "Harada A",
+          "Urahama T",
+          "et al."
+        ],
+        "series": "Cell Reports 18(3):593-600, doi:10.1016/j.celrep.2016.12.065"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain, residue and atom names and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/nucleosome-5b1m.json. Water and ions are left out."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "simpson2011-skin",
+      "title": "Deconstructing the skin: cytoarchitectural determinants of epidermal morphogenesis",
+      "landingPage": "https://doi.org/10.1038/nrm3175",
+      "publication": {
+        "year": 2011,
+        "authors": [
+          "Simpson CL",
+          "Patel DM",
+          "Green KJ"
+        ],
+        "series": "Nature Reviews Molecular Cell Biology 12(9):565-80"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description or value in the zoom from skin to the proton; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_scale_journey_nothing_redistributed"
+    },
+    {
+      "id": "beck2017-nuclear-pore",
+      "title": "The nuclear pore complex: understanding its function through structural insight",
+      "landingPage": "https://doi.org/10.1038/nrm.2016.147",
+      "publication": {
+        "year": 2017,
+        "authors": [
+          "Beck M",
+          "Hurt E"
+        ],
+        "series": "Nature Reviews Molecular Cell Biology 18(2):73-89"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description or value in the zoom from skin to the proton; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_scale_journey_nothing_redistributed"
+    },
+    {
+      "id": "ou2017-chromemt",
+      "title": "ChromEMT: visualizing 3D chromatin structure and compaction in interphase and mitotic cells",
+      "landingPage": "https://doi.org/10.1126/science.aag0025",
+      "publication": {
+        "year": 2017,
+        "authors": [
+          "Ou HD",
+          "Phan S",
+          "Deerinck TJ",
+          "et al."
+        ],
+        "series": "Science 357(6349):eaag0025"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description or value in the zoom from skin to the proton; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_scale_journey_nothing_redistributed"
+    },
+    {
+      "id": "luger1997-nucleosome",
+      "title": "Crystal structure of the nucleosome core particle at 2.8 A resolution",
+      "landingPage": "https://doi.org/10.1038/38444",
+      "publication": {
+        "year": 1997,
+        "authors": [
+          "Luger K",
+          "Mader AW",
+          "Richmond RK",
+          "Sargent DF",
+          "Richmond TJ"
+        ],
+        "series": "Nature 389(6648):251-60"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description or value in the zoom from skin to the proton; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_scale_journey_nothing_redistributed"
+    },
+    {
+      "id": "clementi1963-screening",
+      "title": "Atomic screening constants from SCF functions",
+      "landingPage": "https://doi.org/10.1063/1.1733573",
+      "publication": {
+        "year": 1963,
+        "authors": [
+          "Clementi E",
+          "Raimondi DL"
+        ],
+        "series": "Journal of Chemical Physics 38(11):2686-9"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description or value in the zoom from skin to the proton; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_scale_journey_nothing_redistributed"
+    },
+    {
+      "id": "angeli2013-charge-radii",
+      "title": "Table of experimental nuclear ground state charge radii: an update",
+      "landingPage": "https://doi.org/10.1016/j.adt.2011.12.006",
+      "publication": {
+        "year": 2013,
+        "authors": [
+          "Angeli I",
+          "Marinova KP"
+        ],
+        "series": "Atomic Data and Nuclear Data Tables 99(1):69-95"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description or value in the zoom from skin to the proton; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_scale_journey_nothing_redistributed"
+    },
+    {
+      "id": "pdg2024-review",
+      "title": "Review of Particle Physics",
+      "landingPage": "https://doi.org/10.1103/PhysRevD.110.030001",
+      "publication": {
+        "year": 2024,
+        "authors": [
+          "Navas S",
+          "et al. (Particle Data Group)"
+        ],
+        "series": "Physical Review D 110:030001"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description or value in the zoom from skin to the proton; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_scale_journey_nothing_redistributed"
+    },
+    {
+      "id": "marques2007-extraocular",
+      "title": "Acetylcholine receptor organization at the dystrophic extraocular muscle neuromuscular junction",
+      "landingPage": "https://doi.org/10.1002/ar.20525",
+      "publication": {
+        "year": 2007,
+        "authors": [
+          "Marques MJ",
+          "Pertille A",
+          "Carvalho CLT",
+          "Santo Neto H"
+        ],
+        "series": "Anatomical Record 290(7):846-54"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description in the simulated anatomy of the living mouse model; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_simulated_anatomy_nothing_redistributed"
+    },
+    {
+      "id": "stuelsatz2016-extraocular",
+      "title": "Isolation of mouse periocular tissue for histological and immunostaining analyses of the extraocular muscles and their satellite cells",
+      "landingPage": "https://doi.org/10.1007/978-1-4939-3810-0_9",
+      "publication": {
+        "year": 2016,
+        "authors": [
+          "Stuelsatz P",
+          "Yablonka-Reuveni Z"
+        ],
+        "series": "Methods in Molecular Biology 1460:101-27"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description in the simulated anatomy of the living mouse model; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_simulated_anatomy_nothing_redistributed"
+    },
+    {
+      "id": "sakabe2018-tendon",
+      "title": "Transcription factor scleraxis vitally contributes to progenitor lineage direction in wound healing of adult tendon in mice",
+      "landingPage": "https://doi.org/10.1074/jbc.RA118.001987",
+      "publication": {
+        "year": 2018,
+        "authors": [
+          "Sakabe T",
+          "Sakai K",
+          "Maeda T",
+          "et al."
+        ],
+        "series": "Journal of Biological Chemistry 293(16):5766-80"
+      },
+      "license": {
+        "identifier": "Not reviewed",
+        "notes": "Cited as a published description in the simulated anatomy of the living mouse model; no figure or text is redistributed."
+      },
+      "decision": "descriptive_basis_for_simulated_anatomy_nothing_redistributed"
     }
   ]
 }

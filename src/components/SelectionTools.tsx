@@ -10,13 +10,15 @@ export interface SelectionToolsProps {
   onToggleHidden: () => void;
   /** Toggle isolation or restore the surrounding source records. */
   onIsolate: () => void;
+  /** Go on to the cells of this tissue, where a zoom has been made for it. */
+  onZoomIn?: () => void;
   onOpacityChange: (opacity: number) => void;
   onOpenDetails: () => void;
 }
 
 /** Presentation controls for an existing source record, including line references. */
 export function SelectionTools({ selected, hidden, opacity, isolated, onFocus, onToggleHidden,
-  onIsolate, onOpacityChange, onOpenDetails }: SelectionToolsProps) {
+  onIsolate, onZoomIn, onOpacityChange, onOpenDetails }: SelectionToolsProps) {
   const nameId = useId(), opacityId = useId();
   if (!selected) return <section className="selection-tools selection-tools--empty" aria-label="Selection tools">
     <p>Select a structure or source record.</p>
@@ -34,6 +36,7 @@ export function SelectionTools({ selected, hidden, opacity, isolated, onFocus, o
       <button type="button" onClick={onFocus} aria-label="Focus selected structure or source record">Focus</button>
       <button type="button" onClick={onToggleHidden} aria-label={`${hidden ? 'Show' : 'Hide'} selected structure or source record`}>{hidden ? 'Show' : 'Hide'}</button>
       <button type="button" onClick={onIsolate} aria-label={isolated ? 'Restore other structures or source records' : 'Isolate selected structure or source record'}>{isolated ? 'Restore' : 'Isolate'}</button>
+      {onZoomIn && <button type="button" onClick={onZoomIn} aria-label="Zoom into the tissue of the selected structure">Zoom in</button>}
       <button type="button" className="selection-tools__details" onClick={onOpenDetails} aria-label="Open details for selected structure or source record">Details</button>
     </div>
     <div className="selection-tools__opacity">

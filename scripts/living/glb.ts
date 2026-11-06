@@ -9,6 +9,8 @@ export interface GlbSurface {
   readonly colors?: Float32Array;
   /** Optional per-vertex fur length factor and direction, read by the coat display. */
   readonly fur?: Float32Array;
+  /** Optional per-vertex place on the coat pattern, below zero on the back and above zero on the belly, read by the coat display. */
+  readonly coat?: Float32Array;
   /** Optional per-vertex fibre direction and tendon weight, read by the muscle display. */
   readonly fibre?: Float32Array;
 }
@@ -48,6 +50,7 @@ export function writeGlb(surfaces: readonly GlbSurface[], generator: string): Bu
     };
     if (surface.colors) attributes.COLOR_0 = attribute(surface.colors, 'VEC3');
     if (surface.fur) attributes._FUR = attribute(surface.fur, 'VEC4');
+    if (surface.coat) attributes._COAT = attribute(surface.coat, 'SCALAR');
     if (surface.fibre) attributes._FIBER = attribute(surface.fibre, 'VEC4');
     const small = count <= 65535;
     const indexBytes = small ? Buffer.from(Uint16Array.from(surface.indices).buffer) : bytesOf(surface.indices);

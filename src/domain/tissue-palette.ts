@@ -8,7 +8,7 @@ import type { Structure, SystemId } from './types';
  * because they are part of that source's record. The source scheme shows the
  * colours written in each manifest.
  */
-export type ColourScheme = 'tissue' | 'source';
+export type ColourScheme = 'tissue' | 'source' | 'contrast';
 
 /** Fallback by first system category when a manifest declares no colour. */
 export const SYSTEM_COLOURS: Readonly<Record<SystemId, string>> = Object.freeze({
@@ -65,9 +65,29 @@ export function tissueColour(structure: Pick<Structure, 'name' | 'sourceLabel'>)
   return TISSUE_COLOURS.find(([pattern]) => pattern.test(words))?.[1];
 }
 
+/**
+ * A colour that depends only on the structure's identifier, so that neighbouring structures can be told apart and the
+ * colour stays the same between visits. It carries no meaning.
+ */
+export function contrastColour(id: string): string {
+  let hash = 2166136261;
+  for (let i = 0; i < id.length; i++) { hash ^= id.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+  const value = hash >>> 0;
+  const hue = (value * 0.61803398875) % 1;
+  const saturation = 0.5 + 0.3 * ((value >>> 8) % 3) / 2, lightness = 0.42 + 0.22 * ((value >>> 12) % 3) / 2;
+  const channel = (shift: number) => {
+    const k = (shift + hue * 12) % 12;
+    const level = lightness - saturation * Math.min(lightness, 1 - lightness) * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(255 * level).toString(16).padStart(2, '0');
+  };
+  return `#${channel(0)}${channel(8)}${channel(4)}`;
+}
+
 /** The display colour of a region under a scheme. Quantitative overlays replace it separately. */
 export function displayColour(structure: Structure, scheme: ColourScheme = 'tissue'): string {
+  if (scheme === 'contrast') return contrastColour(structure.id);
   const fallback = declaredColour(structure) ?? SYSTEM_COLOURS[structure.systems[0] as SystemId] ?? '#9ba5a1';
-  if (scheme === 'source' || hasSourceDeclaredColour(structure)) return fallback;
+  // A constructed model that declares evidence for each structure also chooses each colour on purpose, and its names are not source label words.
+  if (scheme === 'source' || hasSourceDeclaredColour(structure) || structure.evidence) return fallback;
   return tissueColour(structure) ?? fallback;
 }
