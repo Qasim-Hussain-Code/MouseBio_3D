@@ -124,15 +124,17 @@ async function openApp() {
   return view;
 }
 
-test('all layers together opens beside the mouse, declares itself a display, and closes again', async () => {
+test('a named place opens beside the mouse, declares itself a display, and closes again', async () => {
   window.history.replaceState(null, '', '/');
   expectedRequests = ['/atlas-living/atlas.json'];
   const view = render(createElement(App));
   await view.findByRole('heading', { name: 'Explore the mouse' }, { timeout: 10_000 });
   await view.findByText(/WebGL could not start/, undefined, { timeout: 10_000 });
   showTab(view, 'Layers');
-  const start = view.getAllByRole('button', { name: /Show all layers together/ });
-  assert.equal(start.length, 2);
+  // Zooming opens the mouse; a named place is the secondary way, in the panel only.
+  const start = view.getAllByRole('button', { name: /Open a named place/ });
+  assert.equal(start.length, 1);
+  assert.match(start[0].textContent ?? '', /Zooming opens the mouse where you point/);
   fireEvent.click(start[0]);
   const panel = await view.findByRole('region', { name: 'All layers together' });
   assert.equal((within(panel).getByRole('slider', { name: 'How far the layers are open' }) as HTMLInputElement).value, '100');
@@ -143,10 +145,48 @@ test('all layers together opens beside the mouse, declares itself a display, and
   assert.equal(within(panel).getByRole('button', { name: 'Thigh' }).getAttribute('aria-pressed'), 'true');
   fireEvent.click(within(panel).getByRole('checkbox', { name: 'Fold the skin back' }));
   assert.equal((within(panel).getByRole('checkbox', { name: 'Fold the skin back' }) as HTMLInputElement).checked, true);
-  assert.equal(view.queryAllByRole('button', { name: /Show all layers together/ }).length, 0);
+  assert.equal(view.queryAllByRole('button', { name: /Open a named place/ }).length, 0);
   fireEvent.click(within(panel).getByRole('button', { name: 'Close' }));
   assert.equal(view.queryByRole('region', { name: 'All layers together' }), null);
-  assert.equal(view.getAllByRole('button', { name: /Show all layers together/ }).length, 2);
+  assert.equal(view.getAllByRole('button', { name: /Open a named place/ }).length, 1);
+});
+
+test('the living mouse names its motion as illustrative where it can be seen, and it can be paused and turned off', async () => {
+  window.history.replaceState(null, '', '/');
+  expectedRequests = ['/atlas-living/atlas.json'];
+  const view = render(createElement(App));
+  await view.findByRole('heading', { name: 'Explore the mouse' }, { timeout: 10_000 });
+  await view.findByText(/WebGL could not start/, undefined, { timeout: 10_000 });
+  const badge = view.getByRole('group', { name: 'Illustrative motion' });
+  assert.match(badge.textContent ?? '', /^Illustrative motion/);
+  assert.match(badge.getAttribute('title') ?? '', /not a simulation of physiology/);
+  fireEvent.click(view.getByRole('button', { name: 'Living' }));
+  assert.equal(view.queryByText('No physiological motion is available for this reference.'), null);
+  // One step further, what the rates come from and what was chosen for viewing.
+  assert.ok(view.getByText('About this motion'));
+  assert.ok(view.getByText(/^Illustrative motion, not a simulation of physiology/));
+  assert.ok(view.getByText('Heart 600/min, breathing 240/min; shown at 1/10 of real rate, as 60/min and 24/min'));
+  assert.ok(view.getByRole('link', { name: 'doi:10.1002/9780470942390.mo100159' }));
+  assert.ok(view.getByRole('link', { name: 'doi:10.1098/rstb.2011.0156' }));
+  assert.ok(view.getByText(/far larger than cells and far slower/));
+  fireEvent.change(view.getByRole('combobox', { name: 'Share of real rate shown' }), { target: { value: '0.5' } });
+  assert.ok(view.getByText('Heart 600/min, breathing 240/min; shown at 1/2 of real rate, as 300/min and 120/min'));
+  const blood = view.getByRole('checkbox', { name: 'Blood' }) as HTMLInputElement;
+  assert.equal(blood.checked, true);
+  fireEvent.click(blood);
+  assert.equal(blood.checked, false);
+  fireEvent.click(within(badge).getByRole('button', { name: 'Walk' }));
+  assert.equal(within(badge).getByRole('button', { name: 'Stand' }).getAttribute('aria-pressed'), 'true');
+  fireEvent.click(within(badge).getByRole('button', { name: 'Stand' }));
+  fireEvent.click(within(badge).getByRole('button', { name: 'Pause' }));
+  assert.ok(within(badge).getByRole('button', { name: 'Play' }));
+  const motion = view.getByRole('checkbox', { name: 'Motion' }) as HTMLInputElement;
+  fireEvent.click(motion);
+  assert.equal(motion.checked, false);
+  assert.equal(view.queryByRole('group', { name: 'Illustrative motion' }), null, 'nothing moves, so nothing is named');
+  assert.equal((view.getByRole('checkbox', { name: 'Heart' }) as HTMLInputElement).disabled, true);
+  fireEvent.click(motion);
+  assert.ok(view.getByRole('group', { name: 'Illustrative motion' }));
 });
 
 test('the living mouse opens first and marks the evidence of every structure', async () => {

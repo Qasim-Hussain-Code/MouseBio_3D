@@ -30,4 +30,4 @@ These are known to exist and are not in the model. The list is not complete.
 - **Glands of the head and skin:** Meibomian glands, the vomeronasal organ and the gland of the ear canal.
 - **Nerve and vessel:** autonomic and enteric plexuses, named vessels and nerves of the paws and digits, which are simple courses, and small vessels, nerves and lymphatics in general. No simulated tree follows a real vessel.
 - **Other sexes and ages:** the female tract and mammary glands, because the specimen is an adult male.
-- **Tissue and cell detail in the anatomical model:** there is none below about 0.1 mm. The separate [zoom from skin to the proton](scale-journey.md) illustrates such scales for skin and twelve other tissues, and is not data from this specimen. It has no route for the colon, caecum, stomach, spleen, bladder, glands or other organs.
+- **Tissue and cell detail in the anatomical model:** there is none below about 0.1 mm. [The zoom below the layers](scale-journey.md) illustrates such scales for every structure, by way of thirty kinds of tissue, and is not data from this specimen. A route is the nearest kind of tissue and not always an exact match.

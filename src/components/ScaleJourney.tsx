@@ -1,21 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import * as THREE from 'three';
 import {
-  EVIDENCE_LABEL, formatLength, formatMagnification, JOURNEY_NOTICE, journeyLevels, levelAim, levelAt, levelFade, levelHome, magnification, scaleBarLength,
-  type JourneyLevel, type JourneyTissue,
+  EVIDENCE_LABEL, EVIDENCE_SHORT, formatLength, JOURNEY_NOTICE, journeyLevels, levelAim, levelAt, levelFade, levelHome, playStep, scaleBarLength,
+  type JourneyLevel, type JourneyTail, type JourneyTissue,
 } from '../domain/scale-journey';
 import { disposeScene, isNucleosomeData, JOURNEY_BUILDERS, type JourneyScene, type NucleosomeData } from '../viewer/scale-journey-scenes';
 import { TISSUE_BUILDERS } from '../viewer/tissue-scenes';
+import { MORE_TISSUE_BUILDERS } from '../viewer/more-tissue-scenes';
+import { DEEP_BUILDERS, HEMOGLOBIN_BUILDERS, isHemoglobinData, type HemoglobinData } from '../viewer/deep-scenes';
+import { lifeAt, rateLabel, type LifeSettings } from '../domain/living-simulation';
 
 const NUCLEOSOME_URL = '/scale-journey/nucleosome-5b1m.json';
+const HEMOGLOBIN_URL = '/scale-journey/hemoglobin-3hrw.json';
 const FIELD_OF_VIEW = 30;
 
 /** One step of the wheel changes the view by this factor per unit of wheel delta. */
 const WHEEL_RATE = 0.0016;
 
 type DataState = 'loading' | 'ready' | 'failed';
-interface ShownLabel { readonly text: string; readonly x: number; readonly y: number }
+interface ShownLabel { readonly text: string; readonly x: number; readonly y: number; readonly way?: JourneyTail }
 
 /** Moves labels upward until none covers another. The widths are estimates from the length of the text. */
 function separateLabels(labels: readonly ShownLabel[]): ShownLabel[] {
@@ -37,12 +40,23 @@ function separateLabels(labels: readonly ShownLabel[]): ShownLabel[] {
  * A continuous zoom from a block of skin to the quarks of a proton. Each level is its own scene and is scaled from its reference length to the height of the view, so that
  * no single coordinate has to span the thirteen orders of magnitude. None of it is part of an anatomical reference.
  */
-export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readonly onExit: () => void; readonly tissue?: JourneyTissue; readonly from?: string }) {
-  const levels = useMemo(() => journeyLevels(tissue), [tissue]);
-  const widest = levels[0].startMetres, narrowest = levels[levels.length - 1].endMetres;
+export default function ScaleJourney({ onExit, tissue = 'skin', from, place, life, autoplay = false }: { readonly onExit: () => void; readonly tissue?: JourneyTissue; readonly from?: string; readonly place?: string; readonly life?: LifeSettings; readonly autoplay?: boolean }) {
+  const [playing, setPlaying] = useState<'in' | 'out' | null>(autoplay ? 'in' : null);
+  const playingRef = useRef(playing);
+  playingRef.current = playing;
+  const lifeRef = useRef(life);
+  lifeRef.current = life;
+  const [moving, setMoving] = useState(false);
+  const [tail, setTail] = useState<JourneyTail>('nucleus');
+  const levels = useMemo(() => journeyLevels(tissue, tail), [tissue, tail]);
+  const levelsRef = useRef(levels), tailRef = useRef(tail);
+  levelsRef.current = levels; tailRef.current = tail;
   const dialog = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
-  const view = useRef(levelHome(levels[0], levels));
+  // The zoom arrives from the mouse at the view it was at, so the level starts at its widest.
+  const view = useRef(levels[0].startMetres);
+  /** The point under the pointer, in view heights from the middle, and how far the user has moved off the way on, in metres. */
+  const pointer = useRef({ x: 0, y: 0 }), pan = useRef({ x: 0, y: 0 });
   const target = useRef<number | null>(null);
   const dirty = useRef(true);
   const [viewMetres, setViewMetres] = useState(view.current);
@@ -51,26 +65,35 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readon
   const [dataState, setDataState] = useState<DataState>('loading');
   const [labels, setLabels] = useState<readonly ShownLabel[]>([]);
   const [showBasis, setShowBasis] = useState(false);
-  const exitPressure = useRef(0);
   const exit = useRef(onExit);
   exit.current = onExit;
   const level = levelAt(viewMetres, levels);
 
   const zoomBy = useCallback((factor: number) => {
     target.current = null;
-    const next = Math.max(narrowest, Math.min(widest, view.current * factor));
+    const route = levelsRef.current;
+    const next = Math.max(route[route.length - 1].endMetres, Math.min(route[0].startMetres, view.current * factor));
     if (next === view.current && factor > 1) {
-      // Zooming out past the block of skin goes back to the mouse.
-      exitPressure.current += 1;
-      if (exitPressure.current >= 2) exit.current();
+      // Zooming out past the first level goes back to the mouse.
+      exit.current();
       return;
     }
-    exitPressure.current = 0;
+    // The point under the pointer stays there as the view narrows, as on a map.
+    const moved = view.current - next;
+    const reach = levelAt(next, route).referenceMetres * 0.8;
+    pan.current.x = Math.max(-reach, Math.min(reach, pan.current.x + pointer.current.x * moved));
+    pan.current.y = Math.max(-reach, Math.min(reach, pan.current.y + pointer.current.y * moved));
     view.current = next;
     dirty.current = true;
     setViewMetres(next);
   }, []);
-  const goTo = useCallback((destination: JourneyLevel) => { target.current = levelHome(destination, levels); dirty.current = true; }, [levels]);
+  const goTo = useCallback((destination: JourneyLevel) => { playingRef.current = null; setPlaying(null); pan.current = { x: 0, y: 0 }; target.current = levelHome(destination, levelsRef.current); dirty.current = true; }, []);
+  const togglePlay = () => {
+    if (playing) { setPlaying(null); return; }
+    target.current = null;
+    // From the very bottom it plays back up. From anywhere else it plays on down.
+    setPlaying(view.current <= levelsRef.current[levelsRef.current.length - 1].endMetres * 1.01 ? 'out' : 'in');
+  };
 
   useEffect(() => { dialog.current?.focus(); }, []);
 
@@ -99,8 +122,23 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readon
     camera.position.z = 0.5 / Math.tan(THREE.MathUtils.degToRad(FIELD_OF_VIEW) / 2);
     const rotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.26, -0.42, 0));
 
-    let nucleosome: NucleosomeData | null = null;
+    let nucleosome: NucleosomeData | null = null, hemoglobin: HemoglobinData | null = null, hemoglobinAsked = false;
     let disposed = false;
+    const askForHemoglobin = () => {
+      if (hemoglobinAsked) return;
+      hemoglobinAsked = true;
+      setDataState('loading');
+      fetch(HEMOGLOBIN_URL).then((response) => {
+        if (!response.ok) throw new Error('The measured structure could not be loaded.');
+        return response.json();
+      }).then((value: unknown) => {
+        if (disposed) return;
+        if (!isHemoglobinData(value)) throw new Error('The measured structure is not valid.');
+        hemoglobin = value;
+        setDataState('ready');
+        dirty.current = true;
+      }).catch(() => { if (!disposed) setDataState('failed'); });
+    };
     fetch(NUCLEOSOME_URL).then((response) => {
       if (!response.ok) throw new Error('The measured structure could not be loaded.');
       return response.json();
@@ -124,8 +162,9 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readon
     const ensure = (entry: JourneyLevel): JourneyScene | null => {
       const existing = built.get(entry.id);
       if (existing) return existing;
-      const tissueScene = TISSUE_BUILDERS[entry.id];
-      const made = tissueScene ? tissueScene() : JOURNEY_BUILDERS[entry.id]?.(nucleosome) ?? null;
+      const tissueScene = TISSUE_BUILDERS[entry.id] ?? MORE_TISSUE_BUILDERS[entry.id] ?? DEEP_BUILDERS[entry.id];
+      if (HEMOGLOBIN_BUILDERS[entry.id] && !hemoglobin) askForHemoglobin();
+      const made = tissueScene ? tissueScene() : HEMOGLOBIN_BUILDERS[entry.id] ? (hemoglobin ? HEMOGLOBIN_BUILDERS[entry.id](hemoglobin) : null) : JOURNEY_BUILDERS[entry.id]?.(nucleosome) ?? null;
       if (!made) return null;
       if (made.cut) {
         const world = new THREE.Plane();
@@ -151,28 +190,61 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readon
     observer?.observe(element);
     resize();
 
+    const notePointer = (event: { clientX: number; clientY: number }) => {
+      const box = element.getBoundingClientRect();
+      if (box.height > 0) pointer.current = { x: (event.clientX - box.left - box.width / 2) / box.height, y: -(event.clientY - box.top - box.height / 2) / box.height };
+    };
+    const place3 = new THREE.Vector3();
+    /** At a level with more than one way on, the one nearest the pointer is taken. */
+    const chooseWay = () => {
+      const entry = levelAt(view.current, levelsRef.current), item = built.get(entry.id);
+      if (!item?.branches?.length) return;
+      const options: { tail: JourneyTail; at: THREE.Vector3 }[] = [{ tail: 'nucleus', at: item.focus }, ...item.branches];
+      let best = options[0], closest = Infinity;
+      for (const option of options) {
+        place3.copy(option.at).applyMatrix4(item.group.matrixWorld).project(camera);
+        const away = Math.hypot(place3.x * camera.aspect / 2 - pointer.current.x, place3.y / 2 - pointer.current.y);
+        if (away < closest) { closest = away; best = option; }
+      }
+      if (best.tail !== tailRef.current) { tailRef.current = best.tail; setTail(best.tail); dirty.current = true; }
+    };
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
+      notePointer(event);
+      if (playingRef.current) { playingRef.current = null; setPlaying(null); }
+      if (event.deltaY < 0) chooseWay();
       zoomBy(10 ** (event.deltaY * WHEEL_RATE * (event.deltaMode === 1 ? 30 : 1)));
     };
     element.addEventListener('wheel', onWheel, { passive: false });
-    let dragging: { x: number; y: number } | null = null;
-    const onDown = (event: PointerEvent) => { dragging = { x: event.clientX, y: event.clientY }; element.setPointerCapture?.(event.pointerId); };
+    let dragging: { x: number; y: number; moving: boolean } | null = null;
+    const onDown = (event: PointerEvent) => { dragging = { x: event.clientX, y: event.clientY, moving: event.shiftKey || event.button === 2 }; element.setPointerCapture?.(event.pointerId); };
     const onMove = (event: PointerEvent) => {
+      notePointer(event);
       if (!dragging) return;
+      if (dragging.moving) {
+        // Dragging with shift or the right button moves the view across this level.
+        const box = Math.max(element.clientHeight, 1);
+        pan.current.x -= (event.clientX - dragging.x) / box * view.current;
+        pan.current.y += (event.clientY - dragging.y) / box * view.current;
+        dragging = { ...dragging, x: event.clientX, y: event.clientY };
+        dirty.current = true;
+        return;
+      }
       const yaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), (event.clientX - dragging.x) * 0.006);
       const pitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), (event.clientY - dragging.y) * 0.006);
       rotation.premultiply(yaw).premultiply(pitch);
-      dragging = { x: event.clientX, y: event.clientY };
+      dragging = { ...dragging, x: event.clientX, y: event.clientY };
       dirty.current = true;
     };
     const onUp = () => { dragging = null; };
+    const onMenu = (event: Event) => event.preventDefault();
+    element.addEventListener('contextmenu', onMenu);
     element.addEventListener('pointerdown', onDown);
     element.addEventListener('pointermove', onMove);
     element.addEventListener('pointerup', onUp);
 
     const anchor = new THREE.Vector3();
-    let frame = 0, last = 0;
+    let frame = 0, last = 0, motionWaited = 0, animalSeconds = 0, shownSeconds = 0, motionClock = 0, lastLevel: JourneyLevel | null = null;
     const loop = (time: number) => {
       frame = requestAnimationFrame(loop);
       if (target.current !== null) {
@@ -186,11 +258,34 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readon
         dirty.current = true;
         setViewMetres(view.current);
       }
+      const passed = Math.min(0.2, (time - last) / 1000);
+      if (playingRef.current && !document.hidden) {
+        // Playing goes on at an even pace down to the last level, or back up to the first.
+        const step = playStep(view.current, playingRef.current, passed, levelsRef.current);
+        if (step.ended) { playingRef.current = null; setPlaying(null); }
+        view.current = step.view;
+        dirty.current = true;
+        setViewMetres(step.view);
+      }
       last = time;
+      // Levels with an illustrative motion move on their own, at most about thirty times a second, and only while they are in view.
+      const lifeNow = lifeRef.current;
+      const inMotion = lifeNow?.on && lifeNow.playing && !document.hidden ? [...built.values()].filter((item) => item.animate && item.group.visible) : [];
+      motionWaited += passed;
+      if (inMotion.length && motionWaited >= 1 / 30) {
+        animalSeconds += motionWaited * lifeNow!.rate; shownSeconds += motionWaited; motionClock += motionWaited * lifeNow!.rate / 0.1; motionWaited = 0;
+        const now = lifeAt(animalSeconds, shownSeconds, lifeNow!);
+        for (const item of inMotion) item.animate!({ seconds: motionClock, beats: now.beats, ventricles: now.ventricles, breath: now.breath });
+        dirty.current = true;
+      }
       if (!dirty.current || document.hidden) return;
       dirty.current = false;
       const metres = view.current;
       let leading: JourneyScene | null = null, leadingFade = 0;
+      const levels = levelsRef.current;
+      const here = levelAt(metres, levels);
+      if (here !== lastLevel) { lastLevel = here; pan.current = { x: 0, y: 0 }; }
+      for (const [id, item] of built) if (!levels.some((entry) => entry.id === id)) item.group.visible = false;
       for (const entry of levels) {
         const fade = levelFade(entry, metres, levels);
         const item = fade > 0.001 ? ensure(entry) : built.get(entry.id) ?? null;
@@ -198,10 +293,13 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readon
         item.group.visible = fade > 0.001;
         if (!item.group.visible) continue;
         const scale = entry.referenceMetres / metres;
-        const centre = item.start.clone().lerp(item.focus, levelAim(entry, metres, levels));
+        const aim = levelAim(entry, metres, levels);
+        const centre = item.start.clone().lerp(item.branches?.find((branch) => branch.tail === tailRef.current)?.at ?? item.focus, aim);
         item.group.scale.setScalar(scale);
         item.group.quaternion.copy(rotation);
         item.group.position.copy(centre).applyQuaternion(rotation).multiplyScalar(-scale);
+        // Off the way on while the level is being looked at, and back on it by the time the next one comes.
+        if (entry === here) { item.group.position.x -= pan.current.x / metres * (1 - aim); item.group.position.y -= pan.current.y / metres * (1 - aim); }
         item.group.updateMatrixWorld(true);
         if (item.cut) worldCuts.get(item.cut)?.copy(item.cut).applyMatrix4(item.group.matrixWorld);
         for (const made of materialsOf(item)) {
@@ -211,12 +309,17 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readon
         if (fade >= leadingFade) { leading = item; leadingFade = fade; }
       }
       renderer.render(scene, camera);
+      setMoving(!!(leading as JourneyScene | null)?.animate && !!lifeRef.current?.on);
       const width = element.clientWidth, height = element.clientHeight;
       const shown: ShownLabel[] = [];
-      if (leading && leadingFade > 0.7) for (const label of leading.labels) {
-        anchor.copy(label.at).applyMatrix4(leading.group.matrixWorld).project(camera);
-        const x = (anchor.x + 1) / 2 * width, y = (1 - anchor.y) / 2 * height;
-        if (anchor.z < 1 && x > 40 && x < width - 40 && y > 36 && y < height - 8) shown.push({ text: label.text, x: Math.round(x), y: Math.round(y) });
+      if (leading && leadingFade > 0.7) {
+        const scene: JourneyScene = leading;
+        const ways = (scene.branches ?? []).map((branch) => ({ text: branch.text, at: branch.at, way: branch.tail as JourneyTail | undefined }));
+        for (const label of [...ways, ...scene.labels.map((item) => ({ text: item.text, at: item.at, way: undefined as JourneyTail | undefined }))]) {
+          anchor.copy(label.at).applyMatrix4(scene.group.matrixWorld).project(camera);
+          const x = (anchor.x + 1) / 2 * width, y = (1 - anchor.y) / 2 * height;
+          if (anchor.z < 1 && x > 40 && x < width - 40 && y > 36 && y < height - 8) shown.push({ text: label.text, x: Math.round(x), y: Math.round(y), way: label.way });
+        }
       }
       const placed = separateLabels(shown);
       setLabels((previous) => (previous.length === placed.length && previous.every((item, i) => item.text === placed[i].text && Math.abs(item.x - placed[i].x) < 2 && Math.abs(item.y - placed[i].y) < 2) ? previous : placed));
@@ -230,6 +333,7 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readon
       element.removeEventListener('pointerdown', onDown);
       element.removeEventListener('pointermove', onMove);
       element.removeEventListener('pointerup', onUp);
+      element.removeEventListener('contextmenu', onMenu);
       for (const item of built.values()) { scene.remove(item.group); disposeScene(item); }
       renderer.dispose();
       renderer.domElement.remove();
@@ -249,42 +353,41 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from }: { readon
 
   const bar = scaleBarLength(viewMetres);
   const index = levels.indexOf(level);
-  const needsData = level.id === 'nucleosome' || level.id === 'dna';
-  return createPortal(<div className="scale-journey" ref={dialog} role="dialog" aria-modal="true" aria-label={`Zoom from ${from ?? 'skin'} to the smallest known structure`} tabIndex={-1} data-view-metres={viewMetres}>
-    <header className="scale-journey-head">
-      <div className="scale-journey-title">
-        <h2>{level.name}</h2>
-        <span className={`scale-journey-chip evidence-${level.evidence}`}>{EVIDENCE_LABEL[level.evidence]}</span>
-      </div>
-      <p className="scale-journey-notice">{from ? `Zooming into: ${from}. A representative example of this tissue, not this part of this mouse. ` : ''}{JOURNEY_NOTICE}</p>
-    </header>
+  const needsData = ['nucleosome', 'dna', 'hemoglobin', 'heme'].includes(level.id);
+  return <div className="scale-journey" ref={dialog} role="region" aria-label={`Zoom from ${from ?? 'skin'} to the smallest known structure`} tabIndex={-1} data-view-metres={viewMetres}>
     <div className="scale-journey-stage">
       <div className="scale-journey-canvas" ref={host} />
-      {labels.map((label) => <span key={`${label.text}-${label.x}`} className="scale-journey-label" style={{ left: label.x, top: label.y }}>{label.text}</span>)}
+      {labels.map((label) => label.way
+        ? <button type="button" key={`${label.text}-${label.x}`} className={`scale-journey-label is-way ${label.way === tail ? 'is-chosen' : ''}`} style={{ left: label.x, top: label.y }} onClick={() => setTail(label.way!)}>{label.text}</button>
+        : <span key={`${label.text}-${label.x}`} className="scale-journey-label" style={{ left: label.x, top: label.y }}>{label.text}</span>)}
       <div className="scale-journey-scale">
         <span className="scale-journey-bar" style={{ width: stageHeight * bar / viewMetres }} />
         <strong>{formatLength(bar)}</strong>
-        <small>Height of view {formatLength(viewMetres)}, about {formatMagnification(magnification(viewMetres))} life size</small>
       </div>
-      <p className="scale-journey-hint">Scroll to zoom. Drag to turn.</p>
     </div>
+    <header className="scale-journey-head">
+      <div className="scale-journey-title">
+        <h2>{level.name}</h2>
+        <span className={`scale-journey-chip evidence-${level.evidence}`} title={EVIDENCE_LABEL[level.evidence]}>{EVIDENCE_SHORT[level.evidence]}</span>
+      </div>
+    </header>
     <footer className="scale-journey-foot">
-      <div className="scale-journey-caption">
+      {needsData && dataState === 'loading' && <p role="status">Loading the measured atoms.</p>}
+      {needsData && dataState === 'failed' && <p role="alert">The measured atoms could not be loaded, so this level is empty. Nothing is drawn in their place.</p>}
+      {webglFailed && <p role="alert">This browser could not start WebGL, so the views are not shown. The levels and their sources remain here.</p>}
+      <div className="scale-journey-about" hidden={!showBasis}>
         <p>{level.caption}</p>
-        {needsData && dataState === 'loading' && <p role="status">Loading the measured atoms.</p>}
-        {needsData && dataState === 'failed' && <p role="alert">The measured atoms could not be loaded, so this level is empty. Nothing is drawn in their place.</p>}
-        {webglFailed && <p role="alert">This browser could not start WebGL, so the views are not shown. The levels and their sources remain here.</p>}
-        <button className="scale-journey-link" aria-expanded={showBasis} onClick={() => setShowBasis((open) => !open)}>{showBasis ? 'Hide sources' : 'Sources'}</button>
+        <p>{EVIDENCE_LABEL[level.evidence]}. {from ? `Zooming into: ${from}. A representative example of this tissue, not this part of this mouse. ` : ''}{JOURNEY_NOTICE}{moving && life ? ` The motion here is illustrative, at ${rateLabel(life.rate)} where it follows the heart or breathing, and its sizes are chosen for viewing.` : ''}</p>
         {showBasis && <ul>{level.basis.map((item) => <li key={item}>{item}</li>)}</ul>}
       </div>
-      <div className="scale-journey-actions">
-        <button disabled={index === 0 && viewMetres >= widest} onClick={() => goTo(levels[Math.max(0, index - 1)])}>Out</button>
-        <button disabled={index === levels.length - 1} onClick={() => goTo(levels[Math.min(levels.length - 1, index + 1)])}>Deeper</button>
-        <button className="scale-journey-exit" onClick={onExit}>Back to the mouse</button>
-      </div>
+      <button className="scale-journey-link" aria-expanded={showBasis} onClick={() => setShowBasis((open) => !open)}>{showBasis ? 'Hide sources' : 'Sources'}</button>
     </footer>
     <nav className="scale-journey-ladder" aria-label="Levels of the zoom">
+      <button className="scale-journey-exit" onClick={onExit}>Back to the mouse</button>
+      <button className="scale-journey-play" onClick={togglePlay}>{playing ? 'Stop' : 'Play'}</button>
+      {place && <small className="scale-journey-place">{place}</small>}
+      {from && <strong className="scale-journey-from">{from}</strong>}
       {levels.map((entry) => <button key={entry.id} aria-pressed={entry === level} onClick={() => goTo(entry)}><span>{entry.name}</span><small>{formatLength(levelHome(entry, levels))}</small></button>)}
     </nav>
-  </div>, document.body);
+  </div>;
 }

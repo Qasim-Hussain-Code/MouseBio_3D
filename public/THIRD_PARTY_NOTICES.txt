@@ -203,5 +203,9 @@ License: https://creativecommons.org/licenses/by/3.0/
 Adaptation: Qasim Hussain, MouseBio_3D. Original contact and editor metadata omitted. An optional mathematical transition substitution is disclosed separately from the archived source equations. No independent physiological validation is claimed. See models/bondarenko-apical/LICENSE.md. Original numerical integration and interface code: MIT.
 
 
+Protein Data Bank entry 3HRW, atoms used by the zoom into a red cell: CC0 1.0, as stated in the wwPDB usage policies.
+Sundaresan SS, Ramesh P, Shobana N, Vinuchakkaravarthy T, Yasien S, Ponnuswamy MNG. Crystal structure of hemoglobin from mouse (Mus musculus) compared with those from other small animals and humans. Acta Crystallogr F Struct Biol Commun 2021;77(Pt 4):113-120. doi:10.1107/S2053230X2100306X
+
+
 Protein Data Bank entry 5B1M, atoms used by the zoom from skin to the proton: CC0 1.0, as stated in the wwPDB usage policies.
 Ueda J, Harada A, Urahama T, et al. Testis-specific histone variant H3t gene is essential for entry into spermatogenesis. Cell Rep 2017;18(3):593-600. doi:10.1016/j.celrep.2016.12.065. https://www.rcsb.org/structure/5B1M

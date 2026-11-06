@@ -151,6 +151,11 @@ export function placeNameFromBone(boneId: string, boneName = ''): string {
   return side ? side + name : name[0].toUpperCase() + name.slice(1);
 }
 
+const PLACE_OF_SURFACE: Readonly<Record<string, string>> = Object.freeze({ forepaws: 'Fore paw', hindpaws: 'Hind paw', tail: 'Tail', pinnae: 'Ear', nose: 'Nose', lips: 'Mouth', eyes: 'Eye', corneas: 'Eye', eyelids: 'Eye' });
+
+/** A plain name for a place on a part of the outside that is its own structure, or null for the skin of the body, where the bone nearest says more. */
+export const placeNameOfSurface = (id: string): string | null => PLACE_OF_SURFACE[id.replace(/^living:/, '')] ?? null;
+
 export const DISSECTION_NOTICE = 'A display of the model, not a dissection of an animal: the steps and folds are chosen for viewing. Each structure keeps its own evidence mark.';
 
 export function dissectionAppliesTo(atlas: Pick<Atlas, 'id'>): boolean {

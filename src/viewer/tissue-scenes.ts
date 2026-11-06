@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { instances, material, merged, random, shade, solid, sphere, tubeGeometry, uniform, V, type JourneyLabel, type JourneyScene, type Placement } from './scale-journey-scenes';
+import { instances, material, merged, random, shade, solid, sphere, tubeGeometry, uniform, V, type JourneyBranch, type JourneyLabel, type JourneyScene, type TissueMotion, type Placement } from './scale-journey-scenes';
 
 /**
  * The first two levels of the zoom into a tissue other than skin: a block about 1.6 mm across, and a view of its cells about 70 micrometres across.
@@ -7,7 +7,7 @@ import { instances, material, merged, random, shade, solid, sphere, tubeGeometry
  * sizes are generated with a fixed seed to illustrate published descriptions, and none is a measurement. Rods run along z, so the face towards the viewer is a cross section.
  */
 const ALONG_Z = new THREE.Quaternion().setFromAxisAngle(V(1, 0, 0), Math.PI / 2);
-const NUCLEUS_COLOUR = '#8f76ad';
+export const NUCLEUS_COLOUR = '#8f76ad';
 
 interface Rod { readonly x: number; readonly y: number; readonly radius: number; readonly color?: THREE.Color; readonly front?: number; readonly length?: number }
 
@@ -19,16 +19,16 @@ function rods(items: readonly Rod[], made: THREE.Material, length = 1, front = 0
   }));
 }
 
-function body(size: number, color: string, depth = size): THREE.Mesh {
+export function body(size: number, color: string, depth = size): THREE.Mesh {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(size, size, depth), material(color));
   mesh.position.z = 0.5 - depth / 2;
   return mesh;
 }
 
-const finish = (group: THREE.Group, start: THREE.Vector3, focus: THREE.Vector3, labels: readonly JourneyLabel[], cut?: THREE.Plane): JourneyScene => ({ group, start, focus, labels, cut });
+export const finish = (group: THREE.Group, start: THREE.Vector3, focus: THREE.Vector3, labels: readonly JourneyLabel[], cut?: THREE.Plane): JourneyScene => ({ group, start, focus, labels, cut });
 
 /** Hexagonally packed points in a square, for fibres and cells. */
-function packed(half: number, pitch: number, jitter: number, rng: () => number): { x: number; y: number }[] {
+export function packed(half: number, pitch: number, jitter: number, rng: () => number): { x: number; y: number }[] {
   const out: { x: number; y: number }[] = [];
   const rowHeight = pitch * Math.sqrt(3) / 2;
   for (let row = -Math.ceil(half / rowHeight); row <= Math.ceil(half / rowHeight); row++) {
@@ -38,6 +38,66 @@ function packed(half: number, pitch: number, jitter: number, rng: () => number):
     }
   }
   return out;
+}
+
+/** A brief shortening every few seconds. Muscle at rest does not beat, so this is on no clock of the body. */
+const twitch = (seconds: number) => { const at = ((seconds % 5) + 5) % 5; return at < 0.25 ? at / 0.25 : at < 1 ? 1 - (at - 0.25) / 0.75 : 0; };
+
+/** Places in a scene from which the zoom can go another way than to its nucleus. */
+export const withBranches = (scene: JourneyScene, branches: readonly JourneyBranch[]): JourneyScene => ({ ...scene, branches });
+
+export const withMotion = (scene: JourneyScene, ...parts: ((motion: TissueMotion) => void)[]): JourneyScene => ({ ...scene, animate: (motion) => { for (const part of parts) part(motion); } });
+
+/** Cells carried along a line, reappearing at its start. A pulse from the heart makes them surge, in an artery. */
+export function carried(mesh: THREE.InstancedMesh, axis: 0 | 1 | 2, low: number, high: number, speed: number, surge = 0) {
+  const base = Array.from({ length: mesh.count }, (_, index) => { const matrix = new THREE.Matrix4(); mesh.getMatrixAt(index, matrix); return matrix; });
+  const span = high - low, matrix = new THREE.Matrix4();
+  return ({ seconds, beats }: TissueMotion) => {
+    const travel = speed * seconds + surge * Math.sin(2 * Math.PI * beats);
+    base.forEach((rest, index) => {
+      matrix.copy(rest);
+      const at = rest.elements[12 + axis] - low + travel;
+      matrix.elements[12 + axis] = low + (((at % span) + span) % span);
+      mesh.setMatrixAt(index, matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  };
+}
+
+/** Parts that shorten or widen together about a point on an axis, by a share given from the moment. */
+export function scaling(parts: readonly THREE.Object3D[], axes: readonly (0 | 1 | 2)[], about: number, amount: (motion: TissueMotion) => number) {
+  const rest = parts.map((part) => ({ position: part.position.clone(), scale: part.scale.clone() }));
+  return (motion: TissueMotion) => {
+    const share = 1 + amount(motion);
+    parts.forEach((part, index) => {
+      for (const axis of axes) {
+        part.position.setComponent(axis, about + (rest[index].position.getComponent(axis) - about) * share);
+        part.scale.setComponent(axis, rest[index].scale.getComponent(axis) * share);
+      }
+    });
+  };
+}
+
+/** Some of the cells or fibres in a group light up in turn, each now and then, as an illustration of signals passing. */
+export function flashing(mesh: THREE.InstancedMesh, share: number, seed: number) {
+  const rng = random(seed);
+  const white = new THREE.Color('#ffffff'), lit = new THREE.Color('#ffb21f'), colour = new THREE.Color();
+  const chosen: { index: number; base: THREE.Color; phase: number; period: number }[] = [];
+  for (let index = 0; index < mesh.count; index++) {
+    const base = white.clone();
+    if (mesh.instanceColor) mesh.getColorAt(index, base);
+    if (rng() < share) chosen.push({ index, base, phase: rng(), period: 1.4 + rng() * 2.6 });
+    mesh.setColorAt(index, base);
+  }
+  return ({ seconds }: TissueMotion) => {
+    for (const item of chosen) {
+      const at = (seconds / item.period + item.phase) % 1;
+      const flash = at < 0.05 ? at / 0.05 : at < 0.2 ? 1 - (at - 0.05) / 0.15 : 0;
+      colour.copy(item.base).lerp(lit, flash * 0.9);
+      mesh.setColorAt(item.index, colour);
+    }
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  };
 }
 
 /** Skeletal muscle cut across: fibres in fascicles, with capillaries between them and vessels and a nerve between the fascicles. */
@@ -104,8 +164,9 @@ export function buildMuscleFibres(): JourneyScene {
     }
   }
   const cylinder = () => new THREE.CylinderGeometry(1, 1, 1, 28);
-  group.add(instances(cylinder(), material('#a64a42'), dark));
-  group.add(instances(cylinder(), material('#d9978a'), pale));
+  const darkBands = instances(cylinder(), material('#a64a42'), dark), paleBands = instances(cylinder(), material('#d9978a'), pale);
+  group.add(darkBands);
+  group.add(paleBands);
   group.add(instances(new THREE.CylinderGeometry(1, 1, 1, 7), material('#7e2f2b'), dots));
   // Nuclei lie just under the surface of the fibre.
   const nuclei: Placement[] = [];
@@ -130,7 +191,8 @@ export function buildMuscleFibres(): JourneyScene {
     const curve = new THREE.CatmullRomCurve3(line);
     for (let t = 0.06; t < 1; t += 0.13) cells.push({ position: curve.getPointAt(t).setZ(curve.getPointAt(t).z), scale: V(0.04, 0.04, 0.014) });
   }
-  group.add(instances(sphere(2), material('#a51d24'), cells));
+  const redCells = instances(sphere(2), material('#a51d24'), cells);
+  group.add(redCells);
   // A motor end plate: the end of an axon in branches on the surface of a fibre.
   const plate = V(fibres[1].x - 0.02, fibres[1].y + FIBRE + 0.004, 0.1);
   const branches: THREE.BufferGeometry[] = [tubeGeometry([V(plate.x + 0.3, plate.y + 0.5, plate.z + 0.2), V(plate.x + 0.12, plate.y + 0.2, plate.z + 0.08), plate], 0.016, 8)];
@@ -139,13 +201,13 @@ export function buildMuscleFibres(): JourneyScene {
     branches.push(tubeGeometry([plate, V(plate.x + Math.cos(angle) * 0.05, plate.y - 0.002, plate.z + Math.sin(angle) * 0.05), V(plate.x + Math.cos(angle + 0.5) * 0.095, plate.y - 0.013, plate.z + Math.sin(angle + 0.5) * 0.095)], 0.009, 6));
   }
   group.add(new THREE.Mesh(merged(branches), material('#e9d98f')));
-  return finish(group, V(0, 0.15, 0.2), focus, [
+  return withBranches(withMotion(finish(group, V(0, 0.15, 0.2), focus, [
     { text: 'Nucleus under the surface of the fibre', at: focus },
     { text: 'Myofibrils', at: V(fibres[0].x - 0.08, fibres[0].y - 0.04, 0.5) },
     { text: 'Bands of sarcomeres', at: V(fibres[2].x + FIBRE, fibres[2].y, 0.02) },
     { text: 'Capillary', at: capillary[0] },
     { text: 'Motor end plate', at: plate },
-  ]);
+  ]), carried(redCells, 2, -0.9, 0.52, -0.05), scaling([darkBands, paleBands], [2], 0.5, ({ seconds }) => -0.05 * twitch(seconds))), [{ tail: 'blood', text: 'Red cell', at: cells[3].position }]);
 }
 
 /** A peripheral nerve cut across: epineurium with fat and vessels, perineurium, and a fascicle packed with axons. */
@@ -205,7 +267,8 @@ export function buildNerveFibres(): JourneyScene {
     if (rng() < 0.74) { myelin.push({ x, y, radius }); axon.push({ x, y, radius: radius * (0.62 + rng() * 0.12) }); }
   }
   group.add(rods(myelin, material('#2f2822'), 1.2, 0.502, 22));
-  group.add(rods(axon, material('#f3ebd2'), 1.2, 0.504, 18));
+  const axons = rods(axon, material('#f3ebd2'), 1.2, 0.504, 18);
+  group.add(axons);
   // Remak bundles: several small axons within one Schwann cell.
   const bundles: Rod[] = [], small: Rod[] = [];
   for (let tries = 0; tries < 420 && bundles.length < 26; tries++) {
@@ -227,13 +290,13 @@ export function buildNerveFibres(): JourneyScene {
   nucleus.position.copy(focus);
   nucleus.scale.set(0.03, 0.03, 0.05);
   group.add(nucleus);
-  return finish(group, V(0, 0, 0.2), focus, [
+  return withMotion(finish(group, V(0, 0, 0.2), focus, [
     { text: 'Nucleus of a Schwann cell', at: focus },
     { text: 'Myelin', at: V(fibreAt.x - fibreAt.radius * 0.84, fibreAt.y, 0.505) },
     { text: 'Axon', at: V(fibreAt.x, fibreAt.y - 0.04, 0.505) },
     { text: 'Small axons in a Remak bundle', at: V(bundles[0].x, bundles[0].y, 0.505) },
     { text: 'Capillary', at: V(-0.42, 0.28, 0.505) },
-  ]);
+  ]), flashing(axons, 0.45, 20080303));
 }
 
 /** A femoral artery, vein and saphenous nerve in their connective tissue, as they lie together in the thigh. */
@@ -293,7 +356,8 @@ export function buildVesselWall(route: 'artery' | 'vein'): JourneyScene {
   // Red cells in the blood.
   const cells: Placement[] = [];
   for (let i = 0; i < 22; i++) cells.push({ position: V((rng() - 0.5) * 2, LUMEN - 0.1 - rng() * 0.52, 0.52 + rng() * 0.02), scale: V(0.045, 0.045, 0.012), color: shade('#d6333c', 0.86 + rng() * 0.25) });
-  group.add(instances(sphere(2), material('#ffffff'), cells));
+  const redCells = instances(sphere(2), material('#ffffff'), cells);
+  group.add(redCells);
   // Flat endothelial cells on the inner surface, with their nuclei.
   const nuclei: Placement[] = [];
   const endothelial: Placement[] = [];
@@ -342,7 +406,7 @@ export function buildVesselWall(route: 'artery' | 'vein'): JourneyScene {
   ];
   if (route === 'artery') labels.push({ text: 'Elastic lamina', at: V(0.75, LUMEN + 0.026, 0.51) });
   else labels.push({ text: 'Thin layer of smooth muscle', at: V(0.62, (LUMEN + MEDIA) / 2, 0.51) });
-  return finish(group, V(0, -0.1, 0.2), focus, labels);
+  return withBranches(withMotion(finish(group, V(0, -0.1, 0.2), focus, labels), carried(redCells, 0, -1.1, 1.1, route === 'artery' ? 0.16 : 0.07, route === 'artery' ? 0.07 : 0)), [{ tail: 'blood', text: 'Red cell', at: cells[5].position }]);
 }
 
 /** The wall of a femur cut across. There are no osteons in the cortex of the mouse: lamellae run with the surface, with osteocytes in lacunae between them. */
@@ -606,12 +670,13 @@ export function buildLiverCells(): JourneyScene {
   group.add(new THREE.Mesh(flatLines(canaliculi, 0.012), material('#5f9a68')));
   const red: Placement[] = [];
   for (let i = 0; i < 26; i++) red.push({ position: V((rng() - 0.5) * 2.2, Math.round((rng() - 0.5) * 6) * PITCH_Y + PITCH_Y / 2, 0.51), scale: V(0.043, 0.043, 0.006) });
-  group.add(instances(sphere(2), material('#c9303a'), red));
-  return finish(group, V(0, 0, 0.2), focus, [
+  const redCells = instances(sphere(2), material('#c9303a'), red);
+  group.add(redCells);
+  return withBranches(withMotion(finish(group, V(0, 0, 0.2), focus, [
     { text: 'Nucleus of a hepatocyte', at: focus },
     { text: 'Sinusoid', at: V(0.42, PITCH_Y / 2, 0.51) },
     { text: 'Bile canaliculus', at: canaliculi[Math.floor(canaliculi.length * 0.62)][1] },
-  ]);
+  ]), carried(redCells, 0, -1.1, 1.1, 0.05)), [{ tail: 'blood', text: 'Red cell', at: red[6].position }]);
 }
 
 /** The cortex of a kidney: tubules cut across, renal corpuscles, and a small artery. */
@@ -792,13 +857,13 @@ export function buildLungCells(): JourneyScene {
   group.add(eater);
   nuclei.push({ position: V(macrophage.x + 0.03, macrophage.y, 0.511), scale: V(0.05, 0.04, 0.002) });
   group.add(instances(sphere(3), material(NUCLEUS_COLOUR), nuclei));
-  return finish(group, V(0, 0, 0.2), focus, [
+  return withBranches(withMotion(finish(group, V(0, 0, 0.2), focus, [
     { text: 'Nucleus of a type II cell', at: focus },
     { text: 'Air space', at: V(-0.62, 0.48, 0.51) },
     { text: 'Capillary with a red cell', at: V(inWall[2].x, inWall[2].y, 0.51) },
     { text: 'Macrophage', at: macrophage },
     { text: 'Thin type I cell', at: V(centres[3].x - 0.34, centres[3].y + 0.34, 0.51) },
-  ]);
+  ]), scaling(group.children.slice(1), [0, 1], 0, ({ breath }) => 0.05 * breath)), [{ tail: 'blood', text: 'Red cell', at: reds[2].position }]);
 }
 
 /** The wall of the small intestine cut lengthways: villi, crypts, the submucosa and two layers of muscle. */
@@ -876,18 +941,22 @@ export function buildGutCells(): JourneyScene {
   group.add(instances(sphere(2), material('#f1e8ef'), goblets));
   group.add(instances(sphere(3), material(NUCLEUS_COLOUR), nuclei));
   group.add(new THREE.Mesh(merged(microvilli.map((line) => tubeGeometry(line, 0.0048, 3, 1))), material('#d49c8c')));
+  const bacteria: Placement[] = [];
+  for (let i = 0; i < 70; i++) bacteria.push({ position: V((rng() - 0.5) * 2.2, TOP + 0.1 + rng() * 0.5, 0.508), scale: V(0.01, 0.024, 0.002), rotation: new THREE.Quaternion().setFromAxisAngle(V(0, 0, 1), rng() * 6.28), color: shade('#6f5c8a', 0.9 + rng() * 0.3) });
+  const microbes = instances(sphere(1), material('#ffffff'), bacteria);
+  group.add(microbes);
   // Under the epithelium.
   const capillary = [V(-1.2, -0.56, 0.505), V(-0.4, -0.52, 0.505), V(0.3, -0.58, 0.505), V(1.2, -0.54, 0.505)];
   const lacteal = [V(-1.2, -0.86, 0.505), V(0, -0.82, 0.505), V(1.2, -0.87, 0.505)];
   group.add(new THREE.Mesh(tubeGeometry(capillary, 0.06, 12), material('#c8605a')));
   group.add(new THREE.Mesh(tubeGeometry(lacteal, 0.1, 12), material('#f4eecd')));
-  return finish(group, V(0, -0.15, 0.2), focus, [
+  return withBranches(withMotion(finish(group, V(0, -0.15, 0.2), focus, [
     { text: 'Nucleus of an absorptive cell', at: focus },
     { text: 'Brush border', at: V(0.42, TOP + 0.03, 0.51) },
     { text: 'Goblet cell', at: goblets[0].position },
     { text: 'Capillary', at: capillary[1] },
     { text: 'Lacteal', at: lacteal[1] },
-  ]);
+  ]), carried(microbes, 0, -1.1, 1.1, 0.012)), [{ tail: 'microbiota', text: 'Gut bacteria', at: V(0.25, TOP + 0.2, 0.508) }]);
 }
 
 /** Heart muscle cut across: closely packed cells with many capillaries, and a small coronary artery and vein. */
@@ -944,10 +1013,8 @@ export function buildHeartCells(): JourneyScene {
     }
   }
   const box = () => new THREE.BoxGeometry(2, 2, 1);
-  group.add(instances(box(), material('#a7473f'), dark));
-  group.add(instances(box(), material('#cf8b7e'), pale));
-  group.add(instances(sphere(3), material(NUCLEUS_COLOUR), nuclei));
-  group.add(new THREE.Mesh(merged(discs.map((line) => tubeGeometry(line, 0.008, 4, 1))), material('#4f201c')));
+  const beating: THREE.Object3D[] = [instances(box(), material('#a7473f'), dark), instances(box(), material('#cf8b7e'), pale), instances(sphere(3), material(NUCLEUS_COLOUR), nuclei), new THREE.Mesh(merged(discs.map((line) => tubeGeometry(line, 0.008, 4, 1))), material('#4f201c'))];
+  for (const part of beating) group.add(part);
   // Capillaries between the rows.
   const capillaries: THREE.Vector3[][] = [];
   for (let row = -2; row < 2; row++) {
@@ -959,12 +1026,12 @@ export function buildHeartCells(): JourneyScene {
   fibroblast.position.set(0.5, (HEIGHT * 2 + 0.14) * 0.5 + 0.05, 0.508);
   fibroblast.scale.set(0.09, 0.012, 0.002);
   group.add(fibroblast);
-  return finish(group, V(0, 0, 0.2), focus, [
+  return withMotion(finish(group, V(0, 0, 0.2), focus, [
     { text: 'Central nucleus', at: focus },
     { text: 'Intercalated disc', at: discs[12][4] },
     { text: 'Capillary', at: capillaries[1][4] },
     { text: 'Fibroblast', at: fibroblast.position },
-  ]);
+  ]), scaling(beating, [0], 0, ({ ventricles }) => -0.06 * ventricles));
 }
 
 /** The cerebral cortex from the surface inwards: layers of neurons of differing density, with vessels entering from the surface. */
@@ -986,7 +1053,8 @@ export function buildBrainBlock(): JourneyScene {
     const count = Math.round(density * (top - bottom) * 0.99);
     for (let i = 0; i < count; i++) cells.push({ position: V((rng() - 0.5) * 0.97, bottom + rng() * (top - bottom), 0.5035), scale: V(size * (0.8 + rng() * 0.5), size * (0.9 + rng() * 0.7), 0.001), color: shade('#7a5f93', 0.82 + rng() * 0.36) });
   }
-  group.add(instances(sphere(1), material('#ffffff'), cells));
+  const neurons = instances(sphere(1), material('#ffffff'), cells);
+  group.add(neurons);
   // Apical dendrites of the larger neurons rise towards the surface.
   const dendrites: THREE.Vector3[][] = [];
   for (let i = 0; i < 80; i++) {
@@ -1001,12 +1069,12 @@ export function buildBrainBlock(): JourneyScene {
   }
   group.add(new THREE.Mesh(flatLines(vessels, 0.0032), material('#b84a4e')));
   const cell = cells[900];
-  return finish(group, V(0, 0, 0.2), V(cell.position.x, cell.position.y, 0.5), [
+  return withMotion(finish(group, V(0, 0, 0.2), V(cell.position.x, cell.position.y, 0.5), [
     { text: 'Vessel entering from the surface', at: vessels[5][1] },
     { text: 'Neurons in layers', at: cell.position },
     { text: 'White matter', at: V(0.2, -0.4, 0.505) },
     { text: 'Pia', at: V(-0.3, TOP + 0.012, 0.505) },
-  ]);
+  ]), flashing(neurons, 0.12, 19840301));
 }
 
 /** In the cortex: a pyramidal neuron with dendritic spines and a myelinated axon, an astrocyte with its end feet on a capillary, an oligodendrocyte and a microglial cell. */

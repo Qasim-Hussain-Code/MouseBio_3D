@@ -1323,6 +1323,26 @@
       "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
     },
     {
+      "id": "pdb-3hrw-sundaresan2021",
+      "title": "Crystal structure of hemoglobin from mouse (Mus musculus) at 2.8",
+      "landingPage": "https://www.rcsb.org/structure/3HRW",
+      "publication": {
+        "year": 2021,
+        "authors": [
+          "Sundaresan SS",
+          "Ramesh P",
+          "Shobana N",
+          "et al."
+        ],
+        "series": "Acta Crystallogr F Struct Biol Commun 77(Pt 4):113-120, doi:10.1107/S2053230X2100306X"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain, residue and atom names and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/hemoglobin-3hrw.json. Water is left out."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
       "id": "simpson2011-skin",
       "title": "Deconstructing the skin: cytoarchitectural determinants of epidermal morphogenesis",
       "landingPage": "https://doi.org/10.1038/nrm3175",

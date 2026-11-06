@@ -1,0 +1,9 @@
+.life-badge{position:absolute;right:10px;bottom:12px;z-index:12;display:flex;align-items:center;gap:6px;padding:2px 3px 2px 9px;font-size:10.5px;color:#7a6a4f;background:rgba(255,255,255,.88);border-radius:12px;white-space:nowrap}
+.life-badge button{padding:1px 8px;font-size:10.5px;color:#26302b;background:#fff;border:1px solid #e0dbd0;border-radius:10px;cursor:pointer}
+.life-panel{display:flex;flex-direction:column;gap:4px;font-size:12px}
+.life-panel-head{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px}
+.life-panel-head label{display:flex;align-items:center;gap:5px}
+.life-sources summary{font-size:11px;color:#5d6a64;cursor:pointer}
+.life-sources p{margin:5px 0;font-size:11px;line-height:1.35}
+.life-sources ul{margin:5px 0;padding-left:16px;font-size:11px;line-height:1.35}
+.life-sources h5{margin:6px 0 2px;font-size:11px}

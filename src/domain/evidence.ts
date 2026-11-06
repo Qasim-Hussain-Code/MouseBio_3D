@@ -28,6 +28,11 @@ export function declaresEvidence(atlas: Pick<Atlas, 'structures'>): boolean {
 }
 
 /** A region label that cannot be mistaken for a measurement when read on its own. */
+/** A name for a label on the view, as short as it can be. What is simulated keeps a mark. The rest of the evidence is in the details of the structure. */
+export function markedName(structure: Pick<Structure, 'name' | 'evidence'>): string {
+  return structure.evidence === 'simulated' ? `${structure.name} \u00b7 sim` : structure.name;
+}
+
 export function labelWithEvidence(structure: Pick<Structure, 'name' | 'evidence' | 'division'>): string {
   if (structure.division === 'estimated') return `${structure.name} (estimated division)`;
   return structure.evidence === 'simulated' ? `${structure.name} (simulated)` : structure.evidence === 'traced' ? `${structure.name} (traced)` : structure.name;

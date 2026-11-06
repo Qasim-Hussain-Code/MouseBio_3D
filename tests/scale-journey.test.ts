@@ -201,7 +201,7 @@ after(() => {
   }
 });
 
-test('the dialog names its evidence and every level, states its limits without WebGL, and closes', async () => {
+test('the view names its evidence and every level, states its limits without WebGL, and closes', async () => {
   const { createElement, act } = await import('react');
   const { createRoot } = await import('react-dom/client');
   const originalFetch = globalThis.fetch;
@@ -214,12 +214,12 @@ test('the dialog names its evidence and every level, states its limits without W
   try {
     await act(async () => { root.render(createElement(ScaleJourney, { onExit: () => { exits += 1; } })); });
     const dialog = document.querySelector('.scale-journey');
-    assert.ok(dialog, 'the dialog is open');
-    assert.equal(dialog.getAttribute('role'), 'dialog');
+    assert.ok(dialog, 'the view is open');
+    assert.equal(dialog.getAttribute('role'), 'region', 'it is part of the page, in the place of the mouse');
     assert.match(dialog.textContent ?? '', /Data from this specimen end at about 0\.1 mm/);
     assert.match(dialog.textContent ?? '', /Simulated from published descriptions/);
     assert.match(dialog.textContent ?? '', /could not start WebGL/, 'the failure is stated');
-    assert.equal(document.querySelectorAll('.scale-journey-ladder button').length, JOURNEY_LEVELS.length);
+    assert.equal(document.querySelectorAll('.scale-journey-ladder button[aria-pressed]').length, JOURNEY_LEVELS.length);
     const sources = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Sources');
     await act(async () => { (sources as unknown as HTMLButtonElement).click(); });
     assert.match(dialog.textContent ?? '', /Hummel KP/);
@@ -234,4 +234,30 @@ test('the dialog names its evidence and every level, states its limits without W
     host.remove();
   }
   assert.equal(document.querySelector('.scale-journey'), null, 'nothing is left behind');
+});
+
+test('playing goes on down by itself when it arrives from the mouse, and can be stopped and started', async () => {
+  const { createElement, act } = await import('react');
+  const { createRoot } = await import('react-dom/client');
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => new Response(JSON.stringify({ broken: true }))) as typeof fetch;
+  const { default: ScaleJourney } = await import('../src/components/ScaleJourney');
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root = createRoot(host as unknown as Element);
+  const play = () => document.querySelector('.scale-journey-play') as unknown as HTMLButtonElement;
+  try {
+    await act(async () => { root.render(createElement(ScaleJourney, { onExit: () => undefined, tissue: 'lung', autoplay: true })); });
+    assert.equal(play().textContent, 'Stop', 'it is already playing');
+    await act(async () => { play().click(); });
+    assert.equal(play().textContent, 'Play');
+    await act(async () => { play().click(); });
+    assert.equal(play().textContent, 'Stop');
+    const ladder = [...document.querySelectorAll('.scale-journey-ladder button[aria-pressed] span')].map((item) => item.textContent);
+    assert.equal(ladder[ladder.length - 1], 'A proton and its quarks', 'the way goes on to the end');
+  } finally {
+    await act(async () => { root.unmount(); });
+    globalThis.fetch = originalFetch;
+    host.remove();
+  }
 });

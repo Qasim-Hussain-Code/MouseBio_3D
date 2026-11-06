@@ -1,0 +1,25 @@
+.unfold-guide{position:absolute;left:10px;top:48px;max-height:calc(100% - 60px);z-index:6;display:flex;flex-direction:column;gap:6px;width:190px;padding:8px;overflow:hidden;font-size:11.5px;color:#26302b;background:rgba(255,255,255,.88);border-radius:8px}
+.unfold-guide>strong{padding:0 6px;font-size:12.5px;font-weight:600}
+.unfold-guide ol{flex:1;min-height:0;margin:0;padding:0;overflow:auto;list-style:none}
+.unfold-guide li button{display:flex;align-items:baseline;justify-content:space-between;gap:6px;width:100%;padding:3px 6px;font-size:11.5px;line-height:1.25;text-align:left;color:inherit;background:none;border:0;border-left:2px solid transparent;border-radius:3px;cursor:pointer}
+.unfold-guide li button:hover{background:#eef2ef}
+.unfold-guide li button small{flex:none;font-size:9px;color:#8a958f}
+.unfold-guide li.current button{font-weight:600;background:#e4efe9;border-left-color:#2f6f5e}
+.unfold-guide li.chosen button{outline:1px solid #2f6f5e;outline-offset:-1px}
+.unfold-guide li.passing button{padding-left:13px;font-size:10.5px;color:#5d6a64}
+.unfold-guide li.passing--artery button{border-left-color:#c8333a}
+.unfold-guide li.passing--vein button{border-left-color:#3f5a9a}
+.unfold-guide li.passing--nerve button{border-left-color:#cfa93a}
+.unfold-guide li.passing--lymph button{border-left-color:#b58fb0}
+.unfold-tools{display:flex;align-items:center;gap:4px}
+.unfold-tools button{min-width:22px;padding:2px 6px;font-size:11px;background:#fff;border:1px solid #d5dcd9;border-radius:5px;cursor:pointer}
+.unfold-tools button[aria-pressed=true]{background:#e4efe9}
+.unfold-tools .unfold-into{white-space:nowrap;color:#fff;background:#2f6f5e;border-color:#2f6f5e}
+.unfold-tools .unfold-into:hover:not(:disabled){background:#285f51}
+.unfold-tools .unfold-into:disabled{background:#9db0a8;border-color:#9db0a8;cursor:default}
+.unfold-tools label{display:flex;align-items:center;gap:3px;margin-left:auto;font-size:10.5px}
+.unfold-scale{display:flex;align-items:center;gap:6px;padding:0 6px;font-size:10px;color:#5d6a64}
+.unfold-scale i{display:block;height:2px;max-width:110px;background:#26302b}
+.unfold-hint{position:absolute;left:50%;bottom:14px;z-index:5;display:flex;align-items:center;gap:8px;padding:3px 4px 3px 12px;font-size:11.5px;color:#4b5852;background:rgba(255,255,255,.88);border-radius:14px;transform:translateX(-50%)}
+.unfold-hint button{flex:none;padding:2px 10px;font-size:11px;font-weight:600;color:#fff;background:#2f6f5e;border:0;border-radius:11px;cursor:pointer}
+.unfold-hint button:hover{background:#285f51}

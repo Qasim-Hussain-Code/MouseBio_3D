@@ -47,7 +47,7 @@ function moved(surface: Surface, transform: RigidTransform): Surface {
     positions[i] = p[0]; positions[i + 1] = p[1]; positions[i + 2] = p[2];
     normals[i] = n[0]; normals[i + 1] = n[1]; normals[i + 2] = n[2];
   }
-  return { positions, normals, indices: surface.indices, colors: surface.colors };
+  return { positions, normals, indices: surface.indices, colors: surface.colors, lines: surface.lines };
 }
 
 /** Tint a surface by a function of position and normal. */

@@ -100,7 +100,7 @@ export function deformSurface(surface: Surface, field: PostureField): Surface {
     const out = blendRigid(moved, factors, p);
     positions[i] = out[0]; positions[i + 1] = out[1]; positions[i + 2] = out[2];
   }
-  return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices, colors: surface.colors };
+  return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices, colors: surface.colors, lines: surface.lines };
 }
 
 /** A limb bone moves as one rigid piece about its joint. */
@@ -110,7 +110,7 @@ export function deformRigid(surface: Surface, transform: RigidTransform): Surfac
     const out = blendRigid([transform], [1], [surface.positions[i], surface.positions[i + 1], surface.positions[i + 2]]);
     positions[i] = out[0]; positions[i + 1] = out[1]; positions[i + 2] = out[2];
   }
-  return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices };
+  return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices, lines: surface.lines };
 }
 
 /** Deform a surface of the trunk or head, which follows only the bends of the column and never a limb lying beside it in the scan. */
@@ -125,7 +125,7 @@ export function deformAxial(surface: Surface, field: PostureField): Surface {
     const out = blendRigid([trunk, head, pelvis], [1 - towardsPelvis - towardsHead, towardsHead, towardsPelvis], p);
     positions[i] = out[0]; positions[i + 1] = out[1]; positions[i + 2] = out[2];
   }
-  return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices };
+  return { positions, normals: vertexNormals(positions, surface.indices), indices: surface.indices, lines: surface.lines };
 }
 
 export function vertexNormals(positions: Float32Array, indices: Uint32Array): Float32Array {

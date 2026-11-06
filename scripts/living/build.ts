@@ -16,6 +16,7 @@ import { buildInteriors } from './interiors';
 import { buildTrees } from './organ-trees';
 import { buildBodySurface, nearestOnTube, underSkin, type LimbTube, type UnderSkin } from './exterior';
 import { clusterSurface, extractSurface, maskBox } from './extract';
+import { flowLinesOf, FLOW_NOTICE } from './flow-paths';
 import { writeGlb, type GlbSurface } from './glb';
 import { boneOfVoxel, JOINTS, type Vec3 } from './rig';
 import { components, dilate, erode, voxelIndex, type Grid } from './volume';
@@ -286,6 +287,8 @@ const PRESSED_MUSCLES = new Set(['gastrocnemius', 'soleus', 'tibialis', 'peronea
 const musclePartition = partitionMuscles(grid, (i) => tissues[i] === TRACED.muscle, landmarks);
 log('muscles', [...musclePartition.counts].join(','));
 const muscleScanSurfaces = new Map<number, Surface>();
+const flowLines: ReturnType<typeof flowLinesOf> = [];
+const carriesFlow = (id: string, systems: readonly string[]) => id === 'living:lymph-vessels' || systems.includes('arterial-venous') || (systems.includes('nervous') && /nerve|plexus|cord|trunks|roots/.test(id));
 for (const structure of STRUCTURES) {
   const surface = keepUnderSkin(structure.id, structure.plan, structure.plan.kind === 'attachment' ? attachments.parts[structure.plan.part]
     : structure.plan.kind === 'internal' ? (LIMB_PARTS.has(structure.plan.part) ? deformSurface : deformAxial)(internal[structure.plan.part], posture)
@@ -299,6 +302,7 @@ for (const structure of STRUCTURES) {
   const hair = structure.plan.kind === 'skin' ? bodyCoat(surface, marks) : structure.plan.kind === 'attachment' ? shortCoat(structure.plan.part, surface, marks) : undefined;
   const fibre = structure.plan.kind === 'muscle' ? fibreOf(structure.plan.index, surface) : undefined;
   surfaces.push({ id: structure.id, name: structure.name, positions: toMetres(surface.positions), normals: surface.normals, indices: surface.indices, fur: hair?.fur, coat: hair?.coat, fibre, colors: surface.colors });
+  if (carriesFlow(structure.id, structure.systems)) flowLines.push(...flowLinesOf(structure.id, surface));
   const { plan: _plan, ...record } = structure;
   const positions = toMetres(surface.positions);
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
@@ -355,6 +359,9 @@ function fibreOf(index: number, stance: Surface): Float32Array {
   return out;
 }
 
+// The centre lines of the simulated vessels and nerves, in the coordinates of the model, for the tokens of the motion display. The geometry above does not depend on them.
+fs.writeFileSync(path.join(OUT, 'flow-paths.json'), JSON.stringify({ format: 'mousebio-flow-paths-v1', referenceId: 'mousebio-living-v1', evidence: 'simulated', notice: FLOW_NOTICE, unitMetres: METRES / 100, lines: flowLines }) + '\n');
+log('flow lines', flowLines.length, flowLines.reduce((sum, line) => sum + line.points.length / 4, 0));
 const glb = writeGlb(surfaces, 'MouseBio_3D living mouse build');
 const name = 'living-mouse.glb';
 fs.writeFileSync(path.join(OUT, name), glb);

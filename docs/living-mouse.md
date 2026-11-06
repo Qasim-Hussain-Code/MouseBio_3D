@@ -1,6 +1,6 @@
 # Living mouse model
 
-The living mouse reference is a constructed static model. It combines measured data from one Digimouse specimen with simulated structures, in a simulated standing posture, so that a complete mouse can be examined layer by layer. It is not a measurement of a living mouse. No dataset known to this project contains every layer of one animal, and where data are missing this model simulates them and says so.
+The living mouse reference is a constructed model, static in its anatomy, with an [illustrative motion](living-motion.md) shown on it that changes none of its surfaces. It combines measured data from one Digimouse specimen with simulated structures, in a simulated standing posture, so that a complete mouse can be examined layer by layer. It is not a measurement of a living mouse. No dataset known to this project contains every layer of one animal, and where data are missing this model simulates them and says so.
 
 ## Evidence classes
 
@@ -71,7 +71,7 @@ Bronchi and the branches of the pulmonary, hepatic, portal, renal, cerebral and 
 
 ## Beyond the data
 
-The specimen has no measured detail below about 0.1 mm. [The zoom from skin to the proton](scale-journey.md) is a separate representative view of what lies below that scale. None of it comes from this specimen and none of it is part of this model.
+The specimen has no measured detail below about 0.1 mm. [The zoom below the layers](scale-journey.md) is a representative view of what lies below that scale, reached by zooming on through the model. None of it comes from this specimen and none of it is part of this model.
 
 ## Limbs and skin
 

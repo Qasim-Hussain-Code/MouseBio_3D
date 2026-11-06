@@ -23,7 +23,7 @@ const groupsOf = (items: readonly HereItem[]) => {
 
 /** The closed button, and when opened the panel beside the mouse: where to open, how far, and what lies there. */
 export function AllLayers({ settings, place, report, selected, namesShown, onOpen, onClose, onChange, onPlace, onNames, onSelect }: AllLayersProps) {
-  if (!settings) return <button type="button" className="all-layers-start" onClick={onOpen}><strong>Show all layers together</strong><small>Skin, fat, muscle, vessels, nerves, organs and bone, opened at one place</small></button>;
+  if (!settings) return <button type="button" className="all-layers-start" onClick={onOpen}><strong>Open a named place</strong><small>Zooming opens the mouse where you point. This shows a place by name, with a slider, at a fixed size.</small></button>;
   return <section className="all-layers" aria-label="All layers together">
     <header><strong>All layers together</strong><button type="button" onClick={onClose}>Close</button></header>
     <label className="all-layers-range">Open<input type="range" min={0} max={100} value={Math.round(settings.opening * 100)} aria-label="How far the layers are open" onChange={(event) => onChange({ ...settings, opening: Number(event.target.value) / 100 })} /></label>

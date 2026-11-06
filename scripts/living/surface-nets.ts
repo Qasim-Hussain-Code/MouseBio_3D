@@ -14,7 +14,11 @@ export interface Surface {
   indices: Uint32Array;
   /** Optional per-vertex tint, multiplied with the display colour. */
   colors?: Float32Array;
+  /** Where the rings of a tube lie among the vertices, so that its centre line can be found again after it has been moved. */
+  lines?: readonly SurfaceLine[];
 }
+
+export interface SurfaceLine { readonly start: number; readonly rings: number; readonly sides: number }
 
 const CORNERS: readonly (readonly [number, number, number])[] = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0], [0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]];
 const EDGES: readonly (readonly [number, number])[] = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];

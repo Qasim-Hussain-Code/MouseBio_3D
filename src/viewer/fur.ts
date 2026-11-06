@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createLifeMeshUniforms, LIFE_DECLARATIONS, LIFE_MOVE, lifeUniforms, type LifeMeshUniforms } from './life-field';
 
 /**
  * A simulated coat of individual hairs. Hair roots are scattered over the body surface in proportion to
@@ -51,6 +52,8 @@ export interface FurOptions {
   readonly seed?: number;
   /** Fine hair takes the colour that the coat gives this structure, and not the bands of the coat. */
   readonly part?: string;
+  /** The motion of the part of the body that this hair grows on. */
+  readonly life?: LifeMeshUniforms;
 }
 
 /** Fine hair on parts other than the body. The tail is sparsely haired. These are display estimates. */
@@ -78,6 +81,8 @@ uniform vec3 uWinN;
 uniform float uWinDepth;
 uniform float uWinFront;
 uniform float uWinRadius;
+${LIFE_DECLARATIONS}
+${LIFE_MOVE}
 varying float vAlong;
 varying float vTone;
 varying float vVentral;
@@ -102,6 +107,8 @@ void main() {
   vec3 local = aRoot + aNormal * (uWinOn > 0.5 ? 0.00006 : 0.0) + reach * (start * t * (1.0 - 0.5 * t) + end * 0.5 * t * t);
   vec3 tangent = normalize(start * (1.0 - t) + end * t);
   vec4 world = modelMatrix * vec4(local, 1.0);
+  // A hair goes with the point of the skin it grows from.
+  world.xyz += mbLifeMove((modelMatrix * vec4(aRoot, 1.0)).xyz, normalize(mat3(modelMatrix) * aNormal));
   vec3 worldTangent = normalize(mat3(modelMatrix) * tangent);
   vec3 toCamera = cameraPosition - world.xyz;
   float distanceToCamera = length(toCamera);
@@ -302,6 +309,7 @@ export function createFur(skin: THREE.Mesh, options: FurOptions = {}): FurLayer 
     uLength: { value: FUR_DISPLAY.lengthMetres }, uWidth: { value: baseWidth as number }, uPixel: { value: 0.001 },
     uRoot: { value: new THREE.Color() }, uBand: { value: new THREE.Color() }, uTip: { value: new THREE.Color() }, uBelly: { value: new THREE.Color() },
     uWinOn: { value: 0 }, uWinA: { value: new THREE.Vector3() }, uWinB: { value: new THREE.Vector3() }, uWinN: { value: new THREE.Vector3(0, 0, 1) }, uWinDepth: { value: 0 }, uWinFront: { value: 0 }, uWinRadius: { value: 0 },
+    ...lifeUniforms(options.life ?? createLifeMeshUniforms()),
   };
   const material = new THREE.ShaderMaterial({ vertexShader: VERTEX, fragmentShader: FRAGMENT, uniforms, side: THREE.DoubleSide, clipping: true });
   const mesh = new THREE.Mesh(geometry, material);

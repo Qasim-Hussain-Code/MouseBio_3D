@@ -1,0 +1,40 @@
+/* The working view is kept to the mouse and what acts on it. Explanations, sources and evidence stay in the details panel, the Sources tab and the documents. */
+.workbench .brand small,.workbench .local-badge,.workbench .header-actions>.secondary-button{display:none}
+.workbench .navigator .panel-heading .eyebrow,.workbench .navigator .version-tag,.workbench .navigator h1,.workbench .active-source-button,.workbench .navigator-footer{display:none}
+.workbench .navigator{padding-top:12px}
+.workbench .navigator .panel-heading:empty{display:none}
+.workbench .reference-selector{font-size:0;margin-bottom:8px}
+.workbench .reference-selector select{font-size:12px;padding:7px 8px}
+.workbench .system-layer-row small,.workbench .layer-stack h3,.workbench .layer-stack small,.workbench .evidence-filter,.workbench .all-layers-start small,.workbench .all-layers-hint,.workbench .all-layers-notice,.workbench .all-layers-here h4 small{display:none}
+.workbench .all-layers-start{padding:7px 10px;color:#26302b;background:#fff;border:1px solid #d5dcd9;border-radius:6px}
+.workbench .all-layers-start:hover{background:#f2f5f3}
+.workbench .all-layers-start strong{font-size:12px;font-weight:500}
+.workbench .layer-stack ol{gap:4px}
+.workbench .layer-stack button{padding:7px 10px}
+.workbench .layer-stack button strong{font-size:12px;font-weight:500}
+
+.workbench .workspace{padding:8px 8px 8px}
+.workbench .workspace-heading,.workbench .source-scope-strip,.workbench .viewport-top,.workbench .viewport-bottom,.workbench .constructed-label,.workbench .workspace-footer{display:none}
+@media (min-width:901px){.workbench.mode-anatomical .workspace-toolbar,.workbench.mode-living .workspace-toolbar{display:none}}
+.workbench:not(.inspector-open) .inspector{display:none}
+.workbench:not(.picked) .viewer-stage>.selection-tools{display:none}
+
+.workbench .selection-tools__source,.workbench .selection-tools__opacity,.workbench .selection-tools>label{display:none}
+.workbench .viewer-stage>.selection-tools{left:50%;right:auto;bottom:12px;width:auto;max-width:calc(100% - 24px);padding:6px 10px;gap:12px;transform:translateX(-50%);box-shadow:0 2px 8px rgba(30,50,42,.1)}
+.workbench .selection-tools__name{font-size:13px}
+.workbench .selection-tools__actions button{padding:3px 9px;font-size:11.5px}
+
+.scene-display{top:10px;left:10px}
+.scene-display>summary{padding:6px 10px;font-size:11px}
+.scene-display .view-controls{position:static;display:flex;flex-wrap:wrap;gap:4px;margin:4px 12px;padding:0;border:0;background:none;box-shadow:none;transform:none}
+.scene-display .control-divider{display:none}
+.scene-display .skin-control{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:11px}
+.display-actions{display:flex;flex-wrap:wrap;gap:4px;padding:8px 12px}
+.display-actions .view-file-actions{display:flex;flex-wrap:wrap;gap:4px}
+.display-actions .secondary-button{padding:4px 8px;font-size:11px}
+
+.camera-pad{top:10px;right:10px;display:flex;flex-direction:column;gap:1px;padding:2px}
+.camera-pad button[aria-label^="Pan"]{display:none}
+.camera-pad button{min-width:26px;min-height:26px;font-size:15px}
+
+.workbench.journey-open .viewer-stage>.selection-tools,.workbench.journey-open .camera-pad,.workbench.journey-open .scene-display{display:none}

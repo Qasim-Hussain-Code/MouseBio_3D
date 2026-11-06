@@ -78,9 +78,9 @@ While the body surface is visible, at least 95% opaque and not cut by a virtual 
 
 On the registered-volume reference the cut face of a virtual section can show the coregistered source photographs or CT of the specimen. They are measured image data shown unlit and are not a presentation convention, although their masking to the labelled body, the 0.2 mm in-plane display resolution and the camera move that faces the cut are. See [section image methods](section-images.md).
 
-## The zoom from skin to the proton
+## The zoom below the layers
 
-The zoom has its own white window, its own renderer and its own lighting, and shares no geometry with the anatomical references. It is described in [its own document](scale-journey.md).
+The zoom takes the place of the mouse on the screen when the layers end, with its own renderer and its own lighting, and shares no geometry with the anatomical references. It is described in [its own document](scale-journey.md).
 
 ## Limitations
 

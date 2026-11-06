@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { JourneyTail } from '../domain/scale-journey';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /**
@@ -14,6 +15,23 @@ export interface JourneyScene {
   /** A cut through the scene, in its own units. The half with a positive distance is kept. */
   readonly cut?: THREE.Plane;
   readonly labels: readonly JourneyLabel[];
+  /** Illustrative motion of this level, if it has any. Levels showing measured atoms have none. */
+  readonly animate?: (motion: TissueMotion) => void;
+  /** Places from which the zoom can go another way than to the focus. The one nearest the pointer is taken. */
+  readonly branches?: readonly JourneyBranch[];
+}
+
+export interface JourneyBranch { readonly tail: JourneyTail; readonly text: string; readonly at: THREE.Vector3 }
+
+/** The moment of the illustrative motion that a level is shown at. */
+export interface TissueMotion {
+  /** Seconds shown, adjusted for the chosen speed. */
+  readonly seconds: number;
+  /** Cycles of the heart so far, and the contraction of the ventricles from 0 to 1. */
+  readonly beats: number;
+  readonly ventricles: number;
+  /** How far breathing in has gone, from 0 to 1. */
+  readonly breath: number;
 }
 
 export interface NucleosomeData {

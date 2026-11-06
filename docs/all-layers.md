@@ -1,6 +1,6 @@
-# All layers together
+# All layers at a named place
 
-The living mouse model can be opened at one place so that all its layers are seen at the same time: skin and coat, fat, the skin muscle, outer and inner muscles, the linings of the cavities, bones, organs, vessels and nerves. This view exists alongside the single layers in the layer stack. It adds no anatomy and measures nothing. It is a way of showing the structures of the [living mouse model](living-mouse.md), each of which keeps its own evidence mark.
+[Zooming](zoom-unfold.md) opens the mouse where the pointer is, and is the usual way in. **Open a named place**, in the **Layers** tab, opens a place chosen by name at a fixed size, with a slider. The living mouse model can be opened at one place so that all its layers are seen at the same time: skin and coat, fat, the skin muscle, outer and inner muscles, the linings of the cavities, bones, organs, vessels and nerves. This view exists alongside the single layers in the layer stack. It adds no anatomy and measures nothing. It is a way of showing the structures of the [living mouse model](living-mouse.md), each of which keeps its own evidence mark.
 
 ## How it works
 

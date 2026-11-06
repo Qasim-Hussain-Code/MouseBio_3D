@@ -27,6 +27,9 @@ export const EVIDENCE_LABEL: Readonly<Record<JourneyEvidence, string>> = Object.
   schematic: 'Schematic, with no positions to measure',
 });
 
+/** The shortest word for the kind of evidence, beside the name of a level. */
+export const EVIDENCE_SHORT: Readonly<Record<JourneyEvidence, string>> = Object.freeze({ simulated: 'sim', 'measured-elsewhere': 'measured', calculated: 'calculated', schematic: 'schematic' });
+
 const HUMMEL = 'Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/';
 const SIMPSON = 'Simpson CL, Patel DM, Green KJ. Deconstructing the skin: cytoarchitectural determinants of epidermal morphogenesis. Nat Rev Mol Cell Biol 2011;12(9):565-80. doi:10.1038/nrm3175';
 const BECK = 'Beck M, Hurt E. The nuclear pore complex: understanding its function through structural insight. Nat Rev Mol Cell Biol 2017;18(2):73-89. doi:10.1038/nrm.2016.147';
@@ -50,6 +53,24 @@ const CLEVERS = 'Clevers H. The intestinal crypt, a prototype stem cell compartm
 const PINTO = 'Pinto AR, Ilinykh A, Ivey MJ, et al. Revisiting cardiac cellular composition. Circ Res 2016;118(3):400-9. doi:10.1161/CIRCRESAHA.115.307778';
 const KELLER = 'Keller D, Ero C, Markram H. Cell densities in the mouse brain: a systematic review. Front Neuroanat 2018;12:83. doi:10.3389/fnana.2018.00083';
 const ZIMMERMAN = 'Zimmerman A, Bai L, Ginty DD. The gentle touch receptors of mammalian skin. Science 2014;346(6212):950-4. doi:10.1126/science.1254229';
+const KANNUS = 'Kannus P. Structure of the tendon connective tissue. Scand J Med Sci Sports 2000;10(6):312-20. doi:10.1034/j.1600-0838.2000.010006312.x';
+const MUTSAERS = 'Mutsaers SE. The mesothelial cell. Int J Biochem Cell Biol 2004;36(1):9-16. doi:10.1016/s1357-2725(03)00242-5';
+const MEBIUS = 'Mebius RE, Kraal G. Structure and function of the spleen. Nat Rev Immunol 2005;5(8):606-16. doi:10.1038/nri1669';
+const KHANDELWAL = 'Khandelwal P, Abraham SN, Apodaca G. Cell biology and physiology of the uroepithelium. Am J Physiol Renal Physiol 2009;297(6):F1477-501. doi:10.1152/ajprenal.00327.2009';
+const ROCK = 'Rock JR, Randell SH, Hogan BL. Airway basal stem cells: a perspective on their roles in epithelial homeostasis and remodeling. Dis Model Mech 2010;3(9-10):545-56. doi:10.1242/dmm.006031';
+const MILLS = 'Mills JC, Shivdasani RA. Gastric epithelial stem cells. Gastroenterology 2011;140(2):412-24. doi:10.1053/j.gastro.2010.12.001';
+const CARTER_DAWSON = 'Carter-Dawson LD, LaVail MM. Rods and cones in the mouse retina. I. Structural analysis using light and electron microscopy. J Comp Neurol 1979;188(2):245-62. doi:10.1002/cne.901880204';
+const GRISWOLD = 'Griswold MD. Spermatogenesis: the commitment to meiosis. Physiol Rev 2016;96(1):1-17. doi:10.1152/physrev.00013.2015';
+const ARCHER = 'Archer CW, Francis-West P. The chondrocyte. Int J Biochem Cell Biol 2003;35(4):401-4. doi:10.1016/s1357-2725(02)00301-1';
+const OCONNELL = "O'Connell KE, Mikkola AM, Stepanek AM, et al. Practical murine hematopathology: a comparative review and implications for research. Comp Med 2015;65(2):96-113. PMID 25926395";
+const NILSSON = 'Nilsson M, Fagman H. Development of the thyroid gland. Development 2017;144(12):2123-40. doi:10.1242/dev.145615';
+const DENNY = 'Denny PC, Ball WD, Redman RS. Salivary glands: a paradigm for diversity of gland development. Crit Rev Oral Biol Med 1997;8(1):51-75. doi:10.1177/10454411970080010301';
+const BALIC = 'Balic A, Thesleff I. Tissue interactions regulating tooth development and renewal. Curr Top Dev Biol 2015;115:157-86. doi:10.1016/bs.ctdb.2015.07.006';
+const HENRIKSSON = 'Henriksson JT, McDermott AM, Bergmanson JP. Dimensions and morphology of the cornea in three strains of mice. Invest Ophthalmol Vis Sci 2009;50(8):3648-54. doi:10.1167/iovs.08-2941';
+const BASSNETT = 'Bassnett S, Shi Y, Vrensen GF. Biological glass: structural determinants of eye lens transparency. Philos Trans R Soc Lond B Biol Sci 2011;366(1568):1250-64. doi:10.1098/rstb.2010.0302';
+const JOHANSSON = 'Johansson ME, Phillipson M, Petersson J, Velcich A, Holm L, Hansson GC. The inner of the two Muc2 mucin-dependent mucus layers in colon is devoid of bacteria. Proc Natl Acad Sci U S A 2008;105(39):15064-9. doi:10.1073/pnas.0803124105';
+const NGUYEN = 'Nguyen TL, Vieira-Silva S, Liston A, Raes J. How informative is the mouse for human gut microbiota research? Dis Model Mech 2015;8(1):1-16. doi:10.1242/dmm.017400';
+const SUNDARESAN = 'Sundaresan SS, Ramesh P, Shobana N, Vinuchakkaravarthy T, Yasien S, Ponnuswamy MNG. Crystal structure of hemoglobin from mouse (Mus musculus) compared with those from other small animals and humans. Acta Crystallogr F Struct Biol Commun 2021;77(Pt 4):113-20. doi:10.1107/S2053230X2100306X';
 const PDG = 'Navas S, et al. (Particle Data Group). Review of Particle Physics. Phys Rev D 2024;110:030001. doi:10.1103/PhysRevD.110.030001';
 
 export const JOURNEY_LEVELS: readonly JourneyLevel[] = [
@@ -104,7 +125,7 @@ export const JOURNEY_LEVELS: readonly JourneyLevel[] = [
     basis: [ANGELI],
   },
   {
-    id: 'proton', name: 'A proton', referenceMetres: 2.4e-15, startMetres: 5.5e-15, endMetres: 6e-16, evidence: 'schematic',
+    id: 'proton', name: 'A proton and its quarks', referenceMetres: 2.4e-15, startMetres: 5.5e-15, endMetres: 6e-16, evidence: 'schematic',
     caption: 'A proton has two up quarks and one down quark, held by gluons, within a measured charge radius of 0.84 femtometres. Quarks are drawn far too large, since no size has been measured for them, and they have no fixed places. No smaller structure is known, so the zoom ends here.',
     basis: [PDG],
   },
@@ -114,7 +135,11 @@ export const JOURNEY_WIDEST = JOURNEY_LEVELS[0].startMetres;
 export const JOURNEY_NARROWEST = JOURNEY_LEVELS[JOURNEY_LEVELS.length - 1].endMetres;
 
 /** The tissues that a zoom can start from. Every route joins the shared levels at the cell nucleus. */
-export type JourneyTissue = 'skin' | 'muscle' | 'nerve' | 'artery' | 'vein' | 'bone' | 'fat' | 'liver' | 'kidney' | 'lung' | 'gut' | 'heart' | 'brain';
+export type JourneyTissue = 'skin' | 'muscle' | 'nerve' | 'artery' | 'vein' | 'bone' | 'fat' | 'liver' | 'kidney' | 'lung' | 'gut' | 'heart' | 'brain'
+  | 'cartilage' | 'tendon' | 'membrane' | 'gland' | 'endocrine' | 'thyroid' | 'lymphoid' | 'colon' | 'stomach' | 'urothelium' | 'airway' | 'retina' | 'cornea' | 'lens' | 'tooth' | 'testis' | 'blood';
+
+/** Where a zoom goes below the cells of a tissue. A cell nucleus unless the pointer chooses another way. */
+export type JourneyTail = 'nucleus' | 'blood' | 'microbiota';
 
 const SHARED_FROM = JOURNEY_LEVELS.findIndex((level) => level.id === 'nucleus');
 const SHARED = JOURNEY_LEVELS.slice(SHARED_FROM);
@@ -166,33 +191,156 @@ const ROUTES: Readonly<Record<Exclude<JourneyTissue, 'skin'>, { readonly label: 
     block('heart-block', 'A block of heart muscle', 'Heart muscle cells cut across, closely packed, with many capillaries among them, a small coronary artery and vein, and a band of connective tissue. Pinto et al. found that endothelial cells are the commonest of the other cells of the mouse heart.', [PINTO]),
     cells('heart-cells', 'Heart muscle cells', 'Short striated cells joined end to end at intercalated discs, each with a central nucleus, with capillaries between the rows and a fibroblast. Branches between the cells are left out. Pinto et al. found fibroblasts to be fewer than once estimated.', [PINTO]),
   ] },
+  cartilage: { label: 'cartilage', levels: [
+    block('cartilage-block', 'A block of cartilage', 'Cells isolated in a large matrix, under a perichondrium.', [ARCHER]),
+    cells('cartilage-cells', 'Chondrocytes', 'Each chondrocyte lies in a lacuna in a matrix that has neither vessels nor nerves, as Archer and Francis-West describe, so food and waste reach it by diffusion.', [ARCHER]),
+  ] },
+  tendon: { label: 'tendon', levels: [
+    block('tendon-block', 'A tendon cut across', 'Bundles of bundles of collagen fibres, each wrapped in a fine sheath, in the hierarchy that Kannus describes.', [KANNUS]),
+    cells('tendon-cells', 'Collagen and tenocytes', 'Long thin tenocytes lie between collagen fibres, which Kannus describes as the basic unit of a tendon. This review is mainly of human tendon.', [KANNUS]),
+  ] },
+  membrane: { label: 'serous membrane', levels: [
+    block('membrane-block', 'A serous membrane', 'One layer of flat cells on a little connective tissue, lining a body cavity or the organ in it.', [MUTSAERS]),
+    cells('membrane-cells', 'Mesothelial cells', 'A single layer of pavement-like cells with microvilli, which Mutsaers describes as giving a slippery, protective surface. The membranes round the brain are of another kind and are drawn the same way.', [MUTSAERS]),
+  ] },
+  gland: { label: 'gland', levels: [
+    block('gland-block', 'A block of gland', 'Lobules of secreting acini round their ducts. The salivary glands are the model for this drawing, and other glands of the mouse differ in their details.', [DENNY]),
+    cells('gland-cells', 'Secreting cells', 'Cells in rings round a small lumen, with their nuclei to the outside and their secretory granules towards the middle.', [DENNY]),
+  ] },
+  endocrine: { label: 'endocrine gland', levels: [
+    block('endocrine-block', 'A block of endocrine gland', 'Cords of secreting cells among wide capillaries, with no ducts, under a capsule. The adrenal, pituitary and others differ in their details.', [HUMMEL]),
+    cells('endocrine-cells', 'Hormone-making cells', 'Cells holding hormone granules, each close to a capillary that carries its product away.', [HUMMEL]),
+  ] },
+  thyroid: { label: 'thyroid', levels: [
+    block('thyroid-block', 'A block of thyroid', 'Follicles of cells, each round its stored colloid, which Nilsson and Fagman describe as the hormone-making unit of the gland.', [NILSSON]),
+    cells('thyroid-cells', 'A thyroid follicle', 'A ring of follicular cells round colloid, with a capillary outside it.', [NILSSON]),
+  ] },
+  lymphoid: { label: 'lymphoid tissue', levels: [
+    block('lymphoid-block', 'A block of spleen', 'White pulp, dense with lymphocytes round small arteries, in red pulp full of blood, as Mebius and Kraal describe. Lymph nodes and the thymus are arranged differently and hold the same kinds of cell.', [MEBIUS]),
+    cells('lymphoid-cells', 'Lymphocytes and a macrophage', 'Closely packed lymphocytes, each with a large nucleus, and a macrophage that has taken up old red cells, which the spleen removes from the circulation.', [MEBIUS]),
+  ] },
+  colon: { label: 'colon', levels: [
+    block('colon-block', 'The wall of the colon', 'Crypts, with no villi, under two layers of mucus. Johansson et al. found that in the mouse colon these extend 150 micrometres above the cells, that the inner layer is free of bacteria, and that the outer layer is colonized.', [JOHANSSON, CLEVERS]),
+    cells('colon-cells', 'Colon cells and their mucus', 'Absorptive cells and many goblet cells that make the mucus. Bacteria stay beyond the inner layer. Point at them to go on into the gut bacteria.', [JOHANSSON]),
+  ] },
+  stomach: { label: 'stomach', levels: [
+    block('stomach-block', 'The wall of the stomach', 'Pits from the surface, leading to glands with acid-making parietal cells and, deeper, enzyme-making chief cells, as Mills and Shivdasani review. The front part of the stomach of the mouse and its oesophagus have a horny lining instead, which is not drawn.', [MILLS]),
+    cells('stomach-cells', 'Cells of a gastric gland', 'Parietal cells, full of mitochondria, and chief cells with enzyme granules, on either side of the narrow lumen of a gland.', [MILLS]),
+  ] },
+  urothelium: { label: 'urinary lining', levels: [
+    block('urothelium-block', 'The wall of the bladder', 'A folded lining over connective tissue and smooth muscle, facing the urine. The ureters and renal pelvis have the same lining.', [KHANDELWAL]),
+    cells('urothelium-cells', 'Urothelium', 'Basal and intermediate cells under large umbrella cells, which Khandelwal et al. describe as forming the barrier to urine.', [KHANDELWAL]),
+  ] },
+  airway: { label: 'airway', levels: [
+    block('airway-block', 'The wall of the trachea', 'A lining of cells with cilia over connective tissue, glands and cartilage. Rock et al. describe this lining in the mouse trachea. Other airways differ in their details.', [ROCK]),
+    cells('airway-cells', 'Cells of the airway lining', 'Ciliated cells, secretory cells and basal cells, with the beating of the cilia shown as an illustration.', [ROCK]),
+  ] },
+  retina: { label: 'retina', levels: [
+    block('retina-block', 'The back of the eye', 'Sclera, choroid, pigment layer and retina. Rod and cone outer segments lie against the pigment, and their nuclei form the thick outer nuclear layer.', [CARTER_DAWSON]),
+    cells('retina-cells', 'Rods and cones', 'Carter-Dawson and LaVail count about 3 percent of the photoreceptor nuclei of the mouse as cones. Most of what is drawn is therefore rods, with their stacked discs.', [CARTER_DAWSON]),
+  ] },
+  cornea: { label: 'cornea', levels: [
+    block('cornea-block', 'The cornea', 'A layered outer epithelium, a thick stroma, and a single inner layer. Henriksson et al. find that in the mouse the stroma makes up about two thirds of the thickness and the epithelium about one third.', [HENRIKSSON]),
+    cells('cornea-cells', 'Epithelium and stroma of the cornea', 'Layers of epithelial cells flattening towards the surface, over the lamellae of the stroma with its thin keratocytes. Henriksson et al. count about 13 layers of epithelium at the centre, and fewer are drawn here.', [HENRIKSSON]),
+  ] },
+  lens: { label: 'lens', levels: [
+    block('lens-block', 'The lens', 'Long fibres in ordered rows, under a capsule and one layer of cells at the front.', [BASSNETT]),
+    cells('lens-cells', 'Lens fibres', 'Bassnett et al. describe the ordered packing of the fibres, cut across here. The nuclei of the fibres are lost as they mature, so the zoom goes on from a cell at the front.', [BASSNETT]),
+  ] },
+  tooth: { label: 'tooth', levels: [
+    block('tooth-block', 'A block of tooth', 'Enamel, dentine with fine tubules, and pulp with its vessels. Balic and Thesleff review how ameloblasts and odontoblasts make enamel and dentine, and how the teeth of the mouse can grow continuously.', [BALIC]),
+    cells('tooth-cells', 'Odontoblasts', 'A row of odontoblasts at the edge of the pulp, each with a process running into a tubule of the dentine.', [BALIC]),
+  ] },
+  testis: { label: 'testis', levels: [
+    block('testis-block', 'A block of testis', 'Seminiferous tubules cut across, with hormone-making Leydig cells between them.', [GRISWOLD]),
+    cells('testis-cells', 'Forming sperm', 'From the edge of a tubule towards its middle: spermatogonia, spermatocytes, round spermatids and the tails of forming sperm, among Sertoli cells, in the sequence that Griswold reviews.', [GRISWOLD]),
+  ] },
+  blood: { label: 'blood', levels: [
+    block('blood-block', 'Blood in a vessel', 'A vessel cut across and filled with blood.', [OCONNELL]),
+    cells('blood-cells', 'Blood cells', "Red cells, a white cell and platelets in plasma. O'Connell et al. note that mice have smaller and more numerous red cells than humans and a higher share of lymphocytes among the white cells. Point at a red cell to go on into hemoglobin.", [OCONNELL]),
+  ] },
   brain: { label: 'brain', levels: [
     block('brain-block', 'A block of cerebral cortex', 'From the pia at the surface inwards: layers of neurons of differing density, with vessels entering from the surface and white matter below. Keller et al. review the cell densities of the mouse brain and find wide disagreement between sources, so the densities here are only relative.', [KELLER]),
     cells('brain-cells', 'Cells of the cortex', 'A pyramidal neuron with spines on its dendrites and myelin on its axon, an astrocyte with an end foot on a capillary, an oligodendrocyte that makes the myelin, and a microglial cell.', [KELLER]),
   ] },
 };
 
-/** The levels of the zoom that starts from a tissue. */
-export function journeyLevels(tissue: JourneyTissue = 'skin'): readonly JourneyLevel[] {
-  return tissue === 'skin' ? JOURNEY_LEVELS : [...ROUTES[tissue].levels, ...SHARED];
+const levelOf = (id: string) => JOURNEY_LEVELS.find((level) => level.id === id)!;
+const FROM_ATOM = JOURNEY_LEVELS.slice(JOURNEY_LEVELS.findIndex((level) => level.id === 'atom'));
+/** The same view heights as the nucleus, the chromatin and the atoms of DNA, so that a level leads to the next the same way on every route. */
+const closeLevel = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 5e-6, startMetres: 9.5e-6, endMetres: 3.2e-7, evidence: 'simulated', caption: `${caption} Sizes, shapes and positions are estimates.`, basis });
+const fineLevel = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 3e-7, startMetres: 8e-7, endMetres: 1.6e-8, evidence: 'simulated', caption: `${caption} Sizes, counts and positions are estimates.`, basis });
+
+const TAILS: Readonly<Record<Exclude<JourneyTail, 'nucleus'>, readonly JourneyLevel[]>> = {
+  blood: [
+    closeLevel('red-cell', 'A red cell', "A red cell, with no nucleus, thinner at its middle than at its rim, among others in plasma. O'Connell et al. note that the red cells of mice are smaller than those of humans.", [OCONNELL]),
+    fineLevel('hemoglobin-crowd', 'Inside a red cell', 'Molecules of hemoglobin fill the cell, under a membrane held by its skeleton. The jostling is an illustration.', [OCONNELL]),
+    { id: 'hemoglobin', name: 'One mouse hemoglobin', referenceMetres: 1.2e-8, startMetres: 3.5e-8, endMetres: 3.5e-9, evidence: 'measured-elsewhere', caption: 'Every atom here is at its measured position in a crystal at 2.8 angstrom resolution: Protein Data Bank entry 3HRW, hemoglobin purified from mouse blood, with two alpha and two beta chains and four hemes. The hemes carry no oxygen in this crystal. It is not from the specimen, and colours mark the chains and are not real.', basis: [SUNDARESAN] },
+    { id: 'heme', name: 'Atoms round the iron', referenceMetres: 3e-9, startMetres: 6.5e-9, endMetres: 5e-10, evidence: 'measured-elsewhere', caption: 'The atoms of one heme and of what lies against it, at their measured positions in the same crystal, coloured by element: iron orange, carbon grey, nitrogen blue, oxygen red. Positions at this resolution are less exact than the size of an atom suggests, and bonds are inferred from distances.', basis: [SUNDARESAN] },
+    ...FROM_ATOM,
+  ],
+  microbiota: [
+    closeLevel('microbes', 'Bacteria of the gut', 'Nguyen et al. report that the gut microbiota of mice and humans is dominated by two phyla, Bacteroidetes and Firmicutes. Johansson et al. place the bacteria of the colon in its outer mucus. Which bacteria these are is not stated, since no species was drawn from data.', [NGUYEN, JOHANSSON]),
+    fineLevel('bacterium', 'Inside a bacterium', 'A bacterium cut open, with an outer and an inner membrane and a thin wall between them, as in Gram-negative bacteria, many ribosomes, and DNA with no nucleus round it.', [NGUYEN]),
+    { id: 'bacterial-dna', name: 'Bacterial DNA', referenceMetres: 1.2e-8, startMetres: 3.5e-8, endMetres: 3.5e-9, evidence: 'schematic', caption: 'A double helix, with no histones as in a cell nucleus. It is a sketch and follows no sequence.', basis: [NGUYEN] },
+    { ...levelOf('dna'), caption: 'Atoms of DNA at their measured positions, coloured by element. They come from the crystal of a mouse nucleosome, Protein Data Bank entry 5B1M, and not from a bacterium, because the chemistry of DNA is the same in both.' },
+    ...FROM_ATOM,
+  ],
+};
+
+/** The levels of the zoom that starts from a tissue and goes on by a given way. */
+/** Orders of magnitude of the height of the view that pass in a second of playing, so that the whole way down takes about three quarters of a minute. */
+export const JOURNEY_PLAY_RATE = 0.3;
+
+/** One step of playing the zoom. It ends only by reaching the end it is going to, however small or odd the time step. */
+export function playStep(view: number, direction: 'in' | 'out', seconds: number, route: readonly JourneyLevel[]): { readonly view: number; readonly ended: boolean } {
+  const narrow = route[route.length - 1].endMetres, wide = route[0].startMetres;
+  const next = Math.max(narrow, Math.min(wide, view * 10 ** ((direction === 'in' ? -1 : 1) * JOURNEY_PLAY_RATE * Math.max(seconds, 0))));
+  return { view: next, ended: direction === 'in' ? next <= narrow : next >= wide };
 }
 
-/** The tissue a structure of the living mouse is mostly made of, so that zooming into it goes on to its own cells. Null when no route has been made for it. */
+export function journeyLevels(tissue: JourneyTissue = 'skin', tail: JourneyTail = 'nucleus'): readonly JourneyLevel[] {
+  if (tail === 'nucleus') return tissue === 'skin' ? JOURNEY_LEVELS : [...ROUTES[tissue].levels, ...SHARED];
+  return [...(tissue === 'skin' ? JOURNEY_LEVELS.slice(0, SHARED_FROM) : ROUTES[tissue].levels), ...TAILS[tail]];
+}
+
+/** The tissue a structure of the living mouse is mostly made of, so that zooming into it goes on to its own cells. */
 export function journeyTissueOf(structure: { readonly id: string; readonly name: string; readonly systems: readonly string[] }): JourneyTissue | null {
   const id = structure.id.replace(/^living:/, ''), has = (system: string) => structure.systems.includes(system);
   if (id === 'fat' || id === 'brown-fat') return 'fat';
-  if (id === 'skin' || id === 'pinnae' || id === 'tail' || id === 'forepaws' || id === 'hindpaws') return 'skin';
+  if (['skin', 'pinnae', 'tail', 'forepaws', 'hindpaws', 'claws', 'vibrissae', 'nose', 'lips', 'eyelids', 'openings', 'penis'].includes(id)) return 'skin';
+  if (['intervertebral-discs', 'xiphoid-cartilage', 'tracheal-rings'].includes(id)) return 'cartilage';
+  if (id === 'calcaneal-tendons') return 'tendon';
+  if (['pleura', 'peritoneum', 'pericardium', 'meninges'].includes(id)) return 'membrane';
+  if (['veins', 'left-heart-spaces', 'right-heart-spaces'].includes(id)) return 'blood';
+  if (id === 'heart-valves') return 'heart';
+  if (['incisors', 'molars'].includes(id)) return 'tooth';
+  if (['corneas'].includes(id)) return 'cornea';
+  if (['lenses'].includes(id)) return 'lens';
+  if (['eyes', 'irises', 'retinas'].includes(id)) return 'retina';
+  if (['middle-ears', 'inner-ears'].includes(id)) return 'bone';
+  if (id === 'thyroid') return 'thyroid';
+  if (['adrenals', 'adrenal-medullae', 'parathyroids', 'pituitary', 'pineal'].includes(id)) return 'endocrine';
+  if (id === 'spleen' || id === 'thymus' || id.endsWith('lymph-nodes') || id.endsWith('lymph-node')) return 'lymphoid';
+  if (id === 'lymph-vessels') return 'vein';
+  if (['caecum', 'colon'].includes(id)) return 'colon';
+  if (id.startsWith('stomach-') || ['limiting-ridge', 'oesophagus'].includes(id)) return 'stomach';
+  if (['bladder', 'bladder-lumen', 'ureters', 'renal-pelves'].includes(id)) return 'urothelium';
+  if (['airways', 'bronchi', 'trachea', 'larynx', 'nasal-cavities', 'pharynx', 'soft-palate'].includes(id)) return 'airway';
+  if (id.startsWith('testis-')) return 'testis';
+  if (['submandibular-glands', 'sublingual-glands', 'parotid-glands', 'pancreas', 'gall-bladder', 'bile-ducts', 'pancreatic-ducts', 'lachrymal', 'harderian-glands', 'intraorbital-glands', 'male-ducts', 'seminal-vesicles', 'prostate', 'preputial-glands', 'accessory-glands'].includes(id)) return 'gland';
+  if (id === 'tongue' || id === 'diaphragm') return 'muscle';
   if (has('skeletal')) return 'bone';
   if (has('muscular') && !has('respiratory')) return 'muscle';
-  if (/-veins?$|venae|vena-cava|vein-stems|portal-vein/.test(id)) return 'vein';
-  if (/-arter(y|ies)$|aorta|artery-stems|cerebral-base/.test(id)) return 'artery';
+  if (/-veins?$|venae|vena-cava|vein-stems|portal-vein|portal-branches/.test(id)) return 'vein';
+  if (/-arter(y|ies)$|aorta|artery-stems|cerebral-base|tail-vessels/.test(id)) return 'artery';
   if (has('nervous') && /nerves?$|plexus|roots|sympathetic|ganglia/.test(id)) return 'nerve';
   if (/^liver-/.test(id)) return 'liver';
   if (/^kidney-|^renal-medullae$/.test(id)) return 'kidney';
   if (/^lung-/.test(id)) return 'lung';
   if (id === 'small-intestine') return 'gut';
   if (/^heart-(lv|rv|la|ra)$/.test(id)) return 'heart';
-  if (/^(cerebrum|striatum|brain-|cerebellum|medulla|olfactory)/.test(id) && id !== 'brain-ventricles') return 'brain';
+  if (/^(cerebrum|striatum|brain-|cerebellum|medulla|olfactory|spinal-cord)/.test(id)) return 'brain';
   return null;
 }
 

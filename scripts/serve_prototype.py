@@ -54,7 +54,7 @@ SECTION_NAMES = {f"atlas-volume/sections/{name}.bin" for name in ("cryosection-s
 KNOWN_FILES = {"index.html", "THIRD_PARTY_NOTICES.txt", "atlas-volume/detail-index.json", SECTION_MANIFEST} | DETAIL_NAMES | SECTION_NAMES
 for _directory, _asset in ATLAS_ASSETS.items():
     KNOWN_FILES.update({f"{_directory}/atlas.json", f"{_directory}/LICENSE.md", f"{_directory}/{_asset}"})
-KNOWN_FILES.update({MODEL_MANIFEST, MODEL_NOTICE, "scale-journey/nucleosome-5b1m.json"})
+KNOWN_FILES.update({MODEL_MANIFEST, MODEL_NOTICE, "scale-journey/nucleosome-5b1m.json", "scale-journey/hemoglobin-3hrw.json", "atlas-living/flow-paths.json"})
 KNOWN_DIRECTORIES = {"models", "models/bondarenko-apical","assets", "scale-journey", *ATLAS_ASSETS, "atlas-volume/detail", "atlas-volume/native-010", "atlas-volume/sections"}
 CONTENT_TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
                  ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8",

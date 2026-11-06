@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createLifeMeshUniforms, LIFE_DECLARATIONS, LIFE_MOVE, LIFE_SHARED, type LifeMeshUniforms } from './life-field';
 
 /**
  * Display shading hooks for source surfaces. The hooks change pixel appearance
@@ -6,7 +7,7 @@ import * as THREE from 'three';
  * highlight for the selected region. Geometry, source identifiers and colours
  * are not modified, and the hooks carry no anatomical or optical measurement.
  */
-export interface SurfaceShadingUniforms {
+export interface SurfaceShadingUniforms extends LifeMeshUniforms {
   /** 0 keeps the material's plain opacity; 1 fades surfaces facing the camera to their rims. */
   readonly uGhost: { value: number };
   /** Exponent of the view-angle term used by the ghost fade. */
@@ -29,6 +30,8 @@ export interface SurfaceShadingUniforms {
   readonly uWinRadius: { value: number };
   readonly uWinInvert: { value: number };
   readonly uWinBack: { value: THREE.Matrix4 };
+  /** Nothing nearer to the camera than this is drawn, while the view is going in through the opened layers. Zero turns it off. */
+  readonly uWinNear: { value: number };
   /** Colour of the inner side of a surface where it has been opened, if it is not to take the display colour. */
   readonly uInner: { value: THREE.Color };
   readonly uInnerOn: { value: number };
@@ -70,11 +73,12 @@ export function installSurfaceShading(material: THREE.MeshStandardMaterial): Sur
     uSolidCut: { value: 0 },
     uCoatOn: { value: 0 }, uUnderBelly: { value: new THREE.Color('#ffffff') },
     uWinOn: { value: 0 }, uWinA: { value: new THREE.Vector3() }, uWinB: { value: new THREE.Vector3() }, uWinN: { value: new THREE.Vector3(0, 0, 1) },
-    uWinDepth: { value: 0 }, uWinFront: { value: 0 }, uWinRadius: { value: 0 }, uWinInvert: { value: 0 }, uWinBack: { value: new THREE.Matrix4() },
+    uWinDepth: { value: 0 }, uWinFront: { value: 0 }, uWinRadius: { value: 0 }, uWinInvert: { value: 0 }, uWinBack: { value: new THREE.Matrix4() }, uWinNear: { value: 0 },
     uInner: { value: new THREE.Color('#ffffff') }, uInnerOn: { value: 0 },
+    ...createLifeMeshUniforms(),
   });
   material.onBeforeCompile = (shader) => {
-    Object.assign(shader.uniforms, uniforms);
+    Object.assign(shader.uniforms, uniforms, LIFE_SHARED);
     shader.fragmentShader = windowFragment(shadeFragment(shader.fragmentShader));
     shader.vertexShader = windowVertex(shader.vertexShader);
     if (material.defines?.USE_FIBRE) { shader.vertexShader = fibreVertex(shader.vertexShader); shader.fragmentShader = fibreFragment(shader.fragmentShader); }
@@ -135,8 +139,9 @@ export function coatFragment(fragmentShader: string): string {
 }
 
 /** The opening as program text, shared with the drawing that records what is seen. */
-export const WINDOW_DECLARATIONS = 'uniform float uWinOn;\nuniform vec3 uWinA;\nuniform vec3 uWinB;\nuniform vec3 uWinN;\nuniform float uWinDepth;\nuniform float uWinFront;\nuniform float uWinRadius;\nuniform float uWinInvert;\nuniform mat4 uWinBack;';
+export const WINDOW_DECLARATIONS = 'uniform float uWinOn;\nuniform vec3 uWinA;\nuniform vec3 uWinB;\nuniform vec3 uWinN;\nuniform float uWinDepth;\nuniform float uWinFront;\nuniform float uWinRadius;\nuniform float uWinInvert;\nuniform mat4 uWinBack;\nuniform float uWinNear;';
 export const WINDOW_TEST = [
+  'if (uWinNear > 0.0 && distance(vWinWorld, cameraPosition) < uWinNear) discard;',
   'if (uWinOn > 0.5) {',
   '  vec3 mbFrom = (uWinBack * vec4(vWinWorld, 1.0)).xyz - uWinA;',
   '  float mbDeep = -dot(mbFrom, uWinN);',
@@ -154,8 +159,9 @@ export function windowVertex(vertexShader: string): string {
   const markers = ['#include <common>', '#include <begin_vertex>'];
   if (!markers.every((marker) => vertexShader.includes(marker))) return vertexShader;
   return vertexShader
-    .replace('#include <common>', '#include <common>\nvarying vec3 vWinWorld;')
-    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWinWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    .replace('#include <common>', '#include <common>\nvarying vec3 vWinWorld;\n' + LIFE_DECLARATIONS + LIFE_MOVE)
+    // The cut belongs to the tissue, so that an opening moves with what it was made in: it is tested where the point lies at rest.
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWinWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;\ntransformed += transpose(mat3(modelMatrix)) * mbLifeMove(vWinWorld, normalize(mat3(modelMatrix) * objectNormal));');
 }
 
 /** The test of dissection-window.ts in the fragment program. A thin dark line along the cut keeps one layer apart from the next. */

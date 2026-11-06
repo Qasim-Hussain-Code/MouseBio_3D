@@ -1,5 +1,5 @@
 /** Surfaces from masks or image values, cropped to their extent and sampled on a coarser grid. */
-import { surfaceNets, type Surface } from './surface-nets';
+import { surfaceNets, type Surface, type SurfaceLine } from './surface-nets';
 import { smoothField, voxelIndex, type Grid } from './volume';
 
 export interface ExtractOptions {
@@ -91,14 +91,16 @@ export function mergeSurfaces(surfaces: readonly Surface[]): Surface {
   const positions = new Float32Array(vertices), normals = new Float32Array(vertices), indices = new Uint32Array(triangles);
   const colors = surfaces.some((s) => s.colors) ? new Float32Array(vertices).fill(1) : undefined;
   let v = 0, t = 0;
+  const lines: SurfaceLine[] = [];
   for (const s of surfaces) {
     positions.set(s.positions, v); normals.set(s.normals, v);
     if (colors && s.colors) colors.set(s.colors, v);
     const base = v / 3;
     for (let i = 0; i < s.indices.length; i++) indices[t + i] = s.indices[i] + base;
+    for (const line of s.lines ?? []) lines.push({ ...line, start: line.start + base });
     v += s.positions.length; t += s.indices.length;
   }
-  return { positions, normals, indices, colors };
+  return { positions, normals, indices, colors, lines };
 }
 
 /** A tube along a polyline, with a tapering radius, closed at both ends by a small cap. */
@@ -144,5 +146,5 @@ export function tube(points: readonly (readonly [number, number, number])[], rad
     const next = (s + 1) % sides;
     indices.push(startCap, next, s, endCap, (rings - 1) * sides + s, (rings - 1) * sides + next);
   }
-  return { positions, normals, indices: Uint32Array.from(indices) };
+  return { positions, normals, indices: Uint32Array.from(indices), lines: [{ start: 0, rings, sides }] };
 }

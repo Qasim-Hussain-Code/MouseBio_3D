@@ -1,14 +1,14 @@
-# The zoom from skin to the proton
+# The zoom below the layers, down to the proton
 
 ## What it is
 
-The Living mouse reference has a separate view, opened with "Zoom from skin to atoms" or by zooming on to the skin of the standing animal. It continues the zoom from a block of skin 1.6 mm across to the inside of a proton, about thirteen orders of magnitude in the height of the view. Scrolling moves through eleven levels without a break, and a list of the levels moves directly to any of them. Zooming back out past the block of skin, the Escape key and a button all return to the mouse.
+[Zooming through the layers](zoom-unfold.md) of the living mouse does not stop at the last layer. At the end of it, the same scroll goes on, in the same place on the screen, into the tissue of the structure under the pointer, then its cells and what they hold, down to atoms and the inside of a proton. That is about thirteen orders of magnitude in the height of the view, without a break. A list of the levels moves directly to any of them, and **Play** goes all the way down at an even pace, in about three quarters of a minute. Scrolling back out past the first level, the Escape key and a button all return to the mouse at that spot. **Zoom in**, in the bar for a selected structure, goes the same way.
 
-The view is static apart from the zoom and turning. It simulates no movement or process.
+Some levels of the zoom into a tissue have an [illustrative motion](living-motion.md). Levels that show measured atoms keep still. It simulates no process.
 
 ## Starting from a tissue
 
-Zooming into a selected structure with **Zoom in**, or zooming right on to a structure in the middle of the view with [all layers together](all-layers.md) open, starts from the tissue that the structure is mostly made of. The first two levels then show that tissue, and the route joins the shared levels at the cell nucleus. A notice names the structure and says that the view is a representative example of its tissue, and not that part of this mouse.
+The first two levels show the tissue that the structure is mostly made of, and every structure of the model has a route. The way on from there is the cell nucleus unless another is chosen. Under **Sources**, a notice names the structure and says that the view is a representative example of its tissue, and not that part of this mouse.
 
 | Starting from | First level, 1.6 mm per unit | Second level, 70 µm per unit | Basis |
 | --- | --- | --- | --- |
@@ -24,16 +24,46 @@ Zooming into a selected structure with **Zoom in**, or zooming right on to a str
 | Small intestine | Villi, crypts, submucosa, two layers of muscle | Absorptive cells with a brush border, a goblet cell, a capillary and a lacteal | Clevers 2013 |
 | Heart | Muscle cells cut across, many capillaries, a coronary artery and vein | Striated cells, intercalated discs, capillaries, a fibroblast | Pinto et al. 2016 |
 | Brain | Layers of the cortex, entering vessels, white matter | A pyramidal neuron, an astrocyte, an oligodendrocyte, a microglial cell | Keller et al. 2018 |
+| Cartilage | Isolated cells in a matrix, under a perichondrium | Chondrocytes in lacunae | Archer and Francis-West 2003 |
+| Tendon | Bundles of collagen fibres cut across | Collagen fibres and tenocytes | Kannus 2000, mainly on human tendon |
+| Serous membrane | One layer of flat cells on connective tissue | Mesothelial cells with microvilli | Mutsaers 2004 |
+| Gland | Lobules of acini round their ducts | Secreting cells with granules | Denny et al. 1997, on salivary glands |
+| Endocrine gland | Cords of cells among capillaries | Cells with hormone granules | Hummel et al. 1966 |
+| Thyroid | Follicles round stored colloid | A follicle and its capillary | Nilsson and Fagman 2017 |
+| Lymphoid tissue | White pulp in red pulp | Lymphocytes, a macrophage with old red cells | Mebius and Kraal 2005, on the spleen |
+| Colon and caecum | Crypts, two layers of mucus, bacteria beyond the inner layer | Colon cells, goblet cells, mucus and bacteria | Johansson et al. 2008; Clevers 2013 |
+| Stomach | Pits and glands | Parietal and chief cells | Mills and Shivdasani 2011 |
+| Urinary lining | A folded lining over connective tissue and muscle | Basal cells and umbrella cells | Khandelwal et al. 2009 |
+| Airway | A lining with cilia, glands and cartilage | Ciliated, secretory and basal cells | Rock et al. 2010 |
+| Retina | Sclera, choroid, pigment layer, retina | Rods with stacked discs, and about 3 percent cones | Carter-Dawson and LaVail 1979 |
+| Cornea | Epithelium, stroma and inner layer | Epithelial cells over stromal lamellae | Henriksson et al. 2009 |
+| Lens | Fibres in rows, under a capsule | Fibres cut across, a cell at the front | Bassnett et al. 2011 |
+| Tooth | Enamel, dentine with tubules, pulp | Odontoblasts with processes in tubules | Balic and Thesleff 2015 |
+| Testis | Tubules cut across, with Leydig cells | Layers of forming sperm among Sertoli cells | Griswold 2016 |
+| Blood | A vessel filled with blood | Red cells, a white cell, platelets | O'Connell et al. 2015 |
 
-Every one of these levels is simulated. All positions and counts are generated with a fixed seed, and sizes are estimates, except where a caption gives a measure and its source. The sources support the arrangement that each caption attributes to them. They do not support the generated drawing in detail. Structures for which no route has been made, such as the colon, the spleen and the bladder, say so, and no route of another tissue stands in for them. All routes join the same nucleus level, which was drawn for a keratinocyte, so its size and shape are not specific to the tissue.
+Every one of these levels is simulated. All positions and counts are generated with a fixed seed, and sizes are estimates, except where a caption gives a measure and its source. The sources support the arrangement that each caption attributes to them. They do not support the generated drawing in detail. A route is the nearest kind of tissue and not always an exact match: the claws, nose and lips go to haired skin, the middle and inner ears to bone, the heart valves to heart muscle, the spinal cord to the cortex, the front of the stomach and the oesophagus to the glandular stomach although their lining differs, and the penis to skin. All routes to a nucleus join the same nucleus level, which was drawn for a keratinocyte.
+
+## Choosing the way on, and looking around
+
+At any level, dragging turns the view, and dragging with the shift key or the right button moves across it. The zoom follows the pointer as on a map, until the next level comes near and the view returns to the part that the next level enlarges. So a level is not one fixed view.
+
+Where a level holds more than one way down, the other ways are named on the view in green, and the way nearest the pointer as the zoom goes on is taken. A click on the name takes it too. The list of levels changes to match.
+
+| Way on | Levels | Evidence | Basis |
+| --- | --- | --- | --- |
+| A red cell, from muscle, vessel walls, liver, lung, lymphoid tissue and blood | A red cell; inside a red cell; one mouse hemoglobin; atoms round the iron; then a carbon atom and below | Simulated, simulated, measured in a crystal, measured in a crystal | O'Connell et al. 2015; Protein Data Bank 3HRW, Sundaresan et al. 2021 |
+| Gut bacteria, from the small intestine, colon and caecum | Bacteria of the gut; inside a bacterium; bacterial DNA; atoms of DNA; then a carbon atom and below | Simulated, simulated, schematic, measured in a crystal | Johansson et al. 2008; Nguyen et al. 2015; Protein Data Bank 5B1M |
+
+The red cell has no nucleus, and a bacterium has neither a nucleus nor nucleosomes, so neither way passes through them. The file `public/scale-journey/hemoglobin-3hrw.json` holds the 4,502 atoms of the two alpha chains, the two beta chains and the four hemes of entry 3HRW, resolved at 2.8 angstroms, with coordinates rounded to 0.01 angstrom and water left out. It was purified from mouse blood and crystallized as methemoglobin, with no ligand on its hemes, so it shows no bound oxygen. At this resolution the positions of single atoms are less exact than their drawing suggests. The atoms of DNA reached from a bacterium come from the crystal of a mouse nucleosome, since no DNA of a bacterium is held here, and the caption says so. Which bacteria are drawn is not stated, because no species was drawn from data: Nguyen et al. report that the gut microbiota of mice is dominated by the Bacteroidetes and Firmicutes, and Johansson et al. place the bacteria of the mouse colon in its outer mucus, in layers extending 150 micrometres above the cells.
 
 ## What it is not
 
-The measured data of the Digimouse specimen end at about 0.1 mm. Magnification does not create tissue or cellular detail, so nothing in this view comes from that specimen, and a notice saying so stays on the screen at every level. The view adds nothing to any anatomical reference: no level appears in a manifest, a structure list or a layer of an atlas, and no reference depends on it. The specimen is also a nude mouse, whereas the block of skin carries hair.
+The measured data of the Digimouse specimen end at about 0.1 mm. Magnification does not create tissue or cellular detail, so nothing in this view comes from that specimen. A short word beside the name of each level marks its evidence, and **Sources** gives its caption, its sources and a notice saying this. The view adds nothing to any anatomical reference: no level appears in a manifest, a structure list or a layer of an atlas, and no reference depends on it. The specimen is also a nude mouse, whereas the block of skin carries hair.
 
 ## Kinds of evidence
 
-Every level shows its kind of evidence beside its name, with its caption and sources.
+Every level shows its kind of evidence beside its name, and its caption and sources under **Sources**.
 
 | Level | One unit of the scene | Evidence | Basis |
 | --- | --- | --- | --- |
@@ -47,7 +77,7 @@ Every level shows its kind of evidence beside its name, with its caption and sou
 | A carbon atom | 300 pm | Calculated | Clementi and Raimondi 1963 |
 | Inside the atom | 3 pm | Calculated | Clementi and Raimondi 1963; Angeli and Marinova 2013 |
 | The nucleus of carbon-12 | 12 fm | Schematic | Angeli and Marinova 2013 |
-| A proton | 2.4 fm | Schematic | Particle Data Group, Navas et al. 2024 |
+| A proton and its quarks | 2.4 fm | Schematic | Particle Data Group, Navas et al. 2024 |
 
 **Simulated** means generated with a fixed seed to illustrate a published description. The layers of the skin, the rule of one sebaceous gland to each hair follicle, the upper limit of six layers of cells and the kinds of organelle follow the cited descriptions. Thicknesses, counts, shapes and positions are estimates and were not measured.
 
@@ -65,9 +95,9 @@ Neighbouring levels describe the same object at two scales, so that one can fade
 
 Each level is built in its own coordinates, in units of its reference length, and is scaled to the height of the view when it is drawn. No single coordinate has to span the whole range, so numerical precision does not limit it. Each level fades over about 0.28 of an order of magnitude and overlaps its neighbours, and the height of the view always shows at least one level. Between its best view and the start of the next level, the view moves to the point that the next level enlarges: the epidermis on the cut face of the block, a spinous cell, the centre of the nucleus, a nucleosome, a carbon atom of the DNA, and a proton. The scale bar is drawn to true length in the plane of that point.
 
-The scenes are in `src/viewer/scale-journey-scenes.ts`, the levels, their sources and the arithmetic of the zoom are in `src/domain/scale-journey.ts`, and the view is in `src/components/ScaleJourney.tsx`. The scene for each level is built only when it first comes near. If the file of atoms cannot be read or is not valid, the two levels that need it stay empty and say so, and nothing is drawn in their place.
+The scenes are in `src/viewer/scale-journey-scenes.ts`, `src/viewer/tissue-scenes.ts`, `src/viewer/more-tissue-scenes.ts` and `src/viewer/deep-scenes.ts`, the levels, their sources and the arithmetic of the zoom are in `src/domain/scale-journey.ts`, and the view is in `src/components/ScaleJourney.tsx`. The scene for each level is built only when it first comes near. If a file of atoms cannot be read or is not valid, the levels that need it stay empty and say so, and nothing is drawn in their place.
 
-`scripts/journey/prepare_nucleosome.py` reduces the deposited file to the file used here. The deposited file is not kept in the repository, and the script refuses any file with a different checksum.
+`scripts/journey/prepare_nucleosome.py` and `scripts/journey/prepare_hemoglobin.py` reduce the deposited files to the files used here. The deposited files are not kept in the repository, and the scripts refuse any file with a different checksum.
 
 ## Sources
 
@@ -80,6 +110,24 @@ The scenes are in `src/viewer/scale-journey-scenes.ts`, the levels, their source
 - Clementi E, Raimondi DL. Atomic screening constants from SCF functions. J Chem Phys 1963;38(11):2686-9. doi:10.1063/1.1733573
 - Angeli I, Marinova KP. Table of experimental nuclear ground state charge radii: an update. At Data Nucl Data Tables 2013;99(1):69-95. doi:10.1016/j.adt.2011.12.006
 - Navas S, et al. (Particle Data Group). Review of Particle Physics. Phys Rev D 2024;110:030001. doi:10.1103/PhysRevD.110.030001
+- Sundaresan SS, Ramesh P, Shobana N, Vinuchakkaravarthy T, Yasien S, Ponnuswamy MNG. Crystal structure of hemoglobin from mouse (Mus musculus) compared with those from other small animals and humans. Acta Crystallogr F Struct Biol Commun 2021;77(Pt 4):113-20. doi:10.1107/S2053230X2100306X. Coordinates from Protein Data Bank entry 3HRW, CC0 1.0.
+- Johansson ME, Phillipson M, Petersson J, Velcich A, Holm L, Hansson GC. The inner of the two Muc2 mucin-dependent mucus layers in colon is devoid of bacteria. Proc Natl Acad Sci U S A 2008;105(39):15064-9. doi:10.1073/pnas.0803124105
+- Nguyen TL, Vieira-Silva S, Liston A, Raes J. How informative is the mouse for human gut microbiota research? Dis Model Mech 2015;8(1):1-16. doi:10.1242/dmm.017400
+- O'Connell KE, Mikkola AM, Stepanek AM, et al. Practical murine hematopathology: a comparative review and implications for research. Comp Med 2015;65(2):96-113. PMID 25926395
+- Archer CW, Francis-West P. The chondrocyte. Int J Biochem Cell Biol 2003;35(4):401-4. doi:10.1016/s1357-2725(02)00301-1
+- Kannus P. Structure of the tendon connective tissue. Scand J Med Sci Sports 2000;10(6):312-20. doi:10.1034/j.1600-0838.2000.010006312.x
+- Mutsaers SE. The mesothelial cell. Int J Biochem Cell Biol 2004;36(1):9-16. doi:10.1016/s1357-2725(03)00242-5
+- Denny PC, Ball WD, Redman RS. Salivary glands: a paradigm for diversity of gland development. Crit Rev Oral Biol Med 1997;8(1):51-75. doi:10.1177/10454411970080010301
+- Nilsson M, Fagman H. Development of the thyroid gland. Development 2017;144(12):2123-40. doi:10.1242/dev.145615
+- Mebius RE, Kraal G. Structure and function of the spleen. Nat Rev Immunol 2005;5(8):606-16. doi:10.1038/nri1669
+- Mills JC, Shivdasani RA. Gastric epithelial stem cells. Gastroenterology 2011;140(2):412-24. doi:10.1053/j.gastro.2010.12.001
+- Khandelwal P, Abraham SN, Apodaca G. Cell biology and physiology of the uroepithelium. Am J Physiol Renal Physiol 2009;297(6):F1477-501. doi:10.1152/ajprenal.00327.2009
+- Rock JR, Randell SH, Hogan BL. Airway basal stem cells: a perspective on their roles in epithelial homeostasis and remodeling. Dis Model Mech 2010;3(9-10):545-56. doi:10.1242/dmm.006031
+- Carter-Dawson LD, LaVail MM. Rods and cones in the mouse retina. I. Structural analysis using light and electron microscopy. J Comp Neurol 1979;188(2):245-62. doi:10.1002/cne.901880204
+- Henriksson JT, McDermott AM, Bergmanson JP. Dimensions and morphology of the cornea in three strains of mice. Invest Ophthalmol Vis Sci 2009;50(8):3648-54. doi:10.1167/iovs.08-2941
+- Bassnett S, Shi Y, Vrensen GF. Biological glass: structural determinants of eye lens transparency. Philos Trans R Soc Lond B Biol Sci 2011;366(1568):1250-64. doi:10.1098/rstb.2010.0302
+- Balic A, Thesleff I. Tissue interactions regulating tooth development and renewal. Curr Top Dev Biol 2015;115:157-86. doi:10.1016/bs.ctdb.2015.07.006
+- Griswold MD. Spermatogenesis: the commitment to meiosis. Physiol Rev 2016;96(1):1-17. doi:10.1152/physrev.00013.2015
 
 ## Limits
 
