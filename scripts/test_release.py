@@ -11,7 +11,7 @@ import unittest
 import zipfile
 
 from prepare_release import ReleaseError, asset_binding, prepare_release, relative_name, source_allowed
-from check_publication import anatomy_registry, audit
+from check_publication import REVIEWED_IMAGES, anatomy_registry, audit
 from test_registered_anatomy import ema147_fixture_files, hindlimb_fixture_files, volume_fixture_files
 
 
@@ -342,7 +342,7 @@ class RepositoryTreeTests(unittest.TestCase):
         asset, _ = asset_binding((root / "public/atlas/atlas.json").read_bytes())
         tracked = set(names)
         registry = anatomy_registry(lambda path, limit: (root / path).read_bytes() if path in tracked else None)
-        rejected = [name for name in names if not source_allowed(name, asset, set(registry))]
+        rejected = [name for name in names if not source_allowed(name, asset, set(registry) | set(REVIEWED_IMAGES))]
         self.assertEqual(rejected, [])
 
 if __name__ == "__main__":

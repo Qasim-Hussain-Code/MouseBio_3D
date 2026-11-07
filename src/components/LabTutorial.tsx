@@ -14,6 +14,8 @@ export interface LabTutorialProps {
   readonly onWatchAll: () => void;
   readonly onStop: () => void;
   readonly onClose: () => void;
+  /** Press a button that a step offers. */
+  readonly onAct: (does: 'perfuse') => void;
 }
 
 /** The procedures that can be followed, for the moment the bench is first opened. */
@@ -45,7 +47,7 @@ function speak(text: string) {
 }
 
 /** One procedure, step by step, beside the animal. It follows what is done: a step that has been done is ticked, and the card goes on to the next. */
-export function LabTutorial({ exercise, facts, demonstrating, shown, onStep, onShow, onWatchAll, onStop, onClose }: LabTutorialProps) {
+export function LabTutorial({ exercise, facts, demonstrating, shown, onStep, onShow, onWatchAll, onStop, onClose, onAct }: LabTutorialProps) {
   const result = useMemo(() => evaluateExercise(exercise, facts ?? { actions: [], seen: new Set(), removed: new Set(), ligated: new Set() }), [exercise, facts]);
   const [index, setIndex] = useState(0);
   const [folded, setFolded] = useState(false);
@@ -69,9 +71,12 @@ export function LabTutorial({ exercise, facts, demonstrating, shown, onStep, onS
     if (at >= 0) setIndex(at);
   }, [demonstrating, shown, exercise]);
   useEffect(() => { onStep(index); }, [index, exercise]);
+  // In a low window the panel scrolls, and the step in hand is kept in sight.
+  const stepBox = useRef<HTMLDivElement>(null);
+  useEffect(() => { stepBox.current?.scrollIntoView?.({ block: 'nearest' }); }, [index]);
   const step = exercise.steps[index] ?? exercise.steps[0];
   const advice = facts && !demonstrating && !result.steps[index] ? step.advice?.(facts) ?? null : null;
-  const instruments = useMemo(() => LAB_TOOLS.filter((tool) => exercise.steps.some((item) => item.tool === tool.id)).map((tool) => tool.name.toLowerCase()).join(', '), [exercise]);
+  const instruments = useMemo(() => LAB_TOOLS.filter((tool) => tool.id !== 'hand' && exercise.steps.some((item) => item.tool === tool.id)).map((tool) => tool.name.toLowerCase()).join(', '), [exercise]);
   useEffect(() => {
     if (reading && !demonstrating) speak([step.text, step.how, step.why, step.care].filter(Boolean).join('. '));
     return () => { window.speechSynthesis?.cancel(); };
@@ -83,18 +88,19 @@ export function LabTutorial({ exercise, facts, demonstrating, shown, onStep, onS
       <button type="button" className="lab-tutorial-small" aria-label="Fold the tutorial" title="Fold" onClick={() => setFolded(true)}>−</button>
       <button type="button" className="lab-tutorial-small" aria-label="Close the tutorial" title="Close" onClick={onClose}>×</button>
     </header>
-    <p className="lab-tutorial-about">{exercise.about}</p>
-    {instruments && <p className="lab-tutorial-needs"><strong>Instruments:</strong> {instruments}</p>}
+    {index === 0 && <p className="lab-tutorial-about">{exercise.about}</p>}
+    {index === 0 && instruments && <p className="lab-tutorial-needs"><strong>Instruments:</strong> {instruments}</p>}
     <ol className="lab-tutorial-steps">
       {exercise.steps.map((item, at) => <li key={item.text + at}><button type="button" className={`${at === index ? 'is-here' : ''} ${result.steps[at] ? 'is-done' : ''}`} aria-current={at === index ? 'step' : undefined} onClick={() => setIndex(at)}>{item.text}</button></li>)}
     </ol>
-    <div className="lab-tutorial-step" aria-live="polite">
+    <div className="lab-tutorial-step" aria-live="polite" ref={stepBox}>
       <h3>Step {index + 1} of {exercise.steps.length}: {step.text}</h3>
       <p>{step.how}</p>
       {step.why && <p className="lab-tutorial-why"><strong>Why.</strong> {step.why}</p>}
       {step.care && <p className="lab-tutorial-care"><strong>Take care.</strong> {step.care}</p>}
       {step.see && <p className="lab-tutorial-see"><strong>What you see.</strong> {step.see}</p>}
       {advice && <p className="lab-tutorial-advice" role="status">{advice}</p>}
+      {step.act && !result.steps[index] && !demonstrating && <div className="lab-row"><button type="button" className="lab-watch" onClick={() => onAct(step.act!.does)}>{step.act.label}</button></div>}
     </div>
     {result.errors.map((error) => <p key={error} className="lab-error" role="status">{error}</p>)}
     {result.finished && facts && <p className="lab-finished" role="status">{result.errors.length ? 'Finished, with damage noted above.' : 'Finished cleanly.'} {sessionSummary(facts)}</p>}

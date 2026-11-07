@@ -203,7 +203,7 @@ def publication_checker(root: Path) -> tuple[dict, types.ModuleType]:
         # Compiling source directly avoids writing bytecode into the input tree.
         exec(compile(read_regular(root, "scripts/check_publication.py", MAX_SOURCE_BYTES),
                      "<publication checker>", "exec"), checker.__dict__)
-        if not all(callable(getattr(checker, name, None)) for name in ["inspect_content", "anatomy_registry", "inspect_registered_asset"]):
+        if not all(callable(getattr(checker, name, None)) for name in ["inspect_content", "anatomy_registry", "inspect_registered_asset", "is_reviewed_image"]):
             raise ReleaseError("publication_check_incomplete")
     except (OSError, ValueError, subprocess.TimeoutExpired) as error:
         raise ReleaseError("publication_check_incomplete") from error
@@ -213,6 +213,9 @@ def publication_checker(root: Path) -> tuple[dict, types.ModuleType]:
 def inspect_records(records: list[ReleaseFile], checker: types.ModuleType, registry: dict | None = None) -> None:
     for record in records:
         path = record.name if record.name.startswith("public/") else "public/" + record.name
+        # The mark and icon: only the exact files that were reviewed, holding only pixels.
+        if checker.is_reviewed_image(record.data, path):
+            continue
         if registry and path in registry:
             try:
                 metadata = checker.inspect_registered_asset(record.data, registry[path])
@@ -384,7 +387,7 @@ def prepare_release(root: Path, output: Path) -> dict:
     except (ValueError, TypeError, KeyError, AttributeError):
         raise ReleaseError("invalid_registered_anatomy") from None
     for name, _mode in tracked:
-        if not source_allowed(name, asset, set(registry)):
+        if not source_allowed(name, asset, set(registry) | set(checker.REVIEWED_IMAGES)):
             raise ReleaseError("tracked_path_not_allowlisted")
         regular_input(root, name)
     source: list[ReleaseFile] = []
@@ -395,7 +398,7 @@ def prepare_release(root: Path, output: Path) -> dict:
         if total > MAX_SOURCE_BYTES:
             raise ReleaseError("source_snapshot_exceeds_bound")
         source.append(ReleaseFile(name, data, mode))
-    web = web_files(root, asset, {path.removeprefix("public/") for path in registry})
+    web = web_files(root, asset, {path.removeprefix("public/") for path in (*registry, *checker.REVIEWED_IMAGES)})
     verify_prototype_launcher(source, web)
     verify_cellular_model(source, web)
     verify_anatomy(source, web, asset, anatomy)

@@ -11,10 +11,10 @@ export type LabLandmark = 'chest' | 'diaphragm' | 'loin' | 'sacrum';
 /** A place on the animal: from a landmark, millimetres towards the tail along the body, millimetres to the side, towards the animal's left when positive, and millimetres above its underside, which it lies on if nothing is said. */
 export type DemoPoint = readonly [LabLandmark, number, number, number?];
 /** A place along a structure: a share of its length from the end nearer the head, on one side of the animal, towards its left when 1. */
-export interface OnStructure { readonly of: string; readonly side: 1 | -1; readonly at: number }
+export interface OnStructure { readonly of: string; readonly side: 1 | -1; readonly at: number; readonly aside?: number }
 export type DemoPlace = DemoPoint | OnStructure;
 
-export type LabViewName = 'belly' | 'close' | 'chest' | 'spleen' | 'back' | 'left' | 'right' | 'left-close' | 'head' | 'left-thigh' | 'femoral';
+export type LabViewName = 'belly' | 'close' | 'chest' | 'heart' | 'spleen' | 'kidney' | 'back' | 'left' | 'right' | 'left-close' | 'tail' | 'head' | 'left-thigh' | 'femoral';
 export type FlapKind = 'skin' | 'wall' | 'chest' | 'skull';
 
 export type DemoStep =
@@ -30,14 +30,16 @@ export type DemoStep =
   /** Take hold of something in view and move it, millimetres along the body and to the side. */
   | { readonly kind: 'move'; readonly ids: readonly string[]; readonly along: number; readonly side: number }
   /** Lift something out and put it in the dish. */
-  | { readonly kind: 'take'; readonly id: string };
+  | { readonly kind: 'take'; readonly id: string }
+  /** Start the flow of a perfusion. */
+  | { readonly kind: 'perfuse' };
 
 /** What is marked on the animal for a step. */
 export type LabGuide =
   /** A line to cut along. */
   | { readonly kind: 'line'; readonly points: readonly DemoPlace[] }
-  /** A place to go in at, whether the left hand lifts a fold of skin there first, at what angle to the surface the needle goes in, in degrees, how quickly, and what a steady hand stops in. */
-  | { readonly kind: 'spot'; readonly place: DemoPlace; readonly radiusMm: number; readonly tent?: boolean; readonly degrees?: number; readonly mmPerSecond?: number; readonly stopsIn?: readonly string[] }
+  /** A place to go in at, whether the left hand lifts a fold of skin there first, at what angle to the surface the needle goes in, in degrees, along what it goes, how quickly, and what a steady hand stops in. */
+  | { readonly kind: 'spot'; readonly place: DemoPlace; readonly radiusMm: number; readonly tent?: boolean; readonly degrees?: number; readonly along?: string; readonly mmPerSecond?: number; readonly stopsIn?: readonly string[] }
   /** The structure to find, which glows when it can be seen. */
   | { readonly kind: 'find'; readonly ids: readonly string[] }
   /** The edge of a cut to take hold of. */
@@ -57,6 +59,8 @@ export interface LabStep {
   readonly tool?: LabToolId;
   readonly view?: LabViewName;
   readonly guide?: LabGuide;
+  /** A button that does what the step asks, where no instrument does it. */
+  readonly act?: { readonly label: string; readonly does: 'perfuse' };
   /** What the hands do to show the step. */
   readonly show: readonly DemoStep[];
   readonly done: (facts: LabFacts) => boolean;
@@ -131,6 +135,7 @@ const LIE_ON_BACK = (procedure: string): LabStep => ({
   text: 'Lay the animal on its back',
   how: 'Choose On its back. The legs lie out to the sides, and the belly lies open to you with the head at the top of the view.',
   why: `${procedure} begins with the animal on its back, which is called dorsal recumbency.`,
+  see: 'The legs lie out to the sides with the soles up, and the belly faces you.',
   view: 'belly',
   show: [{ kind: 'pose', pose: 'on-back' }, wait(1.4)],
   done: (facts) => facts.pose === 'on-back',
@@ -193,7 +198,7 @@ const OPEN_BELLY: readonly LabStep[] = [
 ];
 
 /** Cuts in the rib cage: up each side, then the front is lifted. Parkinson makes a third cut across at the top of the sternum. */
-const RIB_CUTS: readonly DemoPoint[][] = [[['diaphragm', 1.5, 5], ['chest', 3, 5]], [['diaphragm', 1.5, -5], ['chest', 3, -5]]];
+const RIB_CUTS: readonly DemoPoint[][] = [[['diaphragm', 1.5, 5], ['chest', 1, 5]], [['diaphragm', 1.5, -5], ['chest', 1, -5]]];
 const CUT_RIBS: LabStep = {
   text: 'Cut up each side of the rib cage',
   how: 'Take the bone cutters. Draw one cut up the rib cage on one side of the breastbone and one on the other, along the lines, from the bottom of the ribs to the top.',
@@ -217,6 +222,49 @@ const LIFT_CHEST: LabStep = {
   done: (facts) => drawnBack(facts, 'chest', 1),
 };
 
+/** The way into the chest from below the ribs, after Gage et al. */
+const CHEST_OPENING: readonly LabStep[] = [
+  {
+    text: 'Cut across, just below the ribs',
+    how: 'Take the scissors, and cut along the line across the belly, just below the rib cage, through the skin.',
+    why: 'A cut here reaches the diaphragm from below, and leaves the ribs whole for now.',
+    care: 'Cut only the skin here. Lift it with the forceps in the left hand, so that the wall under it stays whole.',
+    see: 'The edges of the skin draw apart across the body, with the red wall under them.',
+    tool: 'scissors', view: 'chest',
+    guide: { kind: 'line', points: [['diaphragm', 2, 9], ['diaphragm', 2, -9]] },
+    show: [wait(0.7), { kind: 'stroke', tool: 'scissors', tiers: SKIN_ONLY, points: [['diaphragm', 2, 9], ['diaphragm', 2, -9]], mmPerSecond: 8 }],
+    done: (facts) => anyCut(facts, ['skin']),
+  },
+  {
+    text: 'Draw the skin up over the chest',
+    how: 'Take the forceps, press on the upper edge of the cut, and pull it towards the head.',
+    why: 'This lays the rib cage bare.',
+    see: 'The upper edge folds up towards the neck with its pale side up. The front of the rib cage lies under it, with the wall of the abdomen below.',
+    tool: 'forceps', view: 'chest',
+    guide: { kind: 'edge', flap: 'skin' },
+    show: [{ kind: 'pull', flap: 'skin', side: 1, open: 1 }],
+    done: (facts) => drawnBack(facts, 'skin', 1),
+  },
+  {
+    text: 'Cut through the wall below the ribs',
+    how: 'Take the scissors and cut across again, along the same line, through the muscle. Then separate the liver from the diaphragm.',
+    why: 'The published method cuts the skin and abdominal wall together, in one incision just below the rib cage.',
+    care: 'Once the diaphragm has been breached, the method says to work quickly, because lack of oxygen soon changes the tissues.',
+    see: 'A narrow gap across the body, with the dark red liver behind it.',
+    tool: 'scissors', view: 'chest',
+    guide: { kind: 'line', points: [['diaphragm', 3, 7], ['diaphragm', 3, -7]] },
+    show: [{ kind: 'stroke', tool: 'scissors', tiers: WALL, points: [['diaphragm', 3, 7], ['diaphragm', 3, -7]], mmPerSecond: 7 }],
+    done: (facts) => anyCut(facts, WALL),
+  },
+  CUT_RIBS, LIFT_CHEST,
+];
+/** Places on the heart and on the veins of the tail. */
+const VENTRICLE: OnStructure = { of: 'living:heart-lv', side: 1, at: 0.8 };
+const VENTRICLE_CUT: readonly OnStructure[] = [{ of: 'living:heart-lv', side: 1, at: 0.68 }, { of: 'living:heart-lv', side: 1, at: 0.9 }];
+const ATRIUM: OnStructure = { of: 'living:heart-ra', side: 1, at: 0.5 };
+const ATRIUM_CUT: readonly OnStructure[] = [{ of: 'living:heart-ra', side: 1, at: 0.3 }, { of: 'living:heart-ra', side: 1, at: 0.52 }];
+const TAIL_VEIN: OnStructure = { of: 'living:tail-lateral-veins', side: 1, at: 0.72 };
+
 const seenAny = (facts: LabFacts, ids: readonly string[]) => ids.some((id) => seen(facts, id));
 const FIND = (text: string, how: string, why: string, ids: readonly string[], least = 1, view: LabViewName = 'close'): LabStep => ({
   text, how, why, tool: 'probe', view,
@@ -232,6 +280,9 @@ const THIGH_LINE: readonly OnStructure[] = [{ of: 'living:femoral-arteries', sid
 const THIGH_FRONT: DemoPoint = ['sacrum', -2.5, 13.6, 4.3];
 /** Over the flank, on the animal's left, about half way up its side. */
 const FLANK: DemoPoint = ['diaphragm', 10, 13, 9];
+
+/** Something in the chest counts as found only when the chest has been opened: it can show between the ribs before that. */
+const INSIDE_THE_CHEST = (step: LabStep): LabStep => ({ ...step, done: (facts) => drawnBack(facts, 'chest', 1) && step.done(facts) });
 
 const COLLECT_NOTE = 'In the laboratory it would then be trimmed of fat, rinsed in normal saline, never in water, and placed in 10 percent neutral buffered formalin, at about twenty times its own volume.';
 
@@ -253,12 +304,12 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
       LIE_ON_BACK('A basic necropsy'),
       OPEN_SKIN(WHOLE_LINE, 30, 'Take the scissors. Cut the skin the whole length of the underside along the line, from just short of the anus to the chin.'),
       DRAW_BACK_SKIN, OPEN_WALL, DRAW_BACK_WALL, CUT_RIBS, LIFT_CHEST,
-      FIND('Find the heart', 'Look in the middle of the chest, between the lungs.', 'Parkinson identifies the heart and lungs in the chest first.', ['heart-lv', 'heart-rv'], 1, 'chest'),
-      FIND('Find the lungs', 'They lie to each side of the heart. A mouse has one lobe on the left and four on the right.', 'Their lobes fill the chest around the heart.', ['lung-left', 'lung-r-superior', 'lung-r-middle', 'lung-r-inferior'], 1, 'chest'),
-      FIND('Find the liver', 'It lies in the top of the abdomen, under the diaphragm.', 'It has several lobes, and is the largest organ here.', ['liver-median', 'liver-left', 'liver-right']),
+      INSIDE_THE_CHEST(FIND('Find the heart', 'Look in the middle of the chest, between the lungs.', 'Parkinson identifies the heart and lungs in the chest first.', ['heart-lv', 'heart-rv'], 1, 'chest')),
+      INSIDE_THE_CHEST(FIND('Find the lungs', 'They lie to each side of the heart. A mouse has one lobe on the left and four on the right.', 'Their lobes fill the chest around the heart.', ['lung-left', 'lung-r-superior', 'lung-r-middle', 'lung-r-inferior'], 1, 'chest')),
+      FIND('Find the liver', 'It lies in the top of the abdomen, under the diaphragm.', 'It has several lobes, and is the largest organ here. In this male the bladder is also large, and lies low in the middle.', ['liver-median', 'liver-left', 'liver-right']),
       {
-        ...FIND('Find a kidney', 'Move the intestine aside with the forceps, part the fat over the back wall with the blunt probe, and look to one side of the spine.', 'The kidneys lie behind the peritoneum, and the right lies a little nearer the head than the left.', ['kidney-right', 'kidney-left']),
-        show: [{ kind: 'move', ids: ['living:small-intestine'], along: 0, side: 9 }, { kind: 'stroke', tool: 'probe', tiers: ['fat'], points: [{ of: 'living:kidney-right', side: 1, at: 0.3 }, { of: 'living:kidney-right', side: 1, at: 0.8 }], mmPerSecond: 4 }, wait(1.6)],
+        ...FIND('Find a kidney', 'Move the intestine aside with the forceps, part the fat over the back wall with the blunt probe, and look to one side of the spine.', 'The kidneys lie behind the peritoneum, and the right lies a little nearer the head than the left.', ['kidney-right', 'kidney-left'], 1, 'kidney'),
+        show: [{ kind: 'move', ids: ['living:small-intestine'], along: 0, side: 12 }, ...[0, 2.2, -2.2].map((aside): DemoStep => ({ kind: 'stroke', tool: 'probe', tiers: ['fat'], points: [{ of: 'living:kidney-right', side: 1, at: 0.15, aside }, { of: 'living:kidney-right', side: 1, at: 0.9, aside }], mmPerSecond: 6 })), wait(1.2)],
       },
       {
         ...FIND('Find the spleen', 'Move the intestine back across, and look over towards the animal\'s left, beside the stomach.', 'It is a long, narrow, dark red organ, curving along the outer side of the stomach.', ['spleen'], 1, 'spleen'),
@@ -334,12 +385,14 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
       {
         ...LIE_ON_BACK('The surgery'),
         how: 'The animal lies on its back, with its left hind leg drawn out to the side so that the inner side of the thigh faces you. The published method shaves the limb, scrubs the skin three times, extends the limb and tapes it down.',
+        see: 'The left hind leg lies further out than the right, and the skin of the groin stretches across to it.',
       },
       {
         text: 'Cut the skin of the thigh',
         how: 'Take the scissors, and make a cut about 1 cm long along the line, from the knee towards the inner thigh.',
         why: 'The femoral vessels run under the skin of the inner thigh, with the nerve beside them.',
         care: 'Cut only the skin. The vessels lie close under it, in fat.',
+        see: 'A cut of about a centimetre over the line of the vessels. The fur has been parted along it, and the edges draw a little apart.',
         tool: 'scissors', view: 'left-thigh',
         guide: { kind: 'line', points: THIGH_LINE },
         show: [wait(1), { kind: 'stroke', tool: 'scissors', tiers: SKIN_ONLY, points: THIGH_LINE, mmPerSecond: 5 }],
@@ -349,6 +402,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         text: 'Open the wound',
         how: 'Take the forceps, press on each edge of the cut and pull it outwards. The published method holds the wound open with a small retractor, and brushes the fat away with a moistened swab.',
         why: 'The fat over the thigh muscle comes into view, and the vessels lie in it.',
+        see: 'Each edge folds back with its pale side up. The red thigh muscles and the pale yellow fat lie in the wound.',
         tool: 'forceps', view: 'left-thigh',
         guide: { kind: 'edge', flap: 'skin' },
         show: [{ kind: 'pull', flap: 'skin', side: 1, open: 0.9 }, { kind: 'pull', flap: 'skin', side: -1, open: 0.9 }],
@@ -356,6 +410,8 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
       },
       {
         ...FIND('Find the femoral artery', 'Draw the blunt probe through the fat along the line of the thigh, and the vessels come into view. Point at them to see their names. The artery runs beside the vein and nerve.', 'In the animal they lie together in a membranous sheath, which is pierced to reach them. The sheath is not modelled here.', ['femoral-arteries'], 1, 'femoral'),
+        care: 'Go gently along the line of the vessels. A cut into the vein or nerve is marked as damage.',
+        see: 'As the fat parts, the red artery and the blue vein come into view, side by side, with the vein on the inner side.',
         show: [{ kind: 'stroke', tool: 'probe', tiers: ['fat'], points: [{ of: 'living:femoral-arteries', side: 1, at: 0.3 }, { of: 'living:femoral-arteries', side: 1, at: 0.85 }], mmPerSecond: 4 }, wait(1.2)],
       },
       {
@@ -363,6 +419,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         how: 'Take the ligature and touch the artery near the groin, as far towards the body as it can be reached.',
         why: 'The published method separates the artery from the vein and nerve, passes 7-0 silk under it and makes a double knot, as far up as possible. How far up it is tied decides how severe the ischemia is, so the level is kept the same in every animal.',
         care: 'Tie only the artery. The vein and nerve lie against it, and the vein tears easily.',
+        see: 'A small loop of dark thread lies round the artery. What it does to the blood in the limb is not shown here.',
         tool: 'ligature', view: 'femoral',
         guide: { kind: 'spot', place: { of: 'living:femoral-arteries', side: 1, at: 0.6 }, radiusMm: 1.2 },
         show: [{ kind: 'touch', tool: 'ligature', ids: ['living:femoral-arteries'], place: { of: 'living:femoral-arteries', side: 1, at: 0.6 } }, wait(0.8)],
@@ -372,6 +429,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         text: 'Close the skin',
         how: 'Take the needle and suture, and draw along the cut. The published method closes with 5-0 absorbable suture, keeps the animal on a heated pad, and watches it until it wakes.',
         why: 'The stitches hold the edges together while the wound heals.',
+        see: 'Dark stitches cross the line of the cut as the needle passes, and the edges come back together.',
         tool: 'suture', view: 'left-thigh',
         guide: { kind: 'line', points: THIGH_LINE },
         show: [{ kind: 'stroke', tool: 'suture', tiers: SKIN_ONLY, points: THIGH_LINE, mmPerSecond: 4 }],
@@ -388,38 +446,74 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         ...LIE_ON_BACK('The perfusion'),
         how: 'Choose On its back. The published method checks with a pinch of a toe that the animal does not respond before going on.',
       },
-      {
-        text: 'Cut across, just below the ribs',
-        how: 'Take the scissors, and cut along the line across the belly, just below the rib cage, through the skin.',
-        why: 'A cut here reaches the diaphragm from below, and leaves the ribs whole for now.',
-        tool: 'scissors', view: 'chest',
-        guide: { kind: 'line', points: [['diaphragm', 2, 9], ['diaphragm', 2, -9]] },
-        show: [wait(0.7), { kind: 'stroke', tool: 'scissors', tiers: SKIN_ONLY, points: [['diaphragm', 2, 9], ['diaphragm', 2, -9]], mmPerSecond: 8 }],
-        done: (facts) => anyCut(facts, ['skin']),
-      },
-      {
-        text: 'Draw the skin up over the chest',
-        how: 'Take the forceps, press on the upper edge of the cut, and pull it towards the head.',
-        why: 'This lays the rib cage bare.',
-        tool: 'forceps', view: 'chest',
-        guide: { kind: 'edge', flap: 'skin' },
-        show: [{ kind: 'pull', flap: 'skin', side: 1, open: 1 }],
-        done: (facts) => drawnBack(facts, 'skin', 1),
-      },
-      {
-        text: 'Cut through the wall below the ribs',
-        how: 'Take the scissors and cut across again, along the same line, through the muscle. Then separate the liver from the diaphragm.',
-        why: 'The published method cuts the skin and abdominal wall together, in one incision just below the rib cage.',
-        care: 'Once the diaphragm has been breached, the method says to work quickly, because lack of oxygen soon changes the tissues.',
-        tool: 'scissors', view: 'chest',
-        guide: { kind: 'line', points: [['diaphragm', 3, 7], ['diaphragm', 3, -7]] },
-        show: [{ kind: 'stroke', tool: 'scissors', tiers: WALL, points: [['diaphragm', 3, 7], ['diaphragm', 3, -7]], mmPerSecond: 7 }],
-        done: (facts) => anyCut(facts, WALL),
-      },
-      CUT_RIBS, LIFT_CHEST,
-      FIND('See the heart', 'It lies in the middle of the opened chest, with the thymus above it.', 'The published method lifts the sternum away and clamps it over the head, and the thymus lifts with it, which gives a clear view of the great vessels. It then makes a small cut in the left ventricle, passes the perfusion needle up into the aorta short of its arch, and cuts the right atrium as an outlet.', ['heart-lv', 'heart-rv'], 1, 'chest'),
+      ...CHEST_OPENING,
+      INSIDE_THE_CHEST(FIND('See the heart', 'It lies in the middle of the opened chest, with the thymus above it.', 'The published method lifts the sternum away and clamps it over the head, and the thymus lifts with it, which gives a clear view of the great vessels. It then makes a small cut in the left ventricle, passes the perfusion needle up into the aorta short of its arch, and cuts the right atrium as an outlet.', ['heart-lv', 'heart-rv'], 1, 'chest')),
     ],
     avoid: [{ text: 'A lung was cut', broken: (facts) => cutAnyOf(facts, ['lung-left', 'lung-r-superior', 'lung-r-middle', 'lung-r-inferior', 'lung-r-postcaval']) }, { text: 'The heart was cut', broken: (facts) => cutAnyOf(facts, ['heart-lv', 'heart-rv', 'heart-la', 'heart-ra']) }],
+  },
+  {
+    id: 'perfuse-heart', name: 'Perfuse through the heart', group: 'Surgery', source: GAGE, pose: 'on-back', alive: true,
+    about: 'Washing the blood out through the heart, the first part of fixing the whole animal, under deep anaesthesia. The published method is in the rat, and its sizes are made smaller here to fit this mouse. Its anaesthesia, the check of its depth, the pressure of the flow and the fixative are not modelled, and the time is shortened to less than a minute.',
+    steps: [
+      {
+        ...LIE_ON_BACK('The perfusion'),
+        how: 'Choose On its back. The published method checks with a pinch of a toe that the animal does not respond before going on.',
+      },
+      ...CHEST_OPENING,
+      {
+        text: 'Cut into the left ventricle',
+        how: 'Take the scalpel, and make a small cut low on the left ventricle, at the mark.',
+        why: 'The method makes a small opening here for the perfusion needle. The left ventricle is on the animal\'s left, which is on your right when its head is up.',
+        care: 'Keep the cut small, so that the needle fits it closely.',
+        see: 'A small slit in the wall of the heart. In the anaesthetised setting it bleeds.',
+        tool: 'scalpel', view: 'heart',
+        guide: { kind: 'spot', place: VENTRICLE, radiusMm: 1 },
+        show: [wait(0.8), { kind: 'stroke', tool: 'scalpel', tiers: ['organs'], points: VENTRICLE_CUT, mmPerSecond: 2 }],
+        done: (facts) => cutThrough(facts, 'heart-lv'),
+      },
+      {
+        text: 'Pass the needle up into the aorta',
+        how: 'Take the syringe, press on the cut and hold. The needle goes up through the ventricle, towards the head. Let go when it is well in.',
+        why: 'The published method passes a blunt perfusion needle through the cut ventricle into the ascending aorta, and clamps the heart round it so that it stays and nothing leaks.',
+        care: 'The tip should be seen through the wall of the aorta and should not reach the arch of the aorta. The method calls the placing of the needle critical.',
+        tool: 'syringe', view: 'heart',
+        guide: { kind: 'spot', place: VENTRICLE, radiusMm: 1, degrees: 30, mmPerSecond: 2.5 },
+        show: [{ kind: 'touch', tool: 'syringe', ids: ['living:heart-lv'], place: VENTRICLE, depthMm: 4 }, wait(0.4)],
+        done: (facts) => needles(facts).some((action) => [...action.structures, ...(action.tipIn ?? [])].some((id) => /heart-lv|aorta/.test(id))),
+        advice: adviceOnNeedle((action) => [...action.structures, ...(action.tipIn ?? [])].some((id) => /heart-lv|aorta/.test(id)) ? null : 'The needle missed the left ventricle. Go in at the mark.'),
+      },
+      {
+        text: 'Cut the right atrium',
+        how: 'Take the scissors, and snip the right atrium, at the mark.',
+        why: 'The method makes as large an outlet as possible here, for what the needle pushes round the body to run out.',
+        see: 'A small opening in the atrium. In the anaesthetised setting it bleeds.',
+        tool: 'scissors', view: 'heart',
+        guide: { kind: 'spot', place: ATRIUM, radiusMm: 1 },
+        show: [{ kind: 'stroke', tool: 'scissors', tiers: ['organs'], points: ATRIUM_CUT, mmPerSecond: 2 }],
+        done: (facts) => cutThrough(facts, 'heart-ra'),
+      },
+      {
+        text: 'Start the flow',
+        how: 'Press Start the flow. It stops the heart here, and the fluid takes the place of the blood.',
+        why: 'In the rat, the method runs buffer at a steady pressure of 80 mm Hg and then fixative, with up to 200 ml of each. Those amounts are for the rat and are not modelled here.',
+        act: { label: 'Start the flow', does: 'perfuse' },
+        view: 'heart',
+        show: [{ kind: 'perfuse' }, wait(0.6)],
+        done: (facts) => facts.actions.some((action) => action.kind === 'perfuse'),
+        advice: (facts) => !needles(facts).length ? 'First the needle goes into the left ventricle.' : !cutThrough(facts, 'heart-ra') ? 'First the right atrium is cut, as the way out.' : null,
+      },
+      {
+        text: 'Watch the organs clear',
+        how: 'Look at the liver, and at the nose, ears and paws. It takes a little under a minute here.',
+        why: 'The published method calls the clearing of the liver an indicator of a good perfusion, and of the nose, ears and paws an initial indicator of its success. The fluid running from the atrium turns clear.',
+        care: 'The method goes on to fixative, when fixation tremors should be seen within seconds and the animal stiffens. They are not modelled here.',
+        see: 'The dark red of the liver pales to tan, the lungs turn white and the vessels empty.',
+        tool: 'probe', view: 'chest',
+        show: [wait(42)],
+        done: (facts) => facts.actions.some((action) => action.kind === 'cleared'),
+      },
+    ],
+    avoid: [{ text: 'A lung was cut', broken: (facts) => cutAnyOf(facts, ['lung-left', 'lung-r-superior', 'lung-r-middle', 'lung-r-inferior', 'lung-r-postcaval']) }, { text: 'The right ventricle was cut', broken: (facts) => cutThrough(facts, 'heart-rv') }],
   },
   {
     id: 'expose-brain', name: 'Expose the brain', group: 'Necropsy', source: PARKINSON, pose: 'standing', alive: false,
@@ -429,6 +523,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         text: 'Lay the animal on its belly',
         how: 'Choose On its feet, and look at the head from above.',
         why: 'The published method lays the animal in ventral recumbency, on its belly, to reach the top of the skull.',
+        see: 'The head lies in the middle of the view, with its nose towards the top. Here the animal stands on the board, and is not laid flat.',
         tool: 'hand', view: 'head',
         show: [{ kind: 'pose', pose: 'standing' }, wait(1.4)],
         done: (facts) => facts.pose === 'standing',
@@ -437,6 +532,8 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         text: 'Cut the skin over the skull',
         how: 'Take the scissors, and cut along the middle of the head, along the line, from behind the ears to between the eyes.',
         why: 'The method removes the skin and muscle over the top of the skull, which is called the calvaria.',
+        care: 'Cut only the skin. The bone lies straight under it here, with very little between.',
+        see: 'A cut between the ears, and the pale bone shows along it.',
         tool: 'scissors', view: 'head',
         guide: { kind: 'line', points: [{ of: 'living:bone-interparietal', side: 1, at: 0.9 }, { of: 'living:bone-frontal', side: 1, at: 0.05 }] },
         show: [{ kind: 'stroke', tool: 'scissors', tiers: SKIN_ONLY, points: [{ of: 'living:bone-interparietal', side: 1, at: 0.9 }, { of: 'living:bone-frontal', side: 1, at: 0.05 }], mmPerSecond: 6 }],
@@ -445,6 +542,8 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
       {
         text: 'Draw the skin back',
         how: 'Take the forceps, and pull each edge outwards to show the bone.',
+        why: 'The bone must lie bare well to each side of the middle, so that it can be folded out.',
+        see: 'The skin folds back on each side, pale side up, and the top of the skull lies bare, with the lines where its plates meet.',
         tool: 'forceps', view: 'head',
         guide: { kind: 'edge', flap: 'skin' },
         show: [{ kind: 'pull', flap: 'skin', side: 1, open: 0.95 }, { kind: 'pull', flap: 'skin', side: -1, open: 0.95 }],
@@ -455,6 +554,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         how: 'Take the bone cutters and cut along the line, keeping the tips pointed upwards. Each half of the skull is then loose beside the cut.',
         why: 'The published method puts the lower blade of small scissors into the foramen magnum and cuts up through the midline of the calvaria, with the tips up, because the brain is soft and easily damaged.',
         care: 'The brain lies straight under the bone. A cut into it is marked as damage.',
+        see: 'A narrow gap down the middle of the bone. The two sides are now loose.',
         tool: 'bone-cutter', view: 'head',
         guide: { kind: 'line', points: [{ of: 'living:bone-interparietal', side: 1, at: 0.6 }, { of: 'living:bone-frontal', side: 1, at: 0.3 }] },
         show: [{ kind: 'stroke', tool: 'bone-cutter', tiers: ['skeleton'], points: [{ of: 'living:bone-interparietal', side: 1, at: 0.6 }, { of: 'living:bone-frontal', side: 1, at: 0.3 }], mmPerSecond: 5 }],
@@ -484,6 +584,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         text: 'Find the lower quadrant',
         how: 'Divide the belly into four, in your mind. The marked place lies in the lower quadrant on the animal\'s right, which is on your left when its head is up.',
         why: 'Machholz and colleagues give the lower quadrants, especially the animal\'s lower right, as the proper sites, and say to inject only there.',
+        see: 'A ring marks the place, on the left of the view when the head is up.',
         tool: 'syringe', view: 'close',
         guide: { kind: 'spot', place: ['sacrum', -8, -5], radiusMm: 2.5 },
         show: [{ kind: 'pose', pose: 'on-back' }, wait(1.4)],
@@ -494,6 +595,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         how: 'With the syringe, press on the marked place and hold. The needle goes in as long as you hold, so let go as soon as it is through the wall.',
         why: 'The tip should lie free in the cavity. Letting go tells you what it passed through and where the tip lies.',
         care: 'Go no deeper than you need. Here the record says if the tip has entered an organ. Compounds may cause pain if they are not properly buffered.',
+        see: 'The needle slides in as you hold, and comes out when you let go. The record lists what it passed through and where its tip lay.',
         tool: 'syringe', view: 'close',
         guide: { kind: 'spot', place: ['sacrum', -8, -5], radiusMm: 2.5 },
         show: [{ kind: 'touch', tool: 'syringe', ids: [], place: ['sacrum', -8, -5], depthMm: 4.4 }, wait(0.8)],
@@ -504,6 +606,52 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
     avoid: [{ text: 'The needle entered an organ', broken: (facts) => needles(facts).some(inOrgan) }, { text: 'The needle went in above the lower quadrants', broken: (facts) => needles(facts).some((action) => (action.abdomenShare ?? 1) < 0.5) }],
   },
   {
+    id: 'inject-tail-vein', name: 'Inject into a tail vein', group: 'Injection', source: MACHHOLZ, pose: 'standing', alive: true,
+    about: 'An intravenous injection into a lateral vein of the tail. The published video shows the restrainer and the warming, which are not modelled here. The veins themselves are simulated, on the two sides of the tail.',
+    steps: [
+      {
+        text: 'Hold the animal and warm its tail',
+        how: 'Choose On its feet, and look at the tail. The published method holds the animal in a Decapicone or a plastic restrainer, and puts its tail under a lamp or on a protected warming device.',
+        why: 'Warming widens the veins and makes the injection easier.',
+        care: 'Do not overheat the animal.',
+        tool: 'syringe', view: 'tail',
+        show: [{ kind: 'pose', pose: 'standing' }, wait(1.4)],
+        done: (facts) => facts.pose === 'standing',
+      },
+      {
+        text: 'Find a lateral vein',
+        how: 'A vein runs along each side of the tail, as a thin blue line under the skin. The method holds the tail by its tip and turns it a quarter turn to bring a vein to the top. Here the view has been turned instead.',
+        why: 'The middle artery and vein lie deep under the bones. The lateral veins lie close under the skin.',
+        tool: 'probe', view: 'tail',
+        guide: { kind: 'find', ids: ['living:tail-lateral-veins'] },
+        show: [wait(2.2)],
+        done: (facts) => seen(facts, 'tail-lateral-veins'),
+      },
+      {
+        text: 'Go in near the far end of the tail',
+        how: 'Take the syringe, press on the mark and hold. The needle lies low against the tail and goes in slowly along the vein, towards the body. Let go when it is in the vein. With Steady hand on, it stops there by itself.',
+        why: 'The method starts at the far end of the tail, with the needle at 15 to 20 degrees and its bevel up.',
+        care: 'The veins are shallow, so the needle should not go much beyond its bevel. Do not draw back on the syringe first, because that collapses the vein.',
+        see: 'With the tip in the vein, the vein blanches along its length while the fluid goes in, with no resistance. With the tip outside it, the fluid would not flow easily, and the skin of the tail would blanch.',
+        tool: 'syringe', view: 'tail',
+        guide: { kind: 'spot', place: TAIL_VEIN, radiusMm: 0.9, degrees: 17, along: 'living:tail-lateral-veins', mmPerSecond: 1.3, stopsIn: ['living:tail-lateral-veins'] },
+        show: [{ kind: 'touch', tool: 'syringe', ids: [], place: TAIL_VEIN, depthMm: 3 }, wait(1.6)],
+        done: (facts) => needles(facts).some((action) => (action.tipIn ?? []).some((id) => /tail-lateral-veins$/.test(id))),
+        advice: adviceOnNeedle((action) => (action.tipIn ?? []).some((id) => /tail-lateral-veins$/.test(id)) ? null : (action.depthMm ?? 0) < 0.5 ? 'The needle has hardly gone in. Hold a little longer.' : 'The tip is outside the vein. Try again a little nearer the body, along the blue line.'),
+      },
+      {
+        text: 'Press on the place',
+        how: 'Take the swab, and press on the place where the needle went in.',
+        why: 'Gentle pressure on the place stops it bleeding.',
+        tool: 'swab', view: 'tail',
+        guide: { kind: 'spot', place: TAIL_VEIN, radiusMm: 0.9 },
+        show: [{ kind: 'touch', tool: 'swab', ids: [], place: TAIL_VEIN }, wait(0.6)],
+        done: (facts) => facts.actions.some((action) => action.kind === 'swab'),
+      },
+    ],
+    avoid: [{ text: 'The needle went through to the bone', broken: (facts) => needles(facts).some((action) => [...action.structures, ...(action.tipIn ?? [])].some((id) => /tail-vertebrae$/.test(id))) }],
+  },
+  {
     id: 'inject-under-skin', name: 'Inject under the skin', group: 'Injection', source: MACHHOLZ, pose: 'standing', alive: true,
     about: 'A subcutaneous injection. The published method tents the skin with the fingers, and the left hand does that here with forceps.',
     steps: [
@@ -511,6 +659,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         text: 'Choose the place',
         how: 'Look at the flank from the side. The marked place lies over the flank.',
         why: 'For animals that will be handled afterwards, Machholz and colleagues advise the skin of the back of the rump or the flank, and not the scruff, which is where the animal is held.',
+        see: 'A ring marks the place on the flank.',
         tool: 'syringe', view: 'left-close',
         guide: { kind: 'spot', place: FLANK, radiusMm: 2.5 },
         show: [{ kind: 'pose', pose: 'standing' }, wait(1.4)],
@@ -521,6 +670,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         how: 'With the syringe, press on the flank and hold for a moment. The left hand lifts a fold of skin, and the needle goes into the tent at an angle. Let go as soon as it is under the skin.',
         why: 'The published method grasps the skin, pulls it gently up into a tent, and puts the needle in at an angle of 30 to 45 degrees.',
         care: 'If you hold too long the needle goes through into muscle. The record says what it passed through.',
+        see: 'The forceps lift a fold of skin, and the needle slips in under it at a slant.',
         tool: 'syringe', view: 'left-close',
         guide: { kind: 'spot', place: FLANK, radiusMm: 2.5, tent: true, degrees: 38 },
         show: [{ kind: 'touch', tool: 'syringe', ids: [], place: FLANK, depthMm: 2.2 }, wait(0.8)],
@@ -539,6 +689,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         how: 'Look at the thigh from the side. The front of the thigh is the side towards the head.',
         why: 'Machholz and colleagues inject into the quadriceps, at the front of the thigh, or the lateral mass of the thigh.',
         care: 'They say not to inject into the muscle at the back of the thigh, because the sciatic nerve can be damaged there.',
+        see: 'A ring marks the place on the side of the thigh.',
         tool: 'syringe', view: 'left-close',
         guide: { kind: 'spot', place: THIGH_FRONT, radiusMm: 1.5 },
         show: [{ kind: 'pose', pose: 'standing' }, wait(1.4)],
@@ -548,6 +699,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         text: 'Go into the muscle',
         how: 'With the syringe, press on the mark and hold until the needle is in the muscle, then let go. It goes in slowly here. With Steady hand on, it stops by itself once its tip is in the muscle.',
         why: 'The method puts the needle in perpendicular to the skin.',
+        see: 'The needle stands square to the skin, and goes in slowly.',
         tool: 'syringe', view: 'left-close',
         guide: { kind: 'spot', place: THIGH_FRONT, radiusMm: 1.5, degrees: 90, mmPerSecond: 1.5, stopsIn: ['living:muscle-rectus-femoris', 'living:muscle-vasti'] },
         show: [{ kind: 'touch', tool: 'syringe', ids: [], place: THIGH_FRONT, depthMm: 3 }, wait(0.8)],

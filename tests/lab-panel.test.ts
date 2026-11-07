@@ -2,6 +2,7 @@
  * The panel of dissection practice in a simulated DOM, and the rolled edge of the skin on a plain surface. These establish state and geometry and say nothing about how the bench looks when drawn.
  */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { after, afterEach, test } from 'node:test';
 import { Window } from 'happy-dom';
 import * as THREE from 'three';
@@ -41,7 +42,7 @@ const tutorial = (props: Record<string, unknown> = {}) => {
   const calls: Record<string, unknown[]> = {};
   const note = (name: string) => (...values: unknown[]) => { calls[name] = values; };
   const chosen = LAB_EXERCISES.find((item) => item.id === (props.id ?? 'open-abdomen'))!;
-  const base = { exercise: chosen, facts: facts({ pose: 'standing' }), demonstrating: false, onStep: note('step'), onShow: note('show'), onWatchAll: note('all'), onStop: note('stop'), onClose: note('close'), ...props };
+  const base = { exercise: chosen, facts: facts({ pose: 'standing' }), demonstrating: false, onStep: note('step'), onShow: note('show'), onWatchAll: note('all'), onStop: note('stop'), onClose: note('close'), onAct: note('act'), ...props };
   const view = render(createElement(LabTutorial, base as never));
   return { ...view, calls, base, chosen };
 };
@@ -123,6 +124,46 @@ test('a step can be chosen, shown by the hands, and the whole can be watched', (
   assert.deepEqual(calls.step, [2]);
   fireEvent.click(getByRole('button', { name: 'Back' }));
   assert.deepEqual(calls.step, [1]);
+});
+
+test('a card stands in the panel, the instruments shrink beside it, and the panel can be hidden', () => {
+  let hidden = 0;
+  const { container, getByRole } = panel({ card: createElement('section', { className: 'a-card' }), onHide: () => { hidden += 1; } });
+  assert.ok(container.querySelector('.lab-panel .a-card'));
+  assert.ok(container.querySelector('.lab-tools.is-compact'));
+  assert.ok(getByRole('radio', { name: 'Scalpel' }), 'each still has its name');
+  assert.equal(container.querySelector('.lab-more')?.hasAttribute('open'), false, 'how it lies and the views fold away');
+  fireEvent.click(getByRole('button', { name: 'Hide the panel' }));
+  assert.equal(hidden, 1);
+});
+
+test('without a card the panel shows everything, and while procedures are being chosen the rest of it waits', () => {
+  const free = panel();
+  assert.equal(free.container.querySelector('.lab-more')?.hasAttribute('open'), true);
+  assert.equal(free.container.querySelector('.lab-tools.is-compact') === null, true);
+  cleanup();
+  const choosing = panel({ card: createElement('section', { className: 'a-card' }), choosing: true });
+  assert.equal(choosing.container.querySelector('.lab-tools') === null, true);
+});
+
+test('nothing at the bench lies over the view', () => {
+  const css = readFileSync('src/components/LabPanel.css', 'utf8');
+  assert.doesNotMatch(css, /\.lab-tutorial\{[^}]*position:absolute/);
+  assert.doesNotMatch(css, /\.lab-tutorial-fold\{[^}]*position:absolute/);
+  assert.match(css, /\.app-shell\.workbench\.mode-dissection \.navigator\{position:relative/);
+});
+
+test('a step that no instrument does has a button of its own, until it has been done', () => {
+  const { getByRole, container, calls, chosen, base, rerender } = tutorial({ id: 'perfuse-heart' });
+  const flow = chosen.steps.findIndex((step) => step.act);
+  const offered = () => container.querySelector('.lab-tutorial-step .lab-watch') as HTMLElement | null;
+  assert.equal(offered() === null, true);
+  fireEvent.click(getByRole('button', { name: chosen.steps[flow].text }));
+  assert.equal(offered()?.textContent, 'Start the flow');
+  fireEvent.click(offered()!);
+  assert.deepEqual(calls.act, ['perfuse']);
+  rerender(createElement(LabTutorial, { ...base, facts: facts({ pose: 'on-back', actions: [{ kind: 'perfuse', tool: 'syringe', at: 1, structures: ['living:heart-lv'] }] }) } as never));
+  assert.equal(offered() === null, true);
 });
 
 test('a tutorial follows what is done, and goes on when a step has been done', () => {
@@ -211,8 +252,10 @@ test('the chooser lists the procedures to choose from, by kind', () => {
 test('the card says what has fallen short, and names the instruments and what is seen', () => {
   const exercise = LAB_EXERCISES.find((item) => item.id === 'open-abdomen')!;
   const short: LabFacts = facts({ actions: [{ kind: 'cut', tool: 'scissors', at: 3, structures: ['living:skin'], tier: 'skin', lengthMm: 11, asideMm: 0.4, side: 'ventral', fromMm: 20, toMm: 31 }] });
+  const first = tutorial({ exercise, facts: facts({ pose: 'standing' }) });
+  assert.ok(first.getByText(/Instruments:/).parentElement?.textContent?.includes('scissors'), 'at the first step, and then out of the way');
+  cleanup();
   const view = tutorial({ exercise, facts: short });
-  assert.ok(view.getByText(/Instruments:/).parentElement?.textContent?.includes('scissors'));
   assert.ok(view.getByText(/The cut is 11 mm long so far/));
   assert.ok(view.getByText(/What you see/));
 });

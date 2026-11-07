@@ -130,7 +130,7 @@ test('every structure declares its evidence, its basis and, when simulated, says
     }
     if (structure.evidence === 'traced') assert.match(structure.description!, /[Tt]raced|isosurface|outer surface/, structure.id);
     if (structure.division) assert.match(structure.description!, /estimate/, structure.id);
-    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles|O'Connell|Fuller|Marques|Stuelsatz|Sakabe|Kochi|Rigaud|Shields|Oliviero|Dyment|Jilka|Sauter|Furness|Kimoto|Mauris|Ebara|Louveau|Carlson|Parkinson|Machholz/, reference);
+    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles|O'Connell|Fuller|Marques|Stuelsatz|Sakabe|Kochi|Rigaud|Shields|Oliviero|Dyment|Jilka|Sauter|Furness|Kimoto|Mauris|Ebara|Louveau|Carlson|Parkinson|Machholz|Kim BS|Norwood|Martinez-Abadias/, reference);
   }
   assert.ok(counts.source >= 15 && counts.traced >= 5 && counts.simulated >= 30, JSON.stringify(counts));
 });
@@ -301,6 +301,12 @@ test('the follicles, sinuses, lymphatics and small bones of the head lie where t
     assert.match(structure.description!, /Not measured from this specimen\.$/, name);
     assert.equal(structure.exterior, false, name);
     assert.ok(structure.basis!.length > 0, name);
+  }
+  // These three rest on sources for the mouse that were read, and not on the book about the rat, whose text could not be.
+  for (const [name, source] of [['bone-vomer', /Kim BS/], ['bone-ethmoid', /Norwood/], ['bone-lacrimal', /Martinez-Abadias/]] as const) {
+    const basis = atlas.structures.find((item) => item.id === 'living:' + name)!.basis!;
+    assert.ok(basis.some((reference) => source.test(reference)), name);
+    assert.ok(!basis.some((reference) => /Greene/.test(reference)), name);
   }
   const near = (id: string, others: readonly string[], most: number, every = 7) => {
     const targets = others.flatMap((other) => verticesOf('living:' + other));

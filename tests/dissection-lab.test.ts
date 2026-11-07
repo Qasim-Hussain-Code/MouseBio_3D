@@ -155,6 +155,40 @@ test('a demonstration opens the skin before the wall, and takes nothing out befo
   }
 });
 
+test('a perfusion asks for the needle and the way out before the flow, and then waits for the organs to clear', () => {
+  const item = exercise('perfuse-heart');
+  const flow = item.steps.findIndex((step) => step.act?.does === 'perfuse');
+  assert.ok(flow > 0);
+  const advice = item.steps[flow].advice!;
+  const needle: LabAction = { kind: 'inject', tool: 'syringe', at: 4, structures: ['living:heart-lv'], tipIn: ['living:heart-lv'], depthMm: 4 };
+  const outlet: LabAction = { kind: 'cut', tool: 'scissors', at: 5, structures: ['living:heart-ra'], tier: 'organs', lengthMm: 2 };
+  const started: LabAction = { kind: 'perfuse', tool: 'syringe', at: 6, structures: ['living:heart-lv'] };
+  const cleared: LabAction = { kind: 'cleared', tool: 'syringe', at: 46, structures: ['living:liver-median'] };
+  assert.match(advice(facts()) ?? '', /needle/);
+  assert.match(advice(facts([needle])) ?? '', /atrium/);
+  assert.equal(advice(facts([needle, outlet])), null);
+  assert.equal(stepsDone('perfuse-heart', facts([needle, outlet]))[flow], false);
+  assert.equal(stepsDone('perfuse-heart', facts([needle, outlet, started]))[flow], true);
+  assert.equal(stepsDone('perfuse-heart', facts([needle, outlet, started]))[flow + 1], false);
+  assert.equal(stepsDone('perfuse-heart', facts([needle, outlet, started, cleared]))[flow + 1], true);
+  assert.deepEqual(evaluateExercise(item, facts([{ ...outlet, structures: ['living:heart-rv'] }])).errors, ['The right ventricle was cut']);
+  assert.equal(describeAction(started, (id) => id.replace('living:', '')), 'Started the flow through heart-lv');
+});
+
+test('an injection into a tail vein counts only with the tip in the vein, and the card says what went wrong', () => {
+  const item = exercise('inject-tail-vein');
+  const going = item.steps.findIndex((step) => step.text === 'Go in near the far end of the tail');
+  const inVein: LabAction = { kind: 'inject', tool: 'syringe', at: 2, structures: ['living:tail'], tipIn: ['living:tail-lateral-veins'], depthMm: 1.2 };
+  const missed: LabAction = { ...inVein, tipIn: [], depthMm: 2 };
+  const barely: LabAction = { ...inVein, tipIn: [], depthMm: 0.3 };
+  assert.equal(stepsDone('inject-tail-vein', facts([inVein]))[going], true);
+  assert.equal(stepsDone('inject-tail-vein', facts([missed]))[going], false);
+  assert.match(item.steps[going].advice!(facts([missed])) ?? '', /outside the vein/);
+  assert.match(item.steps[going].advice!(facts([barely])) ?? '', /Hold a little longer/);
+  assert.equal(item.steps[going].advice!(facts([inVein])), null);
+  assert.deepEqual(evaluateExercise(item, facts([{ ...inVein, tipIn: ['living:tail-vertebrae'] }])).errors, ['The needle went through to the bone']);
+});
+
 test('the words for an action say what was done, and the record holds only what was done on the model', () => {
   const nameOf = (id: string) => id.replace('living:', '');
   assert.equal(describeAction(skinCut, nameOf), 'Cut skin, 28 mm');

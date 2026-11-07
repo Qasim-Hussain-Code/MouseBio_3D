@@ -13214,9 +13214,10 @@
    "scale": "organ",
    "color": "#ddd4c0",
    "exterior": false,
-   "description": "Simulated. A thin plate in the midline, low in the septum of the nose. Greene describes it in the rat. The CT does not separate it, and its size and place are estimates. Not measured from this specimen.",
+   "description": "Simulated. A thin plate in the midline, low in the septum of the nose. In the mouse it meets the premaxilla at a suture, and its Y-shaped wings lie on each side of the lower part of the septal cartilage, as Kim et al. describe; here it is a simple plate without wings. The CT does not separate it, and its size and place are estimates. Not measured from this specimen.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Kim BS, Shin HR, Kim HJ, Yoon H, Cho YD, Choi KY, Choi JY, Kim WJ, Ryoo HM. Septal chondrocyte hypertrophy contributes to midface deformity in a mouse model of Apert syndrome. Sci Rep. 2021;11(1):7979. doi:10.1038/s41598-021-87260-5",
+    "Martinez-Abadias N, Motch SM, Pankratz TL, Wang Y, Aldridge K, Jabs EW, Richtsmeier JT. Tissue-specific responses to aberrant FGF signaling in complex head phenotypes. Dev Dyn. 2013;242(1):80-94. doi:10.1002/dvdy.23903"
    ],
    "meshNode": "living:bone-vomer",
    "geometry": {
@@ -13247,9 +13248,10 @@
    "scale": "organ",
    "color": "#ddd4c0",
    "exterior": false,
-   "description": "Simulated. A plate between the olfactory bulbs and the nasal cavities, with a thin plate going forward in the midline. Greene describes it in the rat. The CT does not separate it, and its size and place are estimates. Not measured from this specimen.",
+   "description": "Simulated. A plate between the olfactory bulbs and the nasal cavities, with a thin plate going forward in the midline. In the mouse the cribriform plate of this bone has holes in it, separates the cranial and nasal cavities and is shaped to the rounded front of the olfactory bulbs, as Norwood et al. describe, and its perpendicular plate lies against the septal cartilage, as Kim et al. describe; here the plate is flat and has no holes. The CT does not separate it, and its size and place are estimates. Not measured from this specimen.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Norwood JN, Zhang Q, Card D, Craine A, Ryan TM, Drew PJ. Anatomical basis and physiological role of cerebrospinal fluid transport through the murine cribriform plate. eLife. 2019;8:e44278. doi:10.7554/eLife.44278",
+    "Kim BS, Shin HR, Kim HJ, Yoon H, Cho YD, Choi KY, Choi JY, Kim WJ, Ryoo HM. Septal chondrocyte hypertrophy contributes to midface deformity in a mouse model of Apert syndrome. Sci Rep. 2021;11(1):7979. doi:10.1038/s41598-021-87260-5"
    ],
    "meshNode": "living:bone-ethmoid",
    "geometry": {
@@ -13280,9 +13282,10 @@
    "scale": "organ",
    "color": "#ddd4c0",
    "exterior": false,
-   "description": "Simulated. A small bone at the front wall of each orbit. Greene describes it in the rat. The CT does not separate it, and its size and place are estimates. Not measured from this specimen.",
+   "description": "Simulated. A small bone at the front of each orbit, as labelled on the skull from above in Cook figure 11, which meets the frontal bone and the frontal process of the maxilla, as Martinez-Abadias et al. give it in the newborn mouse. The CT does not separate it, and its size and place are estimates. Not measured from this specimen.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
+    "Martinez-Abadias N, Motch SM, Pankratz TL, Wang Y, Aldridge K, Jabs EW, Richtsmeier JT. Tissue-specific responses to aberrant FGF signaling in complex head phenotypes. Dev Dyn. 2013;242(1):80-94. doi:10.1002/dvdy.23903"
    ],
    "meshNode": "living:bone-lacrimal",
    "geometry": {

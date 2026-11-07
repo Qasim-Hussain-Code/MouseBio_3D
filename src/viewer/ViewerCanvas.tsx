@@ -84,7 +84,7 @@ export type ViewerSettings = {
 export type DissectionReport = { place: string; items: HereItem[] };
 export type SectionImageStatus = { status: 'idle' | 'loading' | 'ready' | 'failed'; id?: SectionImageId };
 /** What a session of practice tells the page. */
-export type LabEvent = { kind: 'report'; report: LabReport } | { kind: 'picked'; id: string } | { kind: 'refused'; message: string } | { kind: 'caption'; text: string | null };
+export type LabEvent = { kind: 'report'; report: LabReport } | { kind: 'picked'; id: string } | { kind: 'refused'; message: string } | { kind: 'alive'; alive: boolean } | { kind: 'caption'; text: string | null };
 export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean; viewCutFace: (axis: 'x' | 'y' | 'z') => void; bodyCentrePercent: (axis: 'x' | 'y' | 'z') => number | null; placeDissection: (place: DissectionPlaceId) => void; lab: () => LabSession | null; labView: (view: LabView) => void; picture: () => string | null };
 type Props = {
   atlas: Atlas;
@@ -855,6 +855,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
           isVessel: (id) => flowLineKinds().has(id) || atlas.structures.find((item) => item.id === id)?.systems.includes('arterial-venous') === true,
           circulating: () => { const now = latest.current.settings.life; return !!now?.on && now.heart; },
           onReport: (report) => latest.current.onLab?.({ kind: 'report', report }),
+          onAlive: (alive) => latest.current.onLab?.({ kind: 'alive', alive }),
           onHover: (hover) => {
             const structure = hover ? atlas.structures.find((item) => item.id === hover.id) : undefined;
             const scale = renderer.getPixelRatio();
@@ -867,10 +868,6 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
           moveView: (position, target, up) => {
             const from = captureCameraPose(camera, controls.target);
             cameraMove = { from, to: { ...from, position: position.toArray() as CameraPose['position'], target: target.toArray() as CameraPose['target'], up: up.toArray() as CameraPose['up'] }, t: 0 };
-          },
-          covered: () => {
-            const card = document.querySelector('.lab-tutorial:not(.lab-chooser)'), view = renderer.domElement.getBoundingClientRect();
-            return card && view.width ? Math.max(0, view.right - card.getBoundingClientRect().left) / view.width : 0;
           },
           snip: () => { if (latest.current.settings.life?.sound) voice.snip(); },
         });
@@ -938,7 +935,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       for (const [id, mesh] of meshes) {
         const structure = atlas.structures.find((item) => item.id === id)!;
         const opacity = current.opacity[id] ?? defaultOpacity(id);
-        mesh.visible = !current.hidden.includes(id) && opacity > 0;
+        // At the bench, what lies under whole skin cannot be seen, and is left out until something has been opened.
+        mesh.visible = !current.hidden.includes(id) && opacity > 0 && (!lab || lab.opened() || tierOf(id) === 'skin' || seenFromOutside.has(id));
         mesh.material.opacity = opacity;
         const glassy = bloodShown && flowVessels.has(id);
         const transparent = opacity < 1 || glassy;

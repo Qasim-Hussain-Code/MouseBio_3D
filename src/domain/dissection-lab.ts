@@ -69,7 +69,7 @@ export const canBeReflected = (tier: DissectionTierId) => tier === 'skin' || tie
 /** A probe parts what is loose. */
 export const canBeParted = (tier: DissectionTierId) => tier === 'fat' || tier === 'panniculus' || tier === 'lining';
 
-export type LabActionKind = 'cut' | 'reflect' | 'part' | 'bone' | 'remove' | 'move' | 'ligate' | 'suture' | 'pin' | 'swab' | 'inject';
+export type LabActionKind = 'cut' | 'reflect' | 'part' | 'bone' | 'remove' | 'move' | 'ligate' | 'suture' | 'pin' | 'swab' | 'inject' | 'perfuse' | 'cleared';
 export type LabSide = 'ventral' | 'dorsal' | 'side';
 
 export interface LabAction {
@@ -146,7 +146,7 @@ export type LabPose = 'standing' | 'on-back';
 export const needles = (facts: LabFacts) => facts.actions.filter((action) => action.kind === 'inject');
 export const inOrgan = (action: LabAction) => (action.tipIn ?? []).some((id) => /small-intestine|caecum|colon|stomach|liver|spleen|kidney|bladder|uterus|ovar|testis|pancreas/.test(id));
 
-const ACTION_WORDS: Readonly<Record<LabActionKind, string>> = Object.freeze({ cut: 'Cut', reflect: 'Drew back', part: 'Parted', bone: 'Cut through bone', remove: 'Lifted out', move: 'Moved aside', ligate: 'Tied', suture: 'Closed', pin: 'Pinned', swab: 'Cleaned', inject: 'Needle through' });
+const ACTION_WORDS: Readonly<Record<LabActionKind, string>> = Object.freeze({ cut: 'Cut', reflect: 'Drew back', part: 'Parted', bone: 'Cut through bone', remove: 'Lifted out', move: 'Moved aside', ligate: 'Tied', suture: 'Closed', pin: 'Pinned', swab: 'Cleaned', inject: 'Needle through', perfuse: 'Started the flow through', cleared: 'The blood has cleared from' });
 
 /** One line of the record, in words. */
 export function describeAction(action: LabAction, nameOf: (id: string) => string): string {

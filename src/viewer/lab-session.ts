@@ -12,7 +12,7 @@ import { createLabPick, type LabHit, type LabPickEntry } from './lab-pick';
 import { createSkinEdge } from './lab-skin-edge';
 import { partFur, type PartedLine } from './fur';
 import { createFlapSheet, createSurfaceProbe, flapLook, type FlapSheet } from './lab-flap-sheet';
-import { FLAP_SLOTS, LIFE_SHARED } from './life-field';
+import { FLAP_SLOTS, LIFE_KIND, LIFE_SHARED } from './life-field';
 import { surfaceShadingOf, type SurfaceShadingUniforms } from './surface-shading';
 
 /**
@@ -57,12 +57,12 @@ export interface LabSessionOptions {
   readonly onRefused: (message: string) => void;
   /** A line said during a demonstration, or nothing. */
   readonly onCaption: (text: string | null) => void;
+  /** The heart has been stopped, or has been brought back by undoing that. */
+  readonly onAlive: (alive: boolean) => void;
   /** Which structures are shown or moved has changed. */
   readonly onChange: () => void;
   /** Move the view over about a second. */
   readonly moveView: (position: THREE.Vector3, target: THREE.Vector3, up: THREE.Vector3) => void;
-  /** How much of the width of the view is covered at its right by the card of a tutorial, as a share. */
-  readonly covered: () => number;
   readonly snip: () => void;
 }
 
@@ -77,6 +77,8 @@ export interface LabSession {
   extendLeg(side: 1 | -1 | null): void;
   /** The camera for a view of the animal, as a position, target and way up. */
   viewOf(view: LabView): { position: THREE.Vector3; target: THREE.Vector3; up: THREE.Vector3 };
+  /** Whether anything has been opened, without which nothing under the skin can be seen and it need not be drawn. */
+  opened(): boolean;
   /** What marks where a lid of bone has been lifted to, as openings in the skin do. */
   readonly plates: () => THREE.Object3D[];
   /** Lift out a structure and put it in the dish. */
@@ -86,8 +88,10 @@ export interface LabSession {
   /** The hands do a whole exercise by themselves. */
   demonstrate(id: string): void;
   /** The hands do one step of an exercise by themselves, from where things stand. */
-  showStep(steps: readonly DemoStep[], caption?: string): void;
+  showStep(steps: readonly DemoStep[], caption?: string, done?: (facts: LabFacts) => boolean): void;
   stopDemonstration(): void;
+  /** Start the flow of a perfusion, if the needle and the way out are ready. */
+  perfuse(): void;
   /** What to mark on the animal, and whether a stroke keeps to a marked line. */
   setGuide(guide: LabGuide | null): void;
   setSteady(on: boolean): void;
@@ -143,6 +147,8 @@ interface Step {
   madeFlaps?: Flap[];
   /** Flaps of an earlier cut that this cut carried on, and so took the place of. */
   joinedFlaps?: Flap[];
+  /** The flow of a perfusion began here. */
+  perfused?: boolean;
   drewFlap?: { flap: Flap; before: number };
 }
 
@@ -182,8 +188,10 @@ const LONGEST_STEP = 0.012, SMALLEST_STEP = 0.00012, MOST_MOVED = 0.03, SPLAY = 
 const STROKE_PIXELS = 10, MOST_STROKE_STEPS = 8;
 const toPoint = (vector: THREE.Vector3): CutPoint => [vector.x, vector.y, vector.z];
 const FLAP_TYPE: Readonly<Record<FlapKind, number>> = { skin: 0, wall: 1, chest: 2, skull: 3 };
+/** How long the tissues take to clear in a perfusion here. In an animal it takes minutes. */
+const PERFUSION_SECONDS = 40;
 /** How far from what it looks at each view stands. Close views are near enough to work in, and leave the hands in view. */
-const VIEW_REACH: Readonly<Record<LabViewName, number>> = { belly: 0.34, back: 0.34, left: 0.3, right: 0.3, 'left-close': 0.15, spleen: 0.11, close: 0.135, chest: 0.11, 'left-thigh': 0.09, femoral: 0.05, head: 0.1 };
+const VIEW_REACH: Readonly<Record<LabViewName, number>> = { belly: 0.34, back: 0.34, left: 0.3, right: 0.3, 'left-close': 0.15, tail: 0.085, heart: 0.075, spleen: 0.11, kidney: 0.075, close: 0.135, chest: 0.11, 'left-thigh': 0.09, femoral: 0.05, head: 0.1 };
 /** How far a hind leg is drawn out for surgery on its inner side, in radians, on top of how it lies. Chosen so that the inner side of the thigh faces the view. */
 const LEG_TAPED_DOWN = 0.95;
 /** How far a lid of bone turns when it has been lifted right back, in radians: the front of the rib cage goes over towards the head, and a leaf of the skull lies out to the side. */
@@ -193,7 +201,8 @@ const SKULL_HALF = 0.0052;
 const LID_CHANNELS = [channelOfTier('skeleton'), channelOfTier('outer-muscle'), channelOfTier('inner-muscle'), channelOfTier('lining')];
 
 const BLOOD_GEOMETRY = new THREE.SphereGeometry(1, 16, 10);
-const BLOOD_MATERIAL = new THREE.MeshPhysicalMaterial({ color: '#6e0d10', roughness: 0.16, clearcoat: 0.8, clearcoatRoughness: 0.2 });
+const BLOOD_COLOUR = new THREE.Color('#6e0d10'), BLOOD_WASHED = new THREE.Color('#d8a9a4');
+const BLOOD_MATERIAL = new THREE.MeshPhysicalMaterial({ color: BLOOD_COLOUR, roughness: 0.28, clearcoat: 0.45, clearcoatRoughness: 0.3 });
 const STITCH_GEOMETRY = new THREE.CylinderGeometry(0.00005, 0.00005, 0.0017, 5);
 const STITCH_MATERIAL = new THREE.MeshStandardMaterial({ color: '#223a8a', roughness: 0.7 });
 const GUIDE_MATERIAL = new THREE.MeshBasicMaterial({ color: '#19c79a', transparent: true, opacity: 0.95, depthTest: false });
@@ -364,8 +373,8 @@ export function createLabSession(options: LabSessionOptions): LabSession {
   makeCast(rightHand.holder); makeCast(leftHand.holder); makeCast(leftForceps.group);
 
   // A demonstration works the same controls as a person: it moves the pointer and presses.
-  type RobotStep = DemoStep | { readonly kind: 'say'; readonly text: string };
-  interface Robot { readonly steps: readonly RobotStep[]; index: number; seconds: number; stage: number; travelled: number; total: number; path: THREE.Vector3[]; ends: THREE.Vector3 | null; flap: Flap | null; from: number }
+  type RobotStep = DemoStep | { readonly kind: 'say'; readonly text: string } | { readonly kind: 'check'; readonly show: readonly DemoStep[]; readonly done: (facts: LabFacts) => boolean; readonly tries: number };
+  interface Robot { steps: readonly RobotStep[]; index: number; seconds: number; stage: number; travelled: number; total: number; path: THREE.Vector3[]; ends: THREE.Vector3 | null; flap: Flap | null; from: number; moved: boolean }
   let robot: Robot | null = null;
   let tool: LabToolId = 'hand';
   let instrument: Instrument | null = null;
@@ -385,7 +394,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
   const legGoals = [0, 0, 0, 0];
   let swap: { t: number; next: LabToolId; done: boolean } | null = null;
   let carry: { id: string; from: THREE.Vector3; to: THREE.Vector3; t: number; step: Step } | null = null;
-  let needle: { entry: THREE.Vector3; entryAtRest: THREE.Vector3; way: THREE.Vector3; wayAtRest: THREE.Vector3; depth: number; firstId: string; side: LabSide; out: number; spare: number; speed: number; stopsIn: THREE.Mesh[]; stopped: boolean } | null = null;
+  let needle: { entry: THREE.Vector3; entryAtRest: THREE.Vector3; way: THREE.Vector3; wayAtRest: THREE.Vector3; depth: number; firstId: string; side: LabSide; out: number; spare: number; speed: number; stopsIn: THREE.Mesh[]; stopped: boolean; running: number } | null = null;
   const openings: { sweeps: Sweep[]; from: number; to: number; t: number }[] = [];
   // Where each tip is, and where it is going.
   const rightTip = new THREE.Vector3(), rightGoal = new THREE.Vector3(), leftTip = new THREE.Vector3(), leftGoal = new THREE.Vector3();
@@ -397,10 +406,8 @@ export function createLabSession(options: LabSessionOptions): LabSession {
   const right = new THREE.Vector3(), up = new THREE.Vector3(), toEye = new THREE.Vector3();
   const reading = () => { camera.updateMatrixWorld(); right.setFromMatrixColumn(camera.matrixWorld, 0); up.setFromMatrixColumn(camera.matrixWorld, 1); toEye.setFromMatrixColumn(camera.matrixWorld, 2); };
 
-  const report = () => options.onReport({
-    facts: { actions: history.map((step) => step.action), seen: new Set(seenEver), removed: new Set(taken), ligated: new Set(tied), pose },
-    canUndo: history.length > 0, taken: [...taken], demonstrating: !!robot, tool: swap?.next ?? tool, pose,
-  });
+  const factsNow = (): LabFacts => ({ actions: history.map((step) => step.action), seen: new Set(seenEver), removed: new Set(taken), ligated: new Set(tied), pose });
+  const report = () => options.onReport({ facts: factsNow(), canUndo: history.length > 0, taken: [...taken], demonstrating: !!robot, tool: swap?.next ?? tool, pose });
 
   /** Which leg a point of the model at rest goes with now that the legs are laid out, and how. The same as mbLegOut in the program that draws it. */
   const smooth = (a: number, b: number, x: number) => { const k = Math.max(0, Math.min(1, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
@@ -478,7 +485,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     const heavy = options.isVessel(hit.id) && !tied.has(hit.id);
     const soaked = tierOf(hit.id) === 'organs' && /liver|spleen|kidney|heart/.test(hit.id);
     if (!heavy && !soaked) return;
-    if (stroke.objects.length < 8) addBlood(hit.now, hit.normal, heavy ? 0.0026 : 0.0013, heavy ? 0.0009 : 0.0005, stroke);
+    if (stroke.objects.length < 8) addBlood(hit.now, hit.normal, heavy ? 0.0018 : 0.0009, heavy ? 0.0009 : 0.0005, stroke);
     stroke.bled = true;
   };
 
@@ -550,6 +557,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     if (kind !== 'suture') for (const sweep of sweeps) volume.sweep(sweep.channel, sweep.points[0], sweep.points[0], radius, restore);
     bleedIfCut(hit);
     if ((kind === 'cut' || kind === 'bone') && !grasp) takeHold(hit, filter);
+    if (history.every((step) => step.sweeps.length === 0) && !flaps.length) options.onChange();
     // Stitching brings the edges of the skin back together.
     if (kind === 'suture') for (const flap of flaps) if (flap.kind === 'skin') flap.goal = 0;
     changed = true;
@@ -660,13 +668,18 @@ export function createLabSession(options: LabSessionOptions): LabSession {
   /** A long straight cut opens as two flaps, one on each side of it. */
   const makeFlaps = (s: Stroke): Flap[] => {
     const kind: FlapKind | null = s.tier === 'skin' || s.tier === 'fat' || s.tier === 'panniculus' ? 'skin' : s.tier === 'outer-muscle' || s.tier === 'inner-muscle' || s.tier === 'lining' ? 'wall' : null;
-    if (!kind || s.kind !== 'cut' || s.length < 0.006 || flaps.length + 2 > FLAP_SLOTS || s.restLine.length < 2) return [];
+    if (!kind || s.kind !== 'cut' || s.length < 0.004 || flaps.length + 2 > FLAP_SLOTS || s.restLine.length < 2) return [];
     let a = s.restLine[0].clone(), b = s.restLine[s.restLine.length - 1].clone();
     const line = b.clone().sub(a), length = line.length();
-    if (length < 0.005) return [];
+    if (length < 0.0035) return [];
     const along = line.clone().normalize();
-    for (const point of s.restLine) { const from = point.clone().sub(a); if (from.addScaledVector(along, -from.dot(along)).length() > Math.max(0.002, length * 0.2)) return []; }
     const upward = s.normals.clone().addScaledVector(along, -s.normals.dot(along)).normalize();
+    // The body rises and falls under a cut, over the crown of the head for one. Only what wanders to the side of the line counts against it.
+    for (const point of s.restLine) {
+      const from = point.clone().sub(a);
+      from.addScaledVector(along, -from.dot(along));
+      if (from.addScaledVector(upward, -from.dot(upward)).length() > Math.max(0.002, length * 0.2)) return [];
+    }
     // A cut that carries on along an earlier one opens with it, as one: scissors make a long cut in several snips.
     const carried = flaps.filter((flap) => {
       if (flap.kind !== kind || flap.square) return false;
@@ -922,16 +935,26 @@ export function createLabSession(options: LabSessionOptions): LabSession {
         let way = handleWay(1).negate();
         // At the angle the method asks for, keeping the hand on the side where it is.
         if (asked?.degrees !== undefined) {
-          const flat = way.clone().addScaledVector(hit.normal, -way.dot(hit.normal));
-          if (flat.lengthSq() > 1e-6) flat.normalize();
           const angle = THREE.MathUtils.degToRad(asked.degrees);
-          way = flat.multiplyScalar(Math.cos(angle)).addScaledVector(hit.normal, -Math.sin(angle)).normalize();
+          if (asked.along) {
+            // Towards the body along what it follows, so as to meet it at that angle, and a place a little to one side of the line will do.
+            const side: 1 | -1 = hit.rest.clone().sub(origin).dot(lateral) * toLeft >= 0 ? 1 : -1, at = lineShareOf(asked.along, side, hit.rest);
+            const here = onStructure(asked.along, side, at), towards = onStructure(asked.along, side, at - 0.06).sub(onStructure(asked.along, side, at + 0.06)).normalize();
+            way = nowOf(here.addScaledVector(towards, Math.max(hit.rest.distanceTo(here), 0.0002) / Math.tan(angle))).sub(hit.now).normalize();
+          } else {
+            const flat = way.clone().addScaledVector(hit.normal, -way.dot(hit.normal));
+            if (flat.lengthSq() > 1e-12) flat.normalize();
+            way = flat.multiplyScalar(Math.cos(angle)).addScaledVector(hit.normal, -Math.sin(angle)).normalize();
+          }
         }
         // The needle goes in at its own angle to the surface; at rest the surface may lie a different way, on a limb that has been turned.
-        const wayAtRest = way.clone().applyQuaternion(new THREE.Quaternion().setFromUnitVectors(hit.normal, hit.restNormal));
+        let wayAtRest = way.clone().applyQuaternion(new THREE.Quaternion().setFromUnitVectors(hit.normal, hit.restNormal));
+        // Into a muscle under the mark, a hand goes for the body of the muscle that it can feel, and not by the small folds of the skin at the tip.
+        const body = asked?.degrees === 90 && asked.stopsIn?.length ? middleNear(asked.stopsIn, hit.rest, 0.006) : null;
+        if (body) { way = nowOf(body).sub(hit.now).normalize(); wayAtRest = body.sub(hit.rest).normalize(); }
         const offset = hit.rest.clone().sub(origin);
         const height = offset.dot(dorsal), across = Math.abs(offset.dot(lateral));
-        needle = { entry: hit.now.clone(), entryAtRest: hit.rest.clone(), way, wayAtRest, depth: 0, firstId: hit.id, side: height > middleHeight + 0.002 ? 'dorsal' : height < middleHeight && across < halfWidth ? 'ventral' : 'side', out: 0, spare: 0, speed: (asked?.mmPerSecond ?? 4) / 1000, stopsIn: (asked?.stopsIn ?? []).flatMap((id) => { const mesh = meshes.get(id); return mesh instanceof THREE.Mesh ? [mesh] : []; }), stopped: false };
+        needle = { entry: hit.now.clone(), entryAtRest: hit.rest.clone(), way, wayAtRest, depth: 0, firstId: hit.id, side: height > middleHeight + 0.002 ? 'dorsal' : height < middleHeight && across < halfWidth ? 'ventral' : 'side', out: 0, spare: 0, speed: (asked?.mmPerSecond ?? 4) / 1000, stopsIn: (asked?.stopsIn ?? []).flatMap((id) => { const mesh = meshes.get(id); return mesh instanceof THREE.Mesh ? [mesh] : []; }), stopped: false, running: 0 };
         // Forceps in the left hand lift a fold of the skin, and the needle goes in beside them. What lifts the skin leaves that much more room under it before the tip reaches anything else.
         if (asked?.tent) {
           takeHold(hit, (id) => tierOf(id) === 'skin' || tierOf(id) === 'fat' || tierOf(id) === 'panniculus');
@@ -955,6 +978,21 @@ export function createLabSession(options: LabSessionOptions): LabSession {
   };
 
   /** What a needle has passed through, and what its tip lies in, from the surfaces of the model at rest. A closed surface crossed an odd number of times on the way out has the tip inside it. */
+  /** The middle of what lies of these structures near a place, at rest. */
+  const middleNear = (ids: readonly string[], place: THREE.Vector3, reach: number) => {
+    const sum = new THREE.Vector3(), point = new THREE.Vector3();
+    let count = 0;
+    for (const id of ids) {
+      const mesh = meshes.get(id);
+      if (!(mesh instanceof THREE.Mesh)) continue;
+      const positions = mesh.geometry.getAttribute('position');
+      for (let index = 0; index < positions.count; index++) {
+        point.fromBufferAttribute(positions, index).applyMatrix4(mesh.matrixWorld);
+        if (point.distanceToSquared(place) < reach * reach) { sum.add(point); count++; }
+      }
+    }
+    return count ? sum.divideScalar(count) : null;
+  };
   const inspectNeedle = (from: THREE.Vector3, way: THREE.Vector3, depth: number) => {
     const start = from.clone().addScaledVector(way, -0.0001), tip = from.clone().addScaledVector(way, depth);
     const passed: string[] = [], lying: string[] = [];
@@ -969,10 +1007,31 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     }
     return { passed, lying };
   };
+  // A vein blanches up its length while the fluid goes in.
+  const blanch = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: '#f4eef0', roughness: 0.5, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+  blanch.frustumCulled = false;
+  blanch.visible = false;
+  root.add(blanch);
+  let blanchFor: unknown = null;
+  const hideBlanch = () => { blanch.visible = false; blanchFor = null; };
+  const showBlanch = (n: NonNullable<typeof needle>, share: number) => {
+    if (share <= 0) { blanch.visible = false; return; }
+    if (blanchFor !== n) {
+      blanchFor = n;
+      const side: 1 | -1 = n.entryAtRest.clone().sub(origin).dot(lateral) * toLeft >= 0 ? 1 : -1, at = lineShareOf('living:tail-lateral-veins', side, n.entryAtRest);
+      const points = [0, 0.05, 0.1, 0.16].map((back) => nowOf(onStructure('living:tail-lateral-veins', side, Math.max(0, at - back))));
+      blanch.geometry.dispose();
+      blanch.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 28, 0.00021, 6, false);
+    }
+    const total = blanch.geometry.index ? blanch.geometry.index.count : 0;
+    blanch.geometry.setDrawRange(0, Math.floor(total * share / 6) * 6);
+    blanch.visible = true;
+  };
   const finishNeedle = () => {
     if (!needle || needle.out > 0) return;
     const n = needle;
     n.out = 1;
+    hideBlanch();
     letGo();
     if (n.depth < 0.0002) { needle = null; return; }
     const { passed, lying } = inspectNeedle(n.entryAtRest, n.wayAtRest, Math.max(Math.min(n.depth, 0.0004), n.depth - n.spare));
@@ -985,6 +1044,8 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     dot.scale.setScalar(0.00018);
     addTo(dot, step);
     history.push(step);
+    // Taken out of a vein, the needle leaves a drop of blood, for the swab.
+    if (lying.some((id) => /tail-lateral-veins$/.test(id)) && options.circulating()) addBlood(n.entry, new THREE.Vector3().copy(toEye), 0.0007, 0.0006, step);
     lookIn = 0.3;
     report();
   };
@@ -1059,6 +1120,44 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     volume.refresh();
   };
 
+  /** A perfusion: the fluid takes the place of the blood, and the colour of the tissues clears. Each tissue pales in its own way. This shows what the published method describes, and the shades and the time are chosen for viewing. */
+  let perfusion: { t: number; recorded: boolean } | null = null;
+  const clearedColours = new Map<string, { from: THREE.Color; share: number; to: THREE.Color }>();
+  const clearingOf = (id: string): { share: number; to: string } | null => {
+    const name = id.replace('living:', '');
+    if (/^liver/.test(name)) return { share: 0.88, to: '#c9a78d' };
+    if (/^kidney|^renal/.test(name)) return { share: 0.72, to: '#d9baa8' };
+    if (/^spleen/.test(name)) return { share: 0.5, to: '#99686a' };
+    if (/^lung/.test(name)) return { share: 0.85, to: '#f0e4de' };
+    if (/^heart-/.test(name)) return { share: 0.55, to: '#cc9a90' };
+    if (/arter|veins?$|aorta|vena|portal|sinus|vessels/.test(name)) return { share: 0.85, to: '#efe3da' };
+    if (/^(cerebrum|striatum|brain-|cerebellum|medulla|olfactory)/.test(name)) return { share: 0.55, to: '#f3e7da' };
+    if (/^(small-intestine|caecum|colon|stomach)/.test(name)) return { share: 0.32, to: '#e3cdb8' };
+    if (/^muscle-|abdominal-wall/.test(name)) return { share: 0.3, to: '#d9ab9d' };
+    if (/^(nose|pinnae|forepaws|hindpaws|tail|lips)$/.test(name)) return { share: 0.5, to: '#f7ece6' };
+    return null;
+  };
+  const showClearing = (share: number) => {
+    for (const [id, mesh] of meshes) {
+      if (!(mesh instanceof THREE.Mesh) || !(mesh.material instanceof THREE.MeshStandardMaterial)) continue;
+      let colour = clearedColours.get(id);
+      if (!colour) {
+        const clearing = clearingOf(id);
+        if (!clearing) continue;
+        colour = { from: mesh.material.color.clone(), share: clearing.share, to: new THREE.Color(clearing.to) };
+        clearedColours.set(id, colour);
+      }
+      mesh.material.color.lerpColors(colour.from, colour.to, colour.share * share);
+    }
+  };
+  const endPerfusion = () => {
+    if (!perfusion) return;
+    perfusion = null;
+    showClearing(0);
+    clearedColours.clear();
+    BLOOD_MATERIAL.color.copy(BLOOD_COLOUR);
+  };
+
   const dishPlace = (id: string) => {
     let slot = dishSlots.get(id);
     if (slot === undefined) { slot = dishSlots.size; dishSlots.set(id, slot); }
@@ -1087,6 +1186,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     if (step.moved) shadingOf(step.moved.id)?.uLifeShift.value.copy(step.moved.before);
     if (step.tied) { if (!history.some((other) => other.tied === step.tied)) tied.delete(step.tied); options.onChange(); }
     if (step.cleaned) for (const spot of step.cleaned) { spot.mesh.visible = true; spots.push(spot); }
+    if (step.perfused) { endPerfusion(); options.onAlive(true); }
     if (step.drewFlap) step.drewFlap.flap.goal = step.drewFlap.before;
     if (step.madeFlaps) {
       for (const flap of step.madeFlaps) { const at = flaps.indexOf(flap); if (at >= 0) flaps.splice(at, 1); flap.sheet?.dispose(); flap.plate?.geometry.dispose(); }
@@ -1104,6 +1204,14 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     return middle.sub(hinge).applyAxisAngle(new THREE.Vector3().crossVectors(flap.up, flap.out).normalize(), flap.open * lidTurn(flap)).add(hinge);
   };
 
+  /** How far along the line of a structure a place lies, as a share of its length. */
+  const lineShareOf = (id: string, side: 1 | -1, rest: THREE.Vector3) => {
+    onStructure(id, side, 0);
+    const line = structureLines.get(`${id}|${side}`) ?? [];
+    let best = 0, bestAway = Infinity;
+    line.forEach((point, index) => { const away = point.distanceToSquared(rest); if (away < bestAway) { bestAway = away; best = index; } });
+    return line.length > 1 ? best / (line.length - 1) : 0;
+  };
   /** A place at some share of the length of a structure on one side of the animal, found from its surface. */
   const structureLines = new Map<string, THREE.Vector3[]>();
   const onStructure = (id: string, side: 1 | -1, at: number) => {
@@ -1113,11 +1221,23 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       line = [];
       const mesh = meshes.get(id);
       if (mesh instanceof THREE.Mesh) {
-        const position = mesh.geometry.getAttribute('position'), point = new THREE.Vector3(), near: THREE.Vector3[] = [];
+        const position = mesh.geometry.getAttribute('position'), point = new THREE.Vector3();
+        let near: THREE.Vector3[] = [];
         const paired = /arteries|veins|nerves|femoris|muscle-/.test(id);
         for (let index = 0; index < position.count; index++) {
           point.fromBufferAttribute(position, index).applyMatrix4(mesh.matrixWorld);
           if (!paired || point.clone().sub(origin).dot(lateral) * toLeft * side > 0) near.push(point.clone());
+        }
+        // The tail bends, so that towards its tip both of its side veins can lie on one side of the middle of the body. They are told apart as the two separate tubes they are.
+        if (id === 'living:tail-lateral-veins' && mesh.geometry.index) {
+          const parent = new Int32Array(position.count).map((_, index) => index);
+          const find = (at: number) => { let found = at; while (parent[found] !== found) { parent[found] = parent[parent[found]]; found = parent[found]; } return found; };
+          const corners = mesh.geometry.index;
+          for (let index = 0; index + 2 < corners.count; index += 3) { const first = find(corners.getX(index)); parent[find(corners.getX(index + 1))] = first; parent[find(corners.getX(index + 2))] = first; }
+          const tubes = new Map<number, THREE.Vector3[]>();
+          for (let index = 0; index < position.count; index++) { const root = find(index); if (!tubes.has(root)) tubes.set(root, []); tubes.get(root)!.push(point.fromBufferAttribute(position, index).applyMatrix4(mesh.matrixWorld).clone()); }
+          const leaning = (list: readonly THREE.Vector3[]) => list.reduce((sum, value) => sum + value.clone().sub(origin).dot(lateral), 0) / list.length * toLeft * side;
+          near = [...tubes.values()].filter((list) => list.length > 8).sort((a, b) => leaning(b) - leaning(a))[0] ?? near;
         }
         if (near.length) {
           // Along the longest way of what was found, from the end nearer the head.
@@ -1144,7 +1264,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     return line[low].clone().lerp(line[high], position - low);
   };
   const place = (spot: DemoPlace): THREE.Vector3 => {
-    if ('of' in spot) { const on = spot as OnStructure; return onStructure(on.of, on.side, on.at); }
+    if ('of' in spot) { const on = spot as OnStructure; return onStructure(on.of, on.side, on.at).addScaledVector(lateral, (on.aside ?? 0) / 1000); }
     const [mark, along, side, height = 0] = spot;
     const [chest, diaphragm, loin, sacrum] = body();
     const start = mark === 'chest' ? chest : mark === 'diaphragm' ? diaphragm : mark === 'loin' ? loin : sacrum;
@@ -1179,6 +1299,10 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     const found = options.seen().filter((item) => ids.includes(item.id)).sort((a, b) => b.pixels - a.pixels)[0];
     return found ? { x: found.x * view.x, y: found.y * view.y } : null;
   };
+  // The hands wait for the view to come to rest before they press, because a press lands where the pointer was on the frame before.
+  let viewMoved = true;
+  const viewWas = new THREE.Vector3();
+  const viewAtRest = (r: Robot) => !viewMoved || r.seconds > 4;
   const driveRobot = (delta: number) => {
     if (!robot) return;
     const r = robot;
@@ -1202,7 +1326,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
         } else if (r.stage === 1) {
           // Bring the tip to the start of the line.
           pointerTo(r.path[0]);
-          if (!swap && r.seconds > 0.45) {
+          if (!swap && r.seconds > 0.45 && viewAtRest(r)) {
             const channels = new Set(step.tiers.map(channelOfTier));
             pressHere((id) => channels.has(channelOfTier(tierOf(id))), true);
             r.stage = 2; r.seconds = 0;
@@ -1242,7 +1366,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
         if (r.stage === 0) { session.setTool(step.tool); r.path = [place(step.place)]; r.stage = 1; r.seconds = 0; }
         else if (r.stage === 1) {
           pointerTo(r.path[0]);
-          if (!swap && r.seconds > 0.6) {
+          if (!swap && r.seconds > 0.6 && viewAtRest(r)) {
             const named = new Set(step.ids);
             pressHere(step.ids.length ? (id) => named.has(id) : undefined);
             r.stage = 2; r.seconds = 0;
@@ -1252,13 +1376,14 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       case 'move':
         if (r.stage === 0) { session.setTool('forceps'); r.stage = 1; r.seconds = 0; }
         else if (r.stage === 1) {
-          if (swap || r.seconds < 0.5) break;
+          if (swap || r.seconds < 0.5 || !viewAtRest(r)) break;
           const point = seenPointOf(step.ids);
           if (!point) { advance(); break; }
           pointer.x = point.x; pointer.y = point.y; pointer.moved = true; pointer.inside = true; tipAsked = true;
           const named = new Set(step.ids);
           pressHere((id) => named.has(id));
           r.stage = 2; r.seconds = 0;
+          if (grasp) r.moved = true;
           if (grasp) r.ends = grasp.from.clone().addScaledVector(axis, step.along / 1000).addScaledVector(lateral, toLeft * step.side / 1000);
         } else {
           if (!grasp || !r.ends) { liftOff(); advance(); break; }
@@ -1266,6 +1391,17 @@ export function createLabSession(options: LabSessionOptions): LabSession {
           pointerTo(grasp.from.clone().lerp(r.ends, share * share * (3 - 2 * share)));
           if (share >= 1) { liftOff(); advance(); }
         }
+        break;
+      case 'perfuse': session.perfuse(); advance(); break;
+      case 'check':
+        // What was done is looked at. On a slow machine a hand can slip or a press find nothing, and a step that has not come out is done again before going on.
+        if (step.done(factsNow())) { r.moved = false; advance(); break; }
+        if (r.seconds < 1.5) { r.total -= delta; if (r.total <= 0) { r.total = 0.35; lookIn = Math.max(lookIn, 0.05); } break; }
+        if (step.tries <= 0) { r.moved = false; advance(); break; }
+        // What has already been moved aside stays aside.
+        r.steps = [...r.steps.slice(0, r.index), ...step.show.filter((part) => part.kind !== 'move' || !r.moved), { ...step, tries: step.tries - 1 }, ...r.steps.slice(r.index + 1)];
+        r.index--;
+        advance();
         break;
       case 'take':
         if (r.stage === 0) { session.setTool('forceps'); r.stage = 1; r.seconds = 0; }
@@ -1353,6 +1489,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     taken,
     tied,
     plates: () => flaps.flatMap((flap) => flap.plate && flap.plate.visible ? [flap.plate] : []),
+    opened: () => !!stroke || flaps.length > 0 || history.some((step) => step.sweeps.length > 0),
     setTool(next) {
       if (next === (swap?.next ?? tool)) return;
       if (stroke) endStroke();
@@ -1399,6 +1536,16 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       } else if (view === 'left-thigh' || view === 'femoral') {
         target.copy(nowOf(onStructure('living:femoral-arteries', 1, 0.5)));
         fromAbove(0.1);
+      } else if (view === 'heart') {
+        target.copy(nowOf(onStructure('living:heart-lv', 1, 0.6)));
+        fromAbove(0.1);
+      } else if (view === 'kidney') {
+        target.copy(nowOf(onStructure('living:kidney-right', 1, 0.5)));
+        fromAbove(0.1);
+      } else if (view === 'tail') {
+        // From the side of the tail on which the vein to be used lies, a little behind the place.
+        target.copy(nowOf(onStructure('living:tail-lateral-veins', 1, 0.72)));
+        position.copy(target).addScaledVector(lateral, toLeft * reach * 0.86).addScaledVector(above, reach * 0.42).addScaledVector(axis, reach * 0.16);
       } else if (view === 'spleen') {
         // Looking across from the middle of the body, under the edge of the wall.
         target.copy(origin).addScaledVector(axis, body()[1] + 0.005).addScaledVector(lateral, toLeft * 0.006).addScaledVector(dorsal, surface);
@@ -1410,14 +1557,6 @@ export function createLabSession(options: LabSessionOptions): LabSession {
         // From the side and well above, so that the instruments on the tray do not come between.
         if (view === 'left-close') target.addScaledVector(axis, 0.012);
         position.copy(target).addScaledVector(lateral, reach * (view === 'left-close' ? 0.9 : 0.74) * toLeft * (view === 'right' ? -1 : 1)).addScaledVector(above, reach * (view === 'left-close' ? 0.42 : 0.66));
-      }
-      // A tutorial lies over the right of the view: what is being worked on comes to the middle of what can be seen.
-      const covered = options.covered();
-      if (covered > 0) {
-        const look = target.clone().sub(position), side = new THREE.Vector3().crossVectors(look, above).normalize();
-        const wide = 2 * look.length() * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect;
-        position.addScaledVector(side, wide * covered / 2);
-        target.addScaledVector(side, wide * covered / 2);
       }
       return { position, target, up: above };
     },
@@ -1444,7 +1583,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       const step = history.pop();
       if (!step) return;
       undoStep(step);
-      if (step.sweeps.length || step.madeFlaps) { rebuild(); edgeStale = true; }
+      if (step.sweeps.length || step.madeFlaps) { rebuild(); edgeStale = true; options.onChange(); }
       drawGuide();
       report();
       changed = true;
@@ -1453,6 +1592,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       stroke = null; grasp = null; pull = null; pressed = false; carry = null; needle = null;
       letGo();
       openings.length = 0;
+      hideBlanch();
       while (history.length) undoStep(history.pop()!);
       removeSheets(flaps);
       for (const flap of flaps) { flap.sheet?.dispose(); flap.plate?.geometry.dispose(); }
@@ -1481,21 +1621,32 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       for (const step of exercise.steps) {
         steps.push({ kind: 'say', text: step.text }, ...step.show.filter((part) => part.kind === 'pose'));
         if (step.view && step.view !== lastView) { steps.push({ kind: 'view', view: step.view }); lastView = step.view; }
-        steps.push(...step.show.filter((part) => part.kind !== 'pose'));
+        steps.push(...step.show.filter((part) => part.kind !== 'pose'), { kind: 'check', show: step.show, done: step.done, tries: 2 });
       }
       steadyWanted = steady; steady = false;
-      robot = { steps, index: -1, seconds: 0, stage: 0, travelled: 0, total: 0, path: [], ends: null, flap: null, from: 0 };
+      robot = { steps, index: -1, seconds: 0, stage: 0, travelled: 0, total: 0, path: [], ends: null, flap: null, from: 0, moved: false };
       tipAsked = false; overBody = false;
       pointer.inside = true;
       options.onHover(null);
       report();
     },
-    showStep(steps, caption) {
+    showStep(steps, caption, done) {
       if (robot) return;
       steadyWanted = steady; steady = false;
-      robot = { steps: caption ? [{ kind: 'say', text: caption }, ...steps, { kind: 'wait', seconds: 0.4 }] : steps, index: -1, seconds: 0, stage: 0, travelled: 0, total: 0, path: [], ends: null, flap: null, from: 0 };
+      const checked: readonly RobotStep[] = done ? [...steps, { kind: 'check', show: steps, done, tries: 2 }] : steps;
+      robot = { steps: caption ? [{ kind: 'say', text: caption }, ...checked, { kind: 'wait', seconds: 0.4 }] : checked, index: -1, seconds: 0, stage: 0, travelled: 0, total: 0, path: [], ends: null, flap: null, from: 0, moved: false };
       pointer.inside = true;
       options.onHover(null);
+      report();
+    },
+    perfuse() {
+      if (perfusion) return;
+      if (!history.some((step) => step.action.kind === 'inject')) { options.onRefused('First the needle goes into the left ventricle.'); return; }
+      if (!history.some((step) => step.action.kind === 'cut' && step.action.structures.includes('living:heart-ra'))) { options.onRefused('First the right atrium is cut, as the way out.'); return; }
+      perfusion = { t: 0, recorded: false };
+      history.push({ action: { kind: 'perfuse', tool: 'syringe', at: secondsNow(), structures: ['living:heart-lv'] }, sweeps: [], objects: [], perfused: true });
+      // The heart stops, and nothing more bleeds.
+      options.onAlive(false);
       report();
     },
     stopDemonstration() {
@@ -1524,11 +1675,13 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       // What a pixel of the view measures at unit distance.
       CUT_SHARED.uCutPixel.value = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / Math.max(1, size().y);
       reading();
+      viewMoved = camera.position.distanceToSquared(viewWas) > 1e-10;
+      viewWas.copy(camera.position);
       // The blood spreads slowly until it has found its size.
       for (const spot of spots) {
         if (spot.size < spot.most) {
           spot.size = Math.min(spot.most, spot.size + spot.rate * delta);
-          spot.mesh.scale.set(spot.size, spot.size, Math.max(0.00006, spot.size * 0.22));
+          spot.mesh.scale.set(spot.size, spot.size, Math.max(0.00006, spot.size * 0.14));
           now = true;
         }
       }
@@ -1638,6 +1791,20 @@ export function createLabSession(options: LabSessionOptions): LabSession {
           options.onHover(null);
         }
       }
+      // The blood goes, slowly, and the tissues pale.
+      if (perfusion) {
+        perfusion.t = Math.min(1, perfusion.t + moment / PERFUSION_SECONDS);
+        const cleared = perfusion.t * perfusion.t * (3 - 2 * perfusion.t);
+        showClearing(cleared);
+        // What runs from the cuts turns clear.
+        BLOOD_MATERIAL.color.lerpColors(BLOOD_COLOUR, BLOOD_WASHED, cleared);
+        if (perfusion.t >= 1 && !perfusion.recorded) {
+          perfusion.recorded = true;
+          history.push({ action: { kind: 'cleared', tool: 'syringe', at: secondsNow(), structures: ['living:liver-median'] }, sweeps: [], objects: [] });
+          report();
+        }
+        now = true;
+      }
       // Held down, the needle goes on in, and when let go it comes straight out.
       if (needle) {
         if (needle.out === 0) {
@@ -1649,6 +1816,11 @@ export function createLabSession(options: LabSessionOptions): LabSession {
             surfaceRay.set(tip, new THREE.Vector3(0.31, 0.57, 0.76).normalize());
             surfaceRay.far = Infinity;
             needle.stopped = needle.stopsIn.some((mesh) => surfaceRay.intersectObject(mesh, false).length % 2 === 1);
+          }
+          // In the vein, the fluid runs up it, and the vein blanches along its length.
+          if (needle.stopped && needle.stopsIn.some((mesh) => mesh === meshes.get('living:tail-lateral-veins'))) {
+            needle.running = Math.min(1, needle.running + moment / 1.4);
+            showBlanch(needle, needle.running);
           }
         } else {
           needle.depth = Math.max(0, needle.depth - 0.012 * moment);
@@ -1726,8 +1898,9 @@ export function createLabSession(options: LabSessionOptions): LabSession {
         lookIn -= delta;
         if (lookIn <= 0 && !stroke && !grasp && !pull) {
           let grew = false;
-          // A vessel or a lymph node is small, and counts as seen with less of it in view.
-          for (const item of options.seen()) if (item.pixels >= (options.isVessel(item.id) || /lymph/.test(item.id) ? 8 : 24) && !seenEver.has(item.id)) { seenEver.add(item.id); grew = true; }
+          // What counts as seen is a share of the view, so that it does not depend on the size of the window. A vessel or a lymph node is small, and counts with less of it in view.
+          const view = size(), scale = view.x * view.y / (984 * 780);
+          for (const item of options.seen()) if (item.pixels >= Math.max(3, (options.isVessel(item.id) || /lymph/.test(item.id) ? 8 : 24) * scale) && !seenEver.has(item.id)) { seenEver.add(item.id); grew = true; }
           if (grew) report();
         }
       }
@@ -1746,7 +1919,9 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       controls.zoomToCursor = savedZoomToCursor;
       dom.style.cursor = '';
       clearGuide();
+      endPerfusion();
       for (const id of meshes.keys()) { const shading = shadingOf(id); if (shading) { shading.uLifeShift.value.set(0, 0, 0); shading.uLifeTaken.value = 0; shading.uLifeHeld.value = 0; shading.uLifeFlapOf.value.set(0, 0, 0); shading.uLifeStays.value = 0; } }
+      for (const [shading, amount] of stillTail) shading.uLifeAmount.value = amount;
       LIFE_SHARED.uLifeSplay.value = 0;
       LIFE_SHARED.uLifeLegOut.value.fill(0);
       LIFE_SHARED.uLifeHoldBy.value.set(0, 0, 0);
@@ -1767,6 +1942,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
   };
 
   // Cuts in each layer, what goes with which flap, and the hands take up their first instruments.
+  const stillTail: [SurfaceShadingUniforms, number][] = [];
   for (const [id, mesh] of meshes) {
     if (!(mesh instanceof THREE.Mesh)) continue;
     const shading = surfaceShadingOf(mesh.material as THREE.Material);
@@ -1778,6 +1954,8 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     const flags = flapFlags(tierOf(id));
     shading.uLifeFlapOf.value.set(flags[0], flags[1], flags[2]);
     shading.uLifeStays.value = staysWithTrunk(id, tierOf(id)) ? 1 : 0;
+    // An anaesthetised or dead animal does not move its tail, and it lies where the instruments look for it.
+    if (shading.uLifeKind.value === LIFE_KIND.tail) { stillTail.push([shading, shading.uLifeAmount.value]); shading.uLifeAmount.value = 0; }
   }
   CUT_SHARED.uCutToTexture.value.copy(volume.toTexture);
   CUT_SHARED.uCutOn.value = 1;

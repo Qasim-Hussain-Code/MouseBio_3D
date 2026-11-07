@@ -39,7 +39,7 @@
 .lab-dish li{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 0;font-size:11.5px}
 .lab-dish button{flex:none;padding:2px 6px;font-size:10.5px;color:#2f6f5e;background:#fff;border:1px solid #b7cdc4;border-radius:6px;cursor:pointer}
 .lab-hint{margin:-3px 0 0;font-size:10px;line-height:1.3;color:#7c8783}
-.lab-tutorial{position:absolute;top:10px;right:46px;z-index:6;display:flex;flex-direction:column;gap:7px;width:min(320px,42%);max-height:calc(100% - 20px);padding:10px 12px;overflow-y:auto;font-size:12px;line-height:1.36;color:#26302b;background:rgba(255,255,255,.95);border:1px solid #dfe4e1;border-radius:10px;box-shadow:0 4px 16px rgba(20,35,30,.1)}
+.lab-tutorial{display:flex;flex-direction:column;gap:7px;padding:8px 9px;font-size:12px;line-height:1.36;color:#26302b;background:#fbfcfb;border:1px solid #dfe4e1;border-radius:9px}
 .lab-tutorial header{display:flex;align-items:center;gap:4px}
 .lab-tutorial h2{flex:1;margin:0;font-size:14px;font-weight:650;letter-spacing:-.01em}
 .lab-tutorial h3{margin:0 0 4px;font-size:12.5px;font-weight:650;line-height:1.3}
@@ -57,7 +57,7 @@
 .lab-tutorial-why{color:#3f4d47}
 .lab-tutorial-care{color:#7c4b1e}
 .lab-tutorial-actions button{padding:6px 7px}
-.lab-tutorial-fold{position:absolute;top:10px;right:46px;z-index:6;max-width:300px;padding:6px 10px;font-size:11.5px;text-align:left;color:#26302b;background:rgba(255,255,255,.95);border:1px solid #dfe4e1;border-radius:8px;cursor:pointer}
+.lab-tutorial-fold{width:100%;padding:6px 10px;font-size:11.5px;text-align:left;color:#26302b;background:rgba(255,255,255,.95);border:1px solid #dfe4e1;border-radius:8px;cursor:pointer}
 .lab-tutorial-advice{padding:4px 7px;font-size:11.5px;color:#7a5216;background:#fdf6e6;border-radius:5px}
 .lab-chooser-group h3{margin:4px 0 3px;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#7c8783}
 .lab-chooser-group ul{display:flex;flex-direction:column;gap:3px;margin:0;padding:0;list-style:none}
@@ -68,3 +68,27 @@
 .lab-tutorial-needs strong{font-weight:600}
 .lab-tutorial-see{color:#3d5d52}
 .lab-tutorial-see strong{font-weight:600}
+/* At the bench nothing lies over the view. The panel stands beside it at every width, holds the card of a tutorial, and can be hidden. */
+.app-shell.workbench.mode-dissection{grid-template-columns:clamp(240px,30vw,320px) minmax(0,1fr)}
+.app-shell.workbench.mode-dissection.inspector-open{grid-template-columns:clamp(240px,30vw,320px) minmax(0,1fr) 320px}
+.app-shell.workbench.mode-dissection .navigator{position:relative;top:auto;left:auto;bottom:auto;display:block;width:auto;max-height:none;grid-column:1;grid-row:2;padding:14px 12px 0;overflow-y:auto;box-shadow:none;z-index:10}
+.app-shell.workbench.mode-dissection .workspace{grid-column:2;grid-row:2}
+.app-shell.workbench.mode-dissection.lab-panel-closed{grid-template-columns:0 minmax(0,1fr)}
+.app-shell.workbench.mode-dissection.lab-panel-closed .navigator{display:none}
+.lab-hide{flex:none;width:24px;height:22px;margin-left:2px;padding:0;font-size:15px;line-height:1;color:#5a6660;background:#fff;border:1px solid #dfe4e1;border-radius:6px;cursor:pointer}
+.lab-hide:hover{border-color:#9fb6ad}
+.lab-panel-show{position:absolute;left:10px;bottom:12px;z-index:6;padding:6px 10px;font-size:12px;color:#26302b;background:#fff;border:1px solid #cfd8d3;border-radius:7px;box-shadow:0 2px 8px rgba(20,35,30,.12);cursor:pointer}
+.lab-tools.is-compact{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+.lab-tools.is-compact button{justify-content:center;min-height:30px;padding:3px}
+.lab-tools.is-compact button span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.lab-more{display:flex;flex-direction:column;gap:6px}
+.lab-more>summary{margin-bottom:5px;font-size:11px;color:#5a6660;cursor:pointer}
+.lab-more>.lab-row{margin-bottom:6px}
+@media(max-width:900px){.app-shell.workbench.mode-dissection.inspector-open{grid-template-columns:clamp(240px,30vw,320px) minmax(0,1fr)}}
+@media(max-width:600px){
+ .app-shell.workbench.mode-dissection,.app-shell.workbench.mode-dissection.inspector-open{grid-template-columns:minmax(0,1fr);grid-template-rows:100px minmax(260px,50dvh) minmax(0,1fr)}
+ .app-shell.workbench.mode-dissection .workspace{grid-column:1;grid-row:2}
+ .app-shell.workbench.mode-dissection .navigator{grid-column:1;grid-row:3;border-right:0;border-top:1px solid #dfe3e1}
+ .app-shell.workbench.mode-dissection.lab-panel-closed{grid-template-columns:minmax(0,1fr);grid-template-rows:100px minmax(0,1fr) 0}
+}
+.app-shell.workbench.mode-dissection .workspace-toolbar,.app-shell.workbench.mode-dissection .structure-details-shortcut{display:none}

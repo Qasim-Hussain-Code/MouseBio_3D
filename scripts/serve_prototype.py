@@ -55,11 +55,13 @@ KNOWN_FILES = {"index.html", "THIRD_PARTY_NOTICES.txt", "atlas-volume/detail-ind
 for _directory, _asset in ATLAS_ASSETS.items():
     KNOWN_FILES.update({f"{_directory}/atlas.json", f"{_directory}/LICENSE.md", f"{_directory}/{_asset}"})
 KNOWN_FILES.update({MODEL_MANIFEST, MODEL_NOTICE, "scale-journey/nucleosome-5b1m.json", "scale-journey/hemoglobin-3hrw.json", "atlas-living/flow-paths.json", "scale-journey/molecule-ampa-receptor.json", "scale-journey/molecule-antibody.json", "scale-journey/molecule-aquaporin.json", "scale-journey/molecule-collagen.json", "scale-journey/molecule-complex-i.json", "scale-journey/molecule-crystallin.json", "scale-journey/molecule-fatty-acid-protein.json", "scale-journey/molecule-keratin.json", "scale-journey/molecule-ribosome.json", "scale-journey/molecule-thyroglobulin.json", "scale-journey/molecule-claudin.json", "scale-journey/molecule-immunoproteasome.json", "scale-journey/molecule-tip-link.json", "scale-journey/molecule-piezo2.json", "scale-journey/molecule-mhc-class-i.json", "scale-journey/molecule-insulin.json", "scale-journey/molecule-nutrient-importer.json", "scale-journey/molecule-potassium-channel.json", "scale-journey/molecule-proton-pump.json", "scale-journey/molecule-rhodopsin.json", "scale-journey/molecule-surfactant-protein.json", "scale-journey/molecule-thin-filament.json", "scale-journey/molecule-tubulin.json", "scale-journey/molecule-urinary-protein.json"})
+KNOWN_FILES.update({"atlas-living/mouse-icon-moving.webp", "atlas-living/mouse-icon.png", "atlas-living/mouse-moving.webp"})
 KNOWN_DIRECTORIES = {"models", "models/bondarenko-apical","assets", "scale-journey", *ATLAS_ASSETS, "atlas-volume/detail", "atlas-volume/native-010", "atlas-volume/sections"}
 CONTENT_TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
                  ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8",
                  ".txt": "text/plain; charset=utf-8", ".md": "text/plain; charset=utf-8",
-                 ".glb": "model/gltf-binary", ".ply": "application/octet-stream", ".bin": "application/octet-stream"}
+                 ".glb": "model/gltf-binary", ".ply": "application/octet-stream", ".bin": "application/octet-stream",
+                 ".png": "image/png", ".webp": "image/webp"}
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
        "img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; "
        "object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
