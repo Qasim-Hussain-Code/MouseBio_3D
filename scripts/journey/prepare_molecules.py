@@ -4,7 +4,7 @@ Usage: python -I scripts/journey/prepare_molecules.py <directory of mmCIF files>
 
 The source files are from https://files.rcsb.org/download/ and are not kept in this repository, and may be kept compressed beside their plain name. Where a molecule is whole only
 as a biological assembly the assembly file of the same entry is used, so that the copies are placed by the operators stated in
-the entry. Coordinates, chains and residue numbers are copied unchanged, rounded to 0.01 angstrom. Water, hydrogen and alternate
+the entry. Where a crystal holds more than one copy of a complex, "keep_chains" names the one that is kept. Coordinates, chains and residue numbers are copied unchanged, rounded to 0.01 angstrom. Water, hydrogen and alternate
 positions other than the first are left out, as are the groups named under "drop". Output is deterministic for the same sources.
 """
 import gzip
@@ -244,6 +244,19 @@ MOLECULES = {
         ],
         "focus": {"centre": "C"},
     },
+    "tip-link": {
+        "entry": "4AQ8", "file": "4AQ8.cif", "sha256": "f3292089d3609e3459e3310ecc9e07abf79fa40e422dbb9dda040bd9eb5babfa",
+        "title": "Crystal structure of mouse cadherin-23 EC1-2 and protocadherin-15 EC1-2, form II", "method": "X-ray diffraction", "resolutionAngstrom": 2.63, "organisms": "Mus musculus, recombinant",
+        "citation": "Sotomayor M, Weihofen WA, Gaudet R, Corey DP. Structure of a force-conveying cadherin bond essential for inner-ear mechanotransduction. Nature 2012;492(7427):128-32. doi:10.1038/nature11590",
+        "note": "Recombinant first two repeats of mouse cadherin 23 and protocadherin 15. The crystal holds two copies of the bound pair, and chains A and C, which lie in contact, are kept. It is not from the Digimouse specimen.",
+        "keep_chains": ["A", "C"],
+        "groups": [
+            {"name": "Calcium", "colour": "#6fb04c", "comps": ["CA"], "label": "Calcium"},
+            {"name": "Cadherin 23", "colour": "#7fa3c9", "chains": ["A"], "label": "Cadherin 23"},
+            {"name": "Protocadherin 15", "colour": "#74ab6d", "chains": ["C"], "label": "Protocadherin 15"},
+        ],
+        "focus": {"comp": "SER", "residue": 144, "chain": "A", "atom": "OG"},
+    },
     "immunoproteasome": {
         "entry": "3UNH", "file": "3UNH.cif", "sha256": "2467ca41e7f9ed31f3df39a74a83404d68e7f4a88798c5f8001ddce7a67af447",
         "title": "Mouse 20S immunoproteasome", "method": "X-ray diffraction", "resolutionAngstrom": 3.2, "organisms": "Mus musculus",
@@ -352,7 +365,8 @@ def prepare(key: str, spec: dict, source_dir: Path, target_dir: Path) -> str:
     all_rows = atom_rows(data.decode("utf-8"))
     first_model = all_rows[0]["pdbx_PDB_model_num"]
     drop = set(spec.get("drop", [])) | {"HOH", "DOD"}
-    rows = [row for row in all_rows if row["pdbx_PDB_model_num"] == first_model and row["auth_comp_id"] not in drop
+    keep = spec.get("keep_chains")
+    rows = [row for row in all_rows if row["pdbx_PDB_model_num"] == first_model and row["auth_comp_id"] not in drop and (not keep or row["auth_asym_id"] in keep)
             and row["type_symbol"].upper() not in ("H", "D") and row.get("label_alt_id", ".") in (".", "?", "A")]
     if spec.get("assembly"):
         # An ion on the axis of symmetry is the same ion in every copy of the chain, so it is kept once.

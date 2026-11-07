@@ -218,13 +218,13 @@ export interface FlowKind {
   readonly away: boolean;
 }
 
-const VEINOUS = /vein|vena|azygos/;
+const VEINOUS = /vein|vena|azygos|venous/;
 
 /** What moves along the lines of a structure, if anything does. A line of the tail vessels is the artery or the vein by its order. */
 export function flowKindOf(structure: Pick<Structure, 'id' | 'systems'>, lineIndex = 0): FlowKind | null {
   const id = structure.id.replace(/^living:/, '');
   if (id === 'veins') return null;
-  if (id === 'lymph-vessels') return { kind: 'lymph', oxygenated: false, away: false };
+  if (id === 'lymph-vessels' || id === 'meningeal-lymphatics') return { kind: 'lymph', oxygenated: false, away: false };
   if (id === 'tail-vessels') return lineIndex % 2 === 0 ? { kind: 'artery', oxygenated: true, away: true } : { kind: 'vein', oxygenated: false, away: false };
   // The lungs reverse the colours: the arteries carry blood to them, and the veins bring it back.
   if (id === 'pulmonary-arteries') return { kind: 'artery', oxygenated: false, away: true };

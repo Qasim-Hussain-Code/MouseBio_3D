@@ -1074,6 +1074,66 @@ export function buildProteasomes(): JourneyScene {
 }
 
 
+/** A bundle of stereocilia from the side: rows that rise like a staircase from the top of a hair cell, joined at their tips by fine links. */
+export function buildStereocilia(): JourneyScene {
+  const group = new THREE.Group();
+  group.add(body(3.4, '#eef3f2', 1.2));
+  const GROUND = -0.5, WIDE = 0.06, rods: Placement[] = [], insides: Placement[] = [], rootlets: THREE.Vector3[][] = [], links: THREE.Vector3[][] = [];
+  const HEIGHTS = [0.34, 0.56, 0.8], ROW = 0.17;
+  const xOf = (row: number) => -0.2 + row * ROW;
+  for (const [offset, dim] of [[-0.05, 0.86], [0, 1]] as const) {
+    for (let row = 0; row < 3; row++) {
+      const x = xOf(row) + offset, height = HEIGHTS[row];
+      rods.push(rect(x, GROUND + height / 2, WIDE, height, FACE + (dim === 1 ? 0.002 : 0), shade('#c9a78e', dim)));
+      insides.push(rect(x, GROUND + height / 2, WIDE * 0.62, height, FACE + (dim === 1 ? 0.003 : 0.001), shade('#a97f68', dim)));
+      if (dim === 1) rootlets.push(line(x, GROUND, x + 0.01, GROUND - 0.2, FACE + 0.002));
+    }
+  }
+  for (let row = 0; row < 2; row++) {
+    const from = V(xOf(row), GROUND + HEIGHTS[row], FACE + 0.004), to = V(xOf(row + 1) - WIDE / 2, GROUND + HEIGHTS[row] + 0.1, FACE + 0.004);
+    links.push([from, from.clone().lerp(to, 0.5), to]);
+  }
+  bars(group, [rect(0, GROUND - 0.6, 3.4, 1.2, FACE + 0.004)], '#d99b86');
+  bars(group, [rect(0, GROUND - 0.08, 3.4, 0.16, FACE + 0.005)], '#c78a76');
+  bars(group, rods, '#ffffff');
+  bars(group, insides, '#ffffff');
+  tubes(group, rootlets, 0.012, '#8d6352', 3);
+  tubes(group, links, 0.005, '#4a7a55', 3);
+  const chosen = links[0][1].clone();
+  return finish(group, V(0, -0.1, 0.2), chosen, [
+    { text: 'A tip link', at: chosen },
+    { text: 'The tallest row', at: V(xOf(2), GROUND + 0.5, FACE + 0.004) },
+    { text: 'Top of a hair cell', at: V(0.75, GROUND - 0.12, FACE + 0.006) },
+  ]);
+}
+
+/** One tip link: two strands of protocadherin 15 from below meet two of cadherin 23 from above, between the membranes of two stereocilia. */
+export function buildTipLink(): JourneyScene {
+  const group = new THREE.Group();
+  group.add(body(4, '#eef3f2', 1.2));
+  bars(group, [rect(-0.82, -0.62, 0.8, 1.6, FACE, new THREE.Color('#d6b59d')), rect(-0.82, -0.62, 0.76, 1.56, FACE + 0.001, new THREE.Color('#e8d3c0')), rect(0.92, 0.3, 0.8, 2.4, FACE, new THREE.Color('#d6b59d')), rect(0.92, 0.3, 0.76, 2.36, FACE + 0.001, new THREE.Color('#e8d3c0'))], '#ffffff');
+  const from = V(-0.42, 0.18, FACE + 0.003), to = V(0.52, 0.72, FACE + 0.003), middle = from.clone().lerp(to, 0.5);
+  const lower: Placement[] = [], upper: Placement[] = [];
+  const along = to.clone().sub(from), across = V(-along.y, along.x, 0).normalize();
+  const REPEATS = 22;
+  for (let strand = 0; strand < 2; strand++) {
+    for (let k = 0; k <= REPEATS; k++) {
+      const t = k / REPEATS, wind = Math.sin(t * Math.PI * 7 + strand * Math.PI) * 0.02;
+      const at = from.clone().lerp(to, t).addScaledVector(across, wind);
+      (t < 0.5 ? lower : upper).push(ball(at.x, at.y, 0.0145, FACE + 0.003 + 0.002 * Math.cos(t * Math.PI * 7 + strand * Math.PI)));
+    }
+  }
+  flats(group, lower, '#74ab6d', 1);
+  flats(group, upper, '#7fa3c9', 1);
+  return finish(group, V(0, 0.2, 0.2), middle, [
+    { text: 'Where the two cadherins meet', at: middle },
+    { text: 'Protocadherin 15', at: from.clone().lerp(to, 0.22) },
+    { text: 'Cadherin 23', at: from.clone().lerp(to, 0.8) },
+    { text: 'A lower stereocilium', at: V(-0.8, -0.1, FACE + 0.002) },
+    { text: 'The next stereocilium', at: V(0.92, 0.1, FACE + 0.002) },
+  ]);
+}
+
 export const ORGANELLE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = Object.freeze({
   'mitochondrion-close': buildMitochondrion, 'mitochondrion-fine': buildCrista,
   'sarcomere-close': buildSarcomeres, 'sarcomere-fine': buildFilaments,
@@ -1094,6 +1154,7 @@ export const ORGANELLE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = 
   'thyroglobulin-close': buildFollicleEdge, 'thyroglobulin-fine': buildColloid,
   'junction-close': buildCellJunction, 'junction-fine': buildJunctionStrands,
   'proteasome-close': buildLymphocyteRim, 'proteasome-fine': buildProteasomes,
+  'tiplink-close': buildStereocilia, 'tiplink-fine': buildTipLink,
 });
 
 /** A way on from the cells of a tissue. It starts at something the scene already names, or at a small mark drawn beside the nucleus. */
@@ -1130,6 +1191,7 @@ const WAYS: Readonly<Record<string, readonly Way[]>> = Object.freeze({
   'urothelium-cells': [{ tail: 'junction', text: 'A tight junction', near: [-0.08, 0.06], mark: 'dot' }, MITOCHONDRION([0.07, 0.05])],
   'tooth-cells': [{ tail: 'collagen', text: 'Collagen of the dentine', label: 'Dentine' }, MITOCHONDRION([0.07, 0.05])],
   'testis-cells': [{ tail: 'ribosome', text: 'Ribosomes of a forming sperm', label: 'Round spermatids', keep: true }, MITOCHONDRION([0.07, 0.05])],
+  'cochlea-cells': [{ tail: 'tiplink', text: 'A bundle of stereocilia', label: 'Stereocilia' }, MITOCHONDRION([0.07, 0.05])],
   'membrane-cells': [{ tail: 'junction', text: 'A tight junction', near: [-0.08, 0.05], mark: 'dot' }, MITOCHONDRION([0.07, 0.04])],
   bacterium: [{ tail: 'importer', text: 'A nutrient importer in the outer membrane', label: 'Outer membrane, wall and inner membrane', keep: true }],
 });

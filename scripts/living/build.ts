@@ -383,7 +383,7 @@ const musclePartition = partitionMuscles(grid, (i) => tissues[i] === TRACED.musc
 log('muscles', [...musclePartition.counts].join(','));
 const muscleScanSurfaces = new Map<number, Surface>();
 const flowLines: ReturnType<typeof flowLinesOf> = [];
-const carriesFlow = (id: string, systems: readonly string[]) => id === 'living:lymph-vessels' || systems.includes('arterial-venous') || (systems.includes('nervous') && /nerve|(?<!enteric-)plexus|cord|trunks|roots/.test(id));
+const carriesFlow = (id: string, systems: readonly string[]) => id === 'living:lymph-vessels' || id === 'living:meningeal-lymphatics' || systems.includes('arterial-venous') || (systems.includes('nervous') && /nerve|(?<!enteric-)plexus|cord|trunks|roots/.test(id));
 for (const structure of STRUCTURES) {
   const surface = keepUnderSkin(structure.id, structure.plan, structure.plan.kind === 'attachment' ? attachments.parts[structure.plan.part]
     : structure.plan.kind === 'internal' ? (LIMB_PARTS.has(structure.plan.part) ? deformSurface : deformAxial)(internal[structure.plan.part], posture)

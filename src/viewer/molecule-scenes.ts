@@ -31,11 +31,11 @@ export function isMoleculeData(value: unknown, key: string): value is MoleculeDa
   return data.group.every((index) => index >= 0 && index < data.groups.length) && data.element.every((index) => index >= 0 && index < data.elements.length) && data.chain.every((index) => index >= 0 && index < data.chains.length);
 }
 
-const VAN_DER_WAALS: Readonly<Record<string, number>> = Object.freeze({ C: 1.7, N: 1.55, O: 1.52, S: 1.8, P: 1.8, FE: 1.5, K: 2.75, MG: 1.73, ZN: 1.39, CL: 1.75, F: 1.47, I: 1.98, SE: 1.9 });
-const ELEMENT_COLOUR: Readonly<Record<string, string>> = Object.freeze({ C: '#6e6e6e', N: '#3a55d9', O: '#d9382e', S: '#dcb82d', P: '#e07f20', FE: '#d9731f', K: '#a05ad9', MG: '#6fb04c', ZN: '#8c8ca8', CL: '#3fb34f', F: '#78c8c8', I: '#7b3fb3', SE: '#d99a2e' });
-const ELEMENT_NAME: Readonly<Record<string, string>> = Object.freeze({ N: 'Nitrogen', O: 'Oxygen', S: 'Sulfur', P: 'Phosphorus', FE: 'Iron', K: 'Potassium', MG: 'Magnesium', ZN: 'Zinc', CL: 'Chlorine', F: 'Fluorine', I: 'Iodine', SE: 'Selenium' });
+const VAN_DER_WAALS: Readonly<Record<string, number>> = Object.freeze({ C: 1.7, N: 1.55, O: 1.52, S: 1.8, P: 1.8, FE: 1.5, K: 2.75, MG: 1.73, ZN: 1.39, CL: 1.75, F: 1.47, I: 1.98, SE: 1.9, CA: 2.31 });
+const ELEMENT_COLOUR: Readonly<Record<string, string>> = Object.freeze({ C: '#6e6e6e', N: '#3a55d9', O: '#d9382e', S: '#dcb82d', P: '#e07f20', FE: '#d9731f', K: '#a05ad9', MG: '#6fb04c', ZN: '#8c8ca8', CL: '#3fb34f', F: '#78c8c8', I: '#7b3fb3', SE: '#d99a2e', CA: '#6fb04c' });
+const ELEMENT_NAME: Readonly<Record<string, string>> = Object.freeze({ N: 'Nitrogen', O: 'Oxygen', S: 'Sulfur', P: 'Phosphorus', FE: 'Iron', K: 'Potassium', MG: 'Magnesium', ZN: 'Zinc', CL: 'Chlorine', F: 'Fluorine', I: 'Iodine', SE: 'Selenium', CA: 'Calcium' });
 /** Atoms that hold on to their neighbours by longer bonds than carbon does, drawn larger. */
-const LONG_BONDED: ReadonlySet<string> = new Set(['FE', 'K', 'MG', 'ZN', 'I', 'SE']);
+const LONG_BONDED: ReadonlySet<string> = new Set(['FE', 'K', 'MG', 'ZN', 'I', 'SE', 'CA']);
 
 const at = (data: MoleculeData, index: number) => V(data.x[index], data.y[index], data.z[index]);
 

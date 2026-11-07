@@ -1929,6 +1929,26 @@
         "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-immunoproteasome.json. Water, hydrogen and alternate positions are left out."
       },
       "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-4aq8-sotomayor2012",
+      "title": "Crystal structure of mouse cadherin-23 EC1-2 and protocadherin-15 EC1-2, form II",
+      "landingPage": "https://www.rcsb.org/structure/4AQ8",
+      "publication": {
+        "year": 2012,
+        "authors": [
+          "Sotomayor M",
+          "Weihofen WA",
+          "Gaudet R",
+          "Corey DP"
+        ],
+        "series": "Nature 2012;492(7427):128-32, doi:10.1038/nature11590"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-tip-link.json. Water, hydrogen and alternate positions are left out, and one of the two copies in the crystal is kept."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
     }
   ]
 }

@@ -455,7 +455,7 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
 
   // Whisker groups, after Cook figure 5. Mystacial rows lie on the side of the snout and sweep backwards and out.
   const rng = random(19650607);
-  const whiskers: Surface[] = [];
+  const whiskers: Surface[] = [], follicles: Surface[] = [];
   for (const side of [-1, 1] as const) {
     for (let row = 0; row < 5; row++) for (let column = 0; column < 7; column++) {
       if ((row === 0 || row === 4) && column > 4) continue;
@@ -466,6 +466,9 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
       const direction = unit([side * (0.72 + rng() * 0.08), 0.42 + column * 0.07 + rng() * 0.06, spreadUp + 0.2]);
       const len = 62 + column * 20 + rng() * 16;
       whiskers.push(hair(root, direction, [side * -0.08, 0.2, -0.05 - spreadUp * 0.12], len, 0.4 + column * 0.04));
+      // The follicle goes in under the root of the whisker, longer for the longer whiskers further back. Its size is an estimate.
+      const deep = 9 + column * 1.1, wide = 1.2 + column * 0.13;
+      follicles.push(tube([add(root, scale(direction, -1.5)), add(root, scale(direction, -deep * 0.55)), add(root, scale(direction, -deep))], [wide * 0.7, wide, wide * 0.75], 8));
     }
     // Superciliary, above the eye.
     const eye = side < 0 ? eyeLeft : eyeRight;
@@ -616,7 +619,37 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
     }
     return glands;
   };
+  // The brain in the labels of the source, to lay on it what lies on its surface.
+  const BRAIN = new Set([4, 5, 6, 7, 8, 10]), CEREBRUM = new Set([7]);
+  const labelAt = (x: number, y: number, z: number) => context.labels[voxelIndex(context.grid, Math.round(x), Math.round(y), Math.round(z))];
+  const topOf = (x: number, y: number, kinds: ReadonlySet<number>): number => { for (let z = context.grid.nz - 1; z >= 0; z--) if (kinds.has(labelAt(x, y, z))) return z; return -1; };
+  const brainFrom = (() => { for (let y = 0; y < context.grid.ny; y++) if (topOf(tip[0], y, CEREBRUM) >= 0) return y; return tip[1]; })();
+  const brainTo = (() => { for (let y = context.grid.ny - 1; y >= 0; y--) if (topOf(tip[0], y, CEREBRUM) >= 0) return y; return tip[1]; })();
+  const widthAt = (y: number, z: number): number => { let reach = 0; for (let dx = 0; dx < 80; dx++) if (BRAIN.has(labelAt(tip[0] + dx, y, z))) reach = dx; return reach; };
+  const SINUS_CLEARANCE = 2.2;
+  const sagittalLine = (offset: number, lift: number): Vec3[] => Array.from({ length: 9 }, (_, i) => { const y = brainFrom + 6 + (brainTo - brainFrom - 6) * i / 8; return [tip[0] + offset, y, topOf(tip[0], y, BRAIN) + lift]; });
+  const transverseLine = (side: -1 | 1, ahead: number): Vec3[] => {
+    const top = topOf(tip[0], brainTo, BRAIN), low = top - 16, wide = widthAt(brainTo, low);
+    return [[tip[0], brainTo + ahead, top + SINUS_CLEARANCE], [tip[0] + side * wide * 0.55, brainTo + ahead + 1, topOf(tip[0] + side * wide * 0.55, brainTo, BRAIN) + SINUS_CLEARANCE], [tip[0] + side * (wide + SINUS_CLEARANCE), brainTo + ahead + 3, low], [side < 0 ? 157 : 205, 262, 78]];
+  };
+  const sinuses = mergeSurfaces([route(sagittalLine(0, SINUS_CLEARANCE), 1.1, 1.7, 8), route(transverseLine(-1, 0), 1.6, 1.2, 8), route(transverseLine(1, 0), 1.6, 1.2, 8)]);
+  const meningealLymph = mergeSurfaces([-1, 1].flatMap((side) => [
+    route(sagittalLine(side * 2.6, SINUS_CLEARANCE), 0.35, 0.45, 5),
+    route([...transverseLine(side as -1 | 1, 2.4), side < 0 ? [160, 300, 66] : [202, 300, 66]], 0.45, 0.5, 5),
+  ]));
+  // The bones that the CT does not separate, set by what lies round them.
+  const vomer = mergeSurfaces(Array.from({ length: 6 }, (_, i) => { const y = 112 + i * 9, [, middle, , half] = nasalAt(y); return sphere([tip[0], y, middle - half - 1.5], [0.7, 6.5, 2.4], 8, 12); }));
+  const olfactoryFront = (() => { for (let y = 0; y < context.grid.ny; y++) if (topOf(tip[0] - 4, y, new Set([6])) >= 0 || topOf(tip[0] + 4, y, new Set([6])) >= 0) return y; return tip[1]; })();
+  const olfactoryMiddle = Math.max(topOf(tip[0] - 4, olfactoryFront + 6, new Set([6])), topOf(tip[0] + 4, olfactoryFront + 6, new Set([6]))) - 15;
+  const ethmoid = mergeSurfaces([sphere([tip[0], olfactoryFront - 1, olfactoryMiddle], [8, 0.9, 8], 10, 14), sphere([tip[0], olfactoryFront - 8, olfactoryMiddle - 1.5], [0.6, 7, 3.5], 8, 12)]);
+  const lacrimal = mergeSurfaces([eyeLeft, eyeRight].map((eye) => sphere(add(eye, [0, -eyeRadius * 1.22, -1]), [1.5, 1.1, 2.4], 8, 10)));
   const parts: Record<AttachmentPart, Surface> = {
+    'whisker-follicles': moved(mergeSurfaces(follicles), head),
+    'dural-venous-sinuses': moved(sinuses, head),
+    'meningeal-lymphatics': moved(meningealLymph, head),
+    'bone-vomer': moved(vomer, head),
+    'bone-ethmoid': moved(ethmoid, head),
+    'bone-lacrimal': moved(lacrimal, head),
     'articular-cartilage': jointCaps,
     menisci: mergeSurfaces([...kneeCrescents(joints.hipR, joints.kneeR, joints.ankleR), ...kneeCrescents(joints.hipL, joints.kneeL, joints.ankleL)]),
     'patellar-tendons': mergeSurfaces([patellarTendon(joints.hipR, joints.kneeR, joints.ankleR), patellarTendon(joints.hipL, joints.kneeL, joints.ankleL)]),

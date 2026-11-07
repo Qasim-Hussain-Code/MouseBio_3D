@@ -919,6 +919,84 @@ export function buildBloodCells(): JourneyScene {
   ]), carried(redMesh, 0, -1.2, 1.2, 0.05), carried(rimMesh, 0, -1.2, 1.2, 0.05)), [{ tail: 'blood', text: 'Red cell', at: way }]);
 }
 
+/** The cochlea cut across: turns of a spiral canal round a central core, each with three chambers of fluid and the organ of Corti on a thin membrane. */
+export function buildCochleaBlock(): JourneyScene {
+  const rng = random(20100712), group = new THREE.Group();
+  group.add(body(0.99, '#e6ddc8'));
+  const canals = [{ x: 0.24, y: -0.2, r: 0.21, side: 1 }, { x: 0.22, y: 0.22, r: 0.16, side: 1 }, { x: -0.26, y: -0.14, r: 0.18, side: -1 }, { x: -0.25, y: 0.25, r: 0.13, side: -1 }];
+  const fluid: Placement[] = [], middle: Placement[] = [], stria: Placement[] = [], organs: Placement[] = [], ganglion: Placement[] = [], membranes: THREE.Vector3[][] = [];
+  for (const { x, y, r, side } of canals) {
+    fluid.push(disc(x, y, r, r));
+    middle.push(disc(x + side * r * 0.42, y + r * 0.2, r * 0.5, r * 0.3, FACE + 0.001));
+    stria.push(disc(x + side * r * 0.9, y + r * 0.2, r * 0.09, r * 0.27, FACE + 0.002));
+    organs.push(disc(x + side * r * 0.32, y - r * 0.05, r * 0.24, r * 0.09, FACE + 0.003));
+    membranes.push([V(x - side * r * 0.3, y - r * 0.13, FACE + 0.003), V(x + side * r * 0.3, y - r * 0.15, FACE + 0.003), V(x + side * r * 0.96, y - r * 0.12, FACE + 0.003)]);
+    membranes.push([V(x - side * r * 0.3, y - r * 0.05, FACE + 0.003), V(x + side * r * 0.2, y + r * 0.27, FACE + 0.003), V(x + side * r * 0.86, y + r * 0.5, FACE + 0.003)]);
+    for (let k = 0; k < 26; k++) ganglion.push(disc(x - side * r * (1.08 + rng() * 0.2), y + (rng() - 0.5) * r * 1.3, 0.0065, 0.0065, FACE + 0.002, shade('#a58fa9', 0.88 + rng() * 0.24)));
+  }
+  discs(group, fluid, '#eef3f2', 4);
+  discs(group, middle, '#d8ece6', 3);
+  discs(group, stria, '#b8605a', 2);
+  discs(group, organs, '#d99b86', 3);
+  discs(group, ganglion, '#ffffff', 1);
+  lines(group, membranes, 0.0028, '#a58f78', 3);
+  const organ = organs[0].position;
+  return finish(group, V(0, 0, 0.2), V(organ.x, organ.y, 0.51), [
+    { text: 'Organ of Corti', at: V(organ.x, organ.y, 0.51) },
+    { text: 'Middle chamber of the canal', at: middle[1].position },
+    { text: 'Fluid of the outer chambers', at: V(canals[0].x, canals[0].y - canals[0].r * 0.6, 0.51) },
+    { text: 'Spiral ganglion', at: ganglion[4].position },
+    { text: 'Bone', at: V(0, -0.44, 0.51) },
+  ]);
+}
+
+/** The organ of Corti cut across: a row of inner hair cells and three of outer hair cells, under a tectorial membrane and among supporting cells. */
+export function buildCochleaCells(): JourneyScene {
+  const rng = random(20100713), group = new THREE.Group();
+  group.add(body(2.4, '#eef3f2', 1.2));
+  band(group, -1.2, -0.45, '#e9e2d2', 2.4, 1.2, 0.5015);
+  band(group, -0.45, -0.425, '#a58f78', 2.4, 1.2, 0.5025);
+  const support: Placement[] = [], hairCells: Placement[] = [], nuclei: Placement[] = [], tufts: THREE.Vector3[][] = [], nerves: THREE.Vector3[][] = [], pillars: THREE.Vector3[][] = [];
+  const hair = (x: number, tilt: number, count: number, height: number) => {
+    for (let k = 0; k < count; k++) { const from = x + (k - (count - 1) / 2) * 0.016; tufts.push([V(from, 0.15, FACE + 0.005), V(from + tilt * height * 0.5, 0.15 + height * 0.5, FACE + 0.005), V(from + tilt * height, 0.15 + height - k * 0.002, FACE + 0.005)]); }
+  };
+  // Supporting cells either side of the hair cells, to the edges of the view.
+  for (let x = -1.1; x < -0.42; x += 0.13) support.push(disc(x, -0.26 + rng() * 0.03, 0.075, 0.17, FACE, shade('#e8cdb8', 0.94 + rng() * 0.1)));
+  for (let x = 0.58; x < 1.2; x += 0.13) support.push(disc(x, -0.18 + 0.05 * Math.sin(x * 4) + rng() * 0.02, 0.075, 0.25, FACE, shade('#ecd8c6', 0.94 + rng() * 0.1)));
+  // Deiters cells carry the outer hair cells.
+  const OUTER = [0.17, 0.3, 0.43];
+  for (const x of OUTER) support.push(disc(x, -0.31, 0.062, 0.115, FACE, shade('#e8cdb8', 0.94 + rng() * 0.1)));
+  support.push(disc(-0.34, -0.31, 0.07, 0.11, FACE, shade('#e8cdb8', 0.94 + rng() * 0.1)));
+  const focus = V(-0.3, -0.05, FACE + 0.004);
+  hairCells.push(disc(-0.3, -0.02, 0.078, 0.17, FACE + 0.002));
+  nuclei.push(disc(focus.x, focus.y, 0.042, 0.042, focus.z));
+  hair(-0.3, 0.05, 4, 0.1);
+  for (const x of OUTER) {
+    hairCells.push(disc(x, -0.03, 0.05, 0.17, FACE + 0.002));
+    nuclei.push(disc(x, -0.13, 0.034, 0.034, FACE + 0.004));
+    hair(x, 0.1, 3, 0.13);
+    nerves.push([V(x, -0.2, FACE + 0.003), V(x - 0.12, -0.36, FACE + 0.003), V(-0.06, -0.41, FACE + 0.003), V(-0.5, -0.41, FACE + 0.003), V(-1.2, -0.47, FACE + 0.003)]);
+  }
+  for (let k = 0; k < 5; k++) nerves.push([V(-0.32 + k * 0.012, -0.19, FACE + 0.003), V(-0.36, -0.34, FACE + 0.003), V(-0.5, -0.43 - k * 0.006, FACE + 0.003), V(-1.2, -0.5 - k * 0.012, FACE + 0.003)]);
+  // The pillars lean together over a tunnel between the two kinds of hair cell.
+  pillars.push([V(-0.17, -0.42, FACE + 0.001), V(-0.1, -0.12, FACE + 0.001), V(-0.03, 0.15, FACE + 0.001)], [V(0.09, -0.42, FACE + 0.001), V(0.03, -0.12, FACE + 0.001), V(-0.03, 0.15, FACE + 0.001)]);
+  discs(group, support, '#ffffff', 3);
+  lines(group, pillars, 0.022, '#d7c0a8', 5);
+  discs(group, hairCells, '#d99b86', 3);
+  discs(group, nuclei, NUCLEUS_COLOUR, 3);
+  lines(group, tufts, 0.0045, '#7a5a4c', 3);
+  lines(group, nerves, 0.006, '#d9b13f', 4);
+  discs(group, [disc(0.02, 0.35, 0.62, 0.05, FACE + 0.006)], '#c9dce4', 4);
+  return finish(group, V(0, 0, 0.2), focus, [
+    { text: 'Nucleus of an inner hair cell', at: focus },
+    { text: 'Outer hair cells', at: V(0.3, 0.02, FACE + 0.005) },
+    { text: 'Stereocilia', at: V(0.3, 0.21, FACE + 0.006) },
+    { text: 'Tectorial membrane', at: V(0.1, 0.36, FACE + 0.007) },
+    { text: 'Basilar membrane', at: V(0.75, -0.435, FACE + 0.004) },
+    { text: 'Nerve fibres', at: V(-0.75, -0.46, FACE + 0.005) },
+  ]);
+}
+
 export const MORE_TISSUE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = Object.freeze({
   'cartilage-block': buildCartilageBlock, 'cartilage-cells': buildCartilageCells,
   'tendon-block': buildTendonBlock, 'tendon-cells': buildTendonCells,
@@ -937,4 +1015,5 @@ export const MORE_TISSUE_BUILDERS: Readonly<Record<string, () => JourneyScene>> 
   'tooth-block': buildToothBlock, 'tooth-cells': buildToothCells,
   'testis-block': buildTestisBlock, 'testis-cells': buildTestisCells,
   'blood-block': buildBloodBlock, 'blood-cells': buildBloodCells,
+  'cochlea-block': buildCochleaBlock, 'cochlea-cells': buildCochleaCells,
 });

@@ -139,16 +139,17 @@ export const JOURNEY_NARROWEST = JOURNEY_LEVELS[JOURNEY_LEVELS.length - 1].endMe
 
 /** The tissues that a zoom can start from. Every route joins the shared levels at the cell nucleus. */
 export type JourneyTissue = 'skin' | 'muscle' | 'nerve' | 'artery' | 'vein' | 'bone' | 'fat' | 'liver' | 'kidney' | 'lung' | 'gut' | 'heart' | 'brain'
-  | 'cartilage' | 'tendon' | 'membrane' | 'gland' | 'endocrine' | 'thyroid' | 'lymphoid' | 'colon' | 'stomach' | 'urothelium' | 'airway' | 'retina' | 'cornea' | 'lens' | 'tooth' | 'testis' | 'blood';
+  | 'cartilage' | 'tendon' | 'membrane' | 'gland' | 'endocrine' | 'thyroid' | 'lymphoid' | 'colon' | 'stomach' | 'urothelium' | 'airway' | 'retina' | 'cornea' | 'lens' | 'tooth' | 'testis' | 'blood' | 'cochlea';
 
 /** Where a zoom goes below the cells of a tissue. A cell nucleus unless the pointer chooses another way. */
-export type JourneyTail = 'nucleus' | 'blood' | 'microbiota' | 'importer' | 'mitochondrion' | 'sarcomere' | 'collagen' | 'synapse' | 'axon' | 'antibody' | 'droplet' | 'disc' | 'crystallin' | 'water' | 'secretion' | 'surfactant' | 'cilium' | 'pump' | 'keratin' | 'ribosome' | 'thyroglobulin' | 'junction' | 'proteasome';
+export type JourneyTail = 'nucleus' | 'blood' | 'microbiota' | 'importer' | 'mitochondrion' | 'sarcomere' | 'collagen' | 'synapse' | 'axon' | 'antibody' | 'droplet' | 'disc' | 'crystallin' | 'water' | 'secretion' | 'surfactant' | 'cilium' | 'pump' | 'keratin' | 'ribosome' | 'thyroglobulin' | 'junction' | 'proteasome' | 'tiplink';
 
 const SHARED_FROM = JOURNEY_LEVELS.findIndex((level) => level.id === 'nucleus');
 const SHARED = JOURNEY_LEVELS.slice(SHARED_FROM);
 const block = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 1.6e-3, startMetres: 3.4e-3, endMetres: 1.6e-4, evidence: 'simulated', caption: `${caption} Sizes and counts are estimates.`, basis });
 const cells = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 7e-5, startMetres: 3e-4, endMetres: 5.5e-6, evidence: 'simulated', caption: `${caption} Sizes, shapes and positions are estimates.`, basis });
 
+const SCHWANDER = 'Schwander M, Kachar B, Muller U. Review series: The cell biology of hearing. J Cell Biol 2010;190(1):9-20. doi:10.1083/jcb.201001138';
 const ROUTES: Readonly<Record<Exclude<JourneyTissue, 'skin'>, { readonly label: string; readonly levels: readonly JourneyLevel[] }>> = {
   muscle: { label: 'muscle', levels: [
     block('muscle-block', 'A block of muscle', 'Muscle fibres of different types, cut across, bundled into fascicles by connective tissue. Capillaries lie between the fibres, and a small artery, a vein and a motor nerve run between the fascicles.', [BURKHOLDER]),
@@ -258,6 +259,10 @@ const ROUTES: Readonly<Record<Exclude<JourneyTissue, 'skin'>, { readonly label: 
     block('testis-block', 'A block of testis', 'Seminiferous tubules cut across, with hormone-making Leydig cells between them.', [GRISWOLD]),
     cells('testis-cells', 'Forming sperm', 'From the edge of a tubule towards its middle: spermatogonia, spermatocytes, round spermatids and the tails of forming sperm, among Sertoli cells, in the sequence that Griswold reviews.', [GRISWOLD]),
   ] },
+  cochlea: { label: 'inner ear', levels: [
+    block('cochlea-block', 'The cochlea', 'Turns of a spiral canal round a central core of bone and nerve, each cut across to show its chambers of fluid and the organ of Corti on a thin membrane. The canals of balance also have hair cells, and are not drawn here.', [SCHWANDER]),
+    cells('cochlea-cells', 'Hair cells', 'The organ of Corti cut across: a row of inner hair cells and three of outer hair cells among supporting cells, with stereocilia below a tectorial membrane and nerve fibres beneath. Schwander et al. review how hair cells turn the vibrations of sound into electrical signals.', [SCHWANDER]),
+  ] },
   blood: { label: 'blood', levels: [
     block('blood-block', 'Blood in a vessel', 'A vessel cut across and filled with blood.', [OCONNELL]),
     cells('blood-cells', 'Blood cells', "Red cells, a white cell and platelets in plasma. O'Connell et al. note that mice have smaller and more numerous red cells than humans and a higher share of lymphocytes among the white cells. Point at a red cell to go on into hemoglobin.", [OCONNELL]),
@@ -298,6 +303,8 @@ const FORTE = 'Forte JG, Zhu L. Apical recycling of the gastric parietal cell H,
 const GLENWRIGHT = 'Glenwright AJ, Pothula KR, Bhamidimarri SP, et al. Structural basis for nutrient acquisition by dominant members of the human gut microbiota. Nature 2017;541(7637):407-411. doi:10.1038/nature20828';
 const ELDIRANY = 'Eldirany SA, Ho M, Hinbest AJ, Lomakin IB, Bunick CG. Human keratin 1/10-1B tetramer structures reveal a knob-pocket mechanism in intermediate filament assembly. EMBO J 2019;38(11):e100741. doi:10.15252/embj.2018100741';
 
+const SOTOMAYOR = 'Sotomayor M, Weihofen WA, Gaudet R, Corey DP. Structure of a force-conveying cadherin bond essential for inner-ear mechanotransduction. Nature 2012;492(7427):128-32. doi:10.1038/nature11590';
+const KAZMIERCZAK = 'Kazmierczak P, Sakaguchi H, Tokita J, et al. Cadherin 23 and protocadherin 15 interact to form tip-link filaments in sensory hair cells. Nature 2007;449(7158):87-91. doi:10.1038/nature06091';
 const SUZUKI = 'Suzuki H, Nishizawa T, Tani K, et al. Crystal structure of a claudin provides insight into the architecture of tight junctions. Science 2014;344(6181):304-7. doi:10.1126/science.1248571';
 const TAMURA = 'Tamura A, Hayashi H, Imasato M, et al. Loss of claudin-15, but not claudin-2, causes Na+ deficiency and glucose malabsorption in mouse small intestine. Gastroenterology 2011;140(3):913-23. doi:10.1053/j.gastro.2010.08.006';
 const ACHARYA = 'Acharya P, Beckel J, Ruiz WG, et al. Distribution of the tight junction proteins ZO-1, occludin, and claudin-4, -8, and -12 in bladder epithelium. Am J Physiol Renal Physiol 2004;287(2):F305-18. doi:10.1152/ajprenal.00341.2003';
@@ -412,6 +419,11 @@ const MOLECULE_TAILS = {
     fineLevel('junction-fine', 'Strands of a tight junction', 'The face of a cell membrane at a tight junction, with claudins in rows. Suzuki et al. describe claudins as the main part of these junctions, forming strands. The pattern of the strands is drawn as a net, and it is not measured here.', [SUZUKI]),
     ...moleculeLevels('claudin', 'One mouse claudin', `Every atom is at its measured position in a crystal at 2.4 angstrom resolution: Protein Data Bank entry 4P79, one recombinant claudin-15, with selenomethionine in place of methionine to solve the crystal. Tamura et al. find this claudin in the small intestine of the mouse. Other linings use other members of the family, such as claudin-4, -8 and -12 in the bladder in Acharya et al., and for them it stands for its family. ${NOT_THIS_MOUSE}`, 'Atoms inside a claudin', 'Atoms at the middle of the chain and what lies against them.', [SUZUKI, TAMURA, ACHARYA]),
   ],
+  tiplink: [
+    closeLevel('tiplink-close', 'A bundle of stereocilia', 'Rows of stereocilia that rise like a staircase from the top of a hair cell, joined at their tips by fine links. Kazmierczak et al. describe tip-link filaments between stereocilia, near which force is turned into an electrical signal.', [KAZMIERCZAK, SCHWANDER]),
+    fineLevel('tiplink-fine', 'One tip link', 'Kazmierczak et al. find cadherin 23 in the upper part of a tip link and protocadherin 15 in the lower, each as a pair, meeting at their ends. The repeats and the winding of the strands are drawn to suggest them.', [KAZMIERCZAK]),
+    ...moleculeLevels('tip-link', 'The bond of a tip link', `Every atom is at its measured position in a crystal at 2.63 angstrom resolution: Protein Data Bank entry 4AQ8, the first two repeats of cadherin 23 and of protocadherin 15, which Sotomayor et al. find overlapped and antiparallel, with calcium. The crystal holds two copies and this is one of them. These proteins are of the mouse and are recombinant. ${NOT_THIS_MOUSE}`, 'Atoms where they meet', 'Serine 144 of cadherin 23, where it lies against protocadherin 15, and what lies round it.', [SOTOMAYOR]),
+  ],
   proteasome: [
     closeLevel('proteasome-close', 'Cytoplasm of a lymphocyte', 'The thin rim of cytoplasm beside the large nucleus of a lymphocyte, with proteasomes scattered through it. Huber et al. describe how proteasomes shape the peptides that a cell presents to the immune system.', [HUBER]),
     fineLevel('proteasome-fine', 'Among proteasomes', 'Barrels of four rings, each about 15 nanometres long, among other contents of the cytoplasm.', [HUBER], 2.1e-8),
@@ -422,7 +434,7 @@ const MOLECULE_TAILS = {
 /** The way that a tissue's own molecule lies on, which playing takes from that tissue. A tissue with none goes to a cell nucleus. */
 const OWN_WAYS: Partial<Readonly<Record<JourneyTissue, JourneyTail>>> = Object.freeze({
   skin: 'keratin', muscle: 'sarcomere', heart: 'sarcomere', nerve: 'axon', artery: 'blood', vein: 'blood', blood: 'blood', bone: 'collagen', tendon: 'collagen', cartilage: 'collagen', cornea: 'collagen',
-  fat: 'droplet', liver: 'secretion', kidney: 'water', lung: 'surfactant', gut: 'microbiota', colon: 'microbiota', brain: 'synapse', lymphoid: 'antibody', retina: 'disc', lens: 'crystallin', airway: 'cilium', stomach: 'pump', thyroid: 'thyroglobulin', testis: 'ribosome', gland: 'ribosome', urothelium: 'junction', membrane: 'junction', tooth: 'collagen',
+  fat: 'droplet', liver: 'secretion', kidney: 'water', lung: 'surfactant', gut: 'microbiota', colon: 'microbiota', brain: 'synapse', lymphoid: 'antibody', retina: 'disc', lens: 'crystallin', airway: 'cilium', stomach: 'pump', cochlea: 'tiplink', thyroid: 'thyroglobulin', testis: 'ribosome', gland: 'ribosome', urothelium: 'junction', membrane: 'junction', tooth: 'collagen',
 });
 export const ownWayOf = (tissue: JourneyTissue): JourneyTail => OWN_WAYS[tissue] ?? 'nucleus';
 
@@ -469,6 +481,7 @@ const TAILS: Readonly<Record<Exclude<JourneyTail, 'nucleus'>, readonly JourneyLe
   thyroglobulin: [...MOLECULE_TAILS.thyroglobulin, ...FROM_ATOM],
   junction: [...MOLECULE_TAILS.junction, ...FROM_ATOM],
   proteasome: [...MOLECULE_TAILS.proteasome, ...FROM_ATOM],
+  tiplink: [...MOLECULE_TAILS.tiplink, ...FROM_ATOM],
 };
 
 /** The levels of the zoom that starts from a tissue and goes on by a given way. */
@@ -500,7 +513,7 @@ export function journeyTissueOf(structure: { readonly id: string; readonly name:
   if (id === 'peyers-patches') return 'lymphoid';
   if (id === 'meibomian-glands') return 'gland';
   if (id === 'vomeronasal-organs') return 'airway';
-  if (['skin', 'pinnae', 'tail', 'forepaws', 'hindpaws', 'claws', 'vibrissae', 'nose', 'lips', 'eyelids', 'openings', 'penis'].includes(id)) return 'skin';
+  if (['skin', 'pinnae', 'tail', 'forepaws', 'hindpaws', 'claws', 'vibrissae', 'whisker-follicles', 'nose', 'lips', 'eyelids', 'openings', 'penis'].includes(id)) return 'skin';
   if (['intervertebral-discs', 'xiphoid-cartilage', 'tracheal-rings'].includes(id)) return 'cartilage';
   if (id === 'calcaneal-tendons') return 'tendon';
   if (['pleura', 'peritoneum', 'pericardium', 'meninges'].includes(id)) return 'membrane';
@@ -510,11 +523,12 @@ export function journeyTissueOf(structure: { readonly id: string; readonly name:
   if (['corneas'].includes(id)) return 'cornea';
   if (['lenses'].includes(id)) return 'lens';
   if (['eyes', 'irises', 'retinas'].includes(id)) return 'retina';
-  if (['middle-ears', 'inner-ears'].includes(id)) return 'bone';
+  if (id === 'inner-ears') return 'cochlea';
+  if (id === 'middle-ears') return 'bone';
   if (id === 'thyroid') return 'thyroid';
   if (['adrenals', 'adrenal-medullae', 'parathyroids', 'pituitary', 'pineal'].includes(id)) return 'endocrine';
   if (id === 'spleen' || id === 'thymus' || id.endsWith('lymph-nodes') || id.endsWith('lymph-node')) return 'lymphoid';
-  if (id === 'lymph-vessels') return 'vein';
+  if (id === 'lymph-vessels' || id === 'meningeal-lymphatics' || id === 'dural-venous-sinuses') return 'vein';
   if (['caecum', 'colon'].includes(id)) return 'colon';
   if (id.startsWith('stomach-') || ['limiting-ridge', 'oesophagus'].includes(id)) return 'stomach';
   if (['bladder', 'bladder-lumen', 'ureters', 'renal-pelves'].includes(id)) return 'urothelium';

@@ -283,6 +283,10 @@ Protein Data Bank entry 7N4Y, atoms used by the zoom below the cells of a tissue
 Kim K, Kopylov M, Bobe D, Kelley K, Eng ET, Arvan P, Clarke OB. The structure of natively iodinated bovine thyroglobulin. Acta Crystallogr D Struct Biol 2021;77(Pt 11):1451-1459. doi:10.1107/S2059798321010056
 Natively iodinated thyroglobulin of the cow, as a dimer. It is not of the mouse.
 
+Protein Data Bank entry 4AQ8, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
+Sotomayor M, Weihofen WA, Gaudet R, Corey DP. Structure of a force-conveying cadherin bond essential for inner-ear mechanotransduction. Nature 2012;492(7427):128-32. doi:10.1038/nature11590
+Recombinant first two repeats of mouse cadherin 23 and protocadherin 15. The crystal holds two copies of the bound pair, and chains A and C, which lie in contact, are kept. It is not from the Digimouse specimen.
+
 Protein Data Bank entry 1JFF, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 Lowe J, Li H, Downing KH, Nogales E. Refined structure of alpha beta-tubulin at 3.5 A resolution. J Mol Biol 2001;313(5):1045-57. doi:10.1006/jmbi.2001.5077
 Tubulin of the cow, from flat sheets and not a microtubule, held with the drug taxol.

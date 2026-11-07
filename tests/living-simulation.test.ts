@@ -232,6 +232,10 @@ test('the tokens stay within their budget and wide vessels get the closest token
   assert.equal(tokens.count, total);
   assert.equal(tokens.mesh.frustumCulled, false);
   assert.equal(tokens.mesh.name, 'simulated-flow-tokens');
+  assert.deepEqual(flowKindOf({ id: 'living:meningeal-lymphatics', systems: ['lymphatic', 'immune'] }), { kind: 'lymph', oxygenated: false, away: false });
+  assert.equal(flowKindOf({ id: 'living:dural-venous-sinuses', systems: ['cardiovascular', 'arterial-venous'] })?.kind, 'vein');
+  assert.ok(density('living:dural-venous-sinuses') > 0, 'the sinuses carry tokens');
+  assert.ok(density('living:meningeal-lymphatics') > 0, 'the meningeal lymphatic vessels carry tokens');
   // Tokens leave with the structure that carries them, so that the skeleton alone has none.
   const carried = () => Array.from((tokens.mesh.geometry.getAttribute('aShown') as THREE.InstancedBufferAttribute).array);
   assert.ok(carried().every((value) => value === 1));

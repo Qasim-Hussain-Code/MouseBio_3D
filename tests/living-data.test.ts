@@ -130,7 +130,7 @@ test('every structure declares its evidence, its basis and, when simulated, says
     }
     if (structure.evidence === 'traced') assert.match(structure.description!, /[Tt]raced|isosurface|outer surface/, structure.id);
     if (structure.division) assert.match(structure.description!, /estimate/, structure.id);
-    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles|O'Connell|Fuller|Marques|Stuelsatz|Sakabe|Kochi|Rigaud|Shields|Oliviero|Dyment|Jilka|Sauter|Furness|Kimoto|Mauris/, reference);
+    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles|O'Connell|Fuller|Marques|Stuelsatz|Sakabe|Kochi|Rigaud|Shields|Oliviero|Dyment|Jilka|Sauter|Furness|Kimoto|Mauris|Ebara|Louveau/, reference);
   }
   assert.ok(counts.source >= 15 && counts.traced >= 5 && counts.simulated >= 30, JSON.stringify(counts));
 });
@@ -290,4 +290,27 @@ test('the joints, marrow and small parts lie where they are described, and say w
   near('meibomian-glands', ['eyes'], 0.6, 5);
   near('vomeronasal-organs', ['bone-premaxilla', 'bone-maxilla'], 1.2, 3);
   near('vomeronasal-organs', ['nasal-cavities'], 1, 3);
+});
+
+test('the follicles, sinuses, lymphatics and small bones of the head lie where they are described, and say what they are', () => {
+  for (const name of ['whisker-follicles', 'dural-venous-sinuses', 'meningeal-lymphatics', 'bone-vomer', 'bone-ethmoid', 'bone-lacrimal']) {
+    const structure = atlas.structures.find((item) => item.id === 'living:' + name)!;
+    assert.ok(structure, name);
+    assert.equal(structure.evidence, 'simulated', name);
+    assert.match(structure.description!, /^Simulated\./, name);
+    assert.match(structure.description!, /Not measured from this specimen\.$/, name);
+    assert.equal(structure.exterior, false, name);
+    assert.ok(structure.basis!.length > 0, name);
+  }
+  const near = (id: string, others: readonly string[], most: number, every = 7) => {
+    const targets = others.flatMap((other) => verticesOf('living:' + other));
+    const points = verticesOf('living:' + id);
+    for (let index = 0; index < points.length; index += every) assert.ok(nearestTo(points[index], targets) < most, id + ' vertex ' + index + ' is ' + nearestTo(points[index], targets).toFixed(2) + ' mm from ' + others.join());
+  };
+  near('whisker-follicles', ['muscle-mystacial', 'lips', 'skin'], 1.6, 23);
+  near('bone-vomer', ['nasal-cavities', 'bone-palatine', 'bone-maxilla'], 1.5, 5);
+  near('bone-ethmoid', ['olfactory', 'nasal-cavities', 'olfactory-nerves'], 1.5, 5);
+  near('bone-lacrimal', ['eyes', 'bone-maxilla', 'bone-frontal'], 1.5, 3);
+  near('dural-venous-sinuses', ['meninges', 'internal-jugular-veins', 'bone-occipital', 'bone-squamosal', 'bone-bulla'], 2, 7);
+  near('meningeal-lymphatics', ['dural-venous-sinuses', 'internal-jugular-veins'], 1.6, 11);
 });
