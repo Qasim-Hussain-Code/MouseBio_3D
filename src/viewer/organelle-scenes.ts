@@ -1134,6 +1134,109 @@ export function buildTipLink(): JourneyScene {
   ]);
 }
 
+/** A Merkel cell and the nerve ending against it, with small synapse-like contacts between them. */
+export function buildMerkelCell(): JourneyScene {
+  const rng = random(20140407), group = new THREE.Group();
+  group.add(body(3.4, '#e7c9ae', 1.2));
+  flats(group, [oval(-0.25, 0, 0.62, 0.5, 0, FACE + 0.001)], '#d48f7c', 5);
+  flats(group, [oval(-0.34, 0, 0.3, 0.26, 0, FACE + 0.002)], '#8d7a9e', 5);
+  flats(group, [oval(0.54, 0, 0.17, 0.5, 0, FACE + 0.001)], '#e3c25a', 4);
+  const granules: Placement[] = [];
+  for (let i = 0; i < 80; i++) { const y = (rng() - 0.5) * 0.76, x = 0.1 + rng() * 0.22; if (Math.hypot((x + 0.25) / 0.62, y / 0.5) < 0.96) granules.push(ball(x, y, 0.011, FACE + 0.003, shade('#6d4d48', 0.86 + rng() * 0.28))); }
+  flats(group, granules, '#ffffff', 0);
+  mitochondria(group, [{ x: 0.58, y: 0.2, length: 0.09, width: 0.03, angle: 1.4 }, { x: 0.52, y: -0.16, length: 0.1, width: 0.03, angle: 1.7 }], FACE + 0.003);
+  const spikes: Placement[] = [];
+  for (let i = 0; i < 40; i++) { const angle = 1.2 + 3.9 * i / 39, x = -0.25 + 0.62 * Math.cos(angle), y = 0.5 * Math.sin(angle); spikes.push({ position: V(x + 0.03 * Math.cos(angle), y + 0.03 * Math.sin(angle), FACE + 0.001), scale: V(0.05, 0.008, 0.002), rotation: new THREE.Quaternion().setFromAxisAngle(V(0, 0, 1), angle) }); }
+  bars(group, spikes, '#c9806c');
+  const chosen = V(-0.25 + 0.62 * Math.cos(1.2 + 3.9 * 0.2), 0.5 * Math.sin(1.2 + 3.9 * 0.2), FACE + 0.003);
+  flats(group, [ball(chosen.x, chosen.y, 0.012, chosen.z, new THREE.Color('#2f6f8f'))], '#ffffff', 1);
+  return finish(group, V(0, 0, 0.2), chosen, [
+    { text: 'Membrane of the Merkel cell', at: chosen },
+    { text: 'Nerve ending', at: V(0.56, -0.02, FACE + 0.004) },
+    { text: 'Nucleus', at: V(-0.34, 0, FACE + 0.003) },
+    { text: 'Dense granules near the nerve', at: V(0.2, 0.26, FACE + 0.004) },
+  ]);
+}
+
+/** The membrane of a Merkel cell seen from outside, with shallow domes of Piezo2 in it. */
+export function buildPiezoMembrane(): JourneyScene {
+  const rng = random(20190821), group = new THREE.Group();
+  group.add(body(4, '#dcc0ad', 1.2));
+  const heads: Placement[] = [];
+  for (let i = 0; i < 9000; i++) heads.push(ball((rng() - 0.5) * 3.9, (rng() - 0.5) * 3.9, 0.005, FACE + 0.001, shade('#cfb19c', 0.88 + rng() * 0.24)));
+  flats(group, heads, '#ffffff', 0);
+  const domes: Placement[] = [], blades: Placement[] = [], caps: Placement[] = [];
+  const dome = (x: number, y: number, turn: number) => {
+    domes.push(oval(x, y, 0.047, 0.047, 0, FACE + 0.003, shade('#b48f88', 0.92 + rng() * 0.16)));
+    for (let k = 0; k < 3; k++) { const angle = turn + k * 2.094; blades.push(oval(x + 0.03 * Math.cos(angle), y + 0.03 * Math.sin(angle), 0.027, 0.01, angle, FACE + 0.004, shade('#7fa3c9', 0.9 + rng() * 0.2))); }
+    caps.push(ball(x, y, 0.009, FACE + 0.005));
+  };
+  dome(0, 0, 0.4);
+  for (const { x, y } of packed(2, 0.3, 0.1, rng)) if (Math.hypot(x, y) > 0.16) dome(x, y, rng() * 6.28);
+  flats(group, domes, '#ffffff', 3);
+  flats(group, blades, '#ffffff', 2);
+  flats(group, caps, '#f28a2c', 1);
+  const chosen = V(0, 0, FACE + 0.006);
+  return finish(group, V(0, 0, 0.2), chosen, [
+    { text: 'One Piezo2, a dome in the membrane', at: chosen },
+    { text: 'One of its three blades', at: V(0.03 * Math.cos(0.4), 0.03 * Math.sin(0.4), FACE + 0.006) },
+    { text: 'Lipids of the membrane', at: V(0.16, 0.12, FACE + 0.002) },
+  ]);
+}
+
+/** The surface of a lymphocyte: many proteins stand on its membrane, among them those that hold out peptides. */
+export function buildCellSurfaceMhc(): JourneyScene {
+  const rng = random(19920814), group = new THREE.Group();
+  group.add(body(3.4, '#e9f0f0', 1.2));
+  bars(group, [rect(0, -1.1, 3.4, 1.4)], '#c9b6c9');
+  bars(group, [rect(0, -0.4, 3.4, 0.005, FACE + 0.001), rect(0, 0.42, 3.4, 0.005, FACE + 0.001)], '#8d7a9e');
+  // The next cell lies across a narrow space, as lymphocytes do when crowded.
+  bars(group, [rect(0, 1.42, 3.4, 2)], '#c9b6c9');
+  const stalks: Placement[] = [];
+  for (let i = 0; i < 420; i++) { const x = (rng() - 0.5) * 3.3, tall = 0.006 + rng() * 0.014, top = rng() < 0.5; stalks.push(rect(x, top ? 0.42 - tall / 2 : -0.398 + tall / 2, 0.003, tall, FACE + 0.001, shade('#8d7a9e', 0.9 + rng() * 0.2))); }
+  bars(group, stalks, '#ffffff');
+  const inside: Placement[] = [];
+  for (let i = 0; i < 220; i++) inside.push(ball((rng() - 0.5) * 3.3, -0.46 - rng() * 0.9, 0.008 + rng() * 0.008, FACE + 0.002, shade('#a58fa9', 0.86 + rng() * 0.28)));
+  flats(group, inside, '#ffffff', 0);
+  const chosen = V(0, -0.385, FACE + 0.003);
+  flats(group, [ball(chosen.x, chosen.y, 0.009, chosen.z, new THREE.Color('#f28a2c'))], '#ffffff', 1);
+  return finish(group, V(0, 0, 0.2), chosen, [
+    { text: 'A protein on the surface', at: chosen },
+    { text: 'Membrane of the cell', at: V(0.36, -0.4, FACE + 0.002) },
+    { text: 'The next lymphocyte', at: V(0.3, 0.46, FACE + 0.003) },
+  ]);
+}
+
+/** Proteins that hold out peptides, standing on the membrane of a cell, drawn as stalks with a cup at the tip. */
+export function buildMhcMembrane(): JourneyScene {
+  const rng = random(19920815), group = new THREE.Group();
+  group.add(body(4, '#e9f0f0', 1.2));
+  const FLOOR = -0.3;
+  bars(group, [rect(0, FLOOR - 1, 4, 2, FACE, new THREE.Color('#c9b6c9')), rect(0, FLOOR, 4, 0.016, FACE + 0.001, new THREE.Color('#8d7a9e'))], '#ffffff');
+  const stems: Placement[] = [], cups: Placement[] = [], peptides: Placement[] = [], others: Placement[] = [], neighbours: Placement[] = [];
+  const stand = (x: number) => {
+    stems.push(oval(x, FLOOR + 0.007, 0.006, 0.007, 0, FACE + 0.002, shade('#7fa3c9', 0.9 + rng() * 0.2)));
+    cups.push(oval(x, FLOOR + 0.017, 0.008, 0.006, 0, FACE + 0.003, shade('#7fa3c9', 0.9 + rng() * 0.2)));
+    peptides.push(oval(x, FLOOR + 0.021, 0.005, 0.0016, 0, FACE + 0.004));
+  };
+  stand(0);
+  for (let i = 0; i < 36; i++) { const x = -1.9 + i * 0.106 + (rng() - 0.5) * 0.03; if (Math.abs(x) > 0.08) stand(x); }
+  for (let i = 0; i < 90; i++) others.push(ball((rng() - 0.5) * 3.9, FLOOR - 0.04 - rng() * 1.4, 0.012 + rng() * 0.012, FACE + 0.002, shade('#a58fa9', 0.86 + rng() * 0.28)));
+  // Other proteins of the surface, of no one kind, between them.
+  for (let i = 0; i < 240; i++) { const x = (rng() - 0.5) * 3.9, tall = 0.012 + rng() * 0.05; neighbours.push(rect(x, FLOOR + tall / 2, 0.005, tall, FACE + 0.001, shade('#a58fa9', 0.9 + rng() * 0.2))); }
+  bars(group, neighbours, '#ffffff');
+  flats(group, others, '#ffffff', 1);
+  flats(group, stems, '#ffffff', 2);
+  flats(group, cups, '#ffffff', 2);
+  flats(group, peptides, '#f28a2c', 1);
+  const chosen = V(0, FLOOR + 0.017, FACE + 0.005);
+  return finish(group, V(0, -0.1, 0.2), chosen, [
+    { text: 'A class I molecule', at: chosen },
+    { text: 'The peptide it holds', at: V(0.106, FLOOR + 0.021, FACE + 0.005) },
+    { text: 'Membrane of the cell', at: V(0.55, FLOOR, FACE + 0.002) },
+  ]);
+}
+
 export const ORGANELLE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = Object.freeze({
   'mitochondrion-close': buildMitochondrion, 'mitochondrion-fine': buildCrista,
   'sarcomere-close': buildSarcomeres, 'sarcomere-fine': buildFilaments,
@@ -1155,6 +1258,8 @@ export const ORGANELLE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = 
   'junction-close': buildCellJunction, 'junction-fine': buildJunctionStrands,
   'proteasome-close': buildLymphocyteRim, 'proteasome-fine': buildProteasomes,
   'tiplink-close': buildStereocilia, 'tiplink-fine': buildTipLink,
+  'touch-close': buildMerkelCell, 'touch-fine': buildPiezoMembrane,
+  'mhc-close': buildCellSurfaceMhc, 'mhc-fine': buildMhcMembrane,
 });
 
 /** A way on from the cells of a tissue. It starts at something the scene already names, or at a small mark drawn beside the nucleus. */
@@ -1180,7 +1285,7 @@ const WAYS: Readonly<Record<string, readonly Way[]>> = Object.freeze({
   'gut-cells': [MITOCHONDRION([0.07, 0.05]), { tail: 'junction', text: 'A tight junction', near: [-0.08, 0.06], mark: 'dot' }],
   'colon-cells': [MITOCHONDRION([0.07, 0.05])],
   'brain-cells': [{ tail: 'synapse', text: 'A synapse', label: 'Spines on a dendrite' }, MITOCHONDRION([0.09, -0.06])],
-  'lymphoid-cells': [{ tail: 'antibody', text: 'A plasma cell', near: [0.1, 0.08], mark: 'dot' }, { tail: 'proteasome', text: 'Inside a lymphocyte', near: [-0.1, -0.07], mark: 'dot' }],
+  'lymphoid-cells': [{ tail: 'antibody', text: 'A plasma cell', near: [0.1, 0.08], mark: 'dot' }, { tail: 'proteasome', text: 'Inside a lymphocyte', near: [-0.1, -0.07], mark: 'dot' }, { tail: 'mhc', text: 'The surface of a lymphocyte', near: [0.11, -0.07], mark: 'dot' }],
   'retina-cells': [{ tail: 'disc', text: 'Discs of a rod', label: 'Stacked discs of a rod outer segment' }],
   'lens-cells': [{ tail: 'crystallin', text: 'Inside a fibre', label: 'Fibres cut across, closely packed, with no nuclei' }],
   'stomach-cells': [{ tail: 'pump', text: 'The acid pump', near: [-0.09, -0.06], mark: 'dot' }, { tail: 'mitochondrion', text: 'A mitochondrion', label: 'Mitochondria' }],
@@ -1191,6 +1296,7 @@ const WAYS: Readonly<Record<string, readonly Way[]>> = Object.freeze({
   'urothelium-cells': [{ tail: 'junction', text: 'A tight junction', near: [-0.08, 0.06], mark: 'dot' }, MITOCHONDRION([0.07, 0.05])],
   'tooth-cells': [{ tail: 'collagen', text: 'Collagen of the dentine', label: 'Dentine' }, MITOCHONDRION([0.07, 0.05])],
   'testis-cells': [{ tail: 'ribosome', text: 'Ribosomes of a forming sperm', label: 'Round spermatids', keep: true }, MITOCHONDRION([0.07, 0.05])],
+  'whisker-cells': [{ tail: 'touch', text: 'A Merkel cell', label: 'Merkel cell' }, MITOCHONDRION([-0.1, 0.05])],
   'cochlea-cells': [{ tail: 'tiplink', text: 'A bundle of stereocilia', label: 'Stereocilia' }, MITOCHONDRION([0.07, 0.05])],
   'membrane-cells': [{ tail: 'junction', text: 'A tight junction', near: [-0.08, 0.05], mark: 'dot' }, MITOCHONDRION([0.07, 0.04])],
   bacterium: [{ tail: 'importer', text: 'A nutrient importer in the outer membrane', label: 'Outer membrane, wall and inner membrane', keep: true }],

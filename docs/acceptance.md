@@ -275,3 +275,11 @@ This section records checks executed on 2026-11-07 for the changes described in 
 A headless Chrome session with software WebGL, on the production build, drew the whole route from the cochlea to the atoms of the tip link and each new structure alone and in place, with no console errors. The tokens of the two new vessels were not looked at separately.
 
 Not executed: a rebuild from the raw volumes, since no raw input changed; any run on a graphics card; and any review by an anatomist. The scenes of the inner ear illustrate published descriptions, and the sizes and places of the new structures are estimates.
+
+## The whisker and the class I molecule v0.36.0
+
+This section records checks executed on 2026-11-07 for the changes described in [the release notes](releases/v0.36.0.md). The JavaScript and simulated DOM suite passed with no failures or skips, including tests that the whiskers and their follicles take their own route, that the new levels have repeatable scenes with their labels inside them, and that the captions of the two new molecules say they are of the mouse. The type check, production build, notices check, and the distribution, publication and release suites passed.
+
+A headless Chrome session with software WebGL, on the production build, drew the whole route from a whisker follicle to the atoms in the middle of Piezo2, and the way from the lymphocytes of the spleen to the class I molecule, with no console errors. The focus of the atoms of Piezo2 was chosen by position, as the carbon nearest the middle of the three chains, and it is not a named site.
+
+Not executed: any run on a graphics card, and any review by an anatomist or structural biologist. The anatomy of the follicle follows descriptions of the rat and the cat, and the sizes in the simulated levels are estimates.

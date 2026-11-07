@@ -251,9 +251,17 @@ Protein Data Bank entry 6EC0, atoms used by the zoom below the cells of a tissue
 Eldirany SA, Ho M, Hinbest AJ, Lomakin IB, Bunick CG. Human keratin 1/10-1B tetramer structures reveal a knob-pocket mechanism in intermediate filament assembly. EMBO J 2019;38(11):e100741. doi:10.15252/embj.2018100741
 A short part of keratins of humans, and not of the mouse, made in bacteria. The biological assembly of the entry has two copies of each chain, the tetramer that the authors report.
 
+Protein Data Bank entry 2VAA, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
+Fremont DH, Matsumura M, Stura EA, Peterson PA, Wilson IA. Crystal structures of two viral peptides in complex with murine MHC class I H-2Kb. Science 1992;257(5072):919-27. doi:10.1126/science.1323877
+The mouse molecule, without its part in the membrane, holding a viral peptide. It is not from the Digimouse specimen.
+
 Protein Data Bank entry 5FQ8, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 Glenwright AJ, Pothula KR, Bhamidimarri SP, Chorev DS, Basle A, Firbank SJ, Zheng H, Robinson CV, Winterhalter M, Kleinekathofer U, Bolam DN, van den Berg B. Structural basis for nutrient acquisition by dominant members of the human gut microbiota. Nature 2017;541(7637):407-411. doi:10.1038/nature20828
 From a species of bacterium of the human gut, chosen as an example of Bacteroidetes. No claim is made that this species is in this mouse.
+
+Protein Data Bank entry 6KG7, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
+Wang L, Zhou H, Zhang M, et al. Structure and mechanogating of the mammalian tactile channel PIEZO2. Nature 2019;573(7773):225-229. doi:10.1038/s41586-019-1505-8
+The recombinant channel of the mouse. Parts of the blades could not be modelled. It is not from the Digimouse specimen.
 
 Protein Data Bank entry 2A79, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 Long SB, Campbell EB, MacKinnon R. Crystal structure of a mammalian voltage-dependent Shaker family K+ channel. Science 2005;309(5736):897-903. doi:10.1126/science.1116269

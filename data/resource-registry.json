@@ -1949,6 +1949,47 @@
         "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-tip-link.json. Water, hydrogen and alternate positions are left out, and one of the two copies in the crystal is kept."
       },
       "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-6kg7-wang2019",
+      "title": "Cryo-EM structure of the mammalian tactile channel Piezo2",
+      "landingPage": "https://www.rcsb.org/structure/6KG7",
+      "publication": {
+        "year": 2019,
+        "authors": [
+          "Wang L",
+          "Zhou H",
+          "Zhang M",
+          "et al."
+        ],
+        "series": "Nature 2019;573(7773):225-229, doi:10.1038/s41586-019-1505-8"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-piezo2.json. Water, hydrogen and alternate positions are left out."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-2vaa-fremont1992",
+      "title": "MHC class I H-2Kb heavy chain complexed with beta-2 microglobulin and vesicular stomatitis virus nucleoprotein",
+      "landingPage": "https://www.rcsb.org/structure/2VAA",
+      "publication": {
+        "year": 1992,
+        "authors": [
+          "Fremont DH",
+          "Matsumura M",
+          "Stura EA",
+          "Peterson PA",
+          "Wilson IA"
+        ],
+        "series": "Science 1992;257(5072):919-27, doi:10.1126/science.1323877"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-mhc-class-i.json. Water, hydrogen and alternate positions are left out."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
     }
   ]
 }

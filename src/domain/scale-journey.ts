@@ -139,16 +139,17 @@ export const JOURNEY_NARROWEST = JOURNEY_LEVELS[JOURNEY_LEVELS.length - 1].endMe
 
 /** The tissues that a zoom can start from. Every route joins the shared levels at the cell nucleus. */
 export type JourneyTissue = 'skin' | 'muscle' | 'nerve' | 'artery' | 'vein' | 'bone' | 'fat' | 'liver' | 'kidney' | 'lung' | 'gut' | 'heart' | 'brain'
-  | 'cartilage' | 'tendon' | 'membrane' | 'gland' | 'endocrine' | 'thyroid' | 'lymphoid' | 'colon' | 'stomach' | 'urothelium' | 'airway' | 'retina' | 'cornea' | 'lens' | 'tooth' | 'testis' | 'blood' | 'cochlea';
+  | 'cartilage' | 'tendon' | 'membrane' | 'gland' | 'endocrine' | 'thyroid' | 'lymphoid' | 'colon' | 'stomach' | 'urothelium' | 'airway' | 'retina' | 'cornea' | 'lens' | 'tooth' | 'testis' | 'blood' | 'cochlea' | 'whisker';
 
 /** Where a zoom goes below the cells of a tissue. A cell nucleus unless the pointer chooses another way. */
-export type JourneyTail = 'nucleus' | 'blood' | 'microbiota' | 'importer' | 'mitochondrion' | 'sarcomere' | 'collagen' | 'synapse' | 'axon' | 'antibody' | 'droplet' | 'disc' | 'crystallin' | 'water' | 'secretion' | 'surfactant' | 'cilium' | 'pump' | 'keratin' | 'ribosome' | 'thyroglobulin' | 'junction' | 'proteasome' | 'tiplink';
+export type JourneyTail = 'nucleus' | 'blood' | 'microbiota' | 'importer' | 'mitochondrion' | 'sarcomere' | 'collagen' | 'synapse' | 'axon' | 'antibody' | 'droplet' | 'disc' | 'crystallin' | 'water' | 'secretion' | 'surfactant' | 'cilium' | 'pump' | 'keratin' | 'ribosome' | 'thyroglobulin' | 'junction' | 'proteasome' | 'tiplink' | 'touch' | 'mhc';
 
 const SHARED_FROM = JOURNEY_LEVELS.findIndex((level) => level.id === 'nucleus');
 const SHARED = JOURNEY_LEVELS.slice(SHARED_FROM);
 const block = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 1.6e-3, startMetres: 3.4e-3, endMetres: 1.6e-4, evidence: 'simulated', caption: `${caption} Sizes and counts are estimates.`, basis });
 const cells = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 7e-5, startMetres: 3e-4, endMetres: 5.5e-6, evidence: 'simulated', caption: `${caption} Sizes, shapes and positions are estimates.`, basis });
 
+const EBARA = 'Ebara S, Kumamoto K, Matsuura T, Mazurkiewicz JE, Rice FL. Similarities and differences in the innervation of mystacial vibrissal follicle-sinus complexes in the rat and cat: a confocal microscopic study. J Comp Neurol 2002;449(2):103-19. doi:10.1002/cne.10277';
 const SCHWANDER = 'Schwander M, Kachar B, Muller U. Review series: The cell biology of hearing. J Cell Biol 2010;190(1):9-20. doi:10.1083/jcb.201001138';
 const ROUTES: Readonly<Record<Exclude<JourneyTissue, 'skin'>, { readonly label: string; readonly levels: readonly JourneyLevel[] }>> = {
   muscle: { label: 'muscle', levels: [
@@ -259,6 +260,10 @@ const ROUTES: Readonly<Record<Exclude<JourneyTissue, 'skin'>, { readonly label: 
     block('testis-block', 'A block of testis', 'Seminiferous tubules cut across, with hormone-making Leydig cells between them.', [GRISWOLD]),
     cells('testis-cells', 'Forming sperm', 'From the edge of a tubule towards its middle: spermatogonia, spermatocytes, round spermatids and the tails of forming sperm, among Sertoli cells, in the sequence that Griswold reviews.', [GRISWOLD]),
   ] },
+  whisker: { label: 'whisker', levels: [
+    block('whisker-block', 'A whisker follicle', 'A follicle cut along its length: the whisker in its sheaths, a blood sinus round them, a capsule outside, and a bundle of nerve fibres coming in from below. Ebara et al. describe these follicle-sinus complexes in the rat and the cat, and the mouse has not been measured here.', [EBARA]),
+    cells('whisker-cells', 'Merkel cells', 'Merkel cells against the edge of the outer sheath, beside the sinus, each with a nerve ending. Ebara et al. describe Merkel endings at this level in the rat and the cat.', [EBARA]),
+  ] },
   cochlea: { label: 'inner ear', levels: [
     block('cochlea-block', 'The cochlea', 'Turns of a spiral canal round a central core of bone and nerve, each cut across to show its chambers of fluid and the organ of Corti on a thin membrane. The canals of balance also have hair cells, and are not drawn here.', [SCHWANDER]),
     cells('cochlea-cells', 'Hair cells', 'The organ of Corti cut across: a row of inner hair cells and three of outer hair cells among supporting cells, with stereocilia below a tectorial membrane and nerve fibres beneath. Schwander et al. review how hair cells turn the vibrations of sound into electrical signals.', [SCHWANDER]),
@@ -303,6 +308,9 @@ const FORTE = 'Forte JG, Zhu L. Apical recycling of the gastric parietal cell H,
 const GLENWRIGHT = 'Glenwright AJ, Pothula KR, Bhamidimarri SP, et al. Structural basis for nutrient acquisition by dominant members of the human gut microbiota. Nature 2017;541(7637):407-411. doi:10.1038/nature20828';
 const ELDIRANY = 'Eldirany SA, Ho M, Hinbest AJ, Lomakin IB, Bunick CG. Human keratin 1/10-1B tetramer structures reveal a knob-pocket mechanism in intermediate filament assembly. EMBO J 2019;38(11):e100741. doi:10.15252/embj.2018100741';
 
+const WOO = 'Woo SH, Ranade S, Weyer AD, et al. Piezo2 is required for Merkel-cell mechanotransduction. Nature 2014;509(7502):622-6. doi:10.1038/nature13251';
+const WANG_PIEZO = 'Wang L, Zhou H, Zhang M, et al. Structure and mechanogating of the mammalian tactile channel PIEZO2. Nature 2019;573(7773):225-229. doi:10.1038/s41586-019-1505-8';
+const FREMONT = 'Fremont DH, Matsumura M, Stura EA, Peterson PA, Wilson IA. Crystal structures of two viral peptides in complex with murine MHC class I H-2Kb. Science 1992;257(5072):919-27. doi:10.1126/science.1323877';
 const SOTOMAYOR = 'Sotomayor M, Weihofen WA, Gaudet R, Corey DP. Structure of a force-conveying cadherin bond essential for inner-ear mechanotransduction. Nature 2012;492(7427):128-32. doi:10.1038/nature11590';
 const KAZMIERCZAK = 'Kazmierczak P, Sakaguchi H, Tokita J, et al. Cadherin 23 and protocadherin 15 interact to form tip-link filaments in sensory hair cells. Nature 2007;449(7158):87-91. doi:10.1038/nature06091';
 const SUZUKI = 'Suzuki H, Nishizawa T, Tani K, et al. Crystal structure of a claudin provides insight into the architecture of tight junctions. Science 2014;344(6181):304-7. doi:10.1126/science.1248571';
@@ -419,6 +427,16 @@ const MOLECULE_TAILS = {
     fineLevel('junction-fine', 'Strands of a tight junction', 'The face of a cell membrane at a tight junction, with claudins in rows. Suzuki et al. describe claudins as the main part of these junctions, forming strands. The pattern of the strands is drawn as a net, and it is not measured here.', [SUZUKI]),
     ...moleculeLevels('claudin', 'One mouse claudin', `Every atom is at its measured position in a crystal at 2.4 angstrom resolution: Protein Data Bank entry 4P79, one recombinant claudin-15, with selenomethionine in place of methionine to solve the crystal. Tamura et al. find this claudin in the small intestine of the mouse. Other linings use other members of the family, such as claudin-4, -8 and -12 in the bladder in Acharya et al., and for them it stands for its family. ${NOT_THIS_MOUSE}`, 'Atoms inside a claudin', 'Atoms at the middle of the chain and what lies against them.', [SUZUKI, TAMURA, ACHARYA]),
   ],
+  touch: [
+    closeLevel('touch-close', 'A Merkel cell', 'A Merkel cell and the nerve ending against it, with dense granules near the nerve. Woo et al. find that Merkel cells of mice respond to touch, and that this depends on Piezo2.', [WOO]),
+    fineLevel('touch-fine', 'Membrane of a Merkel cell', 'Piezo2 as shallow domes in the membrane, each about 28 nanometres across, the size that Wang et al. report. How many lie in a real cell, and how they are spread, are estimates.', [WANG_PIEZO, WOO], 4.2e-8),
+    ...moleculeLevels('piezo2', 'Mouse Piezo2', `Every atom is at its modelled position in Protein Data Bank entry 6KG7, from a map at 3.8 angstrom resolution by electron microscopy, of the recombinant channel of the mouse: three curved blades round a central pore, as Wang et al. describe. Parts of the blades could not be modelled and are absent. ${NOT_THIS_MOUSE}`, 'Atoms at the middle of the channel', 'The carbon atom nearest the middle of the three chains and what lies against it. It was chosen by position, and it is not a named site.', [WANG_PIEZO], 3.2e-8),
+  ],
+  mhc: [
+    closeLevel('mhc-close', 'The surface of a lymphocyte', 'The membrane of a lymphocyte with its many surface proteins. Huber et al. describe how proteasomes shape the peptides that class I molecules present on this surface.', [HUBER]),
+    fineLevel('mhc-fine', 'Class I molecules on the membrane', 'Class I molecules standing on the membrane, each holding out a peptide in a groove, about 7 nanometres tall. Their number and spacing are estimates.', [FREMONT, HUBER]),
+    ...moleculeLevels('mhc-class-i', 'A mouse class I molecule', `Every atom is at its measured position in a crystal at 2.3 angstrom resolution: Protein Data Bank entry 2VAA, the mouse molecule H-2Kb with beta-2 microglobulin, holding a peptide of a virus, as Fremont et al. describe. It is without its part in the membrane. ${NOT_THIS_MOUSE}`, 'Atoms of the peptide', 'Part of the viral peptide and what holds it in the groove.', [FREMONT]),
+  ],
   tiplink: [
     closeLevel('tiplink-close', 'A bundle of stereocilia', 'Rows of stereocilia that rise like a staircase from the top of a hair cell, joined at their tips by fine links. Kazmierczak et al. describe tip-link filaments between stereocilia, near which force is turned into an electrical signal.', [KAZMIERCZAK, SCHWANDER]),
     fineLevel('tiplink-fine', 'One tip link', 'Kazmierczak et al. find cadherin 23 in the upper part of a tip link and protocadherin 15 in the lower, each as a pair, meeting at their ends. The repeats and the winding of the strands are drawn to suggest them.', [KAZMIERCZAK]),
@@ -434,7 +452,7 @@ const MOLECULE_TAILS = {
 /** The way that a tissue's own molecule lies on, which playing takes from that tissue. A tissue with none goes to a cell nucleus. */
 const OWN_WAYS: Partial<Readonly<Record<JourneyTissue, JourneyTail>>> = Object.freeze({
   skin: 'keratin', muscle: 'sarcomere', heart: 'sarcomere', nerve: 'axon', artery: 'blood', vein: 'blood', blood: 'blood', bone: 'collagen', tendon: 'collagen', cartilage: 'collagen', cornea: 'collagen',
-  fat: 'droplet', liver: 'secretion', kidney: 'water', lung: 'surfactant', gut: 'microbiota', colon: 'microbiota', brain: 'synapse', lymphoid: 'antibody', retina: 'disc', lens: 'crystallin', airway: 'cilium', stomach: 'pump', cochlea: 'tiplink', thyroid: 'thyroglobulin', testis: 'ribosome', gland: 'ribosome', urothelium: 'junction', membrane: 'junction', tooth: 'collagen',
+  fat: 'droplet', liver: 'secretion', kidney: 'water', lung: 'surfactant', gut: 'microbiota', colon: 'microbiota', brain: 'synapse', lymphoid: 'antibody', retina: 'disc', lens: 'crystallin', airway: 'cilium', stomach: 'pump', cochlea: 'tiplink', whisker: 'touch', thyroid: 'thyroglobulin', testis: 'ribosome', gland: 'ribosome', urothelium: 'junction', membrane: 'junction', tooth: 'collagen',
 });
 export const ownWayOf = (tissue: JourneyTissue): JourneyTail => OWN_WAYS[tissue] ?? 'nucleus';
 
@@ -482,6 +500,8 @@ const TAILS: Readonly<Record<Exclude<JourneyTail, 'nucleus'>, readonly JourneyLe
   junction: [...MOLECULE_TAILS.junction, ...FROM_ATOM],
   proteasome: [...MOLECULE_TAILS.proteasome, ...FROM_ATOM],
   tiplink: [...MOLECULE_TAILS.tiplink, ...FROM_ATOM],
+  touch: [...MOLECULE_TAILS.touch, ...FROM_ATOM],
+  mhc: [...MOLECULE_TAILS.mhc, ...FROM_ATOM],
 };
 
 /** The levels of the zoom that starts from a tissue and goes on by a given way. */
@@ -513,7 +533,7 @@ export function journeyTissueOf(structure: { readonly id: string; readonly name:
   if (id === 'peyers-patches') return 'lymphoid';
   if (id === 'meibomian-glands') return 'gland';
   if (id === 'vomeronasal-organs') return 'airway';
-  if (['skin', 'pinnae', 'tail', 'forepaws', 'hindpaws', 'claws', 'vibrissae', 'whisker-follicles', 'nose', 'lips', 'eyelids', 'openings', 'penis'].includes(id)) return 'skin';
+  if (['skin', 'pinnae', 'tail', 'forepaws', 'hindpaws', 'claws', 'nose', 'lips', 'eyelids', 'openings', 'penis'].includes(id)) return 'skin';
   if (['intervertebral-discs', 'xiphoid-cartilage', 'tracheal-rings'].includes(id)) return 'cartilage';
   if (id === 'calcaneal-tendons') return 'tendon';
   if (['pleura', 'peritoneum', 'pericardium', 'meninges'].includes(id)) return 'membrane';
@@ -523,6 +543,7 @@ export function journeyTissueOf(structure: { readonly id: string; readonly name:
   if (['corneas'].includes(id)) return 'cornea';
   if (['lenses'].includes(id)) return 'lens';
   if (['eyes', 'irises', 'retinas'].includes(id)) return 'retina';
+  if (id === 'vibrissae' || id === 'whisker-follicles') return 'whisker';
   if (id === 'inner-ears') return 'cochlea';
   if (id === 'middle-ears') return 'bone';
   if (id === 'thyroid') return 'thyroid';

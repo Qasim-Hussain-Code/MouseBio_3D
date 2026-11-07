@@ -997,6 +997,76 @@ export function buildCochleaCells(): JourneyScene {
   ]);
 }
 
+/** A whisker follicle cut along its length: the hair in its sheaths, a blood sinus round them, a capsule outside, and a bundle of nerve fibres entering from below. */
+export function buildWhiskerBlock(): JourneyScene {
+  const rng = random(20020722), group = new THREE.Group();
+  group.add(body(0.99, '#e8cdbd'));
+  // Others of the same kind lie to each side, and they are drawn more simply.
+  const capsules: Placement[] = [], sinuses: Placement[] = [], sheaths: Placement[] = [];
+  for (const x of [0, -0.34, 0.34]) {
+    capsules.push(disc(x, -0.04, 0.11, 0.42));
+    sinuses.push(disc(x, -0.08, 0.09, 0.33, FACE + 0.001));
+    sheaths.push(disc(x, -0.05, 0.042, 0.38, FACE + 0.002));
+  }
+  discs(group, capsules, '#d8b49c', 4);
+  discs(group, sinuses, '#a2343c', 4);
+  discs(group, sheaths, '#efdcc4', 4);
+  // Fine bars cross the lower part of the sinus, and a smaller open ring lies near its top.
+  const bars: THREE.Vector3[][] = [];
+  for (let k = 0; k < 18; k++) { const y = -0.36 + k * 0.022, side = k % 2 ? 1 : -1, x = 0.045 + rng() * 0.01; bars.push([V(side * x, y, FACE + 0.002), V(side * (x + 0.02), y + 0.005, FACE + 0.002), V(side * 0.082, y - 0.004, FACE + 0.002)]); }
+  lines(group, bars, 0.0024, '#d78d86', 3);
+  group.add(new THREE.Mesh(tubeGeometry([V(0, 0.5, FACE + 0.004), V(0, 0.2, FACE + 0.004), V(0, -0.15, FACE + 0.004), V(0, -0.36, FACE + 0.004)], 0.016, 10), material('#3d3028')));
+  discs(group, [disc(0, -0.385, 0.028, 0.03, FACE + 0.004)], '#6d4a38', 3);
+  discs(group, [disc(-0.06, 0.2, 0.028, 0.012, FACE + 0.003), disc(0.06, 0.2, 0.028, 0.012, FACE + 0.003)], '#e6d6c4', 2);
+  const nerves: THREE.Vector3[][] = [];
+  for (let k = 0; k < 16; k++) { const side = k % 2 ? 1 : -1, reach = 0.022 + rng() * 0.02, top = -0.2 + rng() * 0.36; nerves.push([V(-0.17 + k * 0.004, -0.5, FACE + 0.003), V(side * 0.08, -0.36, FACE + 0.003), V(side * (reach + 0.02), top - 0.1, FACE + 0.003), V(side * reach, top, FACE + 0.003)]); }
+  lines(group, nerves, 0.0032, '#d9b13f', 3);
+  const focus = V(0.042, 0.14, 0.51);
+  return finish(group, V(0, 0, 0.2), focus, [
+    { text: 'Nerve endings on the outer sheath', at: focus },
+    { text: 'Shaft of the whisker', at: V(0, 0.34, FACE + 0.005) },
+    { text: 'Blood sinus', at: V(-0.066, -0.1, FACE + 0.003) },
+    { text: 'Capsule', at: V(0.105, -0.2, FACE + 0.002) },
+    { text: 'Bundle of nerve fibres', at: V(-0.16, -0.48, FACE + 0.004) },
+    { text: 'Another follicle', at: V(0.34, 0.1, FACE + 0.003) },
+  ]);
+}
+
+/** The outer sheath of a whisker follicle near its ring of sinus: rows of keratinocytes, with Merkel cells against the edge and nerve endings on them. */
+export function buildWhiskerCells(): JourneyScene {
+  const rng = random(20140406), group = new THREE.Group();
+  group.add(body(2.4, '#efe2d1', 1.2));
+  const keratinocytes: Placement[] = [], merkel: Placement[] = [], nuclei: Placement[] = [], darkNuclei: Placement[] = [], endings: THREE.Vector3[][] = [];
+  const EDGE = 0.34;
+  for (const point of packed(1.25, 0.13, 0.02, rng)) {
+    if (point.x > EDGE) continue;
+    keratinocytes.push(disc(point.x, point.y, 0.062, 0.05, FACE, shade('#e7c9ae', 0.94 + rng() * 0.1)));
+    if (point.x < EDGE - 0.2 || Math.abs(point.y) > 0.6) nuclei.push(disc(point.x, point.y, 0.024, 0.02, FACE + 0.002));
+  }
+  discs(group, [{ position: V(EDGE + 0.8, 0, FACE + 0.001), scale: V(0.76, 1.3, 0.002) }], '#a2343c', 3);
+  discs(group, [{ position: V(EDGE + 0.05, 0, FACE + 0.002), scale: V(0.03, 1.3, 0.002) }], '#c9ab98', 3);
+  const focus = V(0.24, 0.02, FACE + 0.004);
+  const places = [-0.48, -0.24, 0.02, 0.27, 0.52];
+  for (const y of places) {
+    merkel.push(disc(0.24, y, 0.058, 0.048, FACE + 0.003));
+    darkNuclei.push(disc(0.24, y, 0.03, 0.026, y === focus.y ? focus.z : FACE + 0.004));
+    endings.push([V(0.3, y - 0.05, FACE + 0.005), V(0.32, y, FACE + 0.005), V(0.3, y + 0.05, FACE + 0.005)]);
+  }
+  endings.push([V(0.33, -0.55, FACE + 0.005), V(0.34, -0.2, FACE + 0.005), V(0.33, 0.2, FACE + 0.005), V(0.34, 0.55, FACE + 0.005), V(0.42, 0.9, FACE + 0.005)]);
+  discs(group, keratinocytes, '#ffffff', 2);
+  discs(group, nuclei, NUCLEUS_COLOUR, 2);
+  discs(group, merkel, '#d48f7c', 3);
+  discs(group, darkNuclei, NUCLEUS_COLOUR, 3);
+  lines(group, endings, 0.008, '#d9b13f', 4);
+  return finish(group, V(0, 0, 0.2), focus, [
+    { text: 'Nucleus of a Merkel cell', at: focus },
+    { text: 'Merkel cell', at: V(0.24, 0.3, FACE + 0.005) },
+    { text: 'Ending of a nerve fibre', at: V(0.33, 0.13, FACE + 0.006) },
+    { text: 'Outer sheath', at: V(-0.25, 0.25, FACE + 0.003) },
+    { text: 'Blood sinus', at: V(0.48, 0.38, FACE + 0.002) },
+  ]);
+}
+
 export const MORE_TISSUE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = Object.freeze({
   'cartilage-block': buildCartilageBlock, 'cartilage-cells': buildCartilageCells,
   'tendon-block': buildTendonBlock, 'tendon-cells': buildTendonCells,
@@ -1016,4 +1086,5 @@ export const MORE_TISSUE_BUILDERS: Readonly<Record<string, () => JourneyScene>> 
   'testis-block': buildTestisBlock, 'testis-cells': buildTestisCells,
   'blood-block': buildBloodBlock, 'blood-cells': buildBloodCells,
   'cochlea-block': buildCochleaBlock, 'cochlea-cells': buildCochleaCells,
+  'whisker-block': buildWhiskerBlock, 'whisker-cells': buildWhiskerCells,
 });

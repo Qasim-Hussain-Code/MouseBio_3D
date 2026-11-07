@@ -257,6 +257,29 @@ MOLECULES = {
         ],
         "focus": {"comp": "SER", "residue": 144, "chain": "A", "atom": "OG"},
     },
+    "piezo2": {
+        "entry": "6KG7", "file": "6KG7.cif", "sha256": "e8700a960aa8e30487cf97414211e33622100f1fa42ff7228221f0debf1bfb9e",
+        "title": "Cryo-EM structure of the mammalian tactile channel Piezo2", "method": "Electron microscopy", "resolutionAngstrom": 3.8, "organisms": "Mus musculus, recombinant",
+        "citation": "Wang L, Zhou H, Zhang M, et al. Structure and mechanogating of the mammalian tactile channel PIEZO2. Nature 2019;573(7773):225-229. doi:10.1038/s41586-019-1505-8",
+        "note": "The recombinant channel of the mouse. Parts of the blades could not be modelled. It is not from the Digimouse specimen.",
+        "groups": [
+            {"name": "Sugars", "colour": "#74ab6d", "comps": ["NAG"], "label": "Sugars"},
+            {"name": "The three chains", "colour": "#7fa3c9", "palette": True, "label": "One of three chains"},
+        ],
+        "focus": {"centre": "C"},
+    },
+    "mhc-class-i": {
+        "entry": "2VAA", "file": "2VAA.cif", "sha256": "1b42b0cf2c61e7bd8f817294abf3a4a6faad66782af35dc572f6a4303285bf94",
+        "title": "MHC class I H-2Kb heavy chain complexed with beta-2 microglobulin and vesicular stomatitis virus nucleoprotein", "method": "X-ray diffraction", "resolutionAngstrom": 2.3, "organisms": "Mus musculus, with a peptide of vesicular stomatitis virus",
+        "citation": "Fremont DH, Matsumura M, Stura EA, Peterson PA, Wilson IA. Crystal structures of two viral peptides in complex with murine MHC class I H-2Kb. Science 1992;257(5072):919-27. doi:10.1126/science.1323877",
+        "note": "The mouse molecule, without its part in the membrane, holding a viral peptide. It is not from the Digimouse specimen.",
+        "groups": [
+            {"name": "Peptide", "colour": "#f28a2c", "chains": ["P"], "label": "The viral peptide"},
+            {"name": "Beta-2 microglobulin", "colour": "#74ab6d", "chains": ["B"], "label": "Beta-2 microglobulin"},
+            {"name": "Heavy chain", "colour": "#7fa3c9", "chains": ["A"], "label": "Heavy chain"},
+        ],
+        "focus": {"chainOnly": "P"},
+    },
     "immunoproteasome": {
         "entry": "3UNH", "file": "3UNH.cif", "sha256": "2467ca41e7f9ed31f3df39a74a83404d68e7f4a88798c5f8001ddce7a67af447",
         "title": "Mouse 20S immunoproteasome", "method": "X-ray diffraction", "resolutionAngstrom": 3.2, "organisms": "Mus musculus",
