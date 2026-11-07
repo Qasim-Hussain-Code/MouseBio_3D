@@ -142,7 +142,7 @@ export type JourneyTissue = 'skin' | 'muscle' | 'nerve' | 'artery' | 'vein' | 'b
   | 'cartilage' | 'tendon' | 'membrane' | 'gland' | 'endocrine' | 'thyroid' | 'lymphoid' | 'colon' | 'stomach' | 'urothelium' | 'airway' | 'retina' | 'cornea' | 'lens' | 'tooth' | 'testis' | 'blood';
 
 /** Where a zoom goes below the cells of a tissue. A cell nucleus unless the pointer chooses another way. */
-export type JourneyTail = 'nucleus' | 'blood' | 'microbiota' | 'importer' | 'mitochondrion' | 'sarcomere' | 'collagen' | 'synapse' | 'axon' | 'antibody' | 'droplet' | 'disc' | 'crystallin' | 'water' | 'secretion' | 'surfactant' | 'cilium' | 'pump' | 'keratin';
+export type JourneyTail = 'nucleus' | 'blood' | 'microbiota' | 'importer' | 'mitochondrion' | 'sarcomere' | 'collagen' | 'synapse' | 'axon' | 'antibody' | 'droplet' | 'disc' | 'crystallin' | 'water' | 'secretion' | 'surfactant' | 'cilium' | 'pump' | 'keratin' | 'ribosome' | 'thyroglobulin' | 'junction' | 'proteasome';
 
 const SHARED_FROM = JOURNEY_LEVELS.findIndex((level) => level.id === 'nucleus');
 const SHARED = JOURNEY_LEVELS.slice(SHARED_FROM);
@@ -298,6 +298,16 @@ const FORTE = 'Forte JG, Zhu L. Apical recycling of the gastric parietal cell H,
 const GLENWRIGHT = 'Glenwright AJ, Pothula KR, Bhamidimarri SP, et al. Structural basis for nutrient acquisition by dominant members of the human gut microbiota. Nature 2017;541(7637):407-411. doi:10.1038/nature20828';
 const ELDIRANY = 'Eldirany SA, Ho M, Hinbest AJ, Lomakin IB, Bunick CG. Human keratin 1/10-1B tetramer structures reveal a knob-pocket mechanism in intermediate filament assembly. EMBO J 2019;38(11):e100741. doi:10.15252/embj.2018100741';
 
+const SUZUKI = 'Suzuki H, Nishizawa T, Tani K, et al. Crystal structure of a claudin provides insight into the architecture of tight junctions. Science 2014;344(6181):304-7. doi:10.1126/science.1248571';
+const TAMURA = 'Tamura A, Hayashi H, Imasato M, et al. Loss of claudin-15, but not claudin-2, causes Na+ deficiency and glucose malabsorption in mouse small intestine. Gastroenterology 2011;140(3):913-23. doi:10.1053/j.gastro.2010.08.006';
+const ACHARYA = 'Acharya P, Beckel J, Ruiz WG, et al. Distribution of the tight junction proteins ZO-1, occludin, and claudin-4, -8, and -12 in bladder epithelium. Am J Physiol Renal Physiol 2004;287(2):F305-18. doi:10.1152/ajprenal.00341.2003';
+const PITARAKI = 'Pitaraki E, Jagirdar RM, Rouka E, et al. 2-Deoxy-glucose ameliorates the peritoneal mesothelial and endothelial barrier function perturbation occurring due to Peritoneal Dialysis fluids exposure. Biochem Biophys Res Commun 2023;693:149376. doi:10.1016/j.bbrc.2023.149376';
+const LI_RIBOSOME = 'Li H, Huo Y, He X, et al. A male germ-cell-specific ribosome controls male fertility. Nature 2022;612(7941):725-731. doi:10.1038/s41586-022-05508-0';
+const PALADE = 'Palade G. Intracellular aspects of the process of protein synthesis. Science 1975;189(4200):347-58. doi:10.1126/science.1096303';
+const KIM_THYROGLOBULIN = 'Kim K, Kopylov M, Bobe D, Kelley K, Eng ET, Arvan P, Clarke OB. The structure of natively iodinated bovine thyroglobulin. Acta Crystallogr D Struct Biol 2021;77(Pt 11):1451-1459. doi:10.1107/S2059798321010056';
+const HUBER = 'Huber EM, Basler M, Schwab R, Heinemeyer W, Kirk CJ, Groettrup M, Groll M. Immuno- and constitutive proteasome crystal structures reveal differences in substrate and inhibitor specificity. Cell 2012;148(4):727-38. doi:10.1016/j.cell.2011.12.030';
+const GOLDBERG = 'Goldberg M, Kulkarni AB, Young M, Boskey A. Dentin: structure, composition and mineralization. Front Biosci (Elite Ed) 2011;3(2):711-35. doi:10.2741/e281';
+
 const FROM_ATOM = JOURNEY_LEVELS.slice(JOURNEY_LEVELS.findIndex((level) => level.id === 'atom'));
 /** The same view heights as the nucleus, the chromatin and the atoms of DNA, so that a level leads to the next the same way on every route. */
 const closeLevel = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 5e-6, startMetres: 9.5e-6, endMetres: 3.2e-7, evidence: 'simulated', caption: `${caption} Sizes, shapes and positions are estimates.`, basis });
@@ -323,7 +333,7 @@ const MOLECULE_TAILS = {
     ...moleculeLevels('thin-filament', 'A thin filament', 'Every atom is at its modelled position in Protein Data Bank entry 3J8A, by electron microscopy, with actin at 3.7 angstrom and tropomyosin at 6.5 angstrom resolution. The actin is of rabbit skeletal muscle and the tropomyosin of mouse, so this is not wholly a mouse molecule.', 'Atoms round ADP', 'The ADP held in one actin and what lies against it.', [VON_DER_ECKEN]),
   ],
   collagen: [
-    closeLevel('collagen-close', 'Collagen fibrils', 'Fibrils side by side in ground substance. Orgel et al. note that fibrous collagens form the structural basis of the connective tissues of the heart, vessels, skin, cornea, bone and tendon. Collagens differ in type and in the thickness of their fibrils from tissue to tissue, and this view shows no particular one.', [ORGEL]),
+    closeLevel('collagen-close', 'Collagen fibrils', 'Fibrils side by side in ground substance. Orgel et al. note that fibrous collagens form the structural basis of the connective tissues of the heart, vessels, skin, cornea, bone and tendon, and Goldberg et al. describe the type I collagen fibrils that odontoblasts secrete in dentine. Collagens differ in type and in the thickness of their fibrils from tissue to tissue, and this view shows no particular one.', [ORGEL, GOLDBERG]),
     fineLevel('collagen-fine', 'One fibril and its bands', 'A fibril with its repeating bands, from long molecules offset along it. Orgel et al. measure a repeat of about 67.8 nanometres in type I collagen of the rat, whose molecules pack quasi-hexagonally.', [ORGEL]),
     ...moleculeLevels('collagen', 'A collagen triple helix', 'Every atom is at its measured position in a crystal at 1.85 angstrom resolution: Protein Data Bank entry 1CAG, three chains wound together as Bella et al. describe. It is a short synthetic peptide with the repeating pattern of collagen, standing in for the much longer molecules of the tissue, and it is not collagen from a mouse.', 'Atoms at the alanine', 'The alanine that replaces one glycine of the pattern in this peptide, where Bella et al. find the helix locally untwisted, and what lies against it.', [BELLA]),
   ],
@@ -387,12 +397,32 @@ const MOLECULE_TAILS = {
     fineLevel('keratin-fine', 'One keratin filament', 'Filaments, each a rope of finer strands. How the strands are wound here is a sketch.', [ELDIRANY]),
     ...moleculeLevels('keratin', 'Part of a keratin', 'Every atom is at its measured position in a crystal at 3.0 angstrom resolution: Protein Data Bank entry 6EC0, the coil 1B part of keratin 1 and keratin 10 of humans and not of the mouse, as Eldirany et al. report, assembled as a tetramer. It is a short part of a much longer filament.', 'Atoms in the middle of the coils', 'The carbon nearest the centre of the tetramer and what lies against it.', [ELDIRANY]),
   ],
+  ribosome: [
+    closeLevel('ribosome-close', 'Rough reticulum', 'Flat sheets of endoplasmic reticulum with ribosomes on their outer faces, and other ribosomes free between them. Palade describes how secreting cells of the pancreas make their proteins on such ribosomes and pass them into the sheets. Every cell has ribosomes, and the sheets are most developed in cells that secrete.', [PALADE]),
+    fineLevel('ribosome-fine', 'Ribosomes on the membrane', 'Ribosomes along a strand of messenger RNA on the membrane of the reticulum, each passing a new protein through it, with others free in the cytoplasm.', [PALADE], 4.2e-8),
+    ...moleculeLevels('ribosome', 'One mouse ribosome', `Every atom is at its modelled position in Protein Data Bank entry 7CPV, from a map at 3.03 angstrom resolution by electron microscopy, of a ribosome from the testis of mice, with its ribosomal RNA, 73 protein chains and a transfer RNA. Li et al. find that ribosomes of male germ cells hold RPL39L, a relative of the RPL39 of other tissues, in the tunnel by which a new protein leaves. So this one stands for the ribosomes of other cells, and differs from them there. ${NOT_THIS_MOUSE}`, 'Atoms of RPL39L', 'Part of RPL39L, the protein of male germ cells, and what lies against it.', [LI_RIBOSOME], 3.2e-8),
+  ],
+  thyroglobulin: [
+    closeLevel('thyroglobulin-close', 'The edge of the colloid', 'The top of a follicular cell, with microvilli reaching into the colloid. Kim et al. describe thyroglobulin as secreted into the lumen of the follicle, where its tyrosines become iodinated, and Nilsson and Fagman describe the follicle as the unit that makes the hormone.', [KIM_THYROGLOBULIN, NILSSON]),
+    fineLevel('thyroglobulin-fine', 'Inside the colloid', 'Thyroglobulin crowded in the colloid, each drawn as a pair of parts because Kim et al. describe it as a dimer.', [KIM_THYROGLOBULIN], 3.4e-8),
+    ...moleculeLevels('thyroglobulin', 'Thyroglobulin', 'Every atom is at its modelled position in Protein Data Bank entry 7N4Y, from a map at 2.6 angstrom resolution by electron microscopy, of the two chains of naturally iodinated thyroglobulin, with its sugars. It is of the cow and not of the mouse.', 'Atoms of thyroxine', 'Thyroxine at residue 24, a thyroid hormone still joined to the chain of the protein, with its four atoms of iodine. Kim et al. describe this as an acceptor site, reached by the coupling of two iodinated tyrosines.', [KIM_THYROGLOBULIN], 2.6e-8),
+  ],
+  junction: [
+    closeLevel('junction-close', 'Where two cells meet', 'Two cells of a lining side by side, closed near their free surface by a tight junction. Suzuki et al. describe tight junctions as regulating what passes through the space between the cells of a sheet. Tamura et al. study them in the small intestine of the mouse and Acharya et al. in its bladder, and Pitaraki et al. study the claudins of a human mesothelial cell line.', [SUZUKI, TAMURA, ACHARYA, PITARAKI]),
+    fineLevel('junction-fine', 'Strands of a tight junction', 'The face of a cell membrane at a tight junction, with claudins in rows. Suzuki et al. describe claudins as the main part of these junctions, forming strands. The pattern of the strands is drawn as a net, and it is not measured here.', [SUZUKI]),
+    ...moleculeLevels('claudin', 'One mouse claudin', `Every atom is at its measured position in a crystal at 2.4 angstrom resolution: Protein Data Bank entry 4P79, one recombinant claudin-15, with selenomethionine in place of methionine to solve the crystal. Tamura et al. find this claudin in the small intestine of the mouse. Other linings use other members of the family, such as claudin-4, -8 and -12 in the bladder in Acharya et al., and for them it stands for its family. ${NOT_THIS_MOUSE}`, 'Atoms inside a claudin', 'Atoms at the middle of the chain and what lies against them.', [SUZUKI, TAMURA, ACHARYA]),
+  ],
+  proteasome: [
+    closeLevel('proteasome-close', 'Cytoplasm of a lymphocyte', 'The thin rim of cytoplasm beside the large nucleus of a lymphocyte, with proteasomes scattered through it. Huber et al. describe how proteasomes shape the peptides that a cell presents to the immune system.', [HUBER]),
+    fineLevel('proteasome-fine', 'Among proteasomes', 'Barrels of four rings, each about 15 nanometres long, among other contents of the cytoplasm.', [HUBER], 2.1e-8),
+    ...moleculeLevels('immunoproteasome', 'A mouse immunoproteasome', `Every atom is at its measured position in a crystal at 3.2 angstrom resolution: Protein Data Bank entry 3UNH, the 20S immunoproteasome, with its 28 chains in four rings, and without the ions of the crystal. Three of the subunits of each half differ from those of the proteasome of other cells. ${NOT_THIS_MOUSE}`, 'Atoms at a cutting site', 'The threonine at the start of the subunit beta 5i, the site that Huber et al. study, and what lies against it.', [HUBER], 1.6e-8),
+  ],
 } as const;
 
 /** The way that a tissue's own molecule lies on, which playing takes from that tissue. A tissue with none goes to a cell nucleus. */
 const OWN_WAYS: Partial<Readonly<Record<JourneyTissue, JourneyTail>>> = Object.freeze({
   skin: 'keratin', muscle: 'sarcomere', heart: 'sarcomere', nerve: 'axon', artery: 'blood', vein: 'blood', blood: 'blood', bone: 'collagen', tendon: 'collagen', cartilage: 'collagen', cornea: 'collagen',
-  fat: 'droplet', liver: 'secretion', kidney: 'water', lung: 'surfactant', gut: 'microbiota', colon: 'microbiota', brain: 'synapse', lymphoid: 'antibody', retina: 'disc', lens: 'crystallin', airway: 'cilium', stomach: 'pump',
+  fat: 'droplet', liver: 'secretion', kidney: 'water', lung: 'surfactant', gut: 'microbiota', colon: 'microbiota', brain: 'synapse', lymphoid: 'antibody', retina: 'disc', lens: 'crystallin', airway: 'cilium', stomach: 'pump', thyroid: 'thyroglobulin', testis: 'ribosome', gland: 'ribosome', urothelium: 'junction', membrane: 'junction', tooth: 'collagen',
 });
 export const ownWayOf = (tissue: JourneyTissue): JourneyTail => OWN_WAYS[tissue] ?? 'nucleus';
 
@@ -435,6 +465,10 @@ const TAILS: Readonly<Record<Exclude<JourneyTail, 'nucleus'>, readonly JourneyLe
   cilium: [...MOLECULE_TAILS.cilium, ...FROM_ATOM],
   pump: [...MOLECULE_TAILS.pump, ...FROM_ATOM],
   keratin: [...MOLECULE_TAILS.keratin, ...FROM_ATOM],
+  ribosome: [...MOLECULE_TAILS.ribosome, ...FROM_ATOM],
+  thyroglobulin: [...MOLECULE_TAILS.thyroglobulin, ...FROM_ATOM],
+  junction: [...MOLECULE_TAILS.junction, ...FROM_ATOM],
+  proteasome: [...MOLECULE_TAILS.proteasome, ...FROM_ATOM],
 };
 
 /** The levels of the zoom that starts from a tissue and goes on by a given way. */

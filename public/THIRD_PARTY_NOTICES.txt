@@ -223,6 +223,10 @@ Protein Data Bank entry 1J4N, atoms used by the zoom below the cells of a tissue
 Sui H, Han BG, Lee JK, Walian P, Jap BK. Structural basis of water-specific transport through the AQP1 water channel. Nature 2001;414(6866):872-8. doi:10.1038/414872a
 Aquaporin 1 of the cow. The biological assembly has four copies of the chain, and each has its own pore.
 
+Protein Data Bank entry 4P79, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
+Suzuki H, Nishizawa T, Tani K, et al. Crystal structure of a claudin provides insight into the architecture of tight junctions. Science 2014;344(6181):304-7. doi:10.1126/science.1248571
+A recombinant claudin of the mouse, with selenomethionine in place of methionine. It is not from the Digimouse specimen.
+
 Protein Data Bank entry 1CAG, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 Bella J, Eaton M, Brodsky B, Berman HM. Crystal and molecular structure of a collagen-like peptide at 1.9 A resolution. Science 1994;266(5182):75-81. doi:10.1126/science.7695699
 A synthetic peptide with the repeating pattern of collagen and one glycine replaced by alanine. It is a short stand-in and is not collagen from a mouse.
@@ -238,6 +242,10 @@ A recombinant protein in solution. The first of the twenty models of the entry, 
 Protein Data Bank entry 1LID, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 Xu Z, Bernlohr DA, Banaszak LJ. The adipocyte lipid-binding protein at 1.6-A resolution. Crystal structures of the apoprotein and with bound saturated and unsaturated fatty acids. J Biol Chem 1993;268(11):7874-84. PMID 8463311
 A recombinant protein with oleic acid bound inside it. It is not from the Digimouse specimen.
+
+Protein Data Bank entry 3UNH, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
+Huber EM, Basler M, Schwab R, Heinemeyer W, Kirk CJ, Groettrup M, Groll M. Immuno- and constitutive proteasome crystal structures reveal differences in substrate and inhibitor specificity. Cell 2012;148(4):727-38. doi:10.1016/j.cell.2011.12.030
+The 20S immunoproteasome of the mouse, with the ions of the crystal left out. It is not from the Digimouse specimen.
 
 Protein Data Bank entry 6EC0, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 Eldirany SA, Ho M, Hinbest AJ, Lomakin IB, Bunick CG. Human keratin 1/10-1B tetramer structures reveal a knob-pocket mechanism in intermediate filament assembly. EMBO J 2019;38(11):e100741. doi:10.15252/embj.2018100741
@@ -259,6 +267,10 @@ Protein Data Bank entry 1F88, atoms used by the zoom below the cells of a tissue
 Palczewski K, Kumasaka T, Hori T, Behnke CA, Motoshima H, Fox BA, Le Trong I, Teller DC, Okada T, Stenkamp RE, Yamamoto M, Miyano M. Crystal structure of rhodopsin: A G protein-coupled receptor. Science 2000;289(5480):739-45. doi:10.1126/science.289.5480.739
 Rhodopsin of the cow, purified from retinas, in the dark state. The two molecules are those of the crystal.
 
+Protein Data Bank entry 7CPV, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
+Li H, Huo Y, He X, et al. A male germ-cell-specific ribosome controls male fertility. Nature 2022;612(7941):725-731. doi:10.1038/s41586-022-05508-0
+From the testis of mice, holding RPL39L, the male germ-cell relative of RPL39. It is not from the Digimouse specimen.
+
 Protein Data Bank entry 6VZ0, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 Sever N, Milicic G, Bodnar NO, Wu X, Rapoport TA. Mechanism of Lamellar Body Formation by Lung Surfactant Protein B. Mol Cell 2021;81(1):49-66.e8. doi:10.1016/j.molcel.2020.10.042
 A recombinant domain of the precursor of surfactant protein B, and not the mature protein. The two molecules are those of the crystal.
@@ -266,6 +278,10 @@ A recombinant domain of the precursor of surfactant protein B, and not the matur
 Protein Data Bank entry 3J8A, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 von der Ecken J, Muller M, Lehman W, Manstein DJ, Penczek PA, Raunser S. Structure of the F-actin-tropomyosin complex. Nature 2015;519(7541):114-7. doi:10.1038/nature14033
 A filament assembled from purified proteins. The actin is of rabbit and the tropomyosin of mouse. Tropomyosin was resolved to 6.5 angstrom only.
+
+Protein Data Bank entry 7N4Y, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
+Kim K, Kopylov M, Bobe D, Kelley K, Eng ET, Arvan P, Clarke OB. The structure of natively iodinated bovine thyroglobulin. Acta Crystallogr D Struct Biol 2021;77(Pt 11):1451-1459. doi:10.1107/S2059798321010056
+Natively iodinated thyroglobulin of the cow, as a dimer. It is not of the mouse.
 
 Protein Data Bank entry 1JFF, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 Lowe J, Li H, Downing KH, Nogales E. Refined structure of alpha beta-tubulin at 3.5 A resolution. J Mol Biol 2001;313(5):1045-57. doi:10.1006/jmbi.2001.5077

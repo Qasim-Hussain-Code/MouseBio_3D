@@ -744,6 +744,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         }
         mesh.material.clippingPlanes = current.clipAxis === 'off' ? [] : [clip];
       }
+      flow?.showLines((structure) => !!meshes.get(structure)?.visible);
       // Covered regions leave the rendered and picked layer only, so that overlays and Fit visible still treat them as shown.
       const skinMesh = skinId ? meshes.get(skinId) : undefined;
       const skinOpacity = skinId ? current.opacity[skinId] ?? defaultOpacity(skinId) : 0;

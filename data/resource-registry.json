@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "reviewedOn": "2026-10-25",
-  "updatedOn": "2026-11-06",
+  "updatedOn": "2026-11-07",
   "notes": "Resource evaluation is distinct from imported asset provenance. Null denotes unknown or not applicable, as explained by each record. Dataset-specific licenses take precedence over general website descriptions.",
   "resources": [
     {
@@ -1849,6 +1849,86 @@
         "notes": "Cited as a published description in the simulated anatomy of the living mouse model; no figure or text is redistributed."
       },
       "decision": "descriptive_basis_for_simulated_anatomy_nothing_redistributed"
+    },
+    {
+      "id": "pdb-7cpv-li2022",
+      "title": "Cryo-EM structure of 80S ribosome from mouse testis",
+      "landingPage": "https://www.rcsb.org/structure/7CPV",
+      "publication": {
+        "year": 2022,
+        "authors": [
+          "Li H",
+          "Huo Y",
+          "He X",
+          "et al."
+        ],
+        "series": "Nature 2022;612(7941):725-731, doi:10.1038/s41586-022-05508-0"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-ribosome.json. Water, hydrogen and alternate positions are left out."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-7n4y-kim2021",
+      "title": "The structure of bovine thyroglobulin with iodinated tyrosines",
+      "landingPage": "https://www.rcsb.org/structure/7N4Y",
+      "publication": {
+        "year": 2021,
+        "authors": [
+          "Kim K",
+          "Kopylov M",
+          "Bobe D",
+          "et al."
+        ],
+        "series": "Acta Crystallogr D Struct Biol 2021;77(Pt 11):1451-1459, doi:10.1107/S2059798321010056"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-thyroglobulin.json. Water, hydrogen and alternate positions are left out."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-4p79-suzuki2014",
+      "title": "Crystal structure of mouse claudin-15",
+      "landingPage": "https://www.rcsb.org/structure/4P79",
+      "publication": {
+        "year": 2014,
+        "authors": [
+          "Suzuki H",
+          "Nishizawa T",
+          "Tani K",
+          "et al."
+        ],
+        "series": "Science 2014;344(6181):304-7, doi:10.1126/science.1248571"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-claudin.json. Water, hydrogen and alternate positions are left out."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-3unh-huber2012",
+      "title": "Mouse 20S immunoproteasome",
+      "landingPage": "https://www.rcsb.org/structure/3UNH",
+      "publication": {
+        "year": 2012,
+        "authors": [
+          "Huber EM",
+          "Basler M",
+          "Schwab R",
+          "et al."
+        ],
+        "series": "Cell 2012;148(4):727-38, doi:10.1016/j.cell.2011.12.030"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-immunoproteasome.json. Water, hydrogen and alternate positions are left out."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
     }
   ]
 }

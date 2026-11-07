@@ -204,7 +204,7 @@ test('from the cells of each tissue there is a way to a molecule of its own, and
     const scene = withWays(id, build());
     assert.ok(scene.branches?.some((branch) => branch.tail === own), `${tissue}: ${id} has the way to ${own}`);
   }
-  for (const [tissue, way] of [['muscle', 'sarcomere'], ['heart', 'sarcomere'], ['nerve', 'axon'], ['artery', 'blood'], ['bone', 'collagen'], ['tendon', 'collagen'], ['brain', 'synapse'], ['retina', 'disc'], ['lens', 'crystallin'], ['kidney', 'water'], ['lung', 'surfactant'], ['stomach', 'pump'], ['airway', 'cilium'], ['fat', 'droplet'], ['lymphoid', 'antibody'], ['liver', 'secretion'], ['colon', 'microbiota'], ['skin', 'keratin']] as const) assert.equal(ownWayOf(tissue), way, tissue);
+  for (const [tissue, way] of [['thyroid', 'thyroglobulin'], ['testis', 'ribosome'], ['gland', 'ribosome'], ['urothelium', 'junction'], ['membrane', 'junction'], ['tooth', 'collagen'], ['muscle', 'sarcomere'], ['heart', 'sarcomere'], ['nerve', 'axon'], ['artery', 'blood'], ['bone', 'collagen'], ['tendon', 'collagen'], ['brain', 'synapse'], ['retina', 'disc'], ['lens', 'crystallin'], ['kidney', 'water'], ['lung', 'surfactant'], ['stomach', 'pump'], ['airway', 'cilium'], ['fat', 'droplet'], ['lymphoid', 'antibody'], ['liver', 'secretion'], ['colon', 'microbiota'], ['skin', 'keratin']] as const) assert.equal(ownWayOf(tissue), way, tissue);
 });
 
 test('every way on that is added lies in its scene', () => {
@@ -253,7 +253,7 @@ test('each level of measured atoms has a valid file with a checked source, and s
     assert.ok(room.containsPoint(scene.focus), level.id);
     for (const label of scene.labels) assert.ok(room.containsPoint(label.at), level.id + ' ' + label.text);
   }
-  assert.equal(seen.size, 16);
+  assert.equal(seen.size, 20);
   // A molecule that is not of the mouse says so where it is shown.
   const caption = (tail: JourneyTail) => journeyLevels('muscle', tail).find((level) => level.moleculeView === 'whole')!.caption;
   assert.match(caption('sarcomere'), /rabbit/);
@@ -264,8 +264,9 @@ test('each level of measured atoms has a valid file with a checked source, and s
   assert.match(caption('cilium'), /of the cow and not of the mouse/);
   assert.match(caption('pump'), /of the pig and not of the mouse/);
   assert.match(caption('keratin'), /of humans and not of the mouse/);
+  assert.match(caption('thyroglobulin'), /of the cow and not of the mouse/);
   assert.match(caption('importer'), /no claim is made that this species is in this mouse/);
-  for (const tail of ['mitochondrion', 'synapse', 'antibody', 'droplet', 'crystallin', 'secretion', 'surfactant'] as const) assert.match(caption(tail), /mouse/, tail);
+  for (const tail of ['mitochondrion', 'synapse', 'antibody', 'droplet', 'crystallin', 'secretion', 'surfactant', 'ribosome', 'junction', 'proteasome'] as const) assert.match(caption(tail), /mouse/, tail);
 });
 
 test('every atom of a molecule file is from its source, and a damaged file is refused', async () => {

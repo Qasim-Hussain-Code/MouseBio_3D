@@ -31,17 +31,16 @@ export function isMoleculeData(value: unknown, key: string): value is MoleculeDa
   return data.group.every((index) => index >= 0 && index < data.groups.length) && data.element.every((index) => index >= 0 && index < data.elements.length) && data.chain.every((index) => index >= 0 && index < data.chains.length);
 }
 
-const VAN_DER_WAALS: Readonly<Record<string, number>> = Object.freeze({ C: 1.7, N: 1.55, O: 1.52, S: 1.8, P: 1.8, FE: 1.5, K: 2.75, MG: 1.73, ZN: 1.39, CL: 1.75, F: 1.47 });
-const ELEMENT_COLOUR: Readonly<Record<string, string>> = Object.freeze({ C: '#6e6e6e', N: '#3a55d9', O: '#d9382e', S: '#dcb82d', P: '#e07f20', FE: '#d9731f', K: '#a05ad9', MG: '#6fb04c', ZN: '#8c8ca8', CL: '#3fb34f', F: '#78c8c8' });
-const ELEMENT_NAME: Readonly<Record<string, string>> = Object.freeze({ N: 'Nitrogen', O: 'Oxygen', S: 'Sulfur', P: 'Phosphorus', FE: 'Iron', K: 'Potassium', MG: 'Magnesium', ZN: 'Zinc', CL: 'Chlorine', F: 'Fluorine' });
-/** Atoms that hold on to their neighbours by longer bonds than carbon does. */
-const METALS: ReadonlySet<string> = new Set(['FE', 'K', 'MG', 'ZN']);
+const VAN_DER_WAALS: Readonly<Record<string, number>> = Object.freeze({ C: 1.7, N: 1.55, O: 1.52, S: 1.8, P: 1.8, FE: 1.5, K: 2.75, MG: 1.73, ZN: 1.39, CL: 1.75, F: 1.47, I: 1.98, SE: 1.9 });
+const ELEMENT_COLOUR: Readonly<Record<string, string>> = Object.freeze({ C: '#6e6e6e', N: '#3a55d9', O: '#d9382e', S: '#dcb82d', P: '#e07f20', FE: '#d9731f', K: '#a05ad9', MG: '#6fb04c', ZN: '#8c8ca8', CL: '#3fb34f', F: '#78c8c8', I: '#7b3fb3', SE: '#d99a2e' });
+const ELEMENT_NAME: Readonly<Record<string, string>> = Object.freeze({ N: 'Nitrogen', O: 'Oxygen', S: 'Sulfur', P: 'Phosphorus', FE: 'Iron', K: 'Potassium', MG: 'Magnesium', ZN: 'Zinc', CL: 'Chlorine', F: 'Fluorine', I: 'Iodine', SE: 'Selenium' });
+/** Atoms that hold on to their neighbours by longer bonds than carbon does, drawn larger. */
+const LONG_BONDED: ReadonlySet<string> = new Set(['FE', 'K', 'MG', 'ZN', 'I', 'SE']);
 
 const at = (data: MoleculeData, index: number) => V(data.x[index], data.y[index], data.z[index]);
 
 /** A ball of few faces whose normals point straight out from its centre, so that it shades as a round ball however coarse it is. */
-function roundBall(detail: number): THREE.BufferGeometry {
-  const geometry = sphere(detail);
+function roundBall(detail: number, geometry: THREE.BufferGeometry = sphere(detail)): THREE.BufferGeometry {
   const position = geometry.getAttribute('position'), normal = geometry.getAttribute('normal'), point = new THREE.Vector3();
   for (let index = 0; index < position.count; index++) {
     point.fromBufferAttribute(position, index).normalize();
@@ -69,7 +68,8 @@ export function buildMoleculeWhole(data: MoleculeData, angstromsToTheUnit = 120)
     placements.push({ position: at(data, i).sub(centre).multiplyScalar(toUnit), scale: uniform((VAN_DER_WAALS[data.elements[data.element[i]]] ?? 1.7) * toUnit), color: colour });
   }
   // Very large molecules use a coarser ball, so that they can still be turned smoothly.
-  group.add(instances(roundBall(count > 40000 ? 0 : 1), material('#ffffff', { roughness: 0.5 }), placements));
+  const ball = count > 120000 ? roundBall(0, new THREE.OctahedronGeometry(1, 0)) : roundBall(count > 40000 ? 0 : 1);
+  group.add(instances(ball, material('#ffffff', { roughness: 0.5 }), placements));
   const labels: JourneyLabel[] = [];
   data.groups.forEach((kind, index) => {
     if (!kind.label) return;
@@ -103,7 +103,7 @@ export function buildMoleculeAtoms(data: MoleculeData): JourneyScene {
   const shift = carbon ? carbon.at.clone() : V(0, 0, 0);
   const atoms: Placement[] = near.map((atom) => ({
     position: atom.at.clone().sub(shift).multiplyScalar(toUnit),
-    scale: uniform((METALS.has(atom.element) ? 0.78 : 0.46) * toUnit),
+    scale: uniform((LONG_BONDED.has(atom.element) ? 0.78 : 0.46) * toUnit),
     color: new THREE.Color(ELEMENT_COLOUR[atom.element] ?? '#999999'),
   }));
   group.add(instances(roundBall(2), material('#ffffff', { roughness: 0.35 }), atoms));
@@ -111,8 +111,8 @@ export function buildMoleculeAtoms(data: MoleculeData): JourneyScene {
   const up = V(0, 1, 0);
   for (let a = 0; a < near.length; a++) for (let b = a + 1; b < near.length; b++) {
     const between = near[b].at.clone().sub(near[a].at), length = between.length();
-    const metal = METALS.has(near[a].element) || METALS.has(near[b].element);
-    if (length < 0.8 || length > (metal ? 2.5 : 1.9)) continue;
+    const long = LONG_BONDED.has(near[a].element) || LONG_BONDED.has(near[b].element);
+    if (length < 0.8 || length > (long ? 2.5 : 1.9)) continue;
     bonds.push({ position: near[a].at.clone().add(near[b].at).sub(shift).sub(shift).multiplyScalar(0.5 * toUnit), scale: V(0.14 * toUnit, length * toUnit, 0.14 * toUnit), rotation: new THREE.Quaternion().setFromUnitVectors(up, between.normalize()) });
   }
   if (bonds.length) group.add(instances(new THREE.CylinderGeometry(1, 1, 1, 8), material('#b9b9b9'), bonds));

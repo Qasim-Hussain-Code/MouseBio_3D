@@ -2,11 +2,12 @@
 
 Usage: python -I scripts/journey/prepare_molecules.py <directory of mmCIF files> public/scale-journey
 
-The source files are from https://files.rcsb.org/download/ and are not kept in this repository. Where a molecule is whole only
+The source files are from https://files.rcsb.org/download/ and are not kept in this repository, and may be kept compressed beside their plain name. Where a molecule is whole only
 as a biological assembly the assembly file of the same entry is used, so that the copies are placed by the operators stated in
 the entry. Coordinates, chains and residue numbers are copied unchanged, rounded to 0.01 angstrom. Water, hydrogen and alternate
 positions other than the first are left out, as are the groups named under "drop". Output is deterministic for the same sources.
 """
+import gzip
 import hashlib
 import json
 import shlex
@@ -204,6 +205,58 @@ MOLECULES = {
         ],
         "focus": {"chainOnly": "P"},
     },
+    "ribosome": {
+        "entry": "7CPV", "file": "7CPV.cif", "sha256": "e45c30f9d1582e1dd9dfa1d156e6b6006993dc646bc28bd0ecea77f65d4b5329",
+        "title": "Cryo-EM structure of 80S ribosome from mouse testis", "method": "Electron microscopy", "resolutionAngstrom": 3.03, "organisms": "Mus musculus, testis",
+        "citation": "Li H, Huo Y, He X, et al. A male germ-cell-specific ribosome controls male fertility. Nature 2022;612(7941):725-731. doi:10.1038/s41586-022-05508-0",
+        "note": "From the testis of mice, holding RPL39L, the male germ-cell relative of RPL39. It is not from the Digimouse specimen.",
+        "groups": [
+            {"name": "RPL39L", "colour": "#f28a2c", "chains": ["Ll"], "label": "RPL39L"},
+            {"name": "Transfer RNA", "colour": "#d9382e", "chains": ["S6"], "label": "Transfer RNA"},
+            {"name": "Ions", "colour": "#6fb04c", "comps": ["MG", "ZN"]},
+            {"name": "Ribosomal RNA", "colour": "#d8c79a", "chains": ["L5", "L7", "L8", "S2"], "label": "Ribosomal RNA"},
+            {"name": "Proteins", "colour": "#7fa3c9", "palette": True, "label": "One of the proteins"},
+        ],
+        "focus": {"chainOnly": "Ll"},
+    },
+    "thyroglobulin": {
+        "entry": "7N4Y", "file": "7N4Y.cif", "sha256": "316d55af155012fa3b7da0e6b0cf37b5e9ab2ba8fb64a4a2e36f98ab220c1928",
+        "title": "The structure of bovine thyroglobulin with iodinated tyrosines", "method": "Electron microscopy", "resolutionAngstrom": 2.61, "organisms": "Bos taurus",
+        "citation": "Kim K, Kopylov M, Bobe D, Kelley K, Eng ET, Arvan P, Clarke OB. The structure of natively iodinated bovine thyroglobulin. Acta Crystallogr D Struct Biol 2021;77(Pt 11):1451-1459. doi:10.1107/S2059798321010056",
+        "note": "Natively iodinated thyroglobulin of the cow, as a dimer. It is not of the mouse.",
+        "groups": [
+            {"name": "Thyroxine", "colour": "#7b3fb3", "comps": ["T44"], "label": "Thyroxine, formed in the protein"},
+            {"name": "Diiodotyrosine", "colour": "#d9722e", "comps": ["TYI"], "label": "Diiodotyrosine"},
+            {"name": "Sugars", "colour": "#74ab6d", "comps": ["NAG", "BMA", "FUC"], "label": "Sugars"},
+            {"name": "The two chains", "colour": "#c9a57f", "palette": True, "label": "One of two chains"},
+        ],
+        "focus": {"comp": "T44", "chain": "A", "residue": 24, "atom": "I3"},
+    },
+    "claudin": {
+        "entry": "4P79", "file": "4P79.cif", "sha256": "c867b20b87bf38364a4c9350ba7edfe9d5f7b10bbe2ea446b6e1c47a6af997e6",
+        "title": "Crystal structure of mouse claudin-15", "method": "X-ray diffraction", "resolutionAngstrom": 2.4, "organisms": "Mus musculus, recombinant",
+        "citation": "Suzuki H, Nishizawa T, Tani K, et al. Crystal structure of a claudin provides insight into the architecture of tight junctions. Science 2014;344(6181):304-7. doi:10.1126/science.1248571",
+        "note": "A recombinant claudin of the mouse, with selenomethionine in place of methionine. It is not from the Digimouse specimen.",
+        "groups": [
+            {"name": "Selenomethionine", "colour": "#d99a2e", "comps": ["MSE"], "label": "Selenomethionine, put there for the crystal"},
+            {"name": "Lipid", "colour": "#e8dcb8", "comps": ["OLC"], "label": "A lipid of the crystal"},
+            {"name": "Claudin-15", "colour": "#7fa3c9", "palette": True, "label": "The chain of claudin-15"},
+        ],
+        "focus": {"centre": "C"},
+    },
+    "immunoproteasome": {
+        "entry": "3UNH", "file": "3UNH.cif", "sha256": "2467ca41e7f9ed31f3df39a74a83404d68e7f4a88798c5f8001ddce7a67af447",
+        "title": "Mouse 20S immunoproteasome", "method": "X-ray diffraction", "resolutionAngstrom": 3.2, "organisms": "Mus musculus",
+        "citation": "Huber EM, Basler M, Schwab R, Heinemeyer W, Kirk CJ, Groettrup M, Groll M. Immuno- and constitutive proteasome crystal structures reveal differences in substrate and inhibitor specificity. Cell 2012;148(4):727-38. doi:10.1016/j.cell.2011.12.030",
+        "note": "The 20S immunoproteasome of the mouse, with the ions of the crystal left out. It is not from the Digimouse specimen.",
+        "drop": ["IOD", "CL", "K"],
+        "groups": [
+            {"name": "Subunits of the immunoproteasome", "colour": "#f28a2c", "chains": ["H", "K", "N", "V", "Y", "b"], "label": "A subunit that the immunoproteasome has in place of another"},
+            {"name": "Other subunits of the inner rings", "colour": "#74ab6d", "chains": ["I", "J", "L", "M", "W", "X", "Z", "a"], "label": "An inner ring"},
+            {"name": "Subunits of the outer rings", "colour": "#7fa3c9", "palette": True, "label": "An outer ring"},
+        ],
+        "focus": {"comp": "THR", "residue": 1, "chain": "K", "atom": "OG1"},
+    },
 }
 
 
@@ -291,7 +344,8 @@ def focus_of(rows: list[dict[str, str]], focus: dict) -> int:
 
 
 def prepare(key: str, spec: dict, source_dir: Path, target_dir: Path) -> str:
-    data = (source_dir / spec["file"]).read_bytes()
+    path = source_dir / spec["file"]
+    data = path.read_bytes() if path.exists() else gzip.decompress((source_dir / (spec["file"] + ".gz")).read_bytes())
     digest = hashlib.sha256(data).hexdigest()
     if digest != spec["sha256"]:
         raise ValueError(f"Unexpected source file for {key}: {digest}")

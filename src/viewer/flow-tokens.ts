@@ -118,6 +118,7 @@ const COLOURS: Record<string, THREE.Color> = {
 
 const VERTEX = `
 attribute vec4 aLine;
+attribute float aShown;
 attribute vec4 aFlow;
 attribute vec4 aLane;
 attribute vec3 aColour;
@@ -156,7 +157,7 @@ void main() {
   // Tokens appear and fade at the ends of a line, so that none jumps from end to start. The kind that is turned off has no size.
   float ends = smoothstep(0.0, 0.0008, min(travel, span - travel) + 0.0002);
   float shown = aFlow.z < 0.5 ? uShown.x : aFlow.z < 1.5 ? uShown.y : aFlow.z < 2.5 ? uShown.z : uShown.w;
-  float size = max(here.w * aFlow.w, 0.000014) * ends * shown;
+  float size = max(here.w * aFlow.w, 0.000014) * ends * shown * aShown;
   if (uWinNear > 0.0 && distance(world, cameraPosition) < uWinNear) size = 0.0;
   vCorner = position.xy;
   vColour = aColour;
@@ -187,6 +188,8 @@ export interface FlowTokens {
   advance(seconds: number, rate: number): void;
   /** Which kinds are shown. */
   show(blood: boolean, nerves: boolean): void;
+  /** Only the lines of structures that are shown carry tokens, so that nothing moves where a vessel or a nerve has been taken out of the view. */
+  showLines(isShown: (structure: string) => boolean): void;
   /** Only what is inside the removed part of the skin is drawn, as for the other inner parts. */
   setMasked(masked: boolean): void;
   setNear(distance: number): void;
@@ -207,6 +210,7 @@ export function createFlowTokens(lines: readonly FlowLine[]): FlowTokens | null 
   texture.minFilter = THREE.NearestFilter; texture.magFilter = THREE.NearestFilter; texture.needsUpdate = true;
 
   const aLine = new Float32Array(4 * count), aFlow = new Float32Array(4 * count), aLane = new Float32Array(4 * count), aColour = new Float32Array(3 * count);
+  const aShown = new Float32Array(count).fill(1);
   let state = 19650610;
   const next = () => { state ^= state << 13; state >>>= 0; state ^= state >>> 17; state ^= state << 5; state >>>= 0; return state / 4294967296; };
   let token = 0;
@@ -232,6 +236,9 @@ export function createFlowTokens(lines: readonly FlowLine[]): FlowTokens | null 
   geometry.setAttribute('aFlow', new THREE.InstancedBufferAttribute(aFlow, 4));
   geometry.setAttribute('aLane', new THREE.InstancedBufferAttribute(aLane, 4));
   geometry.setAttribute('aColour', new THREE.InstancedBufferAttribute(aColour, 3));
+  const shownAttribute = new THREE.InstancedBufferAttribute(aShown, 1);
+  shownAttribute.setUsage(THREE.DynamicDrawUsage);
+  geometry.setAttribute('aShown', shownAttribute);
   geometry.instanceCount = count;
   const uniforms = {
     uTable: { value: texture }, uTableSize: { value: new THREE.Vector2(width, height) }, uClock: { value: 0 }, uStep: { value: FLOW_STEP }, uBeatRate: { value: 1 },
@@ -251,6 +258,15 @@ export function createFlowTokens(lines: readonly FlowLine[]): FlowTokens | null 
       uniforms.uBeatRate.value = 10 * rate;
     },
     show(blood, nerves) { uniforms.uShown.value.set(blood ? 1 : 0, blood ? 1 : 0, blood ? 1 : 0, nerves ? 1 : 0); },
+    showLines(isShown) {
+      let token = 0, changed = false;
+      lines.forEach((line, lineIndex) => {
+        const value = isShown(line.structure) ? 1 : 0;
+        if (counts[lineIndex] && aShown[token] !== value) { aShown.fill(value, token, token + counts[lineIndex]); changed = true; }
+        token += counts[lineIndex];
+      });
+      if (changed) shownAttribute.needsUpdate = true;
+    },
     setMasked(masked) {
       material.stencilWrite = masked;
       material.stencilFunc = THREE.EqualStencilFunc;

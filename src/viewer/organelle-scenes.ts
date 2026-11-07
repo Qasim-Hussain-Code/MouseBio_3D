@@ -882,6 +882,198 @@ export function buildKeratinFilament(): JourneyScene {
   ]);
 }
 
+/** Sheets of rough endoplasmic reticulum studded with ribosomes, and others free between them. */
+export function buildRoughReticulum(): JourneyScene {
+  const rng = random(19750801), group = new THREE.Group();
+  group.add(body(3.4, '#ecdccd', 1.2));
+  const HALF = 0.035, PITCH = 0.29, walls: Placement[] = [], insides: Placement[] = [], ribosomes: Placement[] = [];
+  const dot = (x: number, y: number) => ribosomes.push(ball(x, y, 0.008, FACE + 0.002, shade('#a8796a', 0.86 + rng() * 0.28)));
+  for (let k = -5; k <= 5; k++) {
+    walls.push(rect(0, k * PITCH, 3.4, HALF * 2 + 0.012));
+    insides.push(rect(0, k * PITCH, 3.4, HALF * 2, FACE + 0.001));
+    for (let i = -85; i <= 85; i++) for (const side of [-1, 1]) if (rng() < 0.82) dot(i * 0.02 + (rng() - 0.5) * 0.005, k * PITCH + side * (HALF + 0.014));
+  }
+  for (let i = 0; i < 320; i++) dot((rng() - 0.5) * 3.3, (Math.floor(rng() * 10) - 4.5) * PITCH + (rng() - 0.5) * 0.11);
+  const chosen = V(0, HALF + 0.014, FACE + 0.002);
+  dot(chosen.x, chosen.y);
+  bars(group, walls, '#b89a84');
+  bars(group, insides, '#f5ecdc');
+  flats(group, ribosomes, '#ffffff', 0);
+  mitochondria(group, [{ x: -1.05, y: PITCH * 1.5, length: 0.24, width: 0.06, angle: 0.03 }, { x: 0.95, y: -PITCH * 2.5, length: 0.26, width: 0.06, angle: -0.04 }], FACE + 0.003);
+  return finish(group, V(0, 0, 0.2), chosen, [
+    { text: 'One ribosome', at: chosen },
+    { text: 'Inside a sheet', at: V(0.8, PITCH, FACE + 0.002) },
+    { text: 'Mitochondrion', at: V(-1.05, PITCH * 1.5, FACE + 0.004) },
+  ]);
+}
+
+/** Ribosomes on the membrane of the reticulum, several along one messenger RNA, each passing a new protein through it. */
+export function buildRibosomesOnMembrane(): JourneyScene {
+  const rng = random(20221214), group = new THREE.Group();
+  group.add(body(4, '#ecdccd', 1.2));
+  const FLOOR = -0.42, large: Placement[] = [], small: Placement[] = [], chains: THREE.Vector3[][] = [], thread: THREE.Vector3[] = [];
+  bars(group, [rect(0, FLOOR - 1, 4, 2, FACE, new THREE.Color('#f5ecdc')), rect(0, FLOOR, 4, 0.024, FACE + 0.001, new THREE.Color('#b89a84'))], '#ffffff');
+  const pair = (x: number, y: number, turn: number) => {
+    large.push(oval(x, y, 0.05, 0.042, turn, FACE + 0.002, shade('#a8796a', 0.88 + rng() * 0.24)));
+    small.push(oval(x - 0.046 * Math.sin(turn), y + 0.046 * Math.cos(turn), 0.04, 0.024, turn, FACE + 0.003, shade('#cda696', 0.88 + rng() * 0.24)));
+  };
+  for (let i = -19; i <= 19; i++) {
+    const x = i * 0.105 + (i ? (rng() - 0.5) * 0.012 : 0), y = FLOOR + 0.05, reach = 0.16 + rng() * 0.3, sway = (rng() - 0.5) * 0.12;
+    pair(x, y, 0);
+    chains.push([V(x, FLOOR + 0.01, FACE + 0.002), V(x + sway * 0.3, FLOOR - reach * 0.45, FACE + 0.002), V(x + sway * 0.7, FLOOR - reach * 0.75, FACE + 0.002), V(x + sway, FLOOR - reach, FACE + 0.002)]);
+  }
+  for (let t = 0; t <= 80; t++) thread.push(V(-2 + t * 0.05, FLOOR + 0.098 + 0.008 * Math.sin(t * 1.7), FACE + 0.005));
+  for (let i = 0; i < 150; i++) pair((rng() - 0.5) * 3.8, FLOOR + 0.3 + rng() * 2, rng() * 6.28);
+  flats(group, large, '#ffffff', 2);
+  flats(group, small, '#ffffff', 2);
+  tubes(group, chains, 0.005, '#7a6a9c', 3);
+  tubes(group, [thread], 0.005, '#8c4a6a', 3);
+  const chosen = V(0, FLOOR + 0.065, FACE + 0.004);
+  return finish(group, V(0, -0.2, 0.2), chosen, [
+    { text: 'One ribosome', at: chosen },
+    { text: 'Messenger RNA', at: V(0.3, FLOOR + 0.098, FACE + 0.006) },
+    { text: 'Membrane of the sheet', at: V(-0.3, FLOOR, FACE + 0.002) },
+    { text: 'A new protein', at: V(0.21, FLOOR - 0.1, FACE + 0.003) },
+  ]);
+}
+
+/** The top of a follicular cell of the thyroid, with microvilli reaching into the stored colloid. */
+export function buildFollicleEdge(): JourneyScene {
+  const rng = random(20211029), group = new THREE.Group();
+  group.add(body(3.4, '#ecd9a8', 1.2));
+  const TOP = -0.5;
+  bars(group, [rect(0, TOP - 0.7, 3.4, 1.4)], '#ecdccf');
+  const villi: Placement[] = [];
+  for (let i = -60; i <= 60; i++) { const length = 0.1 + rng() * 0.1; villi.push(rect(i * 0.028, TOP + length / 2, 0.012, length)); }
+  bars(group, villi, '#d9bfa8');
+  const reticulum: THREE.Vector3[][] = [];
+  for (let k = 0; k < 7; k++) { const y = TOP - 0.28 - k * 0.11, from = -1.5 + rng() * 0.8; reticulum.push(line(from, y, from + 1.1 + rng() * 1.4, y + (rng() - 0.5) * 0.05, FACE + 0.001)); }
+  tubes(group, reticulum, 0.012, '#c9ab98', 3);
+  mitochondria(group, [{ x: -0.8, y: TOP - 0.2, length: 0.2, width: 0.05, angle: 0.1 }, { x: 0.75, y: TOP - 0.24, length: 0.22, width: 0.05, angle: -0.08 }], FACE + 0.002);
+  const chosen = V(0, 0.3, FACE + 0.001);
+  return finish(group, V(0, -0.1, 0.2), chosen, [
+    { text: 'Stored colloid', at: chosen },
+    { text: 'Microvilli of the cell', at: V(0.9, TOP + 0.08, FACE + 0.001) },
+    { text: 'Top of a follicular cell', at: V(-0.7, TOP - 0.5, FACE + 0.001) },
+  ]);
+}
+
+/** Thyroglobulin crowded in the colloid, each a dimer of two parts. */
+export function buildColloid(): JourneyScene {
+  const rng = random(20220502), group = new THREE.Group();
+  group.add(body(4, '#f1e4bd', 1.2));
+  const parts: Placement[] = [], places = packed(2, 0.1, 0.03, rng);
+  const nearest = places.reduce((best, place) => Math.hypot(place.x, place.y) < Math.hypot(best.x, best.y) ? place : best);
+  const chosen = V(nearest.x, nearest.y, FACE + 0.003);
+  for (const { x, y } of places) {
+    const angle = rng() * 6.28;
+    for (const side of [-1, 1]) parts.push(oval(x + side * 0.018 * Math.cos(angle), y + side * 0.018 * Math.sin(angle), 0.021, 0.016, angle, FACE + 0.002, shade('#c79a63', 0.86 + rng() * 0.28)));
+  }
+  flats(group, parts, '#ffffff', 2);
+  // The tip of a microvillus and the top of the cell lie at one edge, over the crowd.
+  bars(group, [rect(0, -0.62, 4, 0.24, FACE + 0.004), rect(-0.34, -0.42, 0.05, 0.3, FACE + 0.004), rect(0.3, -0.44, 0.05, 0.26, FACE + 0.004), rect(1.1, -0.4, 0.05, 0.32, FACE + 0.004), rect(-1.05, -0.45, 0.05, 0.28, FACE + 0.004)], '#ecdccf');
+  return finish(group, V(0, 0, 0.2), chosen, [
+    { text: 'One thyroglobulin, among many', at: chosen },
+    { text: 'A microvillus', at: V(0.3, -0.38, FACE + 0.005) },
+    { text: 'Top of the cell', at: V(-0.3, -0.62, FACE + 0.005) },
+  ]);
+}
+
+/** Two cells of a lining side by side, closed near their free surface by a tight junction. */
+export function buildCellJunction(): JourneyScene {
+  const rng = random(20140418), group = new THREE.Group();
+  group.add(body(3.4, '#f3efe6', 1.2));
+  const TOP = 0.62, GAP = 0.003, WIDE = 1.7 - GAP;
+  bars(group, [rect(-(WIDE + GAP * 2) / 2, TOP - 1.6, WIDE, 3.2), rect((WIDE + GAP * 2) / 2, TOP - 1.6, WIDE, 3.2)], '#ecdccf');
+  const villi: Placement[] = [];
+  for (let i = -58; i <= 58; i++) if (i) { const length = 0.1 + rng() * 0.05; villi.push(rect(i * 0.029, TOP + length / 2, 0.012, length)); }
+  bars(group, villi, '#d9bfa8');
+  flats(group, [oval(-0.86, -0.95, 0.42, 0.34, 0, FACE + 0.001), oval(0.86, -0.95, 0.42, 0.34, 0, FACE + 0.001)], '#b89fb4', 4);
+  mitochondria(group, [{ x: -0.26, y: 0.2, length: 0.13, width: 0.04, angle: 0.6 }, { x: 0.3, y: 0.1, length: 0.15, width: 0.04, angle: -0.5 }, { x: 0.36, y: 0.44, length: 0.11, width: 0.035, angle: 0.2 }], FACE + 0.002);
+  const reticulum: THREE.Vector3[][] = [], vesicles: Placement[] = [];
+  for (let k = 0; k < 16; k++) { const x = (k % 2 ? 1 : -1) * (0.08 + rng() * 0.6), y = 0.05 + rng() * 0.42; reticulum.push(line(x, y, x + (rng() - 0.5) * 0.22, y + (rng() - 0.5) * 0.1, FACE + 0.001)); }
+  for (let i = 0; i < 90; i++) { const x = (rng() - 0.5) * 1.6, y = -0.05 + rng() * 0.62; if (Math.abs(x) > 0.02) vesicles.push(ball(x, y, 0.006 + rng() * 0.006, FACE + 0.001, shade('#c9ab98', 0.9 + rng() * 0.2))); }
+  tubes(group, reticulum, 0.006, '#c9ab98', 3);
+  flats(group, vesicles, '#ffffff', 0);
+  const chosen = V(0, TOP - 0.06, FACE + 0.004);
+  bars(group, [rect(0, chosen.y, 0.026, 0.07, FACE + 0.003)], '#9c5540');
+  return finish(group, V(0, 0.4, 0.2), chosen, [
+    { text: 'A tight junction', at: chosen },
+    { text: 'Free surface of the lining', at: V(0.8, TOP + 0.22, FACE + 0.001) },
+    { text: 'The next cell', at: V(0.2, 0.3, FACE + 0.001) },
+    { text: 'Mitochondrion', at: V(-0.26, 0.2, FACE + 0.003) },
+  ]);
+}
+
+/** The face of a membrane at a tight junction, with claudins in rows that branch and rejoin. */
+export function buildJunctionStrands(): JourneyScene {
+  const rng = random(20101820), group = new THREE.Group();
+  group.add(body(4, '#eadfd2', 1.2));
+  const claudins: Placement[] = [];
+  const shape = (row: number) => { const phase = 1.3 * row; return (x: number) => row * 0.33 + 0.06 * Math.sin(x * 2.2 + phase) + 0.03 * Math.sin(x * 5.1 + phase * 2); };
+  const dot = (x: number, y: number) => claudins.push(ball(x, y, 0.0085, FACE + 0.002, shade('#7fa3c9', 0.86 + rng() * 0.28)));
+  for (let row = -6; row <= 6; row++) { const at = shape(row); for (let x = -2; x <= 2; x += 0.016) dot(x, at(x)); }
+  for (let i = 0; i < 60; i++) {
+    const row = Math.floor(rng() * 12) - 6, x0 = (rng() - 0.5) * 3.8, x1 = x0 + (rng() - 0.5) * 0.3, from = shape(row)(x0), to = shape(row + 1)(x1);
+    const steps = Math.ceil(Math.hypot(x1 - x0, to - from) / 0.016);
+    for (let s = 1; s < steps; s++) dot(x0 + (x1 - x0) * s / steps, from + (to - from) * s / steps);
+  }
+  flats(group, claudins, '#ffffff', 0);
+  const chosen = V(0, shape(0)(0), FACE + 0.003);
+  return finish(group, V(0, 0, 0.2), chosen, [
+    { text: 'A claudin, in a strand', at: chosen },
+    { text: 'Another strand', at: V(-0.7, shape(2)(-0.7), FACE + 0.003) },
+    { text: 'Membrane of the cell', at: V(0.75, 0.165, FACE + 0.001) },
+  ]);
+}
+
+/** The thin rim of cytoplasm beside the large nucleus of a lymphocyte, with proteasomes through it. */
+export function buildLymphocyteRim(): JourneyScene {
+  const rng = random(20120217), group = new THREE.Group();
+  group.add(body(3.4, '#efe3da', 1.2));
+  flats(group, [oval(0, -3.1, 3.2, 3.2, 0, FACE + 0.001)], '#a58fa9', 7);
+  flats(group, [oval(0, -3.1, 3.13, 3.13, 0, FACE + 0.002)], '#b7a4ba', 7);
+  bars(group, [rect(0, 1.42, 3.4, 0.56, FACE + 0.001)], '#f6f2ec');
+  bars(group, [rect(0, 1.13, 3.4, 0.022, FACE + 0.002)], '#c9ab98');
+  const dots: Placement[] = [];
+  for (let i = 0; i < 620; i++) { const x = (rng() - 0.5) * 3.3, y = 0.16 + rng() * 0.95; if (Math.hypot(x, y + 3.1) > 3.25) dots.push(ball(x, y, 0.0065, FACE + 0.002, shade('#7fa3c9', 0.86 + rng() * 0.28))); }
+  const chosen = V(0, 0.6, FACE + 0.003);
+  dots.push(ball(chosen.x, chosen.y, 0.0065, chosen.z, new THREE.Color('#f28a2c')));
+  flats(group, dots, '#ffffff', 0);
+  mitochondria(group, [{ x: -0.9, y: 0.72, length: 0.22, width: 0.06, angle: 0.15 }, { x: 0.95, y: 0.82, length: 0.24, width: 0.06, angle: -0.2 }], FACE + 0.003);
+  return finish(group, V(0, 0.2, 0.2), chosen, [
+    { text: 'One proteasome, among many', at: chosen },
+    { text: 'Nucleus', at: V(0.3, -0.2, FACE + 0.003) },
+    { text: 'Edge of the cell', at: V(-0.6, 1.13, FACE + 0.003) },
+  ]);
+}
+
+/** Proteasomes among the contents of the cytoplasm: barrels of four rings, each two outer and two inner. */
+export function buildProteasomes(): JourneyScene {
+  const rng = random(20120218), group = new THREE.Group();
+  group.add(body(4, '#efe6dd', 1.2));
+  const outer: Placement[] = [], inner: Placement[] = [], others: Placement[] = [];
+  const barrel = (x: number, y: number, angle: number) => {
+    const along = V(-Math.sin(angle), Math.cos(angle), 0);
+    for (const [offset, into] of [[-0.006, inner], [0.006, inner], [-0.019, outer], [0.019, outer]] as const) {
+      into.push(oval(x + along.x * offset, y + along.y * offset, 0.019, 0.0066, angle, FACE + 0.003, shade(into === outer ? '#7fa3c9' : '#74ab6d', 0.88 + rng() * 0.24)));
+    }
+  };
+  barrel(0, 0, 0);
+  for (const { x, y } of packed(2, 0.2, 0.09, rng)) if (Math.hypot(x, y) > 0.12) barrel(x, y, rng() * 6.28);
+  for (let i = 0; i < 2400; i++) { const x = (rng() - 0.5) * 3.9, y = (rng() - 0.5) * 3.9; if (Math.hypot(x, y) > 0.05) others.push(ball(x, y, 0.012 + rng() * 0.012, FACE + 0.001, shade('#d4c6b8', 0.86 + rng() * 0.28))); }
+  flats(group, others, '#ffffff', 1);
+  flats(group, outer, '#ffffff', 2);
+  flats(group, inner, '#ffffff', 2);
+  const chosen = V(0, 0, FACE + 0.004);
+  return finish(group, V(0, 0, 0.2), chosen, [
+    { text: 'One immunoproteasome', at: chosen },
+    { text: 'An outer ring', at: V(0, 0.019, FACE + 0.004) },
+    { text: 'Other contents of the cytoplasm', at: V(0.9, 0.62, FACE + 0.002) },
+  ]);
+}
+
+
 export const ORGANELLE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = Object.freeze({
   'mitochondrion-close': buildMitochondrion, 'mitochondrion-fine': buildCrista,
   'sarcomere-close': buildSarcomeres, 'sarcomere-fine': buildFilaments,
@@ -898,6 +1090,10 @@ export const ORGANELLE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = 
   'cilium-close': buildCiliaRow, 'cilium-fine': buildAxonemeSection,
   'pump-close': buildParietal, 'pump-fine': buildPumpMembrane,
   'keratin-close': buildKeratinBundle, 'keratin-fine': buildKeratinFilament,
+  'ribosome-close': buildRoughReticulum, 'ribosome-fine': buildRibosomesOnMembrane,
+  'thyroglobulin-close': buildFollicleEdge, 'thyroglobulin-fine': buildColloid,
+  'junction-close': buildCellJunction, 'junction-fine': buildJunctionStrands,
+  'proteasome-close': buildLymphocyteRim, 'proteasome-fine': buildProteasomes,
 });
 
 /** A way on from the cells of a tissue. It starts at something the scene already names, or at a small mark drawn beside the nucleus. */
@@ -920,21 +1116,21 @@ const WAYS: Readonly<Record<string, readonly Way[]>> = Object.freeze({
   'liver-cells': [{ tail: 'secretion', text: 'What the cell secretes', near: [-0.09, -0.05], mark: 'dot' }, MITOCHONDRION([0.08, 0.06])],
   'kidney-cells': [{ tail: 'water', text: 'Water channels of the brush border', label: 'Brush border' }, MITOCHONDRION([0.07, -0.05])],
   'lung-cells': [{ tail: 'surfactant', text: 'Lamellar bodies', near: [0.08, 0.06], mark: 'dot' }],
-  'gut-cells': [MITOCHONDRION([0.07, 0.05])],
+  'gut-cells': [MITOCHONDRION([0.07, 0.05]), { tail: 'junction', text: 'A tight junction', near: [-0.08, 0.06], mark: 'dot' }],
   'colon-cells': [MITOCHONDRION([0.07, 0.05])],
   'brain-cells': [{ tail: 'synapse', text: 'A synapse', label: 'Spines on a dendrite' }, MITOCHONDRION([0.09, -0.06])],
-  'lymphoid-cells': [{ tail: 'antibody', text: 'A plasma cell', near: [0.1, 0.08], mark: 'dot' }],
+  'lymphoid-cells': [{ tail: 'antibody', text: 'A plasma cell', near: [0.1, 0.08], mark: 'dot' }, { tail: 'proteasome', text: 'Inside a lymphocyte', near: [-0.1, -0.07], mark: 'dot' }],
   'retina-cells': [{ tail: 'disc', text: 'Discs of a rod', label: 'Stacked discs of a rod outer segment' }],
   'lens-cells': [{ tail: 'crystallin', text: 'Inside a fibre', label: 'Fibres cut across, closely packed, with no nuclei' }],
   'stomach-cells': [{ tail: 'pump', text: 'The acid pump', near: [-0.09, -0.06], mark: 'dot' }, { tail: 'mitochondrion', text: 'A mitochondrion', label: 'Mitochondria' }],
   'airway-cells': [{ tail: 'cilium', text: 'A cilium', label: 'Cilia' }, MITOCHONDRION([0.07, -0.05])],
-  'gland-cells': [MITOCHONDRION([0.07, 0.05])],
-  'endocrine-cells': [MITOCHONDRION([0.07, 0.05])],
-  'thyroid-cells': [MITOCHONDRION([0.07, 0.05])],
-  'urothelium-cells': [MITOCHONDRION([0.07, 0.05])],
-  'tooth-cells': [MITOCHONDRION([0.07, 0.05])],
-  'testis-cells': [MITOCHONDRION([0.07, 0.05])],
-  'membrane-cells': [MITOCHONDRION([0.07, 0.04])],
+  'gland-cells': [{ tail: 'ribosome', text: 'Ribosomes', near: [-0.08, -0.05], mark: 'dot' }, MITOCHONDRION([0.07, 0.05])],
+  'endocrine-cells': [{ tail: 'ribosome', text: 'Ribosomes', near: [-0.08, -0.05], mark: 'dot' }, MITOCHONDRION([0.07, 0.05])],
+  'thyroid-cells': [{ tail: 'thyroglobulin', text: 'The colloid', label: 'Stored colloid' }, MITOCHONDRION([0.07, 0.05])],
+  'urothelium-cells': [{ tail: 'junction', text: 'A tight junction', near: [-0.08, 0.06], mark: 'dot' }, MITOCHONDRION([0.07, 0.05])],
+  'tooth-cells': [{ tail: 'collagen', text: 'Collagen of the dentine', label: 'Dentine' }, MITOCHONDRION([0.07, 0.05])],
+  'testis-cells': [{ tail: 'ribosome', text: 'Ribosomes of a forming sperm', label: 'Round spermatids', keep: true }, MITOCHONDRION([0.07, 0.05])],
+  'membrane-cells': [{ tail: 'junction', text: 'A tight junction', near: [-0.08, 0.05], mark: 'dot' }, MITOCHONDRION([0.07, 0.04])],
   bacterium: [{ tail: 'importer', text: 'A nutrient importer in the outer membrane', label: 'Outer membrane, wall and inner membrane', keep: true }],
 });
 

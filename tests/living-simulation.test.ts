@@ -232,6 +232,15 @@ test('the tokens stay within their budget and wide vessels get the closest token
   assert.equal(tokens.count, total);
   assert.equal(tokens.mesh.frustumCulled, false);
   assert.equal(tokens.mesh.name, 'simulated-flow-tokens');
+  // Tokens leave with the structure that carries them, so that the skeleton alone has none.
+  const carried = () => Array.from((tokens.mesh.geometry.getAttribute('aShown') as THREE.InstancedBufferAttribute).array);
+  assert.ok(carried().every((value) => value === 1));
+  tokens.showLines(() => false);
+  assert.ok(carried().every((value) => value === 0));
+  tokens.showLines((structure) => structure === tokens.lines[0].structure);
+  assert.ok(carried().some((value) => value === 1));
+  tokens.showLines(() => true);
+  assert.ok(carried().every((value) => value === 1));
   tokens.dispose();
 });
 

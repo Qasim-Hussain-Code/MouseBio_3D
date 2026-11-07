@@ -14,7 +14,7 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 
 MAX_FILE_BYTES = 8 * 1024 * 1024
-MAX_HISTORY_BLOBS = 1000
+MAX_HISTORY_BLOBS = 5000
 MAX_GLB_JSON_BYTES = 1024 * 1024
 MAX_REGISTERED_GLB_BYTES = 80 * 1024 * 1024
 # Raised from 160 MiB on 2026-11-05 for the 0.2 mm skeleton detail and the micro-CT reference (about 182 MB in total).
