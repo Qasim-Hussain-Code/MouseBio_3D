@@ -1,0 +1,12 @@
+/* The name and the mark: a printed name beside a living mouse, with no box round it. */
+.workbench .brand,.brand{gap:9px}
+.brand-mark,.workbench .brand-mark{display:block;width:auto;height:auto;background:none;border-radius:0}
+.mouse-mark{display:block;margin:-6px -4px -6px -8px;width:var(--mark-width);height:var(--mark-height);background:url(/atlas-living/mouse-moving.webp) 0 0 no-repeat;background-size:calc(var(--mark-width)*var(--mark-frames)) var(--mark-height);animation:mouse-mark-life var(--mark-seconds) steps(var(--mark-frames)) infinite}
+@keyframes mouse-mark-life{to{background-position-x:calc(var(--mark-width)*var(--mark-frames)*-1)}}
+@media (prefers-reduced-motion:reduce){.mouse-mark{animation:none}}
+.brand strong,.workbench .brand strong{display:inline-flex;align-items:baseline;font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;font-size:24px;font-weight:600;letter-spacing:-.25px;line-height:1;color:#1c2a27}
+.brand-bio{color:#2a6a59}
+.brand-suffix,.workbench .brand-suffix{margin-left:1px;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;font-weight:500;letter-spacing:.2px;color:#7f958d}
+@media (max-width:1150px){.brand strong,.workbench .brand strong{font-size:21px}.brand-suffix,.workbench .brand-suffix{font-size:12.5px}}
+.camera-pad button svg{display:block}
+.workbench.mode-dissection .camera-pad button[aria-label="Reset camera"]{display:none}

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createLifeMeshUniforms, LIFE_DECLARATIONS, LIFE_MOVE, LIFE_SHARED, type LifeMeshUniforms } from './life-field';
+import { createCutMeshUniforms, CUT_DECLARATIONS, CUT_SHARED, CUT_TEST, type CutMeshUniforms } from './cut-uniforms';
 
 /**
  * Display shading hooks for source surfaces. The hooks change pixel appearance
@@ -7,7 +8,7 @@ import { createLifeMeshUniforms, LIFE_DECLARATIONS, LIFE_MOVE, LIFE_SHARED, type
  * highlight for the selected region. Geometry, source identifiers and colours
  * are not modified, and the hooks carry no anatomical or optical measurement.
  */
-export interface SurfaceShadingUniforms extends LifeMeshUniforms {
+export interface SurfaceShadingUniforms extends LifeMeshUniforms, CutMeshUniforms {
   /** 0 keeps the material's plain opacity; 1 fades surfaces facing the camera to their rims. */
   readonly uGhost: { value: number };
   /** Exponent of the view-angle term used by the ghost fade. */
@@ -76,9 +77,10 @@ export function installSurfaceShading(material: THREE.MeshStandardMaterial): Sur
     uWinDepth: { value: 0 }, uWinFront: { value: 0 }, uWinRadius: { value: 0 }, uWinInvert: { value: 0 }, uWinBack: { value: new THREE.Matrix4() }, uWinNear: { value: 0 },
     uInner: { value: new THREE.Color('#ffffff') }, uInnerOn: { value: 0 },
     ...createLifeMeshUniforms(),
+    ...createCutMeshUniforms(),
   });
   material.onBeforeCompile = (shader) => {
-    Object.assign(shader.uniforms, uniforms, LIFE_SHARED);
+    Object.assign(shader.uniforms, uniforms, LIFE_SHARED, CUT_SHARED);
     shader.fragmentShader = windowFragment(shadeFragment(shader.fragmentShader));
     shader.vertexShader = windowVertex(shader.vertexShader);
     if (material.defines?.USE_FIBRE) { shader.vertexShader = fibreVertex(shader.vertexShader); shader.fragmentShader = fibreFragment(shader.fragmentShader); }
@@ -160,6 +162,8 @@ export function windowVertex(vertexShader: string): string {
   if (!markers.every((marker) => vertexShader.includes(marker))) return vertexShader;
   return vertexShader
     .replace('#include <common>', '#include <common>\nvarying vec3 vWinWorld;\n' + LIFE_DECLARATIONS + LIFE_MOVE)
+    // The light falls on the head as it is turned now.
+    .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\nobjectNormal = transpose(mat3(modelMatrix)) * mbLifeTurnVector((modelMatrix * vec4(position, 1.0)).xyz, mat3(modelMatrix) * objectNormal);')
     // The cut belongs to the tissue, so that an opening moves with what it was made in: it is tested where the point lies at rest.
     .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWinWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;\ntransformed += transpose(mat3(modelMatrix)) * mbLifeMove(vWinWorld, normalize(mat3(modelMatrix) * objectNormal));');
 }
@@ -169,9 +173,9 @@ export function windowFragment(fragmentShader: string): string {
   const markers = ['#include <common>', '#include <clipping_planes_fragment>', '#include <color_fragment>'];
   if (!markers.every((marker) => fragmentShader.includes(marker))) return fragmentShader;
   return fragmentShader
-    .replace('#include <common>', '#include <common>\nvarying vec3 vWinWorld;\nfloat mbWinDistance = 1.0;\n' + WINDOW_DECLARATIONS)
-    .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n' + WINDOW_TEST)
-    .replace('#include <color_fragment>', '#include <color_fragment>\nif (uWinOn > 0.5) diffuseColor.rgb *= mix(0.62, 1.0, smoothstep(0.0, 0.00022, mbWinDistance));');
+    .replace('#include <common>', '#include <common>\nvarying vec3 vWinWorld;\nfloat mbWinDistance = 1.0;\n' + WINDOW_DECLARATIONS + '\n' + CUT_DECLARATIONS)
+    .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n' + WINDOW_TEST + '\n' + CUT_TEST)
+    .replace('#include <color_fragment>', '#include <color_fragment>\nif (uWinOn > 0.5) diffuseColor.rgb *= mix(0.62, 1.0, smoothstep(0.0, 0.00022, mbWinDistance));\nif (uCutOn > 0.5) diffuseColor.rgb *= mix(vec3(1.0), vec3(0.6, 0.3, 0.28), smoothstep(0.2, 0.5, mbCutEdge));');
 }
 
 export function surfaceShadingOf(material: THREE.Material): SurfaceShadingUniforms | null {

@@ -1,4 +1,5 @@
 import { LIFE_DISPLAY_CHOICES, LIFE_NOTICE, LIFE_RATE_CHOICES, LIFE_SOURCES, lifeRatesText, rateLabel, type LifeSettings } from '../domain/living-simulation';
+import { VOICE_SOURCE } from '../domain/mouse-voice';
 
 type Toggle = 'heart' | 'breathing' | 'blood' | 'nerves' | 'gut' | 'movement';
 const TOGGLES: readonly { readonly key: Toggle; readonly name: string }[] = [
@@ -17,6 +18,7 @@ export function LifeBadge({ life, onChange }: { readonly life: LifeSettings; rea
     <span>Illustrative motion</span>
     <button type="button" aria-pressed={life.walking} onClick={() => onChange({ ...life, walking: !life.walking, movement: true, playing: true })}>{life.walking ? 'Stand' : 'Walk'}</button>
     <button type="button" onClick={() => onChange({ ...life, playing: !life.playing })}>{life.playing ? 'Pause' : 'Play'}</button>
+    <button type="button" className="life-sound" aria-pressed={life.sound} aria-label={life.sound ? 'Silence its voice' : 'Let it be heard'} title="Its voice when touched: synthesized, not a recording" onClick={() => onChange({ ...life, sound: !life.sound })}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9Z" />{life.sound ? <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /> : <path d="m17 9 5 6m0-6-5 6" />}</svg></button>
   </div>;
 }
 
@@ -36,6 +38,7 @@ export function LifePanel({ life, onChange }: { readonly life: LifeSettings; rea
       <summary>About this motion</summary>
       <p>{LIFE_NOTICE}</p>
       <p>{lifeRatesText(life)}</p>
+      <p>Its voice when touched is synthesized and is not a recording. Its pitch follows calls described by <a href={`https://doi.org/${VOICE_SOURCE.doi}`} target="_blank" rel="noreferrer">{VOICE_SOURCE.citation}</a>.</p>
       <ul>{Object.values(LIFE_SOURCES).map((source) => <li key={source.doi}>{source.statement} {source.citation}, <a href={`https://doi.org/${source.doi}`} target="_blank" rel="noreferrer">doi:{source.doi}</a></li>)}</ul>
       <h5>Chosen for viewing, from no source</h5>
       <ul>{LIFE_DISPLAY_CHOICES.map((choice) => <li key={choice}>{choice}</li>)}</ul>

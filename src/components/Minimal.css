@@ -15,7 +15,7 @@
 
 .workbench .workspace{padding:8px 8px 8px}
 .workbench .workspace-heading,.workbench .source-scope-strip,.workbench .viewport-top,.workbench .viewport-bottom,.workbench .constructed-label,.workbench .workspace-footer{display:none}
-@media (min-width:901px){.workbench.mode-anatomical .workspace-toolbar,.workbench.mode-living .workspace-toolbar{display:none}}
+@media (min-width:901px){.workbench.mode-anatomical .workspace-toolbar,.workbench.mode-living .workspace-toolbar,.workbench.mode-dissection .workspace-toolbar{display:none}}
 .workbench:not(.inspector-open) .inspector{display:none}
 .workbench:not(.picked) .viewer-stage>.selection-tools{display:none}
 

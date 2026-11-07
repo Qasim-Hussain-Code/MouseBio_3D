@@ -361,8 +361,10 @@ function pressIntoLimbs(surface: Surface): Surface {
  */
 const LEFT_WHERE_THEY_ARE = new Set(['living:irises', 'living:lenses', 'living:retinas', 'living:tail-vessels', 'living:tail-vertebrae', 'living:panniculus']);
 const UNDER_SKIN_CLEARANCE = 1.5;
+/** The wall of the abdomen: from just behind the lowest ribs to the pelvis, along the body, and how far under the skin, in voxels of the source. */
+const WALL_FROM = 452, WALL_TO = 752, WALL_DEPTH = 1.2;
 function keepUnderSkin(id: string, plan: Plan, surface: Surface): Surface {
-  if (plan.kind === 'skin' || plan.kind === 'attachment' || plan.kind === 'bone' || plan.kind === 'marrow' || plan.kind === 'patches' || plan.kind === 'net' || LEFT_WHERE_THEY_ARE.has(id)) return surface;
+  if (plan.kind === 'skin' || plan.kind === 'abdominal-wall' || plan.kind === 'attachment' || plan.kind === 'bone' || plan.kind === 'marrow' || plan.kind === 'patches' || plan.kind === 'net' || LEFT_WHERE_THEY_ARE.has(id)) return surface;
   skinSurface();
   const j = posture.pose.joints;
   const pawLevel = Math.max(j.wristR[2], j.wristL[2], j.ankleR[2], j.ankleL[2]) + 4;
@@ -394,12 +396,13 @@ for (const structure of STRUCTURES) {
       : structure.plan.kind === 'tree' ? deformAxial(trees[structure.plan.part], posture)
       : structure.plan.kind === 'muscle' ? (PRESSED_MUSCLES.has(MUSCLES[structure.plan.index].id) ? pressIntoLimbs(deformSurface(muscleScan(structure.plan.index), posture)) : (MUSCLES[structure.plan.index].group === 'head' ? deformAxial : deformSurface)(muscleScan(structure.plan.index), posture))
         : structure.plan.kind === 'muscle-rest' ? deformSurface(muscleSurface(musclePartition, UNNAMED), posture)
-          : structure.plan.kind === 'panniculus' ? panniculus() : build(structure.plan));
+          : structure.plan.kind === 'panniculus' ? panniculus()
+            : structure.plan.kind === 'abdominal-wall' ? abdominalWall() : build(structure.plan));
   if (!surface || !surface.indices.length) throw new Error(`No surface for ${structure.id}`);
   builtSurfaces.set(structure.id, surface);
   const marks = { joints: posture.pose.joints, eyes: attachments.eyes, earRoots: attachments.earRoots, tip: attachments.tip, mouth: [...attachments.mouth, ...attachments.openings] };
   const hair = structure.plan.kind === 'skin' ? bodyCoat(surface, marks) : structure.plan.kind === 'attachment' ? shortCoat(structure.plan.part, surface, marks) : undefined;
-  const fibre = structure.plan.kind === 'muscle' ? fibreOf(structure.plan.index, surface) : undefined;
+  const fibre = structure.plan.kind === 'muscle' ? fibreOf(structure.plan.index, surface) : structure.plan.kind === 'abdominal-wall' ? wallFibre(surface) : undefined;
   surfaces.push({ id: structure.id, name: structure.name, positions: toMetres(surface.positions), normals: surface.normals, indices: surface.indices, fur: hair?.fur, coat: hair?.coat, fibre, colors: surface.colors });
   if (carriesFlow(structure.id, structure.systems)) flowLines.push(...flowLinesOf(structure.id, surface));
   const { plan: _plan, ...record } = structure;
@@ -431,6 +434,77 @@ function panniculus(): Surface {
   const kept: number[] = [];
   for (let t = 0; t < skin.indices.length; t += 3) if (keep[skin.indices[t]] && keep[skin.indices[t + 1]] && keep[skin.indices[t + 2]]) kept.push(skin.indices[t], skin.indices[t + 1], skin.indices[t + 2]);
   return clusterSurface({ positions, normals: skin.normals, indices: Uint32Array.from(kept) }, 5);
+}
+
+/** One sheet for the wall of the belly and flanks, taken from the body surface just inside the panniculus. */
+function abdominalWall(): Surface {
+  const skin = skinSurface();
+  const j = posture.pose.joints;
+  const limbs: readonly (readonly [Vec3, Vec3])[] = [[j.hipR, j.kneeR], [j.kneeR, j.ankleR], [j.hipL, j.kneeL], [j.kneeL, j.ankleL], [j.shoulderR, j.elbowR], [j.shoulderL, j.elbowL]];
+  const count = skin.positions.length / 3;
+  const positions = new Float32Array(skin.positions.length), keep = new Uint8Array(count), limits = new Float32Array(2 * count);
+  for (let i = 0; i < count; i++) {
+    const p: Vec3 = [skin.positions[3 * i], skin.positions[3 * i + 1], skin.positions[3 * i + 2]];
+    let limbDistance = Infinity;
+    for (const [a, b] of limbs) {
+      const ax = b[0] - a[0], ay = b[1] - a[1], az = b[2] - a[2];
+      const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * ax + (p[1] - a[1]) * ay + (p[2] - a[2]) * az) / (ax * ax + ay * ay + az * az)));
+      limbDistance = Math.min(limbDistance, Math.hypot(p[0] - a[0] - ax * t, p[1] - a[1] - ay * t, p[2] - a[2] - az * t));
+    }
+    // It ends at the groin, along a line from the pubis out and forwards towards the hip bone, and does not run on over the inner thigh.
+    const far = Math.abs(p[0] - landmarks.spineAt(p[1]).x);
+    const groin = Math.min(WALL_TO, (j.hipR[1] + j.hipL[1]) / 2 + 30 - 1.4 * far);
+    // At the front it follows the margin of the ribs, furthest forward at the middle and further back to the sides.
+    const margin = WALL_FROM + 0.9 * far;
+    keep[i] = limbDistance > 30 && p[1] >= margin && p[1] <= groin && p[2] < landmarks.spineAt(p[1]).canalZ - 14 ? 1 : 0;
+    for (let k = 0; k < 3; k++) positions[3 * i + k] = skin.positions[3 * i + k] - WALL_DEPTH * skin.normals[3 * i + k];
+    // Points just beyond the line are brought back on to it, so that the edge of the sheet runs true and has no steps.
+    limits[2 * i] = margin; limits[2 * i + 1] = groin;
+  }
+  // Only the points it uses.
+  const newIndex = new Int32Array(count).fill(-1), kept: number[] = [], places: number[] = [], normals: number[] = [];
+  for (let t = 0; t < skin.indices.length; t += 3) {
+    const corners = [skin.indices[t], skin.indices[t + 1], skin.indices[t + 2]];
+    const inside = corners.filter((corner) => keep[corner]).length;
+    // A triangle on the edge is kept if most of it lies inside and the corner outside lies only a little way past the line along the body.
+    if (inside < 2 || !corners.every((corner) => keep[corner] || (skin.positions[3 * corner + 1] < limits[2 * corner] && skin.positions[3 * corner + 1] > limits[2 * corner] - 6) || (skin.positions[3 * corner + 1] > limits[2 * corner + 1] && skin.positions[3 * corner + 1] < limits[2 * corner + 1] + 6))) continue;
+    for (const corner of corners) {
+      if (newIndex[corner] < 0) {
+        newIndex[corner] = places.length / 3;
+        for (let k = 0; k < 3; k++) { places.push(positions[3 * corner + k]); normals.push(skin.normals[3 * corner + k]); }
+        if (!keep[corner]) places[places.length - 2] = Math.max(limits[2 * corner], Math.min(limits[2 * corner + 1], places[places.length - 2]));
+      }
+      kept.push(newIndex[corner]);
+    }
+  }
+  // Each side of the middle line a darker band, for the rectus, and a pale line where it meets the muscles of the flank. Colours for display, after the order of layers in the sources.
+  const colors = new Float32Array(places.length);
+  const ease = (a: number, b: number, x: number) => { const k = Math.max(0, Math.min(1, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+  for (let i = 0; i < places.length / 3; i++) {
+    const far = Math.abs(places[3 * i] - landmarks.spineAt(places[3 * i + 1]).x);
+    const rectus = 1 - ease(40, 52, far), seam = ease(40, 46, far) * (1 - ease(46, 54, far));
+    const r = 0.94 + 0.06 * rectus + 0.08 * seam, g = 0.97 - 0.13 * rectus + 0.2 * seam, b = 0.97 - 0.13 * rectus + 0.2 * seam;
+    colors[3 * i] = Math.min(1, r); colors[3 * i + 1] = Math.min(1, g); colors[3 * i + 2] = Math.min(1, b);
+  }
+  return { positions: Float32Array.from(places), normals: Float32Array.from(normals), indices: Uint32Array.from(kept), colors };
+}
+/** xyz is the way its fibres run, along the body beside the middle and round it further out, and w is the tendon: its pale middle line. */
+function wallFibre(surface: Surface): Float32Array {
+  const count = surface.positions.length / 3, out = new Float32Array(4 * count);
+  const ease = (a: number, b: number, x: number) => { const k = Math.max(0, Math.min(1, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+  for (let i = 0; i < count; i++) {
+    const x = surface.positions[3 * i], y = surface.positions[3 * i + 1];
+    const aside = x - landmarks.spineAt(y).x, far = Math.abs(aside), round = ease(42, 70, far);
+    const nx = surface.normals[3 * i], nz = surface.normals[3 * i + 2];
+    // Round the body is square to the normal and to the length of the body.
+    let rx = nz, rz = -nx;
+    const side = Math.hypot(rx, rz) || 1; rx /= side; rz /= side;
+    const dx = rx * round * 0.85 * Math.sign(aside || 1), dy = 1 - round * 0.45, dz = rz * round * 0.85 * Math.sign(aside || 1);
+    const size = Math.hypot(dx, dy, dz) || 1;
+    out[4 * i] = dx / size; out[4 * i + 1] = dy / size; out[4 * i + 2] = dz / size;
+    out[4 * i + 3] = 1 - ease(3, 8, far);
+  }
+  return out;
 }
 
 /** Scan-frame surfaces of muscles are kept to find the direction of their fibres after the posture moves them. */

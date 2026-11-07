@@ -519,13 +519,63 @@ const TAILS: Readonly<Record<Exclude<JourneyTail, 'nucleus'>, readonly JourneyLe
 
 /** The levels of the zoom that starts from a tissue and goes on by a given way. */
 /** Orders of magnitude of the height of the view that pass in a second of playing, so that the whole way down takes about three quarters of a minute. */
-export const JOURNEY_PLAY_RATE = 0.3;
+export const JOURNEY_PLAY = Object.freeze({
+  /** Seconds from one level to the next at the usual speed, whatever the orders of magnitude between them. */
+  levelSeconds: 8,
+  /** How slowly the view moves at a level, as a share of how it moves half way to the next. It never quite stops, so that it never seems to have ended. */
+  slowest: 0.1,
+  /** The speeds that can be chosen. */
+  speeds: [0.5, 1, 2] as readonly number[],
+});
 
-/** One step of playing the zoom. It ends only by reaching the end it is going to, however small or odd the time step. */
-export function playStep(view: number, direction: 'in' | 'out', seconds: number, route: readonly JourneyLevel[]): { readonly view: number; readonly ended: boolean } {
-  const narrow = route[route.length - 1].endMetres, wide = route[0].startMetres;
-  const next = Math.max(narrow, Math.min(wide, view * 10 ** ((direction === 'in' ? -1 : 1) * JOURNEY_PLAY_RATE * Math.max(seconds, 0))));
-  return { view: next, ended: direction === 'in' ? next <= narrow : next >= wide };
+/** What a level takes in the units of playStep's rate: the integral over a level of one over the rate of moving, reckoned once. */
+const LEVEL_INTEGRAL = (() => {
+  let sum = 0;
+  const parts = 2000;
+  for (let i = 0; i < parts; i++) sum += 1 / (JOURNEY_PLAY.slowest + Math.sin(Math.PI * (i + 0.5) / parts));
+  return sum / parts;
+})();
+
+/** The view heights at which Play slows, from the widest to the narrowest: where the route starts, each level at its best view, and where the route ends. */
+export function playStops(route: readonly JourneyLevel[]): readonly number[] {
+  // The route starts at the first level and ends at the last, so these are not stops of their own unless they lie well apart from where those levels are best seen.
+  const stops = [route[0].startMetres];
+  route.forEach((level, index) => {
+    const home = levelHome(level, route);
+    if (home < stops[stops.length - 1] * (index === 0 ? 0.5 : 0.999)) stops.push(home);
+  });
+  const end = route[route.length - 1].endMetres;
+  if (end < stops[stops.length - 1] * 0.5) stops.push(end);
+  else stops[stops.length - 1] = end;
+  return stops;
+}
+
+/**
+ * One step of playing the zoom. Each level takes about the same time, and the view slows at each so that it can be looked at, however many orders of magnitude lie between them.
+ * It ends only by reaching the end it is going to, however small or odd the time step.
+ */
+export function playStep(view: number, direction: 'in' | 'out', seconds: number, route: readonly JourneyLevel[], speed = 1): { readonly view: number; readonly ended: boolean } {
+  const stops = playStops(route).map(Math.log10);
+  const narrow = stops[stops.length - 1], wide = stops[0];
+  let at = Math.max(narrow, Math.min(wide, Math.log10(view)));
+  let left = Math.max(seconds, 0) * speed;
+  const pace = LEVEL_INTEGRAL / JOURNEY_PLAY.levelSeconds;
+  // Long steps are taken in short pieces, so that a slow frame does not skip a level.
+  while (left > 1e-9) {
+    if (direction === 'in' ? at <= narrow : at >= wide) break;
+    let index = 0;
+    while (index < stops.length - 2 && (direction === 'in' ? at <= stops[index + 1] : at < stops[index + 1])) index++;
+    const high = stops[index], low = stops[index + 1], span = high - low;
+    const share = Math.max(0, Math.min(1, (high - at) / span));
+    const piece = Math.min(left, 0.05);
+    const move = pace * (JOURNEY_PLAY.slowest + Math.sin(Math.PI * share)) * piece * span;
+    at = direction === 'in' ? Math.max(low, at - move) : Math.min(high, at + move);
+    left -= piece;
+  }
+  // The two ends are given exactly, so that the view rests at the same place as the route says it ends.
+  if (at <= narrow) return { view: route[route.length - 1].endMetres, ended: direction === 'in' };
+  if (at >= wide) return { view: route[0].startMetres, ended: direction === 'out' };
+  return { view: 10 ** at, ended: false };
 }
 
 export function journeyLevels(tissue: JourneyTissue = 'skin', tail: JourneyTail = 'nucleus'): readonly JourneyLevel[] {

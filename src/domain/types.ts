@@ -17,7 +17,7 @@ export const SYSTEMS = [
 ] as const;
 
 export type SystemId = (typeof SYSTEMS)[number]['id'];
-export type ExplorationMode = 'anatomical' | 'living' | 'experimental' | 'comparative';
+export type ExplorationMode = 'anatomical' | 'living' | 'experimental' | 'comparative' | 'dissection';
 export type BiologicalScale = 'organism' | 'system' | 'organ' | 'tissue' | 'cellular';
 export type ModelClassification = 'illustrative' | 'parameterized' | 'validated';
 

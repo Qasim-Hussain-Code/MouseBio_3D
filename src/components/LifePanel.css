@@ -7,3 +7,5 @@
 .life-sources p{margin:5px 0;font-size:11px;line-height:1.35}
 .life-sources ul{margin:5px 0;padding-left:16px;font-size:11px;line-height:1.35}
 .life-sources h5{margin:6px 0 2px;font-size:11px}
+.life-badge .life-sound{display:inline-flex;align-items:center;padding:1px 6px;color:#26302b}
+.life-badge .life-sound[aria-pressed="false"]{color:#9aa39e}

@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import * as THREE from 'three';
-import { DEFAULT_LIFE, flowKindOf, LIFE_DISPLAY_CHOICES, LIFE_NOTICE, LIFE_RATES, LIFE_RATE_CHOICES, LIFE_SOURCES, lifeAt, lifeBehaviourOf, lifeDescription, lifeRatesText, lookAngles, rateLabel, startingLife, walkAt, WHISK_BOUT } from '../src/domain/living-simulation';
+import { DEFAULT_LIFE, WALK_GAIT, WALK_SPEED, flowKindOf, LIFE_DISPLAY_CHOICES, LIFE_NOTICE, LIFE_RATES, LIFE_RATE_CHOICES, LIFE_SOURCES, lifeAt, lifeBehaviourOf, lifeDescription, lifeRatesText, lookAngles, rateLabel, startingLife, walkAt, WHISK_BOUT } from '../src/domain/living-simulation';
 import type { Atlas } from '../src/domain';
 import { createFlowTokens, FLOW_BUDGET, FLOW_FILE_FORMAT, FLOW_STEP, flowLinesFrom, isFlowPathFile, tokenCounts, tokenSpeed, type FlowPathFile } from '../src/viewer/flow-tokens';
-import { LIFE_DECLARATIONS, LIFE_KIND, LIFE_MOVE, LIFE_SHARED } from '../src/viewer/life-field';
+import { FLAP_SLOTS, LIFE_DECLARATIONS, LIFE_KIND, LIFE_MOVE, LIFE_SHARED } from '../src/viewer/life-field';
 import { windowVertex } from '../src/viewer/surface-shading';
 import { tubeRadius } from '../src/viewer/life-runtime';
 
@@ -93,11 +93,10 @@ test('whisking comes in bouts, at the published rate, and is not tied to breathi
 
 test('stepping moves diagonal legs together and stops when it is not asked for', () => {
   for (const seconds of [0, 0.2, 0.71, 3.3]) {
-    const { swing, lift } = walkAt(seconds, 1);
-    assert.ok(Math.abs(swing[0] / 0.2 - swing[3] / 0.24) < 1e-9, 'right fore with left hind');
-    assert.ok(Math.abs(swing[1] / 0.2 - swing[2] / 0.24) < 1e-9, 'left fore with right hind');
-    assert.ok(Math.abs(swing[0] / 0.2 + swing[1] / 0.2) < 1e-9, 'each pair against the other');
-    for (const value of lift) assert.ok(value >= 0 && value <= 0.0011);
+    const { swing, lift } = walkAt(seconds, 1, [0.01, 0.01, 0.01, 0.01]);
+    assert.ok(Math.abs(swing[0] - swing[3]) < 1e-9, 'right fore with left hind');
+    assert.ok(Math.abs(swing[1] - swing[2]) < 1e-9, 'left fore with right hind');
+    for (const value of lift) assert.ok(value >= 0 && value <= WALK_GAIT.lift + 1e-12);
   }
   assert.deepEqual(walkAt(1.3, 0).swing.map(Math.abs), [0, 0, 0, 0]);
   assert.equal(DEFAULT_LIFE.walking, false);
@@ -249,7 +248,7 @@ test('the tokens stay within their budget and wide vessels get the closest token
 });
 
 test('the field gives every point one displacement, with the cut held to the tissue at rest', () => {
-  for (const name of Object.keys(LIFE_SHARED)) assert.ok(LIFE_DECLARATIONS.includes(` ${name};`) || LIFE_DECLARATIONS.includes(` ${name}[4];`), name);
+  for (const name of Object.keys(LIFE_SHARED)) assert.ok(LIFE_DECLARATIONS.includes(` ${name};`) || LIFE_DECLARATIONS.includes(` ${name}[4];`) || LIFE_DECLARATIONS.includes(` ${name}[${FLAP_SLOTS}];`), name);
   assert.deepEqual(LIFE_KIND, { none: 0, beat: 1, artery: 2, gut: 3, whisker: 4, ear: 5, tail: 6 });
   assert.match(LIFE_MOVE, /vec3 mbLifeMove\(vec3 p, vec3 n\)/);
   const vertex = windowVertex('#include <common>\nvoid main() {\n#include <begin_vertex>\n}');
@@ -277,6 +276,22 @@ test('a foot comes forward through the air with its leg bent, and goes back alon
     assert.ok(now.bend[0] <= 0 && now.bend[1] <= 0, 'the elbows bend one way');
     assert.ok(now.bend[2] >= 0 && now.bend[3] >= 0, 'and the knees the other');
   }
+});
+
+test('a foot on the ground does not slide: it goes back along the body at the speed the body goes forward, on legs of any length', () => {
+  const drops = [0.014, 0.015, 0.021, 0.022] as const;
+  const seconds = 0.001, strideStep = seconds * WALK_GAIT.rate;
+  for (let strides = 0; strides < 3; strides += 0.0137) {
+    const now = walkAt(strides, 1, drops), next = walkAt(strides + strideStep, 1, drops);
+    for (let leg = 0; leg < 4; leg++) {
+      if (now.lift[leg] > 0 || next.lift[leg] > 0 || next.swing[leg] < now.swing[leg]) continue;
+      // A swing above zero has the foot towards the tail, by the swing times how far under the top of the leg it lies.
+      const footSpeed = (next.swing[leg] - now.swing[leg]) * drops[leg] / seconds;
+      assert.ok(Math.abs(footSpeed - WALK_SPEED) < WALK_SPEED * 1e-6, 'leg ' + leg + ' at ' + strides + ' goes back at ' + footSpeed);
+    }
+  }
+  // Half a stride of walking carries the body as far as a foot sweeps in the part of a stride it is down.
+  assert.ok(Math.abs(WALK_SPEED * WALK_GAIT.stance / WALK_GAIT.rate - WALK_GAIT.sweep) < 1e-12);
 });
 
 test('in a stride each foot is on the ground with its diagonal partner, and the walk starts and stops smoothly', () => {

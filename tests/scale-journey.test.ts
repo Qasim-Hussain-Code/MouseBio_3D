@@ -219,7 +219,7 @@ test('the view names its evidence and every level, states its limits without Web
     assert.match(dialog.textContent ?? '', /Data from this specimen end at about 0\.1 mm/);
     assert.match(dialog.textContent ?? '', /Simulated from published descriptions/);
     assert.match(dialog.textContent ?? '', /could not start WebGL/, 'the failure is stated');
-    assert.equal(document.querySelectorAll('.scale-journey-ladder button[aria-pressed]').length, JOURNEY_LEVELS.length);
+    assert.equal(document.querySelectorAll('.scale-journey-ladder > button[aria-pressed]').length, JOURNEY_LEVELS.length);
     const sources = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Sources');
     await act(async () => { (sources as unknown as HTMLButtonElement).click(); });
     assert.match(dialog.textContent ?? '', /Hummel KP/);
@@ -248,12 +248,12 @@ test('playing goes on down by itself when it arrives from the mouse, and can be 
   const play = () => document.querySelector('.scale-journey-play') as unknown as HTMLButtonElement;
   try {
     await act(async () => { root.render(createElement(ScaleJourney, { onExit: () => undefined, tissue: 'lung', autoplay: true })); });
-    assert.equal(play().textContent, 'Stop', 'it is already playing');
+    assert.equal(play().textContent, 'Pause', 'it is already playing');
     await act(async () => { play().click(); });
     assert.equal(play().textContent, 'Play');
     await act(async () => { play().click(); });
-    assert.equal(play().textContent, 'Stop');
-    const ladder = [...document.querySelectorAll('.scale-journey-ladder button[aria-pressed] span')].map((item) => item.textContent);
+    assert.equal(play().textContent, 'Pause');
+    const ladder = [...document.querySelectorAll('.scale-journey-ladder > button[aria-pressed] span')].map((item) => item.textContent);
     assert.equal(ladder[ladder.length - 1], 'A proton and its quarks', 'the way goes on to the end');
   } finally {
     await act(async () => { root.unmount(); });

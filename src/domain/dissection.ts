@@ -44,6 +44,8 @@ const EYE: ReadonlySet<string> = new Set(['eyes', 'corneas', 'irises', 'lenses',
 export function dissectionTier(structure: Pick<Structure, 'id' | 'systems'>): DissectionTierId {
   const id = structure.id.replace(/^living:/, ''), has = (system: string) => structure.systems.includes(system);
   if (LININGS.has(id)) return 'lining';
+  // These lie in the skin of the tail and show through it.
+  if (id === 'tail-lateral-veins') return 'skin';
   if (HEART.has(id) || BRAIN.has(id) || EYE.has(id)) return 'organs';
   if (id === 'fat' || id === 'brown-fat') return 'fat';
   if (id === 'panniculus') return 'panniculus';

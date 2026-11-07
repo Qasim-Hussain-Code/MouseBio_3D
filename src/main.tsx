@@ -18,6 +18,8 @@ import './components/ScaleJourney.css';
 import './components/UnfoldGuide.css';
 import './components/LifePanel.css';
 import './components/Minimal.css';
+import './components/Brand.css';
+import './components/LabPanel.css';
 import './components/AllLayers.css';
 
 import './components/SourceSignalPanel.css';

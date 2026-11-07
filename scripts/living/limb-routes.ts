@@ -186,7 +186,8 @@ export function buildLimbRoutes(lm: Landmarks): Record<LimbPart, Surface> {
   parts['common-iliac-veins'] = both((side, sign) => [route([cavaEnd, [cavaEnd[0] + sign * 13 + (side === 'L' ? 16 : 0), 756, cavaEnd[2] - 3], add(hipParts(side, sign).division, [sign * 3, 2, -6])], 2.7, 2.3, 6)]);
   parts['femoral-veins'] = both((side, sign) => {
     const { division, inguinal, limb } = hipParts(side, sign);
-    return [route([add(division, [sign * 3, 2, -6]), add(inguinal, [0, 3, -3]), limb.upper(0.22, 21, 8), limb.upper(0.48, 21, 3), limb.upper(0.74, 19, -2)], 2.2, 1.5, 6)];
+    // On the inner side of the artery and beside it, so that the two can be told apart when the thigh is opened.
+    return [route([add(division, [sign * 3, 2, -6]), add(inguinal, [0, 3, -3]), limb.upper(0.22, 25, 11), limb.upper(0.48, 25, 6), limb.upper(0.74, 19, -2)], 2.2, 1.5, 6)];
   });
   parts['saphenous-veins'] = both((side, sign) => {
     const { limb } = hipParts(side, sign);

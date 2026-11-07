@@ -16,7 +16,7 @@ The centre of the view moves down through the stops while the view narrows, so t
 
 ## What is shown beside the view
 
-The guide on the left names the place and lists the stops from the outside inwards, with the stop being passed marked, and with a short `sim` beside each simulated structure. Vessels and nerves that pass close to the line are listed at their depths, in the colour of their kind, and do not count as stops. Choosing a stop goes to it and selects it. **Play** goes through the zoom at an even pace, and does not stop at the last layer: it goes on down through the tissue to the quarks of a proton. The scale bar is nominal, because the physical calibration of the source is unverified.
+The guide on the left names the place and lists the stops from the outside inwards, with the stop being passed marked, and with a short `sim` beside each simulated structure. Vessels and nerves that pass close to the line are listed at their depths, in the colour of their kind, and do not count as stops. Choosing a stop goes to it and selects it. **Play** goes through the zoom and does not stop at the last layer: it goes on down through the tissue to the quarks of a proton, giving each level of the way a similar time. The scale bar is nominal, because the physical calibration of the source is unverified.
 
 After the view has been still for a moment, pointing at the view names what is under the pointer. A click selects what is inside, and a click on the coat opens a new place there. **Names** also names the structures in view on the right, each with a line to a part of it that can be seen.
 

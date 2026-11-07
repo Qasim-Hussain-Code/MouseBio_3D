@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { WINDOW_DECLARATIONS, WINDOW_TEST } from './surface-shading';
 import { LIFE_DECLARATIONS, LIFE_MOVE, LIFE_SHARED } from './life-field';
+import { CUT_DECLARATIONS, CUT_SHARED, CUT_TEST } from './cut-uniforms';
 
 /**
  * Which structure is seen at each pixel of the view, drawn off screen with one flat colour per structure and the same
@@ -23,8 +24,10 @@ uniform vec3 uId;
 varying vec3 vWinWorld;
 float mbWinDistance = 1.0;
 ${WINDOW_DECLARATIONS}
+${CUT_DECLARATIONS}
 void main() {
   ${WINDOW_TEST}
+  ${CUT_TEST}
   gl_FragColor = vec4(uId, 1.0);
 }`;
 
@@ -59,7 +62,7 @@ export function createOpeningMark(geometry: THREE.BufferGeometry, uniforms: Read
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT,
     side: THREE.DoubleSide,
-    uniforms: { uId: { value: new THREE.Color() }, ...uniforms, ...LIFE_SHARED, uWinInvert: { value: 1 }, uWinBack: { value: new THREE.Matrix4() } },
+    uniforms: { uId: { value: new THREE.Color() }, ...uniforms, ...LIFE_SHARED, ...CUT_SHARED, uWinInvert: { value: 1 }, uCutInvert: { value: 1 }, uWinBack: { value: new THREE.Matrix4() }, uLifeFlapOf: { value: new THREE.Vector3() } },
     colorWrite: false,
     depthWrite: false,
     stencilWrite: true,
@@ -83,7 +86,7 @@ export function createIdPass(): IdPass {
   const materialFor = (entry: IdPassEntry) => {
     let material = materials.get(entry.mesh);
     if (!material) {
-      material = new THREE.ShaderMaterial({ vertexShader: VERTEX, fragmentShader: FRAGMENT, side: THREE.DoubleSide, blending: THREE.NoBlending, toneMapped: false, uniforms: { uId: { value: new THREE.Color() }, ...entry.uniforms, ...LIFE_SHARED } });
+      material = new THREE.ShaderMaterial({ vertexShader: VERTEX, fragmentShader: FRAGMENT, side: THREE.DoubleSide, blending: THREE.NoBlending, toneMapped: false, uniforms: { uId: { value: new THREE.Color() }, ...entry.uniforms, ...LIFE_SHARED, ...CUT_SHARED } });
       materials.set(entry.mesh, material);
       made.push(material);
     }

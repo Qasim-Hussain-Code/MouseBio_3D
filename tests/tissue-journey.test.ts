@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import * as THREE from 'three';
-import { JOURNEY_LEVELS, JOURNEY_TAILS, journeyLevels, journeyTissueOf, levelAim, levelAt, levelFade, levelHome, ownWayOf, playStep, type JourneyTail, type JourneyTissue } from '../src/domain/scale-journey';
+import { JOURNEY_LEVELS, JOURNEY_PLAY, JOURNEY_TAILS, journeyLevels, playStops, journeyTissueOf, levelAim, levelAt, levelFade, levelHome, ownWayOf, playStep, type JourneyTail, type JourneyTissue } from '../src/domain/scale-journey';
 import type { Atlas } from '../src/domain/types';
 import { JOURNEY_BUILDERS } from '../src/viewer/scale-journey-scenes';
 import { TISSUE_BUILDERS as FIRST_BUILDERS } from '../src/viewer/tissue-scenes';
@@ -180,13 +180,13 @@ test('playing goes all the way down every route and every way, at any frame rate
         let view = route[0].startMetres, seconds = 0, ended = false;
         // A first step of no time, or a clock a little behind, must not end it at the top.
         for (const odd of [0, -0.01]) { const step = playStep(view, 'in', odd, route); assert.equal(step.ended, false, tissue + ' ' + tail); view = step.view; }
-        while (!ended && seconds < 120) { const step = playStep(view, 'in', 1 / fps, route); view = step.view; ended = step.ended; seconds += 1 / fps; }
+        while (!ended && seconds < 400) { const step = playStep(view, 'in', 1 / fps, route); view = step.view; ended = step.ended; seconds += 1 / fps; }
         assert.ok(ended, tissue + ' ' + tail + ' did not end');
         assert.equal(view, route[route.length - 1].endMetres);
         assert.equal(route[route.length - 1].id, 'proton', tissue + ' ' + tail);
-        assert.ok(seconds < 90, tissue + ' ' + tail + ' took ' + seconds);
+        assert.ok(seconds < (route.length + 1) * JOURNEY_PLAY.levelSeconds * 1.1, tissue + ' ' + tail + ' took ' + seconds);
         ended = false;
-        while (!ended && seconds < 400) { const step = playStep(view, 'out', 1 / fps, route); view = step.view; ended = step.ended; seconds += 1 / fps; }
+        while (!ended && seconds < 900) { const step = playStep(view, 'out', 1 / fps, route); view = step.view; ended = step.ended; seconds += 1 / fps; }
         assert.ok(ended && view === route[0].startMetres);
       }
     }
@@ -287,4 +287,28 @@ test('every atom of a molecule file is from its source, and a damaged file is re
   const place = (index: number) => [channel.x[index], channel.y[index], channel.z[index], channel.element[index]].join();
   const ions = channel.x.map((_, index) => index).filter((index) => channel.elements[channel.element[index]] === 'K');
   assert.equal(new Set(ions.map(place)).size, ions.length, 'an ion on the axis is kept once');
+});
+
+test('playing gives each level about the same time, however many orders of magnitude it spans, and slows at each', () => {
+  for (const tissue of ['muscle', 'liver', 'pancreas'] as JourneyTissue[]) {
+    const route = journeyLevels(tissue, ownWayOf(tissue)), stops = playStops(route);
+    for (let index = 1; index < stops.length; index++) assert.ok(stops[index] < stops[index - 1], 'the stops narrow');
+    let view = route[0].startMetres, stop = 1, since = 0;
+    const times: number[] = [];
+    for (let frame = 0; frame < 30 * 400; frame++) {
+      const step = playStep(view, 'in', 1 / 30, route);
+      view = step.view; since += 1 / 30;
+      while (stop < stops.length && view <= stops[stop] * 1.000001) { times.push(since); since = 0; stop++; }
+      if (step.ended) break;
+    }
+    assert.equal(times.length, stops.length - 1, tissue);
+    for (const time of times) assert.ok(Math.abs(time - JOURNEY_PLAY.levelSeconds) < JOURNEY_PLAY.levelSeconds * 0.15, tissue + ' a level took ' + time.toFixed(2) + ' s');
+    // Half way between two levels it moves many times faster than at a level.
+    const at = (metres: number) => Math.abs(Math.log10(playStep(metres, 'in', 0.02, route).view) - Math.log10(metres));
+    const middle = Math.sqrt(stops[2] * stops[3]);
+    assert.ok(at(middle) > at(stops[2] * 0.9999) * 3, tissue);
+    // The chosen speed changes how long it takes.
+    const slow = Math.abs(Math.log10(playStep(middle, 'in', 0.02, route, 0.5).view) - Math.log10(middle));
+    assert.ok(Math.abs(slow - at(middle) / 2) < at(middle) * 0.02, tissue);
+  }
 });

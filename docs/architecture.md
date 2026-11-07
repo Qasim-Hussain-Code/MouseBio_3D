@@ -1,6 +1,6 @@
 # Technical architecture
 
-MouseBio_3D uses one selected versioned anatomical reference at a time across four exploration modes. Its initial implementation is a static browser application. The local server serves application code and public reference assets; imported research files are read by browser JavaScript and are not uploaded to that server.
+MouseBio_3D uses one selected versioned anatomical reference at a time across five exploration modes. Its initial implementation is a static browser application. The local server serves application code and public reference assets; imported research files are read by browser JavaScript and are not uploaded to that server.
 
 ## Stack decisions
 

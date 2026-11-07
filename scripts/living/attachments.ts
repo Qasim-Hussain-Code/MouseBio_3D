@@ -286,7 +286,7 @@ function pinna(root: Vec3, side: -1 | 1): Surface {
 }
 
 /** The tail runs along the caudal vertebrae measured in the CT, then falls to the ground and curves. */
-function buildTail(landmarks: Landmarks, ground: number, totalLength: number, pelvis: RigidTransform): { skin: Surface; vertebrae: Surface; vessels: Surface } {
+function buildTail(landmarks: Landmarks, ground: number, totalLength: number, pelvis: RigidTransform): { skin: Surface; vertebrae: Surface; vessels: Surface; lateralVeins: Surface } {
   const points: Vec3[] = [], radii: number[] = [];
   const ringStep = 3.2;
   const measured: Vec3[] = [];
@@ -339,7 +339,17 @@ function buildTail(landmarks: Landmarks, ground: number, totalLength: number, pe
     }
     return tube(line, lineRadii, 5);
   };
-  return { skin: { ...skin, colors }, vertebrae: mergeSurfaces(shafts), vessels: mergeSurfaces([vesselLine(-1), vesselLine(1)]) };
+  // The lateral veins run along the sides of the tail, just under the skin, where they show through it. Beyond the tail's first length, where it leaves the body.
+  const lateralVein = (side: number) => {
+    const line: Vec3[] = [], lineRadii: number[] = [];
+    for (let i = first + 6; i < points.length - 2; i += 4) {
+      const r = radii[i], way = unit(sub(points[i + 1], points[i - 1]));
+      line.push(add(points[i], scale(unit(cross(way, [0, 0, 1])), side * r * 0.93)));
+      lineRadii.push(Math.max(0.45, r * 0.12));
+    }
+    return tube(line, lineRadii, 6);
+  };
+  return { skin: { ...skin, colors }, vertebrae: mergeSurfaces(shafts), vessels: mergeSurfaces([vesselLine(-1), vesselLine(1)]), lateralVeins: mergeSurfaces([lateralVein(-1), lateralVein(1)]) };
 }
 
 /** A whisker: a hair sweeping out from its follicle, curving along its length and tapering to a fine point. */
@@ -661,6 +671,7 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
     'harderian-glands': moved(mergeSurfaces([harderian(eyeLeft, eyeOutR), harderian(eyeRight, eyeOutL)]), head),
     'intraorbital-glands': moved(mergeSurfaces([sphere(add(eyeLeft, [0, eyeRadius * 1.25, -3]), [4, 6, 3], 8, 12), sphere(add(eyeRight, [0, eyeRadius * 1.25, -3]), [4, 6, 3], 8, 12)]), head),
     'tail-vessels': tail.vessels,
+    'tail-lateral-veins': tail.lateralVeins,
     patellae: mergeSurfaces([...kneeBones(joints.hipR, joints.kneeR, joints.ankleR), ...kneeBones(joints.hipL, joints.kneeL, joints.ankleL)]),
     'calcaneal-tendons': mergeSurfaces([calcanealTendon(joints.hipR, joints.kneeR, joints.ankleR, hindR.heel), calcanealTendon(joints.hipL, joints.kneeL, joints.ankleL, hindL.heel)]),
     'extraocular-muscles': moved(mergeSurfaces([...eyeMuscles(eyeLeft, eyeOutR), ...eyeMuscles(eyeRight, eyeOutL)]), head),

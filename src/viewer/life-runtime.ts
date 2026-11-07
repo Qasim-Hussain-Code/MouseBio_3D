@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { lifeAt, lifeBehaviourOf, lookAngles, walkAt, type LifeSettings } from '../domain/living-simulation';
+import { lifeAt, lifeBehaviourOf, lookAngles, USUAL_LEG_DROPS, WALK_GAIT, WALK_SPEED, walkAt, type LegDrops, type LifeSettings } from '../domain/living-simulation';
 import type { Atlas } from '../domain';
 import { LIFE_KIND, LIFE_SHARED, type LifeMeshUniforms } from './life-field';
 
@@ -23,6 +23,8 @@ export const LIFE_DISPLAY = Object.freeze({
   tail: 0.007,
   /** Length along the arteries of one cycle of the pulse, in metres. */
   pulseLength: 0.3,
+  /** Sitting up to wash: how far the trunk comes up, in radians, how far the head comes back down, how the fore legs are brought up to the face, how many strokes of the paws in a second, and how far the trunk sinks on to the hind legs, in metres. */
+  sitRise: 0.88, sitNod: 0.62, sitSwing: -0.16, sitBend: -0.82, washStrokes: 3.2, sitSink: 0.003,
 });
 
 export interface LifeBinding {
@@ -49,9 +51,20 @@ export function tubeRadius(geometry: THREE.BufferGeometry): number {
   return area > 0 ? Math.abs(2 * volume / area) : 0;
 }
 
+/** What the viewer wants of the legs: whether they step, how much faster than the walking pace, and the turn being made, in radians per second, which the head leads. */
+export interface LifeSteps {
+  readonly stepping: boolean;
+  readonly pace: number;
+  readonly turning: number;
+  /** Sitting up on the hind legs to wash its face. */
+  readonly sitting?: boolean;
+}
+
 export interface LifeRuntime {
   /** Advance by the seconds shown. True if anything moved. */
-  tick(delta: number, settings: LifeSettings | undefined): boolean;
+  tick(delta: number, settings: LifeSettings | undefined, steps?: LifeSteps): boolean;
+  /** How far the steps have carried the body along the floor in the last tick, in metres. */
+  readonly travelled: () => number;
   /** The pointer lies at this point, or has gone. The mouse looks towards it for a while, and whisks if it comes close. */
   lookAt(point: THREE.Vector3 | null): void;
   /** Something has touched the animal at this point of its surface. */
@@ -121,6 +134,7 @@ export function createLifeRuntime(atlas: Atlas, meshes: ReadonlyMap<string, THRE
   // The legs, from the top of the long bone to the middle of the paw, on each side.
   const legEnds: readonly (readonly [string, string])[] = [['bone-humerus-r', 'bone-manus-r'], ['bone-humerus-l', 'bone-manus-l'], ['bone-femur-r', 'bone-pes-r'], ['bone-femur-l', 'bone-pes-l']];
   let canWalk = true;
+  const drops = [...USUAL_LEG_DROPS] as [number, number, number, number];
   legEnds.forEach(([top, bottom], index) => {
     const upper = meshes.get('living:' + top), foot = at(bottom);
     if (!upper || !foot) { canWalk = false; return; }
@@ -129,6 +143,7 @@ export function createLifeRuntime(atlas: Atlas, meshes: ReadonlyMap<string, THRE
     shared.uLifeFoot.value[index].copy(foot);
     // The middle joint is taken as a little under half way down the line of the leg.
     shared.uLifeKnee.value[index].copy(shared.uLifeHip.value[index]).lerp(foot, 0.45);
+    drops[index] = Math.max(0.006, shared.uLifeHip.value[index].clone().sub(foot).dot(dorsal));
   });
 
   const ownBeat: { own: LifeMeshUniforms; rhythm: 'atria' | 'ventricles' | 'lungs' }[] = [];
@@ -168,7 +183,9 @@ export function createLifeRuntime(atlas: Atlas, meshes: ReadonlyMap<string, THRE
     }
   }
 
-  let animal = 0, shown = 0, signature = '', walkAmount = 0;
+  let animal = 0, shown = 0, signature = '', walkAmount = 0, strides = 0, travel = 0, headTurn = 0, sitAmount = 0, washing = 0;
+  const hipHeight = canWalk ? (shared.uLifeHip.value[2].clone().sub(origin).dot(dorsal) + shared.uLifeHip.value[3].clone().sub(origin).dot(dorsal)) / 2 : 0;
+  shared.uLifeRearAt.value = hipHeight;
   let alert = 0, looking = 0, lookYaw = 0, lookNod = 0, lookedAt: THREE.Vector3 | null = null, sinceLook = Infinity, sincePoke = Infinity;
   const pokedBy = new THREE.Vector3(), from = new THREE.Vector3();
   return {
@@ -186,8 +203,10 @@ export function createLifeRuntime(atlas: Atlas, meshes: ReadonlyMap<string, THRE
     },
     beats: () => shared.uLifeBeats.value,
     animalSeconds: () => animal,
-    tick(delta, settings) {
+    travelled: () => travel,
+    tick(delta, settings, steps) {
       const on = !!settings?.on;
+      travel = 0;
       if (!on) {
         if (shared.uLifeOn.value) { shared.uLifeOn.value = 0; return true; }
         return false;
@@ -204,23 +223,41 @@ export function createLifeRuntime(atlas: Atlas, meshes: ReadonlyMap<string, THRE
         lookYaw += (turn.yaw - lookYaw) * (1 - Math.exp(-delta * 5));
         lookNod += (turn.nod - lookNod) * (1 - Math.exp(-delta * 5));
       }
-      walkAmount += ((settings.walking && canWalk ? 1 : 0) - walkAmount) * (1 - Math.exp(-delta * 4));
-      if (walkAmount < 0.002 && !settings.walking) walkAmount = 0;
-      if (settings.movement && walkAmount > 0) {
-        const pose = walkAt(shown, walkAmount);
-        for (let leg = 0; leg < 4; leg++) { shared.uLifeSwing.value[leg] = pose.swing[leg]; shared.uLifeLift.value[leg] = pose.lift[leg]; shared.uLifeBend.value[leg] = pose.bend[leg]; }
-        shared.uLifeBob.value = pose.bob;
+      const stepping = !!steps?.stepping && canWalk && settings.movement && settings.playing;
+      walkAmount += ((stepping ? 1 : 0) - walkAmount) * (1 - Math.exp(-delta * 5));
+      if (walkAmount < 0.002 && !stepping) walkAmount = 0;
+      const wantsToSit = !!steps?.sitting && !stepping && canWalk && settings.movement && settings.playing;
+      sitAmount += ((wantsToSit ? 1 : 0) - sitAmount) * (1 - Math.exp(-delta * 3.4));
+      if (sitAmount < 0.002 && !wantsToSit) sitAmount = 0;
+      const sit = sitAmount * sitAmount * (3 - 2 * sitAmount);
+      if (settings.playing) washing += delta * LIFE_DISPLAY.washStrokes * 2 * Math.PI;
+      const stroke = Math.sin(washing);
+      if (settings.movement && (walkAmount > 0 || sit > 0)) {
+        const pace = steps?.pace ?? 1;
+        if (settings.playing && walkAmount > 0) { strides += delta * WALK_GAIT.rate * pace; travel = WALK_SPEED * pace * walkAmount * delta; }
+        const pose = walkAt(strides, walkAmount, drops as LegDrops);
+        for (let leg = 0; leg < 4; leg++) {
+          // Sitting, the fore legs come up to the face and work there, one a little after the other.
+          const fore = leg < 2 ? sit : 0, beat = leg === 0 ? stroke : Math.sin(washing - 0.5);
+          shared.uLifeSwing.value[leg] = pose.swing[leg] + fore * (LIFE_DISPLAY.sitSwing + 0.1 * beat);
+          shared.uLifeLift.value[leg] = pose.lift[leg];
+          shared.uLifeBend.value[leg] = pose.bend[leg] + fore * (LIFE_DISPLAY.sitBend + 0.12 * beat);
+        }
+        shared.uLifeBob.value = pose.bob - LIFE_DISPLAY.sitSink * sit;
         shared.uLifeSway.value = pose.sway;
-        shared.uLifeWalk.value = walkAmount;
+        shared.uLifeWalk.value = Math.max(walkAmount, sit > 0 ? 1 : 0);
       } else shared.uLifeWalk.value = 0;
+      shared.uLifeRear.value = settings.movement ? LIFE_DISPLAY.sitRise * sit : 0;
       // A poke presses the surface for a moment, and the whole animal starts and settles.
       const shock = settings.movement && sincePoke < 1.6 ? Math.exp(-sincePoke * 3.2) : 0;
       shared.uLifeStart.value = shock > 0.004 ? 0.0024 * shock * Math.abs(Math.cos(sincePoke * 9)) : 0;
       shared.uLifePokeBy.value.copy(pokedBy).multiplyScalar(shock);
       shared.uLifeBreath.value = LIFE_DISPLAY.breath * now.breath;
       shared.uLifePush.value = LIFE_DISPLAY.push * now.breath;
-      shared.uLifeHeadYaw.value = now.headYaw * (1 - 0.7 * looking) + lookYaw * looking;
-      shared.uLifeHeadNod.value = now.headNod * (1 - 0.7 * looking) + lookNod * looking;
+      // The head leads a turn of the body a little, and keeps its own movements small while walking.
+      headTurn += (Math.max(-0.4, Math.min(0.4, (steps?.turning ?? 0) * 0.5)) - headTurn) * (1 - Math.exp(-delta * 3));
+      shared.uLifeHeadYaw.value = now.headYaw * (1 - 0.7 * looking) * (1 - 0.6 * walkAmount) + lookYaw * looking + headTurn;
+      shared.uLifeHeadNod.value = now.headNod * (1 - 0.7 * looking) * (1 - sit) + lookNod * looking * (1 - sit) + sit * (LIFE_DISPLAY.sitNod + 0.1 * stroke);
       shared.uLifeBeats.value = now.beats;
       shared.uLifeGutPhase.value = now.gutPhase;
       // Close attention or a poke sets the whiskers going, and the ears and tail with them.
@@ -230,7 +267,7 @@ export function createLifeRuntime(atlas: Atlas, meshes: ReadonlyMap<string, THRE
       shared.uLifeNoseMove.value = LIFE_DISPLAY.nose * (Math.sin(now.breath * Math.PI) * now.sniffing + (settings.movement ? alert * Math.sin(animal * 2 * Math.PI * 10) : 0));
       for (const { own, rhythm } of ownBeat) own.uLifeAmount.value = rhythm === 'atria' ? LIFE_DISPLAY.atria * now.atria : rhythm === 'ventricles' ? LIFE_DISPLAY.ventricles * now.ventricles : -LIFE_DISPLAY.lung * now.breath;
       const key = [settings.playing, settings.heart, settings.breathing, settings.gut, settings.movement, settings.on].join();
-      const changed = settings.playing || key !== signature;
+      const changed = settings.playing || sitAmount > 0 || key !== signature;
       signature = key;
       return changed;
     },

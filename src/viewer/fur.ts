@@ -1,5 +1,9 @@
 import * as THREE from 'three';
-import { createLifeMeshUniforms, LIFE_DECLARATIONS, LIFE_MOVE, lifeUniforms, type LifeMeshUniforms } from './life-field';
+import { createLifeMeshUniforms, FLAP_OVER, LIFE_DECLARATIONS, LIFE_MOVE, lifeUniforms, type LifeMeshUniforms } from './life-field';
+import { CUT_SHARED } from './cut-uniforms';
+
+/** How many straight lengths of the coat can be parted at one time. */
+const BARE_LINES = 4;
 
 /**
  * A simulated coat of individual hairs. Hair roots are scattered over the body surface in proportion to
@@ -20,7 +24,7 @@ interface CoatColours {
 
 export const COATS: Readonly<Record<Exclude<CoatId, 'none'>, CoatColours>> = Object.freeze({
   agouti: {
-    root: '#4f4840', band: '#8e7c66', tip: '#2f2820', belly: '#c9bfae', under: '#5a5046', underBelly: '#ada191',
+    root: '#4f4840', band: '#8e7c66', tip: '#2f2820', belly: '#c9bfae', under: '#74675a', underBelly: '#b4a999',
     parts: { 'living:pinnae': '#a08a7e', 'living:tail': '#8f796c', 'living:forepaws': '#d3b6a9', 'living:hindpaws': '#d0b3a6', 'living:nose': '#b58a80' },
   },
   black: {
@@ -59,8 +63,8 @@ export interface FurOptions {
 /** Fine hair on parts other than the body. The tail is sparsely haired. These are display estimates. */
 const FINE_HAIR: Readonly<Record<string, FurOptions>> = Object.freeze({
   'living:pinnae': { density: 40e6, width: 0.6, seed: 19650608, part: 'living:pinnae' },
-  'living:forepaws': { density: 30e6, width: 0.7, seed: 19650609, part: 'living:forepaws' },
-  'living:hindpaws': { density: 30e6, width: 0.7, seed: 19650610, part: 'living:hindpaws' },
+  'living:forepaws': { density: 60e6, width: 0.55, seed: 19650609, part: 'living:forepaws' },
+  'living:hindpaws': { density: 60e6, width: 0.55, seed: 19650610, part: 'living:hindpaws' },
   'living:tail': { density: 7e6, width: 0.7, seed: 19650611, part: 'living:tail' },
 });
 export const fineHairOptions = (id: string): FurOptions => FINE_HAIR[id] ?? { density: 30e6, width: 0.7 };
@@ -81,7 +85,16 @@ uniform vec3 uWinN;
 uniform float uWinDepth;
 uniform float uWinFront;
 uniform float uWinRadius;
+uniform float uCutOn;
+uniform mat4 uCutToTexture;
+uniform highp sampler3D uCutSkin;
+uniform float uBareCount;
+uniform vec3 uBareA[${BARE_LINES}];
+uniform vec3 uBareB[${BARE_LINES}];
+uniform vec3 uBareOut[${BARE_LINES}];
+uniform float uBareWidth;
 ${LIFE_DECLARATIONS}
+${FLAP_OVER}
 ${LIFE_MOVE}
 varying float vAlong;
 varying float vTone;
@@ -107,9 +120,11 @@ void main() {
   vec3 local = aRoot + aNormal * (uWinOn > 0.5 ? 0.00006 : 0.0) + reach * (start * t * (1.0 - 0.5 * t) + end * 0.5 * t * t);
   vec3 tangent = normalize(start * (1.0 - t) + end * t);
   vec4 world = modelMatrix * vec4(local, 1.0);
-  // A hair goes with the point of the skin it grows from.
-  world.xyz += mbLifeMove((modelMatrix * vec4(aRoot, 1.0)).xyz, normalize(mat3(modelMatrix) * aNormal));
-  vec3 worldTangent = normalize(mat3(modelMatrix) * tangent);
+  vec3 rootWorld = (modelMatrix * vec4(aRoot, 1.0)).xyz;
+  vec3 restNormal = normalize(mat3(modelMatrix) * aNormal);
+  // Each point of a hair moves as the tissue at that point moves, so that a hair turns with the skin it grows from and does not sink into it or stand off it.
+  world.xyz += mbLifeMove(world.xyz, restNormal);
+  vec3 worldTangent = normalize(mbLifeTurnVector(rootWorld, mat3(modelMatrix) * tangent));
   vec3 toCamera = cameraPosition - world.xyz;
   float distanceToCamera = length(toCamera);
   vec3 across = normalize(cross(worldTangent, toCamera));
@@ -122,7 +137,7 @@ void main() {
   vDorsal = smoothstep(0.1, 0.42, -aCoat);
   vShort = 1.0 - smoothstep(0.25, 0.7, aComb.w);
   vTangent = worldTangent;
-  vNormal = normalize(mat3(modelMatrix) * aNormal);
+  vNormal = normalize(mbLifeTurnVector(rootWorld, restNormal));
   vView = toCamera;
   vec4 mvPosition = viewMatrix * world;
   gl_Position = projectionMatrix * mvPosition;
@@ -135,6 +150,22 @@ void main() {
     float along = clamp(dot(flatFrom, seg) / max(dot(seg, seg), 1e-14), 0.0, 1.0);
     if (length(flatFrom - seg * along) < uWinRadius && deep < uWinDepth && deep > -uWinFront) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
   }
+  // Along a line that is to be cut, the fur is parted to show the skin. It is only moved out of the way here, and the coat itself stays as it is.
+  for (int i = 0; i < ${BARE_LINES}; i++) {
+    if (float(i) >= uBareCount) break;
+    vec3 mbAlong = uBareB[i] - uBareA[i];
+    float mbK = clamp(dot(rootWorld - uBareA[i], mbAlong) / dot(mbAlong, mbAlong), 0.0, 1.0);
+    // Over a curved body a straight line runs under the skin, so the distance is taken across the skin. The far side of the body is not parted. The edge is uneven, as hair parts.
+    vec3 mbFrom = rootWorld - uBareA[i] - mbAlong * mbK;
+    float mbOutward = dot(mbFrom, uBareOut[i]);
+    if (mbOutward > -0.007 && length(mbFrom - uBareOut[i] * mbOutward) < uBareWidth * (0.72 + 0.56 * fract(aRoot.x * 91173.0 + aRoot.y * 37411.0))) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  }
+  // A hair on skin that has been drawn back lies under it, and is not drawn. Nor is one rooted in skin that has been cut away.
+  if (uCutOn > 0.5 && mbFlapOver(rootWorld, vec3(1.0, 0.0, 0.0))) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  if (uCutOn > 0.5) {
+    vec3 mbCutAt = (uCutToTexture * vec4(rootWorld, 1.0)).xyz;
+    if (all(greaterThan(mbCutAt, vec3(0.0))) && all(lessThan(mbCutAt, vec3(1.0))) && textureLod(uCutSkin, mbCutAt, 0.0).r > 0.42) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  }
   #include <clipping_planes_vertex>
 }`;
 
@@ -145,6 +176,8 @@ uniform vec3 uRoot;
 uniform vec3 uBand;
 uniform vec3 uTip;
 uniform vec3 uBelly;
+uniform vec3 uFurKey;
+uniform vec3 uFurFill;
 varying float vAlong;
 varying float vTone;
 varying float vVentral;
@@ -171,8 +204,8 @@ void main() {
   // Light along a hair: strong across it and weak along it, with a soft highlight, in the manner of Kajiya and Kay.
   vec3 tangent = normalize(vTangent);
   vec3 view = normalize(vView);
-  vec3 keyLight = normalize(vec3(-0.34, 0.5, 0.8));
-  vec3 fillLight = normalize(vec3(0.45, -0.3, 0.45));
+  vec3 keyLight = uFurKey;
+  vec3 fillLight = uFurFill;
   float key = sqrt(max(0.0, 1.0 - pow(dot(tangent, keyLight), 2.0)));
   float fill = sqrt(max(0.0, 1.0 - pow(dot(tangent, fillLight), 2.0)));
   float highlight = pow(sqrt(max(0.0, 1.0 - pow(dot(tangent, normalize(keyLight + view)), 2.0))), 10.0);
@@ -187,6 +220,27 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
+const KEY_LIGHT = new THREE.Vector3(-0.34, 0.5, 0.8).normalize(), FILL_LIGHT = new THREE.Vector3(0.45, -0.3, 0.45).normalize();
+const FUR_LIGHTS = Object.freeze({ uFurKey: { value: KEY_LIGHT.clone() }, uFurFill: { value: FILL_LIGHT.clone() } });
+
+/** The lights stand in the room, so as the mouse turns on the floor they turn about it the other way, in the model's own coordinates. */
+export function turnFurLights(turn: THREE.Quaternion) {
+  FUR_LIGHTS.uFurKey.value.copy(KEY_LIGHT).applyQuaternion(turn);
+  FUR_LIGHTS.uFurFill.value.copy(FILL_LIGHT).applyQuaternion(turn);
+}
+
+const FUR_BARE = Object.freeze({ uBareCount: { value: 0 }, uBareA: { value: Array.from({ length: BARE_LINES }, () => new THREE.Vector3()) }, uBareB: { value: Array.from({ length: BARE_LINES }, () => new THREE.Vector3()) }, uBareOut: { value: Array.from({ length: BARE_LINES }, () => new THREE.Vector3(0, 0, 1)) }, uBareWidth: { value: 0.0022 } });
+
+/** A straight length to part the fur along, as points of the model at rest, and the way out of the skin there. */
+export type PartedLine = readonly [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+
+/** Part the fur along these lengths. Those beyond the fourth are left out. */
+export function partFur(lines: readonly PartedLine[]) {
+  const count = Math.min(lines.length, BARE_LINES);
+  for (let index = 0; index < count; index++) { FUR_BARE.uBareA.value[index].copy(lines[index][0]); FUR_BARE.uBareB.value[index].copy(lines[index][1]); FUR_BARE.uBareOut.value[index].copy(lines[index][2]); }
+  FUR_BARE.uBareCount.value = count;
+}
+
 export interface FurLayer {
   readonly mesh: THREE.Mesh;
   readonly hairs: number;
@@ -195,6 +249,8 @@ export interface FurLayer {
   readonly detail: () => number;
   setCoat(id: Exclude<CoatId, 'none'>): void;
   setClipping(planes: THREE.Plane[]): void;
+  /** Hairs rooted where the skin has been cut are not drawn. The first channel of this texture holds the cuts in the skin. */
+  setCut(texture: THREE.Data3DTexture | null): void;
   /** Hairs rooted in the opened part of the skin are not drawn. */
   setWindow(window: { a: THREE.Vector3; b: THREE.Vector3; normal: THREE.Vector3; depth: number; front: number; radius: number } | null): void;
   dispose(): void;
@@ -309,7 +365,7 @@ export function createFur(skin: THREE.Mesh, options: FurOptions = {}): FurLayer 
     uLength: { value: FUR_DISPLAY.lengthMetres }, uWidth: { value: baseWidth as number }, uPixel: { value: 0.001 },
     uRoot: { value: new THREE.Color() }, uBand: { value: new THREE.Color() }, uTip: { value: new THREE.Color() }, uBelly: { value: new THREE.Color() },
     uWinOn: { value: 0 }, uWinA: { value: new THREE.Vector3() }, uWinB: { value: new THREE.Vector3() }, uWinN: { value: new THREE.Vector3(0, 0, 1) }, uWinDepth: { value: 0 }, uWinFront: { value: 0 }, uWinRadius: { value: 0 },
-    ...lifeUniforms(options.life ?? createLifeMeshUniforms()),
+    ...lifeUniforms(options.life ?? createLifeMeshUniforms()), ...FUR_LIGHTS, ...CUT_SHARED, ...FUR_BARE, uCutSkin: { value: null as THREE.Data3DTexture | null },
   };
   const material = new THREE.ShaderMaterial({ vertexShader: VERTEX, fragmentShader: FRAGMENT, uniforms, side: THREE.DoubleSide, clipping: true });
   const mesh = new THREE.Mesh(geometry, material);
@@ -336,13 +392,17 @@ export function createFur(skin: THREE.Mesh, options: FurOptions = {}): FurLayer 
       const coat = COATS[id];
       const fine = options.part ? coat.parts[options.part] : undefined;
       if (fine) {
-        uniforms.uRoot.value.set(fine).multiplyScalar(0.82); uniforms.uBand.value.set(fine).multiplyScalar(1.04);
-        uniforms.uTip.value.set(fine).multiplyScalar(0.92); uniforms.uBelly.value.set(fine).multiplyScalar(1.08);
+        // The fine hair of a paw is pale, like the fur of the limb it runs on from, more than it is the colour of the skin under it.
+        const base = new THREE.Color(fine);
+        if (options.part === 'living:forepaws' || options.part === 'living:hindpaws') base.lerp(new THREE.Color(coat.belly), 0.62);
+        uniforms.uRoot.value.copy(base).multiplyScalar(0.82); uniforms.uBand.value.copy(base).multiplyScalar(1.04);
+        uniforms.uTip.value.copy(base).multiplyScalar(0.92); uniforms.uBelly.value.copy(base).multiplyScalar(1.08);
       } else {
         uniforms.uRoot.value.set(coat.root); uniforms.uBand.value.set(coat.band); uniforms.uTip.value.set(coat.tip); uniforms.uBelly.value.set(coat.belly);
       }
     },
     setClipping(planes) { material.clippingPlanes = planes; },
+    setCut(texture) { uniforms.uCutSkin.value = texture; },
     setWindow(window) {
       uniforms.uWinOn.value = window ? 1 : 0;
       if (window) { uniforms.uWinA.value.copy(window.a); uniforms.uWinB.value.copy(window.b); uniforms.uWinN.value.copy(window.normal); uniforms.uWinDepth.value = window.depth; uniforms.uWinFront.value = window.front; uniforms.uWinRadius.value = window.radius; }

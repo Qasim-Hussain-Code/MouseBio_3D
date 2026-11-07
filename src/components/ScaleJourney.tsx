@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import {
-  EVIDENCE_LABEL, EVIDENCE_SHORT, formatLength, JOURNEY_NOTICE, journeyLevels, levelAim, levelAt, levelFade, levelHome, ownWayOf, playStep, scaleBarLength,
+  EVIDENCE_LABEL, EVIDENCE_SHORT, formatLength, JOURNEY_NOTICE, JOURNEY_PLAY, journeyLevels, levelAim, levelAt, levelFade, levelHome, ownWayOf, playStep, scaleBarLength,
   type JourneyLevel, type JourneyTail, type JourneyTissue,
 } from '../domain/scale-journey';
 import { disposeScene, isNucleosomeData, JOURNEY_BUILDERS, type JourneyScene, type NucleosomeData } from '../viewer/scale-journey-scenes';
@@ -64,6 +64,9 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
   const target = useRef<number | null>(null);
   const dirty = useRef(true);
   const [viewMetres, setViewMetres] = useState(view.current);
+  const [speed, setSpeed] = useState(1);
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
   const [stageHeight, setStageHeight] = useState(0);
   const [webglFailed, setWebglFailed] = useState(false);
   const [dataState, setDataState] = useState<DataState>('loading');
@@ -93,7 +96,7 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
     dirty.current = true;
     setViewMetres(next);
   }, []);
-  const goTo = useCallback((destination: JourneyLevel) => { playingRef.current = null; setPlaying(null); pan.current = { x: 0, y: 0 }; target.current = levelHome(destination, levelsRef.current); dirty.current = true; }, []);
+  const goTo = useCallback((destination: JourneyLevel) => { pan.current = { x: 0, y: 0 }; target.current = levelHome(destination, levelsRef.current); dirty.current = true; }, []);
   const togglePlay = () => {
     if (playing) { setPlaying(null); return; }
     target.current = null;
@@ -285,9 +288,9 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
         setViewMetres(view.current);
       }
       const passed = Math.min(0.2, (time - last) / 1000);
-      if (playingRef.current && !document.hidden) {
+      if (playingRef.current && target.current === null && !document.hidden) {
         // Playing goes on at an even pace down to the last level, or back up to the first.
-        const step = playStep(view.current, playingRef.current, passed, levelsRef.current);
+        const step = playStep(view.current, playingRef.current, passed, levelsRef.current, speedRef.current);
         if (step.ended) { playingRef.current = null; setPlaying(null); }
         view.current = step.view;
         dirty.current = true;
@@ -417,7 +420,10 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
     </footer>
     <nav className="scale-journey-ladder" aria-label="Levels of the zoom">
       <button className="scale-journey-exit" onClick={onExit}>Back to the mouse</button>
-      <button className="scale-journey-play" onClick={togglePlay}>{playing ? 'Stop' : 'Play'}</button>
+      <div className="scale-journey-play-row">
+        <button className="scale-journey-play" onClick={togglePlay}>{playing ? 'Pause' : 'Play'}</button>
+        <div className="scale-journey-speeds" role="group" aria-label="Speed of playing">{JOURNEY_PLAY.speeds.map((choice) => <button key={choice} aria-pressed={speed === choice} onClick={() => setSpeed(choice)}>{choice === 0.5 ? '½' : choice}×</button>)}</div>
+      </div>
       {place && <small className="scale-journey-place">{place}</small>}
       {from && <strong className="scale-journey-from">{from}</strong>}
       {levels.map((entry) => <button key={entry.id} aria-pressed={entry === level} onClick={() => goTo(entry)}><span>{entry.name}</span><small>{formatLength(levelHome(entry, levels))}</small></button>)}

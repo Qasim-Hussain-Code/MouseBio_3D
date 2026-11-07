@@ -13,7 +13,12 @@ import {
   parseExperimentalJson, summarizeMeasurements, type Atlas, type DatasetMetadata,
   type ExperimentalMeasurement, type ExplorationMode, type ImportResult, type MeasurementSummary,
 } from './domain';
-import type { CameraPose, DissectionReport, SectionImageStatus, ViewerHandle, ViewerSettings } from './viewer/ViewerCanvas';
+import { MouseMark, useLivingTabIcon } from './components/MouseMark';
+import { LabPanel } from './components/LabPanel';
+import { LabChooser, LabTutorial } from './components/LabTutorial';
+import { LAB_EXERCISES } from './domain/lab-exercises';
+import type { LabReport } from './viewer/lab-session';
+import type { CameraPose, DissectionReport, LabEvent, SectionImageStatus, ViewerHandle, ViewerSettings } from './viewer/ViewerCanvas';
 import type { CoatId } from './viewer/fur';
 import { sectionImagesApplyTo, type SectionImageChoice } from './domain/section-images';
 import { measurementColors } from './domain/visualization';
@@ -23,7 +28,7 @@ import { getOntologyCandidate, parseOntologyCandidates } from './domain/ontology
 import ontologyCandidateData from '../data/ontology-candidates.json';
 import { version as appVersion } from '../package.json';
 import { buildReferenceCatalog, getReference, validateReferenceAtlas, createExperimentalBank, switchAtlasExperimentalData } from './domain/atlas-catalog';
-import { defaultStructureOpacity, initialReferenceSelection, OPAQUE_SKIN, referenceOpacity, seeThroughSkinOpacity } from './domain/reference-display';
+import { defaultStructureOpacity, initialReferenceSelection, labOpacity, OPAQUE_SKIN, referenceOpacity, seeThroughSkinOpacity } from './domain/reference-display';
 import { bodySurfaceIdFor } from './domain/display-pose';
 import referenceCatalogData from '../data/anatomy-references.json';
 import constructedCatalogData from '../data/constructed-references.json';
@@ -92,13 +97,14 @@ function Icon({ name, size = 18 }: { name: string; size?: number }) {
     pause: <><path d="M8 4v16M16 4v16" /></>,
     close: <path d="m5 5 14 14M19 5 5 19" />,
     arrow: <path d="M4 12h16m-6-6 6 6-6 6" />,
+    scissors: <><circle cx="6" cy="18" r="2.6" /><circle cx="6" cy="6" r="2.6" /><path d="M8.2 7.5 20 17M8.2 16.5 20 7" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] ?? paths.layers}</svg>;
 }
 
 const MODES: { id: ExplorationMode; label: string; icon: string }[] = [
   { id: 'anatomical', label: 'Anatomy', icon: 'layers' }, { id: 'living', label: 'Living', icon: 'heart' },
-  { id: 'experimental', label: 'Experiment', icon: 'flask' }, { id: 'comparative', label: 'Compare', icon: 'compare' },
+  { id: 'dissection', label: 'Dissect', icon: 'scissors' }, { id: 'experimental', label: 'Experiment', icon: 'flask' }, { id: 'comparative', label: 'Compare', icon: 'compare' },
 ];
 const format = (value: number | null) => value === null ? 'unavailable' : Number.isFinite(value) ? Number(value.toPrecision(4)).toLocaleString() : 'out of range';
 const seriesKey = (summary: MeasurementSummary) => JSON.stringify([summary.measurement, summary.unit, summary.timePoint]);
@@ -109,6 +115,7 @@ const download = (name: string, text: string, type = 'application/json') => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 export default function App() {
+  useLivingTabIcon();
   const [atlas, setAtlas] = useState<Atlas | null>(null);
   const [loadError, setLoadError] = useState('');
   const [referenceLoading, setReferenceLoading] = useState(false);
@@ -131,6 +138,13 @@ export default function App() {
   const [allLabels,setAllLabels]=useState(false);
   const [surfaceDisplay,setSurfaceDisplay]=useState<SurfaceDisplay>('smoothed');
   const [colourScheme,setColourScheme]=useState<ColourScheme>('tissue');
+  const [labReport,setLabReport]=useState<LabReport|null>(null);
+  const [labCaption,setLabCaption]=useState<string|null>(null);
+  const [labPicked,setLabPicked]=useState<string|null>(null);
+  const [labAlive,setLabAlive]=useState(true);
+  const [labSteady,setLabSteady]=useState(true);
+  const [labExerciseId,setLabExerciseId]=useState('');
+  const [labChooser,setLabChooser]=useState(true);
   const [life,setLife]=useState<LifeSettings>(()=>startingLife(typeof window.matchMedia==='function'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches));
   const [picked,setPicked]=useState(false);
   const [detailsAsked,setDetailsAsked]=useState(false);
@@ -272,7 +286,8 @@ export default function App() {
     structureId: selected, measurement: first.measurement, unit: first.unit, timePoint: first.timePoint,
     conditionA: activeA, conditionB: activeB,
   }) : null;
-  const settings: ViewerSettings = { life: atlas && dissectionAppliesTo(atlas) ? life : undefined, covered: journeyOpen, selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels, sectionImage: mode === 'comparative' ? 'none' : sectionImage, coat, dissection: mode === 'comparative' ? null : dissection };
+  const inLab = mode === 'dissection' && !!atlas && dissectionAppliesTo(atlas);
+  const settings: ViewerSettings = { lab: inLab, life: atlas && dissectionAppliesTo(atlas) ? (inLab ? { ...life, on: true, playing: true, movement: false, walking: false, heart: labAlive, breathing: labAlive, blood: labAlive, gut: labAlive, nerves: false } : mode === 'comparative' ? { ...life, walking: false } : life) : undefined, covered: journeyOpen, selected, hidden, opacity, clipAxis, clipPosition, living: mode === 'living', playing, speed, cardiac, respiratory, circuits: { circulation, neural: neuralSignals, selectionOnly: circuitSelectionOnly }, colors: colorA, labels, autoRotate: autoRotate && mode !== 'comparative', surfaceDisplay, colourScheme, allLabels, sectionImage: mode === 'comparative' ? 'none' : sectionImage, coat, dissection: mode === 'comparative' ? null : dissection };
   const openAllLayers = () => {
     if (!atlas) return;
     setHidden([]); setOpacity(referenceOpacity(atlas)); setClipAxis('off'); setAutoRotate(false); setActiveGroup(''); setAllLabels(true);
@@ -293,6 +308,36 @@ export default function App() {
     if (found) zoomIntoStructure(found.id, place, playing);
     else if (structures[0]) setNotice(`No zoom into the tissue of ${structures[0].name} has been made yet.`);
   };
+  /** The bench for practising with instruments is set up on the whole living mouse, with nothing else open. */
+  const enterLab = async () => {
+    let onto = atlas;
+    if (onto && !dissectionAppliesTo(onto)) onto = (await switchReference(DEFAULT_REFERENCE_ID), null);
+    setDissection(null); setDissectionReport(null); setAllLabels(false); setAutoRotate(false); setClipAxis('off'); setJourneyOpen(false); setJourneyFrom(null); setActiveGroup('');
+    setHidden([]); if (onto) setOpacity(labOpacity(onto));
+    setInspectorOpen(false); setDetailsAsked(false); setNavigatorOpen(true); setLabCaption(null); setLabPicked(null);
+  };
+  const labExercise = LAB_EXERCISES.find((item) => item.id === labExerciseId) ?? null;
+  /** A tutorial starts from the whole animal, lying as the procedure has it. */
+  const chooseLabExercise = (id: string) => {
+    setLabExerciseId(id);
+    setLabChooser(false);
+    setLabPicked(null);
+    const chosen = LAB_EXERCISES.find((item) => item.id === id);
+    const session = viewer.current?.lab();
+    if (!session) return;
+    session.setGuide(null);
+    if (!chosen) { session.extendLeg(null); return; }
+    session.restart();
+    session.setPose(chosen.pose);
+    session.extendLeg(chosen.extendLeg ?? null);
+    setLabAlive(chosen.alive);
+  };
+  const labEvent = (event: LabEvent) => {
+    if (event.kind === 'report') setLabReport(event.report);
+    else if (event.kind === 'picked') { setLabPicked(event.id); setSelected(event.id); setPicked(true); }
+    else if (event.kind === 'refused') setNotice(event.message);
+    else setLabCaption(event.text);
+  };
   const closeAllLayers = () => { setDissection(null); setDissectionReport(null); setAllLabels(false); viewer.current?.reset(); };
   const toggleHidden = (id: string) => { isolation.current = null; setActiveGroup(''); pendingGroupFocus.current = null; setHidden((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); };
   /** Make opaque skin see-through so that regions inside the body can be seen. Returns whether it changed. */
@@ -307,6 +352,8 @@ export default function App() {
   const select = (id: string) => {
     if(!atlas?.structures.some(region=>region.id===id))return;
     setPicked(true);
+    // At the bench the skin stays as it has been cut, and a name only says which part is meant.
+    if(mode==='dissection'){setLabPicked(id);setSelected(id);return;}
     if(id!==bodySurfaceIdFor(atlas)&&peelSkin())setNotice('Skin made see-through to show the selected region.');
     setSelected(id);setHidden(previous=>previous.filter(value=>value!==id));
     if((opacity[id]??1)===0)setOpacity(previous=>({...previous,[id]:1}));
@@ -568,12 +615,13 @@ export default function App() {
   const viewerFailed = viewerState.primary === 'failed' || (mode === 'comparative' && viewerState.secondary === 'failed');
   return <div className={`app-shell workbench mode-${mode} ${inspectorOpen&&detailsAsked?'inspector-open':''} ${navigatorOpen?'navigator-open':''} ${picked?'picked':''} ${journeyOpen?'journey-open':''}`}>
     <header className="app-header">
-      <a className="brand" href="/" aria-label="MouseBio_3D home"><span className="brand-mark"><Icon name="layers" size={25} /></span><span><strong>MouseBio<span className="brand-suffix">_3D</span></strong><small>DIGITAL MOUSE LABORATORY</small></span></a>
-      <nav className="mode-nav" aria-label="Exploration mode">{MODES.map((item) => <button key={item.id} className={mode === item.id ? 'active' : ''} aria-pressed={mode === item.id} onClick={() => { setMode(item.id); if (item.id === 'comparative') setFineEnabled(false); if (item.id !== 'anatomical') peelSkin(); }}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
+      <a className="brand" href="/" aria-label="MouseBio_3D home"><span className="brand-mark"><MouseMark height={54} /></span><span><strong>Mouse<span className="brand-bio">Bio</span><span className="brand-suffix">_3D</span></strong><small>DIGITAL MOUSE LABORATORY</small></span></a>
+      <nav className="mode-nav" aria-label="Exploration mode">{MODES.map((item) => <button key={item.id} className={mode === item.id ? 'active' : ''} aria-pressed={mode === item.id} onClick={() => { const wasLab = mode === 'dissection'; setMode(item.id); if (item.id === 'dissection') { if (!wasLab) void enterLab(); return; } if (wasLab && atlas) { setHidden([]); setOpacity(referenceOpacity(atlas)); setLabReport(null); setLabCaption(null); } if (item.id === 'comparative') setFineEnabled(false); if (item.id !== 'anatomical' && !wasLab) peelSkin(); }}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
       <div className="header-actions"><button className="secondary-button" onClick={()=>{setStartError('');setStartOpen(true);}}>Start here</button><span className="local-badge"><Icon name="lock" size={13} /> Local session</span><button className="icon-button" onClick={() => setMethods(true)} title="Methods, sources and limitations" aria-label="Methods, sources and limitations"><Icon name="info" /></button></div>
     </header>
 
     <aside className={`navigator panel ${navigatorOpen?'drawer-open':''}`} aria-label="Anatomy navigator">
+      {inLab && <LabPanel report={labReport} exercise={labExercise} selected={labPicked ? { id: labPicked, name: atlas.structures.find((structure) => structure.id === labPicked)?.name ?? labPicked } : null} modelId={atlas.id} canLookCloser={(id) => { const found = atlas.structures.find((structure) => structure.id === id); return !!found && !!journeyTissueOf(found); }} nameOf={(id) => atlas.structures.find((structure) => structure.id === id)?.name ?? id} onExercise={chooseLabExercise} onTool={(tool) => viewer.current?.lab()?.setTool(tool)} onPose={(pose) => viewer.current?.lab()?.setPose(pose)} onView={(view) => viewer.current?.labView(view)} onTake={(id) => viewer.current?.lab()?.take(id)} onLookCloser={(id) => zoomIntoStructure(id)} onUndo={() => viewer.current?.lab()?.undo()} onRestart={() => { viewer.current?.lab()?.restart(); setLabPicked(null); }} onDetails={() => openInspector('structure')} onDownload={(text) => download('mousebio-practice-record.json', text)} namesOn={allLabels} onNames={(on) => { setAllLabels(on); viewer.current?.lab()?.look(); }} alive={labAlive} onAlive={setLabAlive} sound={life.sound} onSound={(sound) => setLife((previous) => ({ ...previous, sound }))} steady={labSteady} onSteady={(on) => { setLabSteady(on); viewer.current?.lab()?.setSteady(on); }} />}
       <div className="panel-heading"><span className="eyebrow">ANATOMY EXPLORER</span><span className="version-tag">v{appVersion}</span><button className="drawer-close icon-button" aria-label="Close anatomy navigator" onClick={()=>setNavigatorOpen(false)}>×</button></div>
       <h1>Explore the mouse</h1>
       <div className="active-source-button"><span className="reference-dot"/><span><strong>{referenceSummary.source.displayName}</strong><small>{referenceSummary.specimen.scientificName} · {referenceSummary.specimen.sex} · {referenceSummary.specimen.mass}</small></span><span className="tiny-tag">{referenceSummary.source.license}</span></div>
@@ -644,12 +692,15 @@ export default function App() {
           <label>Colours <select aria-label="Display colour scheme" value={colourScheme} onChange={event=>setColourScheme(event.target.value as ColourScheme)}><option value="tissue">Tissue-like display colours</option><option value="source">Manifest colours</option><option value="contrast">Contrasting colours</option></select></label>{atlas.id==='mousebio-living-v1'&&<label className="coat-choice">Coat<select aria-label="Simulated coat" value={coat} onChange={(event)=>setCoat(event.target.value as CoatId)}><option value="agouti">Agouti, simulated</option><option value="black">Black, simulated</option><option value="albino">Albino, simulated</option><option value="none">None, skin only</option></select></label>}
                 <div className="section-bar"><Icon name="layers" size={18} /><div><strong>Virtual section</strong><small>{sectionImages&&sectionImage!=='none'&&mode!=='comparative'?'Source images of this specimen on the cut':'Surface clipping, without tissue reconstruction'}</small></div><select aria-label="Section axis" value={clipAxis} onChange={(event) => chooseSectionAxis(event.target.value as typeof clipAxis)}><option value="off">No section</option><option value="x">Display X</option><option value="y">Display Y</option><option value="z">Display Z</option></select><input type="range" aria-label="Section position" min="0" max="100" value={clipPosition} disabled={clipAxis === 'off'} onChange={(event) => setClipPosition(+event.target.value)} /><span>{clipPosition}%</span>{sectionImages&&<label className="section-image-choice">Cut face <select aria-label="Cut face image" value={sectionImage} disabled={mode==='comparative'} onChange={event=>setSectionImage(event.target.value as SectionImageChoice)}><option value="cryosection">Specimen photograph</option><option value="ct">CT</option><option value="none">None</option></select>{clipAxis!=='off'&&sectionImage!=='none'&&sectionStatus.status==='loading'&&<small>Loading images</small>}{clipAxis!=='off'&&sectionImage!=='none'&&sectionStatus.status==='failed'&&<small role="alert">Images unavailable</small>}</label>}</div>
         {skinId&&<label className="skin-control" title="Opacity of the body surface shown as skin; display only">Skin <input type="range" min="0" max="100" aria-label="Skin opacity" value={Math.round(skinOpacity*100)} onChange={event=>{const value=+event.target.value/100;setOpacity(previous=>({...previous,[skinId]:value}));if(value>0)setHidden(previous=>previous.filter(id=>id!==skinId));setActiveGroup('');}}/><span>{Math.round(skinOpacity*100)}%</span></label>}<div className="view-controls"><span className="control-divider" />{(['x', 'y', 'z'] as const).map((axis) => <button className="viewer-button axis-button" key={axis} aria-label={`View along display ${axis} axis`} title={`Display ${axis.toUpperCase()} axis; not an anatomical direction`} onClick={() => viewer.current?.view(axis)}>{axis.toUpperCase()}</button>)}<span className="control-divider" /><button className={`viewer-button ${labels ? 'active' : ''}`} aria-label="Toggle selected structure label" aria-pressed={labels} onClick={() => setLabels(!labels)}>Aa</button><button className={`viewer-button label-all-button ${allLabels ? 'active' : ''}`} aria-label="Label all displayed regions" title="Label all displayed regions without overlaps" aria-pressed={allLabels} onClick={() => setAllLabels(!allLabels)}>All</button></div><div className="display-actions"><button className="secondary-button" onClick={()=>focusRegions(atlas.structures.filter(region=>!hidden.includes(region.id)&&(opacity[region.id]??defaultStructureOpacity(region))>0).map(region=>region.id))}>Fit visible</button><div className="view-file-actions"><input ref={viewFileInput} type="file" className="view-file-input" accept=".json,application/json" aria-label="Restore view state" onChange={(event) => void restoreView(event.target.files?.[0])} /><button className="secondary-button save-view" onClick={() => viewFileInput.current?.click()} title="Load view settings"><Icon name="upload" size={15} /><span>Load view</span></button><button className="secondary-button save-view" onClick={exportView} title="Save view settings"><Icon name="download" size={15} /><span>Save view</span></button></div></div></details><div className="canvas-pair">
-          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} onZoomToSkin={()=>setJourneyOpen(true)} onZoomToStructure={zoomIntoStructure} onZoomThrough={zoomThrough} onDissectionReport={setDissectionReport} atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} pathSignal={mode==='living'&&pathSignal?.referenceId===atlas.id?pathSignal:undefined} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} onAutoRotateEnd={()=>setAutoRotate(false)} onSectionImageStatus={setSectionStatus} /></Suspense></div>
+          <div className="canvas-cell">{mode === 'comparative' && <div className="condition-label"><span>A</span>{activeA || 'Reference anatomy'}</div>}<Suspense fallback={viewerLoading}><ViewerCanvas key={`primary-${mode === 'comparative'}`} onLab={labEvent} onZoomToSkin={()=>setJourneyOpen(true)} onZoomToStructure={zoomIntoStructure} onZoomThrough={zoomThrough} onDissectionReport={setDissectionReport} atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} onDetailStatus={setDetailStatus} settings={settings} pathSignal={mode==='living'&&pathSignal?.referenceId===atlas.id?pathSignal:undefined} onSelect={select} handle={viewer} onReady={viewerReady} onStatus={(status) => setViewerState((previous) => ({ ...previous, primary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} onAutoRotateEnd={()=>setAutoRotate(false)} onSectionImageStatus={setSectionStatus} /></Suspense></div>
           {mode === 'comparative' && <div className="canvas-cell"><div className="condition-label"><span>B</span>{activeB || 'Reference anatomy'}</div><Suspense fallback={viewerLoading}><ViewerCanvas atlas={atlas} localTrace={activeTrace} detailAsset={detailAsset} settings={{ ...settings, colors: colorB }} onSelect={select} handle={compareViewer} onStatus={(status) => setViewerState((previous) => ({ ...previous, secondary: status }))} cameraPose={cameraPose} onCameraChange={setCameraPose} /></Suspense></div>}
         </div>
-        {dissectionAppliesTo(atlas)&&<LifeBadge life={life} onChange={setLife}/>}
+        {dissectionAppliesTo(atlas)&&!inLab&&<LifeBadge life={life} onChange={setLife}/>}
+        {inLab&&labCaption&&<p className="lab-caption" role="status">{labCaption}</p>}
+        {inLab&&!labExercise&&labChooser&&<LabChooser onChoose={chooseLabExercise} onFree={()=>setLabChooser(false)}/>}
+        {inLab&&labExercise&&<LabTutorial key={labExercise.id} exercise={labExercise} facts={labReport?.facts??null} demonstrating={!!labReport?.demonstrating} shown={labCaption} onStep={(index)=>{const step=labExercise.steps[index];const session=viewer.current?.lab();if(!step||!session)return;session.setGuide(step.guide??null);if(labReport?.demonstrating)return;if(step.tool)session.setTool(step.tool);if(step.view)viewer.current?.labView(step.view);}} onShow={(index)=>{const step=labExercise.steps[index];if(step){if(step.view)viewer.current?.labView(step.view);viewer.current?.lab()?.showStep(step.show,step.text);}}} onWatchAll={()=>{setLabPicked(null);viewer.current?.lab()?.demonstrate(labExercise.id);}} onStop={()=>viewer.current?.lab()?.stopDemonstration()} onClose={()=>chooseLabExercise('')}/>}
         {journeyOpen&&layerStack.length>0&&<Suspense fallback={null}><ScaleJourney life={life} tissue={journeyFrom?.tissue} from={journeyFrom?.name} place={journeyFrom?.place} autoplay={journeyFrom?.playing} onExit={()=>{setJourneyOpen(false);setJourneyFrom(null);viewer.current?.zoom(1.12);}}/></Suspense>}
-        <div className="camera-pad" role="group" aria-label="Camera controls"><button aria-label="Pan display up" onClick={()=>viewer.current?.pan(0,.1)}>↑</button><button aria-label="Zoom in" onClick={()=>viewer.current?.zoom(.8)}>+</button><button aria-label="Pan display left" onClick={()=>viewer.current?.pan(-.1,0)}>←</button><button aria-label="Reset camera" onClick={()=>viewer.current?.reset()}>⌖</button><button aria-label="Pan display right" onClick={()=>viewer.current?.pan(.1,0)}>→</button><button aria-label="Pan display down" onClick={()=>viewer.current?.pan(0,-.1)}>↓</button><button aria-label="Zoom out" onClick={()=>viewer.current?.zoom(1.25)}>−</button></div>
+        <div className="camera-pad" role="group" aria-label="Camera controls"><button aria-label="Pan display up" onClick={()=>viewer.current?.pan(0,.1)}>↑</button><button aria-label="Zoom in" onClick={()=>viewer.current?.zoom(.8)}>+</button><button aria-label="Pan display left" onClick={()=>viewer.current?.pan(-.1,0)}>←</button><button aria-label="Reset camera" onClick={()=>viewer.current?.reset()}>⌖</button><button aria-label="Pan display right" onClick={()=>viewer.current?.pan(.1,0)}>→</button><button aria-label="Pan display down" onClick={()=>viewer.current?.pan(0,-.1)}>↓</button><button aria-label="Zoom out" onClick={()=>viewer.current?.zoom(1.25)}>−</button><button aria-label="Save a picture of the view" title="Save a picture of the view" onClick={()=>{const picture=viewer.current?.picture();if(picture){const anchor=document.createElement('a');anchor.href=picture;anchor.download='mousebio-view.png';anchor.click();}}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.4"/></svg></button></div>
         {shownGroups.length > 0 && (mode === 'experimental' || mode === 'comparative') && <div className="quantitative-legend"><strong>Mean {first?.measurement}</strong><span>{first?.unit} · {first?.timePoint}</span><div className="color-ramp" /><div className="legend-numbers"><span>{format(min)}</span><span>{format(max)}</span></div><small>Unmapped regions keep their display colours</small></div>}
         <div className="viewport-bottom"><span>Drag to rotate <i /> Scroll to zoom <i /> Click to select</span><span className="display-frame">Display axes · orientation unverified</span></div>
         {evidenceShown && !cutFaceShown && <span className="section-image-label constructed-label">CONSTRUCTED MODEL: POSTURE, COAT AND STRUCTURES MARKED SIMULATED ARE NOT MEASURED</span>}
@@ -661,7 +712,7 @@ export default function App() {
             {neuralSignals && <><span><i style={{ background: CIRCUIT_COLORS['neural-efferent'] }} />Efferent nerve signal</span>{livingCircuits.edges.some((edge) => edge.kind === 'neural-afferent') && <span><i style={{ background: CIRCUIT_COLORS['neural-afferent'] }} />Afferent nerve signal</span>}</>}
             <small>Teaching colours. Tracer and pulse speeds are arbitrary display rates.</small></div></>}
       </section>
-        <SelectionTools onZoomIn={selectedStructure&&layerStack.length>0&&journeyTissueOf(selectedStructure)?()=>zoomIntoStructure(selectedStructure.id):undefined} selected={selectedStructure??null} hidden={!!selectedStructure&&(hidden.includes(selectedStructure.id)||(opacity[selectedStructure.id]??defaultStructureOpacity(selectedStructure))<=0)} opacity={selectedStructure?(opacity[selectedStructure.id]??defaultStructureOpacity(selectedStructure)):1} isolated={!!isolation.current} onFocus={()=>viewer.current?.focus()} onToggleHidden={()=>{if(!selectedStructure)return;if(!hidden.includes(selectedStructure.id)&&(opacity[selectedStructure.id]??1)<=0)setOpacity(previous=>({...previous,[selectedStructure.id]:1}));else toggleHidden(selectedStructure.id);}} onIsolate={isolate} onOpacityChange={value=>{if(!selectedStructure)return;setActiveGroup('');pendingGroupFocus.current=null;setOpacity(previous=>({...previous,[selectedStructure.id]:value}));}} onOpenDetails={()=>openInspector('structure')}/>
+        {!inLab&&<SelectionTools onZoomIn={selectedStructure&&layerStack.length>0&&journeyTissueOf(selectedStructure)?()=>zoomIntoStructure(selectedStructure.id):undefined} selected={selectedStructure??null} hidden={!!selectedStructure&&(hidden.includes(selectedStructure.id)||(opacity[selectedStructure.id]??defaultStructureOpacity(selectedStructure))<=0)} opacity={selectedStructure?(opacity[selectedStructure.id]??defaultStructureOpacity(selectedStructure)):1} isolated={!!isolation.current} onFocus={()=>viewer.current?.focus()} onToggleHidden={()=>{if(!selectedStructure)return;if(!hidden.includes(selectedStructure.id)&&(opacity[selectedStructure.id]??1)<=0)setOpacity(previous=>({...previous,[selectedStructure.id]:1}));else toggleHidden(selectedStructure.id);}} onIsolate={isolate} onOpacityChange={value=>{if(!selectedStructure)return;setActiveGroup('');pendingGroupFocus.current=null;setOpacity(previous=>({...previous,[selectedStructure.id]:value}));}} onOpenDetails={()=>openInspector('structure')}/>}
       </div>
 
       {mode === 'living' && dissectionAppliesTo(atlas) && <LifePanel life={life} onChange={setLife} />}

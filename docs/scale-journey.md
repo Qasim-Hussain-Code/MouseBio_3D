@@ -2,7 +2,7 @@
 
 ## What it is
 
-[Zooming through the layers](zoom-unfold.md) of the living mouse does not stop at the last layer. At the end of it, the same scroll goes on, in the same place on the screen, into the tissue of the structure under the pointer, then its cells and what they hold, down to atoms and the inside of a proton. That is about thirteen orders of magnitude in the height of the view, without a break. A list of the levels moves directly to any of them, and **Play** goes all the way down at an even pace, in about three quarters of a minute. Scrolling back out past the first level, the Escape key and a button all return to the mouse at that spot. **Zoom in**, in the bar for a selected structure, goes the same way.
+[Zooming through the layers](zoom-unfold.md) of the living mouse does not stop at the last layer. At the end of it, the same scroll goes on, in the same place on the screen, into the tissue of the structure under the pointer, then its cells and what they hold, down to atoms and the inside of a proton. That is about thirteen orders of magnitude in the height of the view, without a break. A list of the levels moves directly to any of them, and **Play** goes all the way down, giving each level a similar time, about eight seconds at the usual speed, so that the deepest levels do not pass in a moment. It can be paused and has three speeds. Scrolling back out past the first level, the Escape key and a button all return to the mouse at that spot. **Zoom in**, in the bar for a selected structure, goes the same way.
 
 Some levels of the zoom into a tissue have an [illustrative motion](living-motion.md). Levels that show measured atoms keep still. It simulates no process.
 

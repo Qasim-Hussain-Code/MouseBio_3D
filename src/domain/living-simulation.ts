@@ -35,7 +35,8 @@ export const LIFE_DISPLAY_CHOICES: readonly string[] = Object.freeze([
   'How far the chest, abdomen, heart, arteries and gut move. All of these are enlarged so that they can be seen.',
   'The delay of the pulse along the arteries, and the rate and pattern of the gut waves.',
   'The timing of bouts of sniffing and whisking, and the movements of the head, tail and ears.',
-  'How the mouse answers the pointer and a poke, and its stepping on the spot, which swings each leg as one piece from its hip or shoulder.',
+  'How the mouse answers the pointer and a touch, and its walk: where it goes, its pace and its turns, its stride, and the swing of each leg from its hip or shoulder with one bend. Its feet are made not to slide on the floor. That is not a measured gait.',
+  'The pitch contour, length and loudness of its voice when touched.',
 ]);
 
 export const LIFE_NOTICE = 'Illustrative motion, not a simulation of physiology: nothing is computed about blood, gas or nerve signals. Heart, breathing and whisking rates follow published values, slowed to the chosen share. Everything else is chosen for viewing.';
@@ -52,13 +53,15 @@ export interface LifeSettings {
   readonly gut: boolean;
   /** Head, tail, ears and whiskers. */
   readonly movement: boolean;
-  /** Stepping on the spot, with the legs in diagonal pairs. */
+  /** Walking about the floor, with the legs in diagonal pairs. It leaves the view and comes back from a corner. */
   readonly walking: boolean;
+  /** Its voice when it is touched. */
+  readonly sound: boolean;
 }
 
 export const LIFE_RATE_CHOICES: readonly number[] = Object.freeze([0.02, 0.05, 0.1, 0.25, 0.5, 1]);
 
-export const DEFAULT_LIFE: LifeSettings = Object.freeze({ on: true, playing: true, rate: 0.1, heart: true, breathing: true, blood: true, nerves: true, gut: true, movement: true, walking: false });
+export const DEFAULT_LIFE: LifeSettings = Object.freeze({ on: true, playing: true, rate: 0.1, heart: true, breathing: true, blood: true, nerves: true, gut: true, movement: true, walking: false, sound: true });
 
 /** Motion is left off for someone who has asked their system for less of it. */
 export const startingLife = (reducedMotion: boolean): LifeSettings => reducedMotion ? { ...DEFAULT_LIFE, on: false } : DEFAULT_LIFE;
@@ -148,23 +151,46 @@ export interface WalkPose {
   readonly sway: number;
 }
 
-/** Stepping on the spot, with diagonal legs together, as a trot. Its rate and the size of its steps are chosen for viewing, and it is not a measured gait. */
-export function walkAt(shownSeconds: number, amount: number): WalkPose {
-  const cycle = 1.15 * shownSeconds;
-  // A swing above zero has the foot towards the tail. A foot on the ground moves that way as the body passes over it, and comes forward through the air, with its leg bent.
-  const leg = (phase: number, size: number, bend: number) => {
-    const inAir = Math.max(0, -Math.cos(TAU * (cycle + phase)));
-    return { swing: size * amount * Math.sin(TAU * (cycle + phase)), lift: 0.0011 * amount * inAir, bend: bend * amount * inAir };
+/** Chosen for viewing: the rate and the size of the steps are not a measured gait. */
+export const WALK_GAIT = Object.freeze({
+  /** Strides per second at the walking pace. */
+  rate: 1.7,
+  /** How far a foot goes along the body while it is on the ground, in metres. */
+  sweep: 0.012,
+  /** The share of a stride for which a foot is on the ground. */
+  stance: 0.62,
+  /** How far a foot is lifted while it comes forward, in metres. */
+  lift: 0.0012,
+});
+
+/** How fast the body goes at the walking pace, in metres per second. A foot on the ground goes back at this speed, so that it does not slide on the floor. */
+export const WALK_SPEED = WALK_GAIT.sweep * WALK_GAIT.rate / WALK_GAIT.stance;
+
+/** How far under the top of each leg its foot lies, in metres: right fore, left fore, right hind, left hind. It turns a distance along the body into a swing of the leg. */
+export type LegDrops = readonly [number, number, number, number];
+export const USUAL_LEG_DROPS: LegDrops = Object.freeze([0.016, 0.016, 0.022, 0.022]) as unknown as LegDrops;
+
+/**
+ * The legs after a number of strides, with diagonal legs together. `amount` shrinks the steps towards standing, and the body then goes that much slower, so the feet do not slide while it starts or stops.
+ * A swing above zero has the foot towards the tail: a foot on the ground moves that way evenly as the body passes over it, and comes forward through the air with its leg bent.
+ */
+export function walkAt(strides: number, amount: number, drops: LegDrops = USUAL_LEG_DROPS): WalkPose {
+  const leg = (phase: number, drop: number, bend: number) => {
+    const at = strides + phase - Math.floor(strides + phase);
+    const { stance, sweep, lift } = WALK_GAIT;
+    if (at < stance) return { swing: amount * sweep * (at / stance - 0.5) / drop, lift: 0, bend: 0 };
+    const air = (at - stance) / (1 - stance), eased = air * air * (3 - 2 * air), arc = Math.sin(Math.PI * air);
+    return { swing: amount * sweep * (0.5 - eased) / drop, lift: lift * amount * arc, bend: bend * amount * arc };
   };
   // The elbow and the knee bend opposite ways.
-  const rightFore = leg(0, 0.2, -0.55), leftFore = leg(0.5, 0.2, -0.55), rightHind = leg(0.5, 0.24, 0.65), leftHind = leg(0, 0.24, 0.65);
+  const rightFore = leg(0, drops[0], -0.55), leftFore = leg(0.5, drops[1], -0.55), rightHind = leg(0.5, drops[2], 0.65), leftHind = leg(0, drops[3], 0.65);
   return {
     swing: [rightFore.swing, leftFore.swing, rightHind.swing, leftHind.swing],
     lift: [rightFore.lift, leftFore.lift, rightHind.lift, leftHind.lift],
     bend: [rightFore.bend, leftFore.bend, rightHind.bend, leftHind.bend],
-    bob: 0.00028 * amount * Math.sin(2 * TAU * cycle),
+    bob: 0.00028 * amount * Math.sin(2 * TAU * strides),
     // The trunk curves a little to each side in time with the stride, and the head follows.
-    sway: 0.0009 * amount * Math.sin(TAU * cycle),
+    sway: 0.0009 * amount * Math.sin(TAU * strides),
   };
 }
 
@@ -190,7 +216,7 @@ const VENTRICLE = new Set(['heart-lv', 'heart-rv', 'left-heart-spaces', 'right-h
 const ATRIUM = new Set(['heart-la', 'heart-ra']);
 const LUNG = new Set(['lung-left', 'lung-r-superior', 'lung-r-middle', 'lung-r-inferior', 'lung-r-postcaval', 'airways', 'bronchi', 'pleura', 'pulmonary-arteries', 'pulmonary-veins']);
 const GUT = new Set(['small-intestine', 'caecum', 'colon', 'stomach-cardiac', 'stomach-pyloric', 'stomach-lumen', 'limiting-ridge']);
-const TAIL = new Set(['tail', 'tail-vertebrae', 'tail-vessels']);
+const TAIL = new Set(['tail', 'tail-vertebrae', 'tail-vessels', 'tail-lateral-veins']);
 const PUSHED = new Set(['diaphragm', 'liver-median', 'liver-left', 'liver-right', 'liver-caudate', 'gall-bladder', 'bile-ducts', 'hepatic-arteries', 'portal-branches', 'hepatic-veins', 'stomach-cardiac', 'stomach-pyloric', 'stomach-lumen', 'limiting-ridge', 'spleen', 'pancreas', 'pancreatic-ducts', 'small-intestine', 'caecum', 'mesenteric-arteries', 'mesenteric-veins', ...LUNG]);
 
 /** How a structure takes part in the motion, beyond moving with the body it lies in. */

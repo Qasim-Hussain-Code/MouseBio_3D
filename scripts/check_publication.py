@@ -43,6 +43,13 @@ SECTION_SOURCES = {
 }
 # Other binary files stay opaque and require review; only these exact paths are registered section images.
 SECTION_IMAGE_PATHS = frozenset(path for path, _ in SECTION_SOURCES.values())
+# The mark and icon, rendered from the model. These exact files were read chunk by chunk: they hold pixels and, in WebP, the standard sRGB profile of the browser that encoded them.
+# Any other content at these paths, or any other chunk, comes back for review.
+REVIEWED_IMAGES = {
+    "public/atlas-living/mouse-icon-moving.webp": "1095551354ff13c31f3511e161cab2546ad08bc9d1d12633f9cc6c6cb3e50917",
+    "public/atlas-living/mouse-icon.png": "95d853b2bad592c472802355d3a506458bb0b17a235093b051ad5f4d28e87fb3",
+    "public/atlas-living/mouse-moving.webp": "bd6719780026699ee32f44bfa30888be90325632e854f8c11e0f1da2a2333f8e",
+}
 # JFIF header, quantization tables, baseline frame, Huffman tables and restart interval; any other segment could carry metadata.
 SECTION_JPEG_MARKERS = frozenset({0xE0, 0xDB, 0xC0, 0xC4, 0xDD})
 SECTION_DIMENSIONS = [380, 992, 208]
@@ -850,6 +857,31 @@ def scan_text(text: str, path: str, scope: str) -> list[dict]:
     return findings
 
 
+def image_holds_only_pixels(data: bytes) -> bool:
+    """Whether a PNG or WebP file has only the chunks that draw it, with no room for text or metadata."""
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        at = 8
+        while at + 12 <= len(data):
+            size = struct.unpack(">I", data[at:at + 4])[0]
+            if data[at + 4:at + 8] not in (b"IHDR", b"IDAT", b"IEND"):
+                return False
+            at += 12 + size
+        return at == len(data)
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        at = 12
+        while at + 8 <= len(data):
+            kind, size = data[at:at + 4], struct.unpack("<I", data[at + 4:at + 8])[0]
+            if kind not in (b"VP8X", b"ICCP", b"ALPH", b"VP8 ", b"VP8L") or (kind == b"ICCP" and size > 1024):
+                return False
+            at += 8 + size + (size & 1)
+        return at == len(data)
+    return False
+
+
+def is_reviewed_image(data: bytes, path: str) -> bool:
+    return REVIEWED_IMAGES.get(path) == hashlib.sha256(data).hexdigest() and image_holds_only_pixels(data)
+
+
 def inspect_content(data: bytes, path: str, scope: str) -> tuple[list[dict], bool]:
     """GLB JSON is inspected; opaque binary payloads are explicitly unreviewed."""
     if data[:4] == b"glTF" and len(data) >= 20:
@@ -926,6 +958,9 @@ def audit(root: Path, scope: str = "tracked", history: bool = False, metadata: b
             # below, including when its source registration was rejected.
         if len(data) > (MAX_REGISTERED_GLB_BYTES if registered_text else MAX_FILE_BYTES):
             findings.append({"path": safe_path(path), "scope": location, "type": "file-exceeds-scan-bound", "count": 1, "severity": "warning"})
+            return
+        if is_reviewed_image(data, path):
+            inspected += 1
             return
         matches, text_checked = inspect_content(data, path, location)
         findings.extend(matches)

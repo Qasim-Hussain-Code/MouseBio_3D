@@ -45,3 +45,8 @@
 .scale-journey-ways { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; padding-top: 6px; border-top: 1px solid #dfe5e2; }
 .scale-journey-ladder .scale-journey-way { display: inline-block; width: auto; padding: 2px 8px; border: 1px solid #c9d6d0; border-radius: 10px; background: #fff; color: #27453a; font-size: 11px; line-height: 1.35; text-align: left; }
 .scale-journey-ladder .scale-journey-way[aria-pressed="true"] { border-color: #2f6b57; background: #2f6b57; color: #fff; }
+.scale-journey-play-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.scale-journey-ladder .scale-journey-play-row .scale-journey-play{flex:1;margin-bottom:0}
+.scale-journey-speeds{display:flex;gap:2px}
+.scale-journey-ladder .scale-journey-speeds button{padding:2px 5px;font-size:10.5px;line-height:1.2;color:#4d5a54;background:#fff;border:1px solid #d5dcd9;border-radius:6px;cursor:pointer}
+.scale-journey-ladder .scale-journey-speeds button[aria-pressed="true"]{color:#fff;background:#2f6f5e;border-color:#2f6f5e}

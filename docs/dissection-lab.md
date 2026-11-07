@@ -1,0 +1,56 @@
+# Dissection practice
+
+The Dissect mode is a place to practise with instruments on the living mouse model. A pair of gloved hands holds the instruments at a bench: a wax board under the animal, a tray of instruments and a dish for what is lifted out. The right hand follows the pointer, and the left steadies the tissue with forceps.
+
+It is a teaching aid and not a protocol. It models no tissue mechanics, anaesthesia, aseptic technique or animal welfare, and the anatomy it is done on is the constructed model, parts of which are simulated. Practice here does not replace supervised training or an approved protocol.
+
+## What it does
+
+- **Instruments.** A scalpel divides the one layer it touches. Scissors take a layer together with what is bound to it: the skin with the tissue under it, and the wall of the body as a whole. Bone cutters go through bone and the muscle that lies on it, and refuse soft tissue with no bone under it. Forceps draw a layer back from the edge of a cut, or take hold of an organ, vessel or nerve and move it. A blunt probe names what it touches and parts what is loose. A ligature ties a vessel, needle and suture close a cut in the skin, a pin marks a place, a swab cleans blood away, and a syringe goes in for as long as it is held down.
+- **What can be touched.** An instrument begins on what can be seen: what lies under its tip is asked of the drawing itself, with the same openings as the view. A stroke then stays on the layer it began on. Cuts already made do not turn it aside, so it does not fall through its own opening to the far side of the animal, and a quick movement between two pictures is gone over in short steps, so the cut has no gaps. Where the surface changes, across the gap between a leg and the body, it starts again on the far side and does not cut across.
+- **Cuts.** Cuts are held in a grid of small boxes over the body, one number per group of layers in each box (`src/domain/cut-field.ts`), in the coordinates of the model at rest, so that a cut stays on the tissue as the tissue moves.
+- **Drawing a layer back.** A long straight cut in the skin or in the wall of the body draws a little apart by itself, and each side can be taken with forceps and drawn back. A layer folds over a line that moves out from the cut, narrows to nothing at the two ends of the cut, and lies out from the body with its inner side up (`src/viewer/lab-flap-sheet.ts`). A long cut can be made in several snips: one that carries on along an earlier cut opens with it as one. The front of the rib cage, between two cuts, lifts as one piece, like a lid, and turns over towards the head. A cut along the top of the skull leaves a rounded leaf of bone loose on each side, and each folds out to the side.
+- **Layers under the cut.** Everything below is the geometry of the model, seen only through what has been opened. At the bench the simulated sheet for the wall of the abdomen is solid, so that the organs lie out of sight until the wall is opened (Carlson and Chakkalakal 2011, [doi:10.1371/journal.pone.0024212](https://doi.org/10.1371/journal.pone.0024212)); elsewhere it is drawn faintly. The hairs of the simulated coat go with the skin they are rooted in, and are parted along a line marked for cutting. Pockets of air and gas traced from the scan are not drawn at the bench, because they are not things one sees or takes hold of when an animal is opened. Inner tissue has a wet shine under the lamp at the bench, which is a choice of display.
+- **Taking out.** A structure can be lifted out and laid in the dish, from where it can be followed under the microscope into the zoom, where a route has been made for its tissue.
+- **Undo.** Every action can be undone in turn, and the session can be started again. Nothing here changes the model.
+- **A record.** A session can be saved as a JSON record of what was done on the model: which instrument, which structures, how long a cut was and how far from the midline. It holds nothing about the person.
+
+## Tutorials
+
+When the bench opens, a list offers the procedures, by kind, or practice without a tutorial. A tutorial is a card beside the animal that goes through the procedure step by step. For each step it says what to do, why it is done, what can go wrong and what is seen when it has been done, and it says what has fallen short: how long the cut is so far, how far it strayed, or which side is still to be drawn back. Going on to a step takes up its instrument and turns to its view, close enough to work in, with what is being worked on in the part of the view that the card leaves free. While the hands work, the card keeps to the step they are showing. What the step needs is marked on the animal: a dotted line to cut along, which goes as the blade passes, a ring at a place to go in, a point on an edge to take hold of, or a glow on a structure to find. With **Steady hand** on, which is the first setting, a stroke near a marked line keeps to it, and a needle that is going for a named muscle stops once its tip lies in that muscle.
+
+**Show me this step** makes the hands carry out the step in hand, and **Watch all of it** makes them carry out the whole procedure from the beginning. They use the same controls as a person does. The steps can be read aloud, in a voice on the device only, so nothing leaves it. A finished tutorial sums up how many actions it took and how long.
+
+Each tutorial follows the outline of a published procedure, says so, and links to it. They practise finding the way on this model and they are not those procedures. Each says what the published method does that is left out here, and sizes given for another species are changed to fit this mouse.
+
+| Tutorial | Kind | Follows | Checks |
+| --- | --- | --- | --- |
+| Open the abdomen | Necropsy | Parkinson et al. 2011, [doi:10.3791/2966](https://doi.org/10.3791/2966) | A long cut near the midline in the skin, each side drawn back, the same in the wall, the intestine and liver seen; no organ cut |
+| Find the organs of a necropsy | Necropsy | Parkinson et al. 2011 | The skin cut the length of the underside, the wall opened, the ribs cut and lifted; the heart, lungs, liver, a kidney and the spleen seen; no organ cut |
+| Collect the spleen | Necropsy | Parkinson et al. 2011 | The abdomen opened, the gut moved aside, and the spleen lifted out uncut |
+| Collect the mesenteric lymph node | Necropsy | Parkinson et al. 2011 | The caecum found, the gut moved aside uncut, and the node lifted out |
+| Expose the brain | Necropsy | Parkinson et al. 2011 | The skin over the skull drawn back, the skull cut along its midline, each half folded out, and the brain seen uncut |
+| Tie the femoral artery | Surgery | Niiyama et al. 2009, [doi:10.3791/1035](https://doi.org/10.3791/1035) | With the left hind leg drawn out to the side, the thigh opened, the fat parted, the artery found and tied before any cut in it, the vein and nerve left whole, and the skin closed |
+| Open the chest to the heart | Surgery | Gage et al. 2012, [doi:10.3791/3564](https://doi.org/10.3791/3564) (done in the rat) | The ribs cut with bone cutters and lifted, and the heart seen; no lung or heart cut |
+| Inject into the abdomen | Injection | Machholz et al. 2012, [doi:10.3791/2771](https://doi.org/10.3791/2771) | In through a lower quadrant, with the tip through the wall and in no organ |
+| Inject under the skin | Injection | Machholz et al. 2012 | In on the flank or rump at an angle, into a fold lifted by the left hand, with the tip above the muscle |
+| Inject into the thigh muscle | Injection | Machholz et al. 2012 | Square to the skin, with the tip in the front of the thigh, and not in the back of it, near the sciatic nerve |
+
+What a needle passed through and where its tip lies are found from the closed surfaces of the model along the line of the needle. That is geometry of this model. It says nothing about where a needle would go in a real animal of a different strain, size or fill of the gut.
+
+## Hands
+
+The hands are a drawing at about the size of an adult hand, about 18 cm from the wrist to the tip of the middle finger, so they look large beside a mouse, as they do at the bench. Their proportions are display estimates and are not taken from a measured hand. A hand takes its place from the instrument it holds, and each finger bends until it reaches its place on the instrument. The ways of holding follow ordinary practice: rings under the thumb and ring finger with the index along the shank, and forceps, probes, blades and the syringe held as a pen. This shows how a hand moves and models no force, dexterity or fatigue.
+
+Close views stand far enough off for the hand that holds the instrument to show at the edge. Nearer than that, the hands lie outside the view and only the instruments are seen, which is also how it looks through a dissecting microscope.
+
+## Limits
+
+- Tissue does not stretch or tear, and a reflected layer does not slide on what lies under it. A layer folds as a sheet with a chosen size of roll and a chosen fall, and its inner side is a drawn look: the small vessels on it come from a fixed seed and are not those of this animal or of any measured animal. Where it has been drawn back, the mesh of that layer is hidden and the sheet takes its place.
+- The left hand lifts the layer a little beside a cut. That movement and the size of the region that moves are chosen for viewing.
+- Bleeding is an illustration. It appears where a vessel or a vascular organ is cut while the heart is shown beating, and a tied vessel does not bleed. No volume or rate is computed.
+- The animal stays as it is whatever is done to it. Breathing and the heartbeat go on when the chest is opened, which they would not do unaided.
+- Instruments and the syringe are drawn for use and are not models of any maker's instruments. Sizes are of the usual kind and are not a recommendation.
+- An animal on its back is the standing model with its legs laid out by a display deformation. Each leg turns about the line of the body through its top, by an angle that grows down the leg, and the paw goes along without turning, sole up. The trunk, its organs and the hip bones stay where they are, and the skin between them and the leg stretches. For surgery on the inner side of the thigh that leg is drawn further out. None of this is a measured posture, and the skin that stretches in the groin has its hairs spread further apart than they would be.
+- The shape of the thigh here comes from a specimen scanned spread flat, carried to a chosen stance. The simulated femoral vessels lie where their published course puts them on that thigh, so the way to them, and what lies round them in the wound, belong to this model.
+- The hands, instruments, bleeding and tissue behaviour have been seen running on a graphics chip, and the sound of the scissors has not been heard. None of it has been reviewed by an anatomist or by anyone trained in these procedures.

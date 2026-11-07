@@ -50,11 +50,11 @@ for (const fps of [5, 15, 30, 60, 144]) {
   test(`one press of Play goes on past the last layer by itself at ${fps} frames a second`, () => {
     const { unfolder, through } = scene();
     unfolder.play('in');
-    const seconds = run(unfolder, through, fps, 90);
+    const seconds = run(unfolder, through, fps, 120);
     assert.equal(through.length, 1, `Play had not gone on after ${seconds.toFixed(1)} s`);
     assert.equal((through[0] as { playing: boolean }).playing, true, 'the next part is told that it is still playing');
     assert.equal(unfolder.playing(), null);
-    assert.ok(seconds < 45, `Play took ${seconds.toFixed(1)} s to pass through the layers`);
+    assert.ok(seconds < 60, `Play took ${seconds.toFixed(1)} s to pass through the layers`);
   });
 }
 

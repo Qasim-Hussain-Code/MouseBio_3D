@@ -37,6 +37,12 @@ export function coveredBySkin(id: string, skinId: string | null | undefined, ski
   return !!skinId && id !== skinId && !exterior && skinVisible && skinOpacity >= OPAQUE_SKIN && clipAxis === 'off';
 }
 
+/** At the bench the wall of the abdomen is a layer to be opened, and is solid. Elsewhere it is drawn faintly, like the peritoneum. Pockets of air and gas, traced from the scan, are not things that can be seen or taken hold of when an animal is opened. */
+export function labOpacity(reference: Atlas): Record<string, number> {
+  const opacity = referenceOpacity(reference);
+  return 'living:abdominal-wall' in opacity ? { ...opacity, 'living:abdominal-wall': 1, 'living:airways': 0 } : opacity;
+}
+
 /** The see-through skin opacity used when the inside of the body is to be shown. */
 export function seeThroughSkinOpacity(atlas: Atlas): number | null {
   const skin = bodySurfaceIdFor(atlas);

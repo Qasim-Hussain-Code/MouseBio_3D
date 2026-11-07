@@ -10,6 +10,7 @@ export type Evidence = 'source' | 'traced' | 'simulated';
 export type Plan =
   | { readonly kind: 'skin' }
   | { readonly kind: 'panniculus' }
+  | { readonly kind: 'abdominal-wall' }
   | { readonly kind: 'bone'; readonly index: number }
   | { readonly kind: 'tree'; readonly part: TreePart }
   | { readonly kind: 'shell'; readonly membrane: 'pericardium' | 'pleura' | 'meninges' | 'peritoneum'; readonly grow: number; readonly step: number; readonly radius: number }
@@ -28,7 +29,7 @@ export type Plan =
   /** A net of thin strands lying on the surface of structures built earlier. */
   | { readonly kind: 'net'; readonly on: readonly string[]; readonly points: number; readonly radius: number };
 
-export type AttachmentPart = 'whisker-follicles' | 'dural-venous-sinuses' | 'meningeal-lymphatics' | 'bone-vomer' | 'bone-ethmoid' | 'bone-lacrimal' | 'articular-cartilage' | 'menisci' | 'patellar-tendons' | 'vomeronasal-organs' | 'meibomian-glands' | 'paw-arteries' | 'paw-veins' | 'paw-nerves' | 'calcaneal-tendons' | 'extraocular-muscles' | 'patellae' | 'eyes' | 'eyelids' | 'corneas' | 'irises' | 'lenses' | 'retinas' | 'harderian-glands' | 'intraorbital-glands' | 'tail-vessels' | 'openings' | 'pinnae' | 'nose' | 'lips' | 'vibrissae' | 'forepaws' | 'hindpaws' | 'claws' | 'tail' | 'tail-vertebrae' | 'foot-bones';
+export type AttachmentPart = 'tail-lateral-veins' | 'whisker-follicles' | 'dural-venous-sinuses' | 'meningeal-lymphatics' | 'bone-vomer' | 'bone-ethmoid' | 'bone-lacrimal' | 'articular-cartilage' | 'menisci' | 'patellar-tendons' | 'vomeronasal-organs' | 'meibomian-glands' | 'paw-arteries' | 'paw-veins' | 'paw-nerves' | 'calcaneal-tendons' | 'extraocular-muscles' | 'patellae' | 'eyes' | 'eyelids' | 'corneas' | 'irises' | 'lenses' | 'retinas' | 'harderian-glands' | 'intraorbital-glands' | 'tail-vessels' | 'openings' | 'pinnae' | 'nose' | 'lips' | 'vibrissae' | 'forepaws' | 'hindpaws' | 'claws' | 'tail' | 'tail-vertebrae' | 'foot-bones';
 
 export interface StructurePlan {
   readonly id: string;
@@ -104,6 +105,9 @@ const FULLER = 'Fuller JL, Wimer RE. Neural, sensory, and motor functions. In: G
 const KOCHI = 'Kochi T, Imai Y, Takeda A, Watanabe Y, Mori S, Tachi M, Kodama T. Characterization of the arterial anatomy of the murine hindlimb: functional role in the design and understanding of ischemia models. PLoS One 2013;8(12):e84047. doi:10.1371/journal.pone.0084047';
 const RIGAUD = 'Rigaud M, Gemes G, Barabas ME, Chernoff DI, Abram SE, Stucky CL, Hogan QH. Species and strain differences in rodent sciatic nerve anatomy: implications for studies of neuropathic pain. Pain 2008;136(1-2):188-201. doi:10.1016/j.pain.2008.01.016';
 const SHIELDS = 'Shields SD, Eckert WA, Basbaum AI. Spared nerve injury model of neuropathic pain in the mouse: a behavioral and anatomic analysis. J Pain 2003;4(8):465-70. doi:10.1067/s1526-5900(03)00781-8';
+const CARLSON = 'Carlson MA, Chakkalakal D. Tensile properties of the murine ventral vertical midline incision. PLoS One. 2011;6(9):e24212. doi:10.1371/journal.pone.0024212';
+const PARKINSON = "Parkinson CM, O'Brien A, Albers TM, Simon MA, Clifford CB, Pritchett-Corning KR. Diagnostic necropsy and selected tissue and sample collection in rats and mice. J Vis Exp. 2011;(54):2966. doi:10.3791/2966";
+const MACHHOLZ = 'Machholz E, Mulder G, Ruiz C, Corning BF, Pritchett-Corning KR. Manual restraint and common compound administration routes in mice and rats. J Vis Exp. 2012;(67):2771. doi:10.3791/2771';
 const GREENE = 'Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse.';
 const inner = (id: string, name: string, part: InternalPart | InteriorPart | LimbPart, systems: string[], color: string, description: string, basis: readonly string[] = [COOK, HUMMEL]): StructurePlan => ({
   id: `living:${id}`, name, systems, sourceLabel: 'none, simulated', evidence: 'simulated', scale: 'organ', color,
@@ -121,6 +125,11 @@ export const STRUCTURES: readonly StructurePlan[] = [
     id: 'living:skin', name: 'Skin, with simulated coat', systems: ['integumentary'], sourceLabel: 'outer surface of all source labels', evidence: 'traced', scale: 'organism', color: '#e8b9a8', defaultOpacity: 1,
     description: `The outer surface of the union of all Digimouse labels, carried into the stance and smoothed. ${POSTURE} The shanks and forearms are simulated shapes whose radii are measured from the limb tissue and limited to a slender limb, because the scanned shanks lay pressed flat, the scanned forearms end in a blunt mass round the wrists, and the images end at the hind feet. The fur drawn on the surface is simulated, because the specimen is a nude mouse, and so are the colours of the skin under it and of the ears, tail, paws and nose that go with each coat.`,
     basis: [DIGIMOUSE, COOK], plan: { kind: 'skin' },
+  },
+  {
+    id: 'living:abdominal-wall', name: 'Wall of the abdomen', systems: ['muscular'], sourceLabel: 'none, simulated', evidence: 'simulated', scale: 'organ', color: '#b9665c', defaultOpacity: 0.16,
+    description: 'Simulated. One sheet for the wall of the belly and flanks, between the ribs and the pelvis, so that the abdomen can be opened as a layer. In the mouse, Carlson and Chakkalakal find the linea alba and peritoneum under the skin at the midline, and muscle to each side of it, and here the middle line is drawn pale. The sheet is taken from the simulated body surface at a chosen depth. Its depth, the width of its middle line and the direction of its fibres are estimates, and it is not measured. It is drawn faintly, except at the bench, where it is opened.',
+    basis: [CARLSON, PARKINSON], plan: { kind: 'abdominal-wall' },
   },
   {
     id: 'living:panniculus', name: 'Panniculus carnosus', systems: ['muscular', 'integumentary'], sourceLabel: 'none, simulated', evidence: 'simulated', scale: 'organ', color: '#a9574f', defaultOpacity: 0.3,
@@ -376,6 +385,7 @@ export const STRUCTURES: readonly StructurePlan[] = [
   simulated('hindpaws', 'Hind paws', 'hindpaws', ['integumentary'], '#eab2a4', 'Five digits with walking pads, after Cook, because the source images end at the hind feet. The fine hair on the back of the paw is a display estimate.'),
   simulated('claws', 'Claws', 'claws', ['integumentary'], '#d9cdb9', 'Claws on the digits and a flattened nail on the pollex, after Cook.'),
   simulated('tail', 'Tail', 'tail', ['integumentary'], '#e3a896', 'A ringed tail continuing the short length of tail in the source images, with a length chosen to match the body as drawn by Cook. Its sparse hair is a display estimate.'),
+  { ...simulated('tail-lateral-veins', 'Lateral tail veins', 'tail-lateral-veins', ['cardiovascular', 'arterial-venous'], '#7486ad', 'The two veins that run along the sides of the tail just under its skin, where Machholz et al. inject into them, drawn so that they show through it as they do in a pale tail. Their size and depth are estimates.'), exterior: true, basis: [MACHHOLZ] },
   { ...simulated('tail-vessels', 'Middle caudal artery and vein in the tail', 'tail-vessels', ['cardiovascular', 'arterial-venous'], '#b5394f', 'The middle caudal vessels, which Hummel et al. say continue the course of the aorta into the tail, under the simulated tail vertebrae. Cook figure 117 shows their origin.'), exterior: false, basis: [HUMMEL, COOK] },
   simulated('openings', 'Anus and preputial opening', 'openings', ['integumentary', 'digestive', 'reproductive'], '#3d2a29', 'A dark ring at each opening on the body surface, after Cook figure 9. Sections of the specimen place the anal canal, and the os penis in the CT places the tip of the penis.'),
   { ...simulated('tail-vertebrae', 'Caudal vertebrae beyond the scan', 'tail-vertebrae', ['skeletal'], '#ddd4c0', 'Twenty-three shafts along the simulated tail, which with the five vertebrae in the CT make the 28 caudal vertebrae within the 27 to 30 counted by Hummel et al.'), exterior: false, basis: [COOK, HUMMEL] },

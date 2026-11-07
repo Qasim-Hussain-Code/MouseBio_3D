@@ -62,7 +62,7 @@ export interface ZoomUnfold {
 /** How much the wheel changes the distance per unit of its delta, and how much further zooming in at the end goes on to the tissue. */
 const WHEEL_RATE = 0.0011, THROUGH_PRESSURE = 50, WHEEL_MOST = 600;
 /** Seconds in which a step of the wheel is taken, and in which the whole zoom plays by itself. */
-const WHEEL_EASE = 0.09, PLAY_SECONDS = 20;
+const WHEEL_EASE = 0.09, PLAY_APPROACH_SECONDS = 7, PLAY_STOP_SECONDS = 5, PLAY_LEAST_SECONDS = 18, PLAY_MOST_SECONDS = 42;
 
 export function createZoomUnfold(options: ZoomUnfoldOptions): ZoomUnfold {
   const { camera, controls } = options;
@@ -220,7 +220,9 @@ export function createZoomUnfold(options: ZoomUnfoldOptions): ZoomUnfold {
       }
       if (auto) {
         const range = place?.range ?? { openAt: ZOOM_UNFOLD.widestOpen, fullAt: ZOOM_UNFOLD.widestFull };
-        const rate = Math.log(range.openAt / range.fullAt) / PLAY_SECONDS;
+        // On the way to the spot it moves steadily; through the layers each one gets about the same time.
+        const seconds = place ? Math.max(PLAY_LEAST_SECONDS, Math.min(PLAY_MOST_SECONDS, place.stops.length * PLAY_STOP_SECONDS)) : PLAY_APPROACH_SECONDS;
+        const rate = Math.log(range.openAt / range.fullAt) / seconds;
         const next = distance() * Math.exp((auto === 'in' ? -rate : rate) * Math.min(delta, 0.25));
         const lowest = place ? distanceForView(place.range.fullAt, fov()) : options.closest();
         goal = Math.max(lowest, Math.min(options.furthest(), next));

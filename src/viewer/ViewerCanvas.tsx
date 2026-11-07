@@ -13,12 +13,16 @@ import { createZoomUnfold, type ZoomUnfold } from './zoom-unfold';
 import { createLifeRuntime, type LifeBinding, type LifeRuntime } from './life-runtime';
 import { LIFE_SHARED } from './life-field';
 import { createFlowTokens, flowLinesFrom, isFlowPathFile, type FlowTokens } from './flow-tokens';
+import { createMouseVoice } from './mouse-voice';
+import { createLabSession, type LabReport, type LabSession, type LabView } from './lab-session';
+import { CUT_SHARED } from './cut-uniforms';
+import { carried, goToFloor, paceOf, startle, stagePoint, stepWander, WANDER_START, wantsToSit, wantsToStep, type FloorPoint, type StagePose, type WanderState, type WanderView } from '../domain/mouse-walk';
 import type { LifeSettings } from '../domain/living-simulation';
 import { viewHeightAt } from '../domain/zoom-unfold';
 import { UnfoldGuide, UnfoldHint, type UnfoldGuideRow, type UnfoldGuideState } from '../components/UnfoldGuide';
 import { createIdPass, createOpeningMark, type SeenStructure } from './id-pass';
 import { createContactShadow, type ContactShadow } from './contact-shadow';
-import { COATS, createFur, fineHairOptions, hasFurAttribute, type CoatId, type FurLayer } from './fur';
+import { COATS, createFur, fineHairOptions, hasFurAttribute, turnFurLights, type CoatId, type FurLayer } from './fur';
 import { declaresEvidence, markedName } from '../domain/evidence';
 import { createSectionImagePlane, cutFaceView, loadSectionVolume, type SectionImagePlane } from './section-image';
 import { sectionImagesApplyTo, type SectionImageChoice, type SectionImageId } from '../domain/section-images';
@@ -73,11 +77,15 @@ export type ViewerSettings = {
   life?: LifeSettings;
   /** Another view lies over this one, which then need not be drawn. */
   covered?: boolean;
+  /** A session of practice with the instruments is open. */
+  lab?: boolean;
 };
 /** What lies at the opened place, from the outside inwards. */
 export type DissectionReport = { place: string; items: HereItem[] };
 export type SectionImageStatus = { status: 'idle' | 'loading' | 'ready' | 'failed'; id?: SectionImageId };
-export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean; viewCutFace: (axis: 'x' | 'y' | 'z') => void; bodyCentrePercent: (axis: 'x' | 'y' | 'z') => number | null; placeDissection: (place: DissectionPlaceId) => void };
+/** What a session of practice tells the page. */
+export type LabEvent = { kind: 'report'; report: LabReport } | { kind: 'picked'; id: string } | { kind: 'refused'; message: string } | { kind: 'caption'; text: string | null };
+export type ViewerHandle = { reset: () => void; view: (axis: 'x' | 'y' | 'z') => void; focus: () => void; focusRegions: (ids: readonly string[]) => void; focusTraceSample: (sampleId: number) => boolean; focusPolylinePath: (pathRowIndex: number) => boolean; zoom: (factor: number) => boolean; pan: (dx: number, dy: number) => boolean; viewCutFace: (axis: 'x' | 'y' | 'z') => void; bodyCentrePercent: (axis: 'x' | 'y' | 'z') => number | null; placeDissection: (place: DissectionPlaceId) => void; lab: () => LabSession | null; labView: (view: LabView) => void; picture: () => string | null };
 type Props = {
   atlas: Atlas;
   pathSignal?:PathSignalDisplay;
@@ -103,12 +111,13 @@ type Props = {
   onDissectionReport?: (report: DissectionReport | null) => void;
   /** The zoom has gone through the layers at a spot and goes on into the tissue of one of these structures, the first being the one in view. */
   onZoomThrough?: (ids: readonly string[], place?: string, playing?: boolean) => void;
+  onLab?: (event: LabEvent) => void;
 };
 
-export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace, pathSignal, onAutoRotateEnd, onSectionImageStatus , onZoomToSkin, onZoomToStructure, onDissectionReport, onZoomThrough }: Props) {
+export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, handle, cameraPose, onCameraChange, title, detailAsset, onDetailStatus, localTrace, pathSignal, onAutoRotateEnd, onSectionImageStatus , onZoomToSkin, onZoomToStructure, onDissectionReport, onZoomThrough, onLab }: Props) {
   const host = useRef<HTMLDivElement>(null);
-  const latest = useRef({ pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus, onZoomToSkin, onZoomToStructure, onDissectionReport, onZoomThrough });
-  latest.current = { pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus, onZoomToSkin, onZoomToStructure, onDissectionReport, onZoomThrough };
+  const latest = useRef({ pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus, onZoomToSkin, onZoomToStructure, onDissectionReport, onZoomThrough, onLab });
+  latest.current = { pathSignal, settings, onSelect, onCameraChange, cameraPose, detailAsset, onDetailStatus, onReady, onAutoRotateEnd, onSectionImageStatus, onZoomToSkin, onZoomToStructure, onDissectionReport, onZoomThrough, onLab };
   const engine = useRef<{ apply: () => void; setPose: (pose: CameraPose) => void; setDetail: () => void } | null>(null);
   const [status, setStatus] = useState('Loading reference geometry');
   const [failure, setFailure] = useState(false);
@@ -131,7 +140,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let disposed = false;
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power', stencil: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', stencil: true });
     } catch {
       setFailure(true);
       onStatus?.('failed');
@@ -160,22 +169,34 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     pmrem.dispose();
     scene.environment = environment;
     scene.environmentIntensity = 0.7;
-    scene.add(new THREE.HemisphereLight('#dfe9ea', '#2b333a', 1.1));
+    const hemisphere = new THREE.HemisphereLight('#dfe9ea', '#2b333a', 1.1);
+    scene.add(hemisphere);
+    // The lights stand in the room, so they turn about the mouse as it turns on the floor.
+    const lights = new THREE.Group();
+    scene.add(lights);
     const key = new THREE.DirectionalLight('#fff4e4', 2.4);
     key.position.set(-2.5, 4, 5.5);
-    scene.add(key);
+    lights.add(key);
     const fill = new THREE.DirectionalLight('#9fc3cc', 0.7);
     fill.position.set(3, -1, -3);
-    scene.add(fill);
+    lights.add(fill);
     const rim = new THREE.DirectionalLight('#ffffff', 1.1);
     rim.position.set(1.5, 2.5, -5);
-    scene.add(rim);
+    lights.add(rim);
     const camera = new THREE.PerspectiveCamera(36, 1, 0.00001, 100);
     // A reference with an inferred dorsal direction orbits about it, like a turntable.
     const posture = displayPostureFor(atlas);
     const skinId = bodySurfaceIdFor(atlas);
     if (posture) camera.up.set(...posture.up);
     const controls = new OrbitControls(camera, renderer.domElement);
+    // Which way the view turns about. Controls read the way up only when they are made, and an animal lying on its back turns it over.
+    const orbitUp = camera.up.clone();
+    const orbitAbout = (up: THREE.Vector3) => {
+      orbitUp.copy(up);
+      const held = controls as unknown as { _quat: THREE.Quaternion; _quatInverse: THREE.Quaternion };
+      held._quat.setFromUnitVectors(orbitUp, new THREE.Vector3(0, 1, 0));
+      held._quatInverse.copy(held._quat).invert();
+    };
     controls.enableDamping = false;
     controls.enablePan = true;
     controls.autoRotateSpeed = 1.2;
@@ -221,7 +242,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let shadow: ContactShadow | null = null, shadowDirty = true;
     let fur: FurLayer | null = null, coatShown = false;
     const fineHair: FurLayer[] = [], fineHairOf = new Map<FurLayer, string>();
-    let interacting = false, slowFrames = 0, lastFrameAt = 0;
+    let interacting = false, slowFrames = 0, quickFrames = 0, lastFrameAt = 0;
     let sectionRoot: THREE.Object3D | null = null, sectionPlane: SectionImagePlane | null = null;
     let sectionShown: SectionImageId | null = null, sectionFailed: SectionImageId | null = null;
     let sectionRequest: { id: SectionImageId; abort: AbortController } | null = null;
@@ -274,10 +295,10 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       lastLabelSetAt = timestamp;
       const width = element.clientWidth, height = element.clientHeight;
       const candidates: LabelCandidate[] = [];
-      if (windowActive()) {
+      if (windowActive() || lab) {
         // On the opened animal the names stand beside it, and each line ends on a part of the structure that can be seen. They wait while the view moves.
         const here = new Set(lastFound.map((item) => item.id));
-        const rows = seenNow && !seenStale ? namesToShow(seenNow.filter((item) => zoomOpen || here.has(item.id)).map((item) => ({ ...item, tier: tierOf(item.id) })), current.selected) : [];
+        const rows = seenNow && !seenStale ? namesToShow(seenNow.filter((item) => lab ? tierOf(item.id) !== 'skin' : zoomOpen || here.has(item.id)).map((item) => ({ ...item, tier: tierOf(item.id) })), current.selected) : [];
         const plate = rows.map((item) => ({ id: item.id, name: markedName(atlas.structures.find((entry) => entry.id === item.id)!), x: item.x * width, y: item.y * height, depth: 0, priority: item.rank }));
         // The guide stands on the left while zooming, so the names go to the right.
         const placed = layoutPlate(plate.slice(0, zoomOpen ? 14 : 26), { width, height, columnWidth: Math.min(205, width * 0.2), topLeft: 104, topRight: 176, bottomLeft: zoomOpen ? height : 206, bottomRight: 190 });
@@ -339,6 +360,81 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let windowShape: WindowShape | null = null, windowOpening = 0;
     let unfolder: ZoomUnfold | null = null, lastGuide = '', guideRows: UnfoldGuideRow[] = [], guidePlace = '';
     let life: LifeRuntime | null = null, flow: FlowTokens | null = null, lifeWaited = 0;
+    let lab: LabSession | null = null;
+    const voice = createMouseVoice();
+    // The mouse walks on the floor of the room. The model stays where it is and the camera, its target and the lights move the other way, so nothing in the model needs to know.
+    let wander: WanderState = WANDER_START, walkHold = 0;
+    let floor: { origin: THREE.Vector3; forward: THREE.Vector3; side: THREE.Vector3; up: THREE.Vector3; plane: THREE.Plane; body: THREE.Sphere } | null = null;
+    const stageTurn = new THREE.Quaternion(), frustum = new THREE.Frustum(), frustumMatrix = new THREE.Matrix4();
+    const floorOf = (point: THREE.Vector3): FloorPoint => { const offset = point.clone().sub(floor!.origin); return [offset.dot(floor!.forward), offset.dot(floor!.side)]; };
+    /** Move the view for a change of the mouse's place on the floor. */
+    const moveStage = (from: StagePose, to: StagePose) => {
+      if (!floor) return;
+      const { origin, forward, side, up } = floor;
+      const carry = (point: THREE.Vector3) => {
+        const offset = point.clone().sub(origin), rise = offset.dot(up);
+        const [ahead, across] = carried(from, to, offset.dot(forward), offset.dot(side));
+        point.copy(origin).addScaledVector(forward, ahead).addScaledVector(side, across).addScaledVector(up, rise);
+      };
+      carry(camera.position);
+      carry(controls.target);
+      syncing = true; controls.update(); syncing = false;
+      stageTurn.setFromAxisAngle(up, -to.heading);
+      lights.quaternion.copy(stageTurn);
+      scene.environmentRotation.setFromQuaternion(stageTurn);
+      turnFurLights(stageTurn);
+      dirty = true;
+    };
+    /** Where a point of the view meets the floor, no further off than the mouse can be seen, as a point of the model. */
+    const floorAtView = (x: number, y: number): THREE.Vector3 | null => {
+      if (!floor) return null;
+      raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+      const hit = raycaster.ray.intersectPlane(floor.plane, new THREE.Vector3());
+      if (!hit) return null;
+      const centre = new THREE.Vector3();
+      raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+      if (!raycaster.ray.intersectPlane(floor.plane, centre)) return hit;
+      const reach = camera.position.distanceTo(centre) * 1.5;
+      return hit.distanceTo(centre) > reach ? centre.addScaledVector(hit.clone().sub(centre).normalize(), reach) : hit;
+    };
+    const stageOf = (point: THREE.Vector3): FloorPoint => { const [ahead, across] = floorOf(point); return stagePoint(wander.pose, ahead, across); };
+    /** Would the body, standing at this point of the floor, be out of the view? */
+    const outOfView = (point: THREE.Vector3) => {
+      if (!floor) return true;
+      const centre = floor.body.center.clone().add(point).sub(floor.origin);
+      return !frustum.intersectsSphere(new THREE.Sphere(centre, floor.body.radius));
+    };
+    const wanderView = (): WanderView => {
+      camera.updateMatrixWorld();
+      frustum.setFromProjectionMatrix(frustumMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+      const here = floor!.origin;
+      const fallback = (): FloorPoint => stageOf(here);
+      const inside = (): FloorPoint => {
+        const point = floorAtView((Math.random() - 0.5) * 1.1, (Math.random() - 0.5) * 0.6);
+        return point ? stageOf(point) : fallback();
+      };
+      return {
+        inView: !outOfView(here),
+        random: Math.random,
+        inside,
+        outside() {
+          // Out by either side or by the near edge, rather than on and on into the distance.
+          const way = Math.random();
+          const [x, y] = way < 0.45 ? [-1.9, Math.random() * 0.8 - 0.4] : way < 0.9 ? [1.9, Math.random() * 0.8 - 0.4] : [(Math.random() - 0.5) * 1.6, -1.9];
+          const point = floorAtView(x, y);
+          return point ? stageOf(point) : fallback();
+        },
+        entry() {
+          const signX = Math.random() < 0.5 ? -1 : 1, signY = Math.random() < 0.5 ? -1 : 1;
+          let at: THREE.Vector3 | null = null;
+          for (let out = 1.15; out < 5; out *= 1.25) {
+            const point = floorAtView(signX * out, signY * Math.min(out, 1.1));
+            if (point && outOfView(point)) { at = point; break; }
+          }
+          return { at: at ? stageOf(at) : fallback(), goal: inside() };
+        },
+      };
+    };
     const flowVessels = new Set<string>();
     const idPass = createIdPass();
     let lastWindowSettings = '', lastSeenIds = '';
@@ -374,6 +470,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     // Inside the animal is seen only through the opening: where the part of an outer surface that was taken out would have been, a mark is left, and everything further in is drawn only on that mark.
     // So a soft part or a measured bone that reaches the skin of a slender simulated limb stays hidden, as it would under whole skin.
     const openingMarks = new Map<string, THREE.Mesh>();
+    // The eyes belong to the layer of the organs, and yet they are seen from outside.
+    const seenFromOutside = new Set(atlas.structures.filter((item) => item.exterior).map((item) => item.id));
     const openingMarkFor = (id: string, mesh: THREE.Mesh, shading: SurfaceShadingUniforms) => {
       let mark = openingMarks.get(id);
       if (!mark) {
@@ -392,9 +490,9 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       const pastSkin = !!unfolder?.skinOutOfView(), nearCut = unfolder?.nearCut() ?? 0;
       if (flow) {
         const lifeNow = current.life;
-        flow.mesh.visible = !!lifeNow?.on && (lifeNow.blood || lifeNow.nerves) && (on || !skinIsOpaque(current));
+        flow.mesh.visible = !!lifeNow?.on && (lifeNow.blood || lifeNow.nerves) && (on || !!lab || !skinIsOpaque(current));
         flow.show(!!lifeNow?.blood, !!lifeNow?.nerves);
-        flow.setMasked(on && !!shape && skinIsOpaque(current) && !pastSkin);
+        flow.setMasked(!!lab || (on && !!shape && skinIsOpaque(current) && !pastSkin));
         flow.setNear(nearCut);
       }
       for (const root of foldRoots.values()) root.visible = false;
@@ -406,9 +504,10 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         const tier = tierOf(id);
         shading.uWinOn.value = radius > 0 ? 1 : 0;
         shading.uWinNear.value = nearCut;
-        const covering = on && !!shape && skinIsOpaque(current) && !pastSkin;
-        const outer = tier === 'skin';
-        mesh.material.stencilWrite = covering && !outer;
+        const covering = !!lab || (on && !!shape && skinIsOpaque(current) && !pastSkin);
+        const outer = tier === 'skin' || seenFromOutside.has(id);
+        // What has been lifted out of the body is seen wherever it lies.
+        mesh.material.stencilWrite = covering && !outer && !lab?.taken.has(id);
         mesh.material.stencilFunc = THREE.EqualStencilFunc;
         mesh.material.stencilRef = 1;
         if (outer) mesh.renderOrder = covering ? -2 : mesh.renderOrder;
@@ -416,6 +515,12 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         if (fold) fold.visible = false;
         const existingMark = openingMarks.get(id);
         if (existingMark) existingMark.visible = false;
+        if (lab) {
+          if (outer) openingMarkFor(id, mesh, shading).visible = true;
+          shading.uSolidCut.value = 1;
+          shading.uInner.value.copy(outer ? INNER_OF_SKIN : mesh.material.color).multiplyScalar(outer ? 1 : 0.78); shading.uInnerOn.value = 1;
+          continue;
+        }
         if (radius <= 0 || !shape) continue;
         if (covering && outer) openingMarkFor(id, mesh, shading).visible = true;
         shading.uWinA.value.copy(shape.a); shading.uWinB.value.copy(shape.b); shading.uWinN.value.copy(shape.normal);
@@ -458,7 +563,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         }
       }
     };
-    const windowUniforms = (uniforms: SurfaceShadingUniforms) => ({ uWinOn: uniforms.uWinOn, uWinA: uniforms.uWinA, uWinB: uniforms.uWinB, uWinN: uniforms.uWinN, uWinDepth: uniforms.uWinDepth, uWinFront: uniforms.uWinFront, uWinRadius: uniforms.uWinRadius, uWinInvert: uniforms.uWinInvert, uWinBack: uniforms.uWinBack, uWinNear: uniforms.uWinNear, uLifeKind: uniforms.uLifeKind, uLifeAmount: uniforms.uLifeAmount, uLifePivot: uniforms.uLifePivot, uLifeAxial: uniforms.uLifeAxial });
+    const windowUniforms = (uniforms: SurfaceShadingUniforms) => ({ uWinOn: uniforms.uWinOn, uWinA: uniforms.uWinA, uWinB: uniforms.uWinB, uWinN: uniforms.uWinN, uWinDepth: uniforms.uWinDepth, uWinFront: uniforms.uWinFront, uWinRadius: uniforms.uWinRadius, uWinInvert: uniforms.uWinInvert, uWinBack: uniforms.uWinBack, uWinNear: uniforms.uWinNear, uLifeKind: uniforms.uLifeKind, uLifeAmount: uniforms.uLifeAmount, uLifePivot: uniforms.uLifePivot, uLifeAxial: uniforms.uLifeAxial, uLifeShift: uniforms.uLifeShift, uLifeTaken: uniforms.uLifeTaken, uLifeHeld: uniforms.uLifeHeld, uLifeFlapOf: uniforms.uLifeFlapOf, uLifeStays: uniforms.uLifeStays, uCutVolume: uniforms.uCutVolume, uCutChannel: uniforms.uCutChannel, uCutInvert: uniforms.uCutInvert });
     const shownSurfaces = function* (current: ViewerSettings) {
       for (const [id, mesh] of meshes) if (mesh instanceof THREE.Mesh && !current.hidden.includes(id) && (current.opacity[id] ?? defaultOpacity(id)) > 0) yield [id, mesh] as const;
     };
@@ -719,8 +824,116 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       dirty = true; shadowDirty = true;
     };
     const defaultOpacity =(id: string) => defaultStructureOpacity(atlas.structures.find((structure) => structure.id === id)!);
+    /** The hands and the bench of a practice dissection, and how the rest of the view changes for them: the light comes from where the viewer stands, as from a lamp at the bench. */
+    const syncLab = (current: ViewerSettings) => {
+      const wanted = !!current.lab && dissectable && loaded && !!skinId;
+      if (wanted && !lab) {
+        unfolder?.forget();
+        windowShape = null; windowOpening = 0;
+        walkHold = 0;
+        const flowLineKinds = () => flowVessels;
+        lab = createLabSession({
+          renderer, scene, camera, controls, element, meshes, tierOf, skinId: skinId!,
+          entries: (only) => [...meshes].flatMap(([id, mesh]) => {
+            if (!(mesh instanceof THREE.Mesh) || !mesh.visible || mesh.layers.mask !== 1 || mesh.material.opacity < 0.5 || id === 'living:vibrissae' || lab?.taken.has(id) || (only && !only(id))) return [];
+            const uniforms = surfaceShadingOf(mesh.material);
+            return uniforms ? [{ id, mesh: mesh as THREE.Mesh, uniforms: windowUniforms(uniforms), masked: mesh.material.stencilWrite, moved: () => uniforms.uLifeShift.value.lengthSq() > 0 }] : [];
+          }),
+          marks: () => [...[...openingMarks.values()].filter((mark) => mark.visible), ...(lab?.plates() ?? [])],
+          seen: () => {
+            const entries = [...meshes].flatMap(([id, mesh]) => {
+              if (!(mesh instanceof THREE.Mesh) || !mesh.visible || mesh.layers.mask !== 1 || mesh.material.opacity < 0.5) return [];
+              const uniforms = surfaceShadingOf(mesh.material);
+              return uniforms ? [{ id, mesh: mesh as THREE.Mesh, uniforms: windowUniforms(uniforms), masked: mesh.material.stencilWrite }] : [];
+            });
+            const size = new THREE.Vector2();
+            renderer.getSize(size);
+            const found = idPass.render(renderer, scene, camera, entries, [...[...openingMarks.values()].filter((mark) => mark.visible), ...(lab?.plates() ?? [])], Math.max(1, Math.floor(size.x / 2)), Math.max(1, Math.floor(size.y / 2)));
+            seenNow = found; seenStale = false; lastLabelSetAt = 0;
+            return found;
+          },
+          isVessel: (id) => flowLineKinds().has(id) || atlas.structures.find((item) => item.id === id)?.systems.includes('arterial-venous') === true,
+          circulating: () => { const now = latest.current.settings.life; return !!now?.on && now.heart; },
+          onReport: (report) => latest.current.onLab?.({ kind: 'report', report }),
+          onHover: (hover) => {
+            const structure = hover ? atlas.structures.find((item) => item.id === hover.id) : undefined;
+            const scale = renderer.getPixelRatio();
+            setHovered(structure && hover ? { x: hover.x / scale, y: hover.y / scale, name: markedName(structure) } : null);
+          },
+          onPicked: (id) => latest.current.onLab?.({ kind: 'picked', id }),
+          onRefused: (message) => latest.current.onLab?.({ kind: 'refused', message }),
+          onCaption: (text) => latest.current.onLab?.({ kind: 'caption', text }),
+          onChange: () => apply(),
+          moveView: (position, target, up) => {
+            const from = captureCameraPose(camera, controls.target);
+            cameraMove = { from, to: { ...from, position: position.toArray() as CameraPose['position'], target: target.toArray() as CameraPose['target'], up: up.toArray() as CameraPose['up'] }, t: 0 };
+          },
+          covered: () => {
+            const card = document.querySelector('.lab-tutorial:not(.lab-chooser)'), view = renderer.domElement.getBoundingClientRect();
+            return card && view.width ? Math.max(0, view.right - card.getBoundingClientRect().left) / view.width : 0;
+          },
+          snip: () => { if (latest.current.settings.life?.sound) voice.snip(); },
+        });
+        for (const layer of fur ? [fur, ...fineHair] : []) layer.setCut(lab.volume.textures[0]);
+        if (shadow) shadow.group.visible = false;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.autoUpdate = false;
+        key.castShadow = true;
+        key.shadow.mapSize.set(2048, 2048);
+        Object.assign(key.shadow.camera, { left: -0.32, right: 0.32, top: 0.32, bottom: -0.32, near: 6, far: 8.5 });
+        key.shadow.camera.updateProjectionMatrix();
+        key.shadow.bias = -0.0002; key.shadow.normalBias = 0.0009;
+        for (const [id, mesh] of meshes) {
+          mesh.receiveShadow = true;
+          // Tissue that has been laid open is wet, and shines under the lamp. A display choice, not a measured property.
+          if (mesh instanceof THREE.Mesh && mesh.material instanceof THREE.MeshPhysicalMaterial && tierOf(id) !== 'skin' && tierOf(id) !== 'skeleton') {
+            mesh.material.userData.dry = { roughness: mesh.material.roughness, clearcoat: mesh.material.clearcoat, clearcoatRoughness: mesh.material.clearcoatRoughness };
+            mesh.material.roughness = 0.4; mesh.material.clearcoat = 0.75; mesh.material.clearcoatRoughness = 0.22;
+          }
+        }
+        // Things lie close together on the bench, and nothing comes nearer to the eye than the hands, so that the depth can be finer.
+        camera.near = 0.004;
+        camera.updateProjectionMatrix();
+        controls.minDistance = 0.014;
+        const { position, target, up } = lab.viewOf('belly');
+        lab.update(0);
+        latest.current.onLab?.({ kind: 'caption', text: null });
+        const from = captureCameraPose(camera, controls.target);
+        cameraMove = { from, to: { ...from, position: position.toArray() as CameraPose['position'], target: target.toArray() as CameraPose['target'], up: up.toArray() as CameraPose['up'] }, t: 0 };
+      } else if (!wanted && lab) {
+        lab.dispose();
+        lab = null;
+        setHovered(null);
+        for (const layer of fur ? [fur, ...fineHair] : []) layer.setCut(null);
+        for (const mesh of meshes.values()) {
+          mesh.receiveShadow = false;
+          const shading = mesh instanceof THREE.Mesh ? surfaceShadingOf(mesh.material) : null;
+          if (shading) shading.uCutVolume.value = null;
+          const dry = mesh instanceof THREE.Mesh && mesh.material instanceof THREE.MeshPhysicalMaterial ? mesh.material.userData.dry as { roughness: number; clearcoat: number; clearcoatRoughness: number } | undefined : undefined;
+          if (dry && mesh.material instanceof THREE.MeshPhysicalMaterial) { Object.assign(mesh.material, dry); delete mesh.material.userData.dry; }
+        }
+        CUT_SHARED.uCutOn.value = 0;
+        if (shadow) shadow.group.visible = true;
+        key.castShadow = false;
+        renderer.shadowMap.enabled = false;
+        // The lights go back to the room.
+        hemisphere.position.set(0, 1, 0);
+        stageTurn.setFromAxisAngle(floor?.up ?? new THREE.Vector3(0, 1, 0), floor ? -wander.pose.heading : 0);
+        lights.quaternion.copy(stageTurn);
+        scene.environmentRotation.setFromQuaternion(stageTurn);
+        turnFurLights(stageTurn);
+        latest.current.onLab?.({ kind: 'caption', text: null });
+        camera.near = radius / 2000;
+        camera.updateProjectionMatrix();
+        controls.minDistance = radius * 0.02;
+        cameraMove = null;
+        if (posture) { camera.up.set(...posture.up); orbitAbout(camera.up); }
+        reset();
+      }
+    };
     const apply = () => {
       const current = latest.current.settings;
+      syncLab(current);
       const bloodShown = !!flow && !!current.life?.on && current.life.blood;
       for (const [id, mesh] of meshes) {
         const structure = atlas.structures.find((item) => item.id === id)!;
@@ -744,11 +957,11 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         }
         mesh.material.clippingPlanes = current.clipAxis === 'off' ? [] : [clip];
       }
-      flow?.showLines((structure) => !!meshes.get(structure)?.visible);
+      flow?.showLines((structure) => !!meshes.get(structure)?.visible && !lab?.tied.has(structure));
       // Covered regions leave the rendered and picked layer only, so that overlays and Fit visible still treat them as shown.
       const skinMesh = skinId ? meshes.get(skinId) : undefined;
       const skinOpacity = skinId ? current.opacity[skinId] ?? defaultOpacity(skinId) : 0;
-      const coverClip = windowActive() ? 'opened' : current.clipAxis;
+      const coverClip = windowActive() || lab ? 'opened' : current.clipAxis;
       for (const [id, mesh] of meshes) mesh.layers.set(coveredBySkin(id, skinId, !!skinMesh?.visible, skinOpacity, coverClip, atlas.structures.find((item) => item.id === id)?.exterior) ? 1 : 0);
       if (fur) {
         const coat = current.coat ?? 'agouti';
@@ -761,6 +974,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         }
         const skinShading = skinMesh instanceof THREE.Mesh ? surfaceShadingOf(skinMesh.material) : null;
         if (skinShading) skinShading.uCoatOn.value = shown ? 1 : 0;
+        // Skin under a coat lies in its shade, and has no shine of its own.
+        if (skinMesh instanceof THREE.Mesh && skinMesh.material instanceof THREE.MeshPhysicalMaterial) skinMesh.material.sheen = shown ? 0 : SKIN_PRESENTATION.sheen;
         if (coat !== 'none' && shown) {
           if (skinMesh instanceof THREE.Mesh) skinMesh.material.color.set(COATS[coat].under);
           skinShading?.uUnderBelly.value.set(COATS[coat].underBelly);
@@ -813,6 +1028,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     const setPose = (pose: CameraPose) => {
       syncing = true;
       applyCameraPose(camera, controls.target, pose);
+      if (!orbitUp.equals(camera.up)) orbitAbout(camera.up);
       controls.update();
       syncing = false;
       dirty = true;
@@ -896,6 +1112,27 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       },
       placeDissection(place) {
         if (loaded) placeWindow(place);
+      },
+      lab: () => lab,
+      picture() {
+        if (!loaded) return null;
+        // What is drawn lies on a clear background, and the page behind it is white.
+        renderer.render(scene, camera);
+        const copy = document.createElement('canvas');
+        copy.width = renderer.domElement.width; copy.height = renderer.domElement.height;
+        const context = copy.getContext('2d');
+        if (!context) return null;
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, copy.width, copy.height);
+        context.drawImage(renderer.domElement, 0, 0);
+        return copy.toDataURL('image/png');
+      },
+      labView(view) {
+        if (!lab) return;
+        setHovered(null);
+        const { position, target, up } = lab.viewOf(view);
+        const from = captureCameraPose(camera, controls.target);
+        cameraMove = { from, to: { ...from, position: position.toArray() as CameraPose['position'], target: target.toArray() as CameraPose['target'], up: up.toArray() as CameraPose['up'] }, t: 0 };
       },
       viewCutFace(axis) {
         unfolder?.forget();
@@ -987,7 +1224,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         const coatlessOuter = () => [...meshes].flatMap(([id, mesh]) => mesh instanceof THREE.Mesh && id !== 'living:vibrissae' && mesh.visible && mesh.layers.mask === 1 && (id === skinId || atlas.structures.find((item) => item.id === id)?.exterior) ? [mesh as THREE.Mesh] : []);
         unfolder = createZoomUnfold({
           camera, controls,
-          allowed: () => { const current = latest.current.settings; return !current.dissection && current.clipAxis === 'off' && skinIsOpaque(current); },
+          allowed: () => { const current = latest.current.settings; return !current.lab && !current.dissection && current.clipAxis === 'off' && skinIsOpaque(current); },
           outerSurfaces: coatlessOuter,
           surfaces: () => shownSurfaces(latest.current.settings),
           tierOf, shapeAt: zoomCut,
@@ -1000,14 +1237,16 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         // The wheel is taken here, ahead of the orbit controls, so that a step is a smooth move, towards the pointer, that opens the place it arrives at.
         renderer.domElement.addEventListener('wheel', (event) => {
           const current = latest.current.settings;
-          if (current.dissection || current.clipAxis !== 'off' || !skinIsOpaque(current)) return;
+          if (current.lab || current.dissection || current.clipAxis !== 'off' || !skinIsOpaque(current)) return;
           event.preventDefault();
           event.stopImmediatePropagation();
+          walkHold = 3;
           const rect = renderer.domElement.getBoundingClientRect();
           unfolder!.wheel(event.deltaY * (event.deltaMode === 1 ? 33 : 1), (event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
         }, { capture: true, passive: false });
       }
       renderer.domElement.addEventListener('wheel', (event) => {
+        if (lab) return;
         // With the layers open, zooming right on to a structure goes on to the cells of its tissue.
         if (event.deltaY < 0 && windowActive() && !seenStale && camera.position.distanceTo(controls.target) < radius * 0.12) {
           const inMiddle = idPass.at(0.5, 0.5);
@@ -1034,6 +1273,14 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       if (dissectable && posture) {
         const bindings: LifeBinding[] = [...meshes].flatMap(([id, mesh]) => { const own = mesh instanceof THREE.Mesh ? surfaceShadingOf(mesh.material) : null; return own && mesh instanceof THREE.Mesh ? [{ id, mesh: mesh as THREE.Mesh, own }] : []; });
         life = createLifeRuntime(atlas, meshes, bindings, new THREE.Vector3(...posture.up));
+        const skinForBody = skinId ? meshes.get(skinId) : undefined;
+        if (life && skinForBody) {
+          const up = LIFE_SHARED.uLifeDorsal.value.clone(), forward = LIFE_SHARED.uLifeAxis.value.clone().negate(), side = LIFE_SHARED.uLifeLateral.value.clone();
+          const body = new THREE.Box3().setFromObject(skinForBody), sphere = body.getBoundingSphere(new THREE.Sphere());
+          const level = LIFE_SHARED.uLifeOrigin.value.dot(up) + LIFE_SHARED.uLifeGround.value;
+          const origin = sphere.center.clone().addScaledVector(up, level - sphere.center.dot(up));
+          floor = { origin, forward, side, up, plane: new THREE.Plane().setFromNormalAndCoplanarPoint(up, origin), body: sphere };
+        }
         const heart = meshes.get('living:heart-lv');
         const sourceToWorld = gltf.scene.matrixWorld.clone();
         void fetch(atlas.assetUrl.replace(/[^/]+$/, 'flow-paths.json'), { signal: sourceAbort.signal }).then((response) => response.ok ? response.json() : null).then((value: unknown) => {
@@ -1074,6 +1321,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     let pointerDown: { x: number; y: number } | null = null, unfoldMoving = false;
     const down = (event: PointerEvent) => { pointerDown = { x: event.clientX, y: event.clientY }; };
     const up = (event: PointerEvent) => {
+      if (lab) return;
       if (!pointerDown || Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y) > 5 || event.button !== 0) return;
       pointerDown = null;
       const rect = renderer.domElement.getBoundingClientRect();
@@ -1111,6 +1359,14 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       // The closed animal answers a touch, and is not selected by it. Its parts can be chosen from the list.
       if (hit?.face && !opened && life && latest.current.settings.life?.on && latest.current.settings.life.movement && dissectable && skinIsOpaque(latest.current.settings) && !latest.current.settings.dissection) {
         life.poke(hit.point, hit.face.normal.clone().transformDirection(hit.object.matrixWorld));
+        if (latest.current.settings.life.sound) voice.touched();
+        if (wander.mode === 'going') wander = startle(wander);
+        return;
+      }
+      // A click on the floor: it walks there and stops, whether it was walking or not.
+      if (!hit && !opened && life && floor && latest.current.settings.life?.on && latest.current.settings.life.movement && dissectable && !latest.current.settings.dissection && latest.current.settings.clipAxis === 'off') {
+        const point = floorAtView(pointer.x, pointer.y);
+        if (point) wander = goToFloor(wander, stageOf(point));
         return;
       }
       // On the outside of the animal a click opens the layers there; on anything inside it names what was clicked.
@@ -1132,6 +1388,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       else handle.current?.pan(command.dx, command.dy);
     };
     const hover = (event: PointerEvent) => {
+      if (lab) return;
       if (life && latest.current.settings.life?.on && !event.buttons && !windowActive()) {
         // The mouse looks towards the point on the line of the pointer that passes nearest its head.
         const box = renderer.domElement.getBoundingClientRect();
@@ -1191,7 +1448,16 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
           cameraMove.t = Math.min(1, cameraMove.t + realDelta / 0.9);
           const ease = cameraMove.t * cameraMove.t * (3 - 2 * cameraMove.t);
           const blend = (from: readonly number[], to: readonly number[]) => from.map((value, index) => value + (to[index] - value) * ease);
-          setPose({ ...cameraMove.to, position: blend(cameraMove.from.position, cameraMove.to.position) as CameraPose['position'], target: blend(cameraMove.from.target, cameraMove.to.target) as CameraPose['target'] });
+          const fromUp = new THREE.Vector3(...cameraMove.from.up), toUp = new THREE.Vector3(...cameraMove.to.up), target = blend(cameraMove.from.target, cameraMove.to.target), position = new THREE.Vector3(...blend(cameraMove.from.position, cameraMove.to.position));
+          const way = fromUp.clone().lerp(toUp, ease);
+          // An animal turned over: the view goes round it, and does not pass through it.
+          if (fromUp.dot(toUp) < -0.9) {
+            const round = new THREE.Vector3(...cameraMove.from.position).sub(new THREE.Vector3(...cameraMove.from.target)).cross(fromUp).normalize();
+            const across = position.distanceTo(new THREE.Vector3(...cameraMove.to.position)) + position.distanceTo(new THREE.Vector3(...cameraMove.from.position));
+            position.addScaledVector(round, 0.5 * across * Math.sin(Math.PI * ease));
+            way.copy(fromUp).multiplyScalar(Math.cos(Math.PI * ease)).addScaledVector(round, Math.sin(Math.PI * ease));
+          }
+          setPose({ ...cameraMove.to, position: position.toArray() as CameraPose['position'], target: target as CameraPose['target'], up: way.normalize().toArray() as CameraPose['up'] });
           markSeenStale();
           if (cameraMove.t >= 1) { cameraMove = null; announcePose(); }
         }
@@ -1237,13 +1503,32 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         if (lifeWaited >= 1 / 45) {
           const step = Math.min(lifeWaited, 0.2);
           lifeWaited = 0;
-          if (life.tick(step, current.life)) dirty = true;
+          walkHold = Math.max(0, walkHold - step);
+          const looking = !!lab || windowActive() || !!current.dissection || current.clipAxis !== 'off' || !!unfolder?.playing() || !!cameraMove || walkHold > 0 || viewHeightAt(camera.position.distanceTo(controls.target), camera.fov) < 0.05;
+          const stepping = !!floor && !looking && wantsToStep(wander);
+          if (life.tick(step, current.life, { stepping, pace: paceOf(wander), turning: stepping ? wander.turning : 0, sitting: !!floor && !looking && wantsToSit(wander) })) dirty = true;
+          if (floor && !looking && current.life?.on && current.life.playing && current.life.movement) {
+            const before = wander.pose;
+            wander = stepWander(wander, step, life.travelled(), !!current.life.walking, wanderView());
+            if (wander.pose !== before) moveStage(before, wander.pose);
+            element.dataset.walk = wander.mode;
+            element.dataset.stage = [wander.pose.x, wander.pose.y, wander.pose.heading, camera.position.x, camera.position.y, camera.position.z, controls.target.x, controls.target.y, controls.target.z].map((value) => value.toFixed(3)).join(' ');
+          }
           if (flow && current.life?.on && current.life.playing) flow.advance(step, current.life.rate);
           element.dataset.life = current.life?.on ? (current.life.playing ? 'playing' : 'paused') : 'off';
         }
       }
+      if (lab && loaded && !document.hidden) {
+        if (lab.update(Math.min(realDelta, 0.1), realDelta)) dirty = true;
+        if (interacting || cameraMove) seenStale = true;
+        lights.quaternion.copy(camera.quaternion);
+        scene.environmentRotation.setFromQuaternion(camera.quaternion);
+        turnFurLights(camera.quaternion);
+        hemisphere.position.setFromMatrixColumn(camera.matrixWorld, 1);
+        if (dirty) renderer.shadowMap.needsUpdate = true;
+      }
       if (dirty && !document.hidden) {
-        if (shadow && shadowDirty) {
+        if (shadow && shadowDirty && !lab) {
           const sectionVisible = sectionPlane?.mesh.visible ?? false;
           const coatVisible = fur?.mesh.visible ?? false;
           const tokensVisible = flow?.mesh.visible ?? false;
@@ -1265,7 +1550,9 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
           const now = performance.now();
           if (moving && lastFrameAt && now - lastFrameAt < 500) {
             slowFrames = now - lastFrameAt > 50 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
-            if (slowFrames >= 3) { const detail = fur.detail() * 0.6; for (const layer of [fur, ...fineHair]) layer.setDetail(detail); slowFrames = 0; }
+            quickFrames = now - lastFrameAt < 28 ? quickFrames + 1 : 0;
+            if (slowFrames >= 6) { const detail = Math.max(0.3, fur.detail() * 0.75); for (const layer of [fur, ...fineHair]) layer.setDetail(detail); slowFrames = 0; quickFrames = 0; }
+            else if (quickFrames >= 90 && fur.detail() < 1) { const detail = Math.min(1, fur.detail() * 1.15); for (const layer of [fur, ...fineHair]) layer.setDetail(detail); quickFrames = 0; }
           }
           lastFrameAt = now;
         }
@@ -1288,6 +1575,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     frame = requestAnimationFrame(loop);
     return () => {
       disposed = true;
+      lab?.dispose();
+      voice.dispose();
       life?.dispose();
       flow?.dispose();
       sourceAbort.abort();
@@ -1328,13 +1617,13 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       <svg className="label-leaders" width={labelSet.width} height={labelSet.height} aria-hidden="true">
         {labelSet.labels.map((item) => { const end = leaderEnd(item); return <line key={item.id} x1={item.anchorX} y1={item.anchorY} x2={end.x} y2={end.y} />; })}
       </svg>
-      {labelSet.labels.map((item) => settings.dissection || guide
+      {labelSet.labels.map((item) => settings.dissection || settings.lab || guide
         ? <button type="button" key={item.id} className={`model-label--plate ${item.id === settings.selected ? 'is-selected' : ''}`} style={{ left: item.left, top: item.top, width: item.width, height: item.height }} onClick={() => onSelect(item.id)}>{item.name}</button>
         : <div key={item.id} className={`model-label model-label--placed ${item.id === settings.selected ? 'is-selected' : ''}`}
         style={{ left: item.left, top: item.top, width: item.width, height: item.height }}>{item.name}</div>)}
     </>}
     {hovered && !status && <div className="model-label model-label--hover" style={{ left: hovered.x, top: hovered.y }}>{hovered.name}</div>}
     {guide && !status && <UnfoldGuide state={guide} selected={settings.selected === bodySurfaceIdFor(atlas) ? null : settings.selected} namesOn={namesOn} onNames={setNamesOn} onRow={(id, passing) => { onSelect(id); if (!passing) unfoldRef.current?.goToStop(id); }} onInto={() => { const stops = unfoldRef.current?.stops() ?? [], at = unfoldRef.current?.currentStop() ?? -1; onZoomThrough?.(stops.slice(0, Math.max(at, 0) + 1).reverse().map((stop) => stop.id), guide.place); }} onPlay={(direction) => unfoldRef.current?.play(direction)} />}
-    {!guide && !everOpened && !status && dissectionAppliesTo(atlas) && !settings.dissection && !settings.hidden.includes(bodySurfaceIdFor(atlas) ?? '') && settings.clipAxis === 'off' && <UnfoldHint onPlay={() => unfoldRef.current?.play('in')} />}
+    {!guide && !everOpened && !status && dissectionAppliesTo(atlas) && !settings.lab && !settings.dissection && !settings.hidden.includes(bodySurfaceIdFor(atlas) ?? '') && settings.clipAxis === 'off' && <UnfoldHint onPlay={() => unfoldRef.current?.play('in')} />}
   </div>;
 }

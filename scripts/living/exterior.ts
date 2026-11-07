@@ -134,7 +134,15 @@ export function buildBodySurface(grid: Grid, body: Uint8Array, bone: Uint8Array,
     if (cx >= 0 && cy >= 0 && cz >= 0 && cx < stance.nx && cy < stance.ny && cz < stance.nz) occupied[voxelIndex(stance, cx, cy, cz)] = 1;
   }
   // Close the gaps left by stretching, then remove thin flaps.
-  occupied = erode(dilate(occupied, stance, 3), stance, 3);
+  const nearly = erode(dilate(occupied, stance, 3), stance, 3);
+  // Behind the neck, narrow folds between a limb and the trunk are filled as well, as loose skin and fur fill them on a living animal. The head keeps its finer shape, with the hollows of the eyes.
+  const fuller = erode(dilate(occupied, stance, 7), stance, 7);
+  const neckAt = Math.floor((Math.min(pose.joints.shoulderR[1], pose.joints.shoulderL[1]) - 12 - origin[1]) / cell);
+  occupied = nearly;
+  for (let z = 0; z < stance.nz; z++) for (let y = Math.max(0, neckAt); y < stance.ny; y++) for (let x = 0; x < stance.nx; x++) {
+    const at = voxelIndex(stance, x, y, z);
+    if (fuller[at]) occupied[at] = 1;
+  }
   occupied = dilate(erode(occupied, stance, 2), stance, 2);
   // Scraps that came away from the body when the shanks were removed are not part of it.
   const { ids, list } = components(occupied, stance);

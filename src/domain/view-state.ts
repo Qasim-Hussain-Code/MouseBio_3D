@@ -47,7 +47,7 @@ const SETTINGS_FIELDS = [
 ] as const;
 const BINDING_FIELDS = ['schemaVersion', 'atlasId', 'assetSha256', 'coordinateFrameId'] as const;
 const UNSAFE_FIELDS = new Set(['__proto__', 'prototype', 'constructor']);
-const MODES = new Set(['anatomical', 'living', 'experimental', 'comparative']);
+const MODES = new Set(['anatomical', 'living', 'experimental', 'comparative', 'dissection']);
 const owns = (record: Record<string, unknown>, field: string) => Object.hasOwn(record, field);
 
 function plainRecord(value: unknown): value is Record<string, unknown> {

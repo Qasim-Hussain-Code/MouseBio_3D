@@ -102,6 +102,20 @@ class PublicationTests(unittest.TestCase):
             self.assertEqual(report["warningCount"], 1)
             self.assertTrue(any(entry["type"] == "opaque-binary-not-reviewed" for entry in report["findings"]))
 
+    def test_only_the_exact_reviewed_images_pass_and_a_changed_one_comes_back_for_review(self):
+        from check_publication import REVIEWED_IMAGES, image_holds_only_pixels, is_reviewed_image
+        repository = Path(__file__).resolve().parents[1]
+        for path in REVIEWED_IMAGES:
+            data = (repository / path).read_bytes()
+            self.assertTrue(is_reviewed_image(data, path), path)
+            self.assertFalse(is_reviewed_image(data + b"\0", path), path)
+            self.assertFalse(is_reviewed_image(data, "public/other.png"), path)
+        pixels = (repository / "public/atlas-living/mouse-icon.png").read_bytes()
+        words = b"tEXt"
+        with_words = pixels[:8] + struct.pack(">I", 4) + words + b"name" + b"\0\0\0\0" + pixels[8:]
+        self.assertFalse(image_holds_only_pixels(with_words), "a text chunk is not pixels")
+        self.assertTrue(image_holds_only_pixels(pixels))
+
     def test_history_identity_is_flagged_without_rewriting_or_exposing_it(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
