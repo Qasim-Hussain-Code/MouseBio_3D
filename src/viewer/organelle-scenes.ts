@@ -1237,6 +1237,59 @@ export function buildMhcMembrane(): JourneyScene {
   ]);
 }
 
+/** Part of a beta cell near a capillary: granules, each a dense core in a pale space under its membrane. */
+export function buildBetaCell(): JourneyScene {
+  const rng = random(19980401), group = new THREE.Group();
+  group.add(body(3.4, '#ead9c4', 1.2));
+  const rims: Placement[] = [], halos: Placement[] = [], cores: Placement[] = [];
+  const granule = (x: number, y: number) => {
+    const r = 0.03 + rng() * 0.006;
+    rims.push(oval(x, y, r, r, 0, FACE + 0.001));
+    halos.push(oval(x, y, r * 0.93, r * 0.93, 0, FACE + 0.002));
+    cores.push(oval(x + (rng() - 0.5) * r * 0.2, y + (rng() - 0.5) * r * 0.2, r * 0.56, r * 0.56, 0, FACE + 0.003, shade('#5a4632', 0.88 + rng() * 0.24)));
+  };
+  granule(0, 0);
+  for (const { x, y } of packed(1.7, 0.105, 0.04, rng)) if (Math.hypot(x, y) > 0.07 && y > -0.42 && Math.hypot(x + 0.3, y - 0.34) > 0.27) granule(x, y);
+  flats(group, rims, '#b09c86', 2);
+  flats(group, halos, '#f4ecdf', 2);
+  flats(group, cores, '#ffffff', 2);
+  flats(group, [oval(-0.3, 0.34, 0.24, 0.21, 0, FACE + 0.002)], '#8d7a9e', 5);
+  bars(group, [rect(0, -1.05, 3.4, 1.1, FACE + 0.001)], '#c8605a');
+  const chosen = V(0, 0, FACE + 0.004);
+  return finish(group, V(0, 0, 0.2), chosen, [
+    { text: 'The core of a granule', at: chosen },
+    { text: 'Pale space round the core', at: V(0.024, 0.014, FACE + 0.003) },
+    { text: 'Nucleus', at: V(-0.3, 0.34, FACE + 0.003) },
+    { text: 'Capillary', at: V(0.3, -0.47, FACE + 0.003) },
+  ]);
+}
+
+/** The dense core of a granule: insulin hexamers in rows, as the microcrystals that Dodson and Steiner describe, in the pale space under the membrane. */
+export function buildInsulinCrystal(): JourneyScene {
+  const rng = random(19880706), group = new THREE.Group();
+  group.add(body(4, '#ead9c4', 1.2));
+  flats(group, [oval(0, 0, 0.5, 0.5, 0, FACE + 0.001)], '#b09c86', 5);
+  flats(group, [oval(0, 0, 0.485, 0.485, 0, FACE + 0.002)], '#f4ecdf', 5);
+  // A hexamer is about 5 nanometres across, at 300 nanometres to the unit.
+  const hexamers: Placement[] = [], zincs: Placement[] = [], loose: Placement[] = [];
+  for (const { x, y } of packed(0.3, 0.0207, 0, rng)) {
+    if (Math.hypot(x, y) > 0.28 + 0.012 * Math.sin(Math.atan2(y, x) * 6)) continue;
+    hexamers.push(ball(x, y, 0.0095, FACE + 0.003, shade('#a8835e', 0.92 + rng() * 0.16)));
+    zincs.push(ball(x, y, 0.0026, FACE + 0.0125));
+  }
+  for (let i = 0; i < 70; i++) { const angle = rng() * 6.28, reach = 0.31 + rng() * 0.16; loose.push(ball(Math.cos(angle) * reach, Math.sin(angle) * reach, 0.0095, FACE + 0.003, shade('#c4a888', 0.9 + rng() * 0.2))); }
+  flats(group, hexamers, '#ffffff', 1);
+  flats(group, zincs, '#8c8ca8', 0);
+  flats(group, loose, '#ffffff', 1);
+  const nearest = hexamers.reduce((best, item) => Math.hypot(item.position.x, item.position.y) < Math.hypot(best.position.x, best.position.y) ? item : best);
+  const chosen = nearest.position.clone().setZ(FACE + 0.013);
+  return finish(group, V(0, 0, 0.2), chosen, [
+    { text: 'One hexamer, in a crystal', at: chosen },
+    { text: 'Hexamers not yet in the crystal', at: V(0.27, 0.27, FACE + 0.004) },
+    { text: 'Membrane of the granule', at: V(-0.35, -0.35, FACE + 0.003) },
+  ]);
+}
+
 export const ORGANELLE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = Object.freeze({
   'mitochondrion-close': buildMitochondrion, 'mitochondrion-fine': buildCrista,
   'sarcomere-close': buildSarcomeres, 'sarcomere-fine': buildFilaments,
@@ -1260,6 +1313,7 @@ export const ORGANELLE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = 
   'tiplink-close': buildStereocilia, 'tiplink-fine': buildTipLink,
   'touch-close': buildMerkelCell, 'touch-fine': buildPiezoMembrane,
   'mhc-close': buildCellSurfaceMhc, 'mhc-fine': buildMhcMembrane,
+  'insulin-close': buildBetaCell, 'insulin-fine': buildInsulinCrystal,
 });
 
 /** A way on from the cells of a tissue. It starts at something the scene already names, or at a small mark drawn beside the nucleus. */
@@ -1296,6 +1350,7 @@ const WAYS: Readonly<Record<string, readonly Way[]>> = Object.freeze({
   'urothelium-cells': [{ tail: 'junction', text: 'A tight junction', near: [-0.08, 0.06], mark: 'dot' }, MITOCHONDRION([0.07, 0.05])],
   'tooth-cells': [{ tail: 'collagen', text: 'Collagen of the dentine', label: 'Dentine' }, MITOCHONDRION([0.07, 0.05])],
   'testis-cells': [{ tail: 'ribosome', text: 'Ribosomes of a forming sperm', label: 'Round spermatids', keep: true }, MITOCHONDRION([0.07, 0.05])],
+  'pancreas-cells': [{ tail: 'insulin', text: 'Insulin granules', label: 'Insulin granules' }, { tail: 'ribosome', text: 'Ribosomes', near: [-0.08, -0.05], mark: 'dot' }, MITOCHONDRION([0.07, 0.05])],
   'whisker-cells': [{ tail: 'touch', text: 'A Merkel cell', label: 'Merkel cell' }, MITOCHONDRION([-0.1, 0.05])],
   'cochlea-cells': [{ tail: 'tiplink', text: 'A bundle of stereocilia', label: 'Stereocilia' }, MITOCHONDRION([0.07, 0.05])],
   'membrane-cells': [{ tail: 'junction', text: 'A tight junction', near: [-0.08, 0.05], mark: 'dot' }, MITOCHONDRION([0.07, 0.04])],

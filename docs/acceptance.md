@@ -283,3 +283,11 @@ This section records checks executed on 2026-11-07 for the changes described in 
 A headless Chrome session with software WebGL, on the production build, drew the whole route from a whisker follicle to the atoms in the middle of Piezo2, and the way from the lymphocytes of the spleen to the class I molecule, with no console errors. The focus of the atoms of Piezo2 was chosen by position, as the carbon nearest the middle of the three chains, and it is not a named site.
 
 Not executed: any run on a graphics card, and any review by an anatomist or structural biologist. The anatomy of the follicle follows descriptions of the rat and the cat, and the sizes in the simulated levels are estimates.
+
+## The pancreas and insulin v0.37.0
+
+This section records checks executed on 2026-11-07 for the changes described in [the release notes](releases/v0.37.0.md). The JavaScript and simulated DOM suite passed with no failures or skips, including tests that the pancreas takes its own route and that the caption of insulin says it is of the pig. The type check, production build, notices check, and the distribution, publication and release suites passed. The statement that three histidines lie against the zinc was checked in the coordinates of the source: three NE2 atoms of histidine B10 lie 2.10 to 2.11 angstrom from it, and three waters, which are left out, lie 2.19 angstrom from it.
+
+A headless Chrome session with software WebGL, on the production build, drew the whole route from a block of pancreas to the atoms round the zinc, with no console errors.
+
+Not executed: any run on a graphics card, and any review by an anatomist or structural biologist. A pancreas opened by **Play** goes to an islet although most of the gland is acini, and it can go by ribosomes if that way is chosen.

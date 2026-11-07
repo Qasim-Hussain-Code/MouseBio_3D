@@ -247,6 +247,10 @@ Protein Data Bank entry 3UNH, atoms used by the zoom below the cells of a tissue
 Huber EM, Basler M, Schwab R, Heinemeyer W, Kirk CJ, Groettrup M, Groll M. Immuno- and constitutive proteasome crystal structures reveal differences in substrate and inhibitor specificity. Cell 2012;148(4):727-38. doi:10.1016/j.cell.2011.12.030
 The 20S immunoproteasome of the mouse, with the ions of the crystal left out. It is not from the Digimouse specimen.
 
+Protein Data Bank entry 4INS, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
+Baker EN, Blundell TL, Cutfield JF, et al. The structure of 2Zn pig insulin crystals at 1.5 A resolution. Philos Trans R Soc Lond B Biol Sci 1988;319(1195):369-456. doi:10.1098/rstb.1988.0058
+Insulin of the pig, as a hexamer from the third assembly of the entry, of twelve chains. It is not of the mouse.
+
 Protein Data Bank entry 6EC0, atoms used by the zoom below the cells of a tissue: CC0 1.0, as stated in the wwPDB usage policies.
 Eldirany SA, Ho M, Hinbest AJ, Lomakin IB, Bunick CG. Human keratin 1/10-1B tetramer structures reveal a knob-pocket mechanism in intermediate filament assembly. EMBO J 2019;38(11):e100741. doi:10.15252/embj.2018100741
 A short part of keratins of humans, and not of the mouse, made in bacteria. The biological assembly of the entry has two copies of each chain, the tetramer that the authors report.

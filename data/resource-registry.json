@@ -1990,6 +1990,26 @@
         "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-mhc-class-i.json. Water, hydrogen and alternate positions are left out."
       },
       "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
+    },
+    {
+      "id": "pdb-4ins-baker1988",
+      "title": "The structure of 2Zn pig insulin crystals at 1.5 angstroms resolution",
+      "landingPage": "https://www.rcsb.org/structure/4INS",
+      "publication": {
+        "year": 1988,
+        "authors": [
+          "Baker EN",
+          "Blundell TL",
+          "Cutfield JF",
+          "et al."
+        ],
+        "series": "Philos Trans R Soc Lond B Biol Sci 1988;319(1195):369-456, doi:10.1098/rstb.1988.0058"
+      },
+      "license": {
+        "identifier": "CC0-1.0",
+        "notes": "As stated in the wwPDB usage policies. Chain identifiers, residue numbers and coordinates rounded to 0.01 angstrom are redistributed in public/scale-journey/molecule-insulin.json. Water, hydrogen and alternate positions are left out, and a zinc on the axis of symmetry is kept once."
+      },
+      "decision": "atoms_redistributed_in_scale_journey_not_part_of_any_reference"
     }
   ]
 }

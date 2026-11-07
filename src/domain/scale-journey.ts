@@ -139,16 +139,18 @@ export const JOURNEY_NARROWEST = JOURNEY_LEVELS[JOURNEY_LEVELS.length - 1].endMe
 
 /** The tissues that a zoom can start from. Every route joins the shared levels at the cell nucleus. */
 export type JourneyTissue = 'skin' | 'muscle' | 'nerve' | 'artery' | 'vein' | 'bone' | 'fat' | 'liver' | 'kidney' | 'lung' | 'gut' | 'heart' | 'brain'
-  | 'cartilage' | 'tendon' | 'membrane' | 'gland' | 'endocrine' | 'thyroid' | 'lymphoid' | 'colon' | 'stomach' | 'urothelium' | 'airway' | 'retina' | 'cornea' | 'lens' | 'tooth' | 'testis' | 'blood' | 'cochlea' | 'whisker';
+  | 'cartilage' | 'tendon' | 'membrane' | 'gland' | 'endocrine' | 'thyroid' | 'lymphoid' | 'colon' | 'stomach' | 'urothelium' | 'airway' | 'retina' | 'cornea' | 'lens' | 'tooth' | 'testis' | 'blood' | 'cochlea' | 'whisker' | 'pancreas';
 
 /** Where a zoom goes below the cells of a tissue. A cell nucleus unless the pointer chooses another way. */
-export type JourneyTail = 'nucleus' | 'blood' | 'microbiota' | 'importer' | 'mitochondrion' | 'sarcomere' | 'collagen' | 'synapse' | 'axon' | 'antibody' | 'droplet' | 'disc' | 'crystallin' | 'water' | 'secretion' | 'surfactant' | 'cilium' | 'pump' | 'keratin' | 'ribosome' | 'thyroglobulin' | 'junction' | 'proteasome' | 'tiplink' | 'touch' | 'mhc';
+export type JourneyTail = 'nucleus' | 'blood' | 'microbiota' | 'importer' | 'mitochondrion' | 'sarcomere' | 'collagen' | 'synapse' | 'axon' | 'antibody' | 'droplet' | 'disc' | 'crystallin' | 'water' | 'secretion' | 'surfactant' | 'cilium' | 'pump' | 'keratin' | 'ribosome' | 'thyroglobulin' | 'junction' | 'proteasome' | 'tiplink' | 'touch' | 'mhc' | 'insulin';
 
 const SHARED_FROM = JOURNEY_LEVELS.findIndex((level) => level.id === 'nucleus');
 const SHARED = JOURNEY_LEVELS.slice(SHARED_FROM);
 const block = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 1.6e-3, startMetres: 3.4e-3, endMetres: 1.6e-4, evidence: 'simulated', caption: `${caption} Sizes and counts are estimates.`, basis });
 const cells = (id: string, name: string, caption: string, basis: readonly string[]): JourneyLevel => ({ id, name, referenceMetres: 7e-5, startMetres: 3e-4, endMetres: 5.5e-6, evidence: 'simulated', caption: `${caption} Sizes, shapes and positions are estimates.`, basis });
 
+const PALADE = 'Palade G. Intracellular aspects of the process of protein synthesis. Science 1975;189(4200):347-58. doi:10.1126/science.1096303';
+const CABRERA = 'Cabrera O, Berman DM, Kenyon NS, Ricordi C, Berggren PO, Caicedo A. The unique cytoarchitecture of human pancreatic islets has implications for islet cell function. Proc Natl Acad Sci U S A 2006;103(7):2334-9. doi:10.1073/pnas.0510790103';
 const EBARA = 'Ebara S, Kumamoto K, Matsuura T, Mazurkiewicz JE, Rice FL. Similarities and differences in the innervation of mystacial vibrissal follicle-sinus complexes in the rat and cat: a confocal microscopic study. J Comp Neurol 2002;449(2):103-19. doi:10.1002/cne.10277';
 const SCHWANDER = 'Schwander M, Kachar B, Muller U. Review series: The cell biology of hearing. J Cell Biol 2010;190(1):9-20. doi:10.1083/jcb.201001138';
 const ROUTES: Readonly<Record<Exclude<JourneyTissue, 'skin'>, { readonly label: string; readonly levels: readonly JourneyLevel[] }>> = {
@@ -260,6 +262,10 @@ const ROUTES: Readonly<Record<Exclude<JourneyTissue, 'skin'>, { readonly label: 
     block('testis-block', 'A block of testis', 'Seminiferous tubules cut across, with hormone-making Leydig cells between them.', [GRISWOLD]),
     cells('testis-cells', 'Forming sperm', 'From the edge of a tubule towards its middle: spermatogonia, spermatocytes, round spermatids and the tails of forming sperm, among Sertoli cells, in the sequence that Griswold reviews.', [GRISWOLD]),
   ] },
+  pancreas: { label: 'pancreas', levels: [
+    block('pancreas-block', 'A block of pancreas', 'Lobules of acini that secrete into ducts, as in the cells Palade describes, with an islet of hormone cells among them. Most of the gland is acini, and the share of islets here is not measured.', [PALADE, CABRERA]),
+    cells('pancreas-cells', 'An islet', 'Beta cells round capillaries, with cells of another kind together at one edge. Cabrera et al. find proportionally more beta cells in the islets of mice than in those of humans, whose islets show no such subdivisions.', [CABRERA]),
+  ] },
   whisker: { label: 'whisker', levels: [
     block('whisker-block', 'A whisker follicle', 'A follicle cut along its length: the whisker in its sheaths, a blood sinus round them, a capsule outside, and a bundle of nerve fibres coming in from below. Ebara et al. describe these follicle-sinus complexes in the rat and the cat, and the mouse has not been measured here.', [EBARA]),
     cells('whisker-cells', 'Merkel cells', 'Merkel cells against the edge of the outer sheath, beside the sinus, each with a nerve ending. Ebara et al. describe Merkel endings at this level in the rat and the cat.', [EBARA]),
@@ -308,6 +314,8 @@ const FORTE = 'Forte JG, Zhu L. Apical recycling of the gastric parietal cell H,
 const GLENWRIGHT = 'Glenwright AJ, Pothula KR, Bhamidimarri SP, et al. Structural basis for nutrient acquisition by dominant members of the human gut microbiota. Nature 2017;541(7637):407-411. doi:10.1038/nature20828';
 const ELDIRANY = 'Eldirany SA, Ho M, Hinbest AJ, Lomakin IB, Bunick CG. Human keratin 1/10-1B tetramer structures reveal a knob-pocket mechanism in intermediate filament assembly. EMBO J 2019;38(11):e100741. doi:10.15252/embj.2018100741';
 
+const BAKER = 'Baker EN, Blundell TL, Cutfield JF, et al. The structure of 2Zn pig insulin crystals at 1.5 A resolution. Philos Trans R Soc Lond B Biol Sci 1988;319(1195):369-456. doi:10.1098/rstb.1988.0058';
+const DODSON = 'Dodson G, Steiner D. The role of assembly in insulin\'s biosynthesis. Curr Opin Struct Biol 1998;8(2):189-94. doi:10.1016/s0959-440x(98)80037-7';
 const WOO = 'Woo SH, Ranade S, Weyer AD, et al. Piezo2 is required for Merkel-cell mechanotransduction. Nature 2014;509(7502):622-6. doi:10.1038/nature13251';
 const WANG_PIEZO = 'Wang L, Zhou H, Zhang M, et al. Structure and mechanogating of the mammalian tactile channel PIEZO2. Nature 2019;573(7773):225-229. doi:10.1038/s41586-019-1505-8';
 const FREMONT = 'Fremont DH, Matsumura M, Stura EA, Peterson PA, Wilson IA. Crystal structures of two viral peptides in complex with murine MHC class I H-2Kb. Science 1992;257(5072):919-27. doi:10.1126/science.1323877';
@@ -318,7 +326,6 @@ const TAMURA = 'Tamura A, Hayashi H, Imasato M, et al. Loss of claudin-15, but n
 const ACHARYA = 'Acharya P, Beckel J, Ruiz WG, et al. Distribution of the tight junction proteins ZO-1, occludin, and claudin-4, -8, and -12 in bladder epithelium. Am J Physiol Renal Physiol 2004;287(2):F305-18. doi:10.1152/ajprenal.00341.2003';
 const PITARAKI = 'Pitaraki E, Jagirdar RM, Rouka E, et al. 2-Deoxy-glucose ameliorates the peritoneal mesothelial and endothelial barrier function perturbation occurring due to Peritoneal Dialysis fluids exposure. Biochem Biophys Res Commun 2023;693:149376. doi:10.1016/j.bbrc.2023.149376';
 const LI_RIBOSOME = 'Li H, Huo Y, He X, et al. A male germ-cell-specific ribosome controls male fertility. Nature 2022;612(7941):725-731. doi:10.1038/s41586-022-05508-0';
-const PALADE = 'Palade G. Intracellular aspects of the process of protein synthesis. Science 1975;189(4200):347-58. doi:10.1126/science.1096303';
 const KIM_THYROGLOBULIN = 'Kim K, Kopylov M, Bobe D, Kelley K, Eng ET, Arvan P, Clarke OB. The structure of natively iodinated bovine thyroglobulin. Acta Crystallogr D Struct Biol 2021;77(Pt 11):1451-1459. doi:10.1107/S2059798321010056';
 const HUBER = 'Huber EM, Basler M, Schwab R, Heinemeyer W, Kirk CJ, Groettrup M, Groll M. Immuno- and constitutive proteasome crystal structures reveal differences in substrate and inhibitor specificity. Cell 2012;148(4):727-38. doi:10.1016/j.cell.2011.12.030';
 const GOLDBERG = 'Goldberg M, Kulkarni AB, Young M, Boskey A. Dentin: structure, composition and mineralization. Front Biosci (Elite Ed) 2011;3(2):711-35. doi:10.2741/e281';
@@ -427,6 +434,11 @@ const MOLECULE_TAILS = {
     fineLevel('junction-fine', 'Strands of a tight junction', 'The face of a cell membrane at a tight junction, with claudins in rows. Suzuki et al. describe claudins as the main part of these junctions, forming strands. The pattern of the strands is drawn as a net, and it is not measured here.', [SUZUKI]),
     ...moleculeLevels('claudin', 'One mouse claudin', `Every atom is at its measured position in a crystal at 2.4 angstrom resolution: Protein Data Bank entry 4P79, one recombinant claudin-15, with selenomethionine in place of methionine to solve the crystal. Tamura et al. find this claudin in the small intestine of the mouse. Other linings use other members of the family, such as claudin-4, -8 and -12 in the bladder in Acharya et al., and for them it stands for its family. ${NOT_THIS_MOUSE}`, 'Atoms inside a claudin', 'Atoms at the middle of the chain and what lies against them.', [SUZUKI, TAMURA, ACHARYA]),
   ],
+  insulin: [
+    closeLevel('insulin-close', 'A beta cell', 'Granules of a beta cell near a capillary, each a dense core in a pale space under its membrane. Dodson and Steiner describe insulin as stored in the cell as microcrystals.', [DODSON]),
+    fineLevel('insulin-fine', 'Inside a granule', 'The dense core as a crystal of insulin hexamers, each about 5 nanometres across. Dodson and Steiner describe the storage of insulin as microcrystals, built on the hexamer that holds zinc. The order of a real granule is drawn here and not measured.', [DODSON, BAKER], 1.06e-8),
+    ...moleculeLevels('insulin', 'An insulin hexamer', 'Every atom is at its measured position in a crystal at 1.5 angstrom resolution: Protein Data Bank entry 4INS, six molecules of insulin, each of two chains, round two atoms of zinc, as Baker et al. describe. The three copies of the asymmetric unit are placed by the operators stated in the entry. It is of the pig and not of the mouse.', 'Atoms round the zinc', 'One atom of zinc on the axis of the hexamer and the three histidines that lie against it. The water that completes its shell is left out.', [BAKER], 8e-9),
+  ],
   touch: [
     closeLevel('touch-close', 'A Merkel cell', 'A Merkel cell and the nerve ending against it, with dense granules near the nerve. Woo et al. find that Merkel cells of mice respond to touch, and that this depends on Piezo2.', [WOO]),
     fineLevel('touch-fine', 'Membrane of a Merkel cell', 'Piezo2 as shallow domes in the membrane, each about 28 nanometres across, the size that Wang et al. report. How many lie in a real cell, and how they are spread, are estimates.', [WANG_PIEZO, WOO], 4.2e-8),
@@ -452,7 +464,7 @@ const MOLECULE_TAILS = {
 /** The way that a tissue's own molecule lies on, which playing takes from that tissue. A tissue with none goes to a cell nucleus. */
 const OWN_WAYS: Partial<Readonly<Record<JourneyTissue, JourneyTail>>> = Object.freeze({
   skin: 'keratin', muscle: 'sarcomere', heart: 'sarcomere', nerve: 'axon', artery: 'blood', vein: 'blood', blood: 'blood', bone: 'collagen', tendon: 'collagen', cartilage: 'collagen', cornea: 'collagen',
-  fat: 'droplet', liver: 'secretion', kidney: 'water', lung: 'surfactant', gut: 'microbiota', colon: 'microbiota', brain: 'synapse', lymphoid: 'antibody', retina: 'disc', lens: 'crystallin', airway: 'cilium', stomach: 'pump', cochlea: 'tiplink', whisker: 'touch', thyroid: 'thyroglobulin', testis: 'ribosome', gland: 'ribosome', urothelium: 'junction', membrane: 'junction', tooth: 'collagen',
+  fat: 'droplet', liver: 'secretion', kidney: 'water', lung: 'surfactant', gut: 'microbiota', colon: 'microbiota', brain: 'synapse', lymphoid: 'antibody', retina: 'disc', lens: 'crystallin', airway: 'cilium', stomach: 'pump', cochlea: 'tiplink', whisker: 'touch', pancreas: 'insulin', thyroid: 'thyroglobulin', testis: 'ribosome', gland: 'ribosome', urothelium: 'junction', membrane: 'junction', tooth: 'collagen',
 });
 export const ownWayOf = (tissue: JourneyTissue): JourneyTail => OWN_WAYS[tissue] ?? 'nucleus';
 
@@ -501,6 +513,7 @@ const TAILS: Readonly<Record<Exclude<JourneyTail, 'nucleus'>, readonly JourneyLe
   proteasome: [...MOLECULE_TAILS.proteasome, ...FROM_ATOM],
   tiplink: [...MOLECULE_TAILS.tiplink, ...FROM_ATOM],
   touch: [...MOLECULE_TAILS.touch, ...FROM_ATOM],
+  insulin: [...MOLECULE_TAILS.insulin, ...FROM_ATOM],
   mhc: [...MOLECULE_TAILS.mhc, ...FROM_ATOM],
 };
 
@@ -543,6 +556,7 @@ export function journeyTissueOf(structure: { readonly id: string; readonly name:
   if (['corneas'].includes(id)) return 'cornea';
   if (['lenses'].includes(id)) return 'lens';
   if (['eyes', 'irises', 'retinas'].includes(id)) return 'retina';
+  if (id === 'pancreas') return 'pancreas';
   if (id === 'vibrissae' || id === 'whisker-follicles') return 'whisker';
   if (id === 'inner-ears') return 'cochlea';
   if (id === 'middle-ears') return 'bone';

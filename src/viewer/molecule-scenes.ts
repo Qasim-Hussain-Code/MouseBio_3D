@@ -121,7 +121,7 @@ export function buildMoleculeAtoms(data: MoleculeData): JourneyScene {
   labels.push({ text: focusKind.label ?? focusKind.name, at: shift.clone().negate().multiplyScalar(toUnit) });
   for (const [element, text] of Object.entries(ELEMENT_NAME)) {
     const found = near.filter((atom) => atom.element === element).sort((left, right) => right.at.clone().sub(shift).length() - left.at.clone().sub(shift).length())[0];
-    if (found) labels.push({ text, at: found.at.clone().sub(shift).multiplyScalar(toUnit) });
+    if (found && !labels.some((label) => label.text === text)) labels.push({ text, at: found.at.clone().sub(shift).multiplyScalar(toUnit) });
   }
   return { group, start: shift.clone().negate().multiplyScalar(toUnit), focus: V(0, 0, 0), labels };
 }

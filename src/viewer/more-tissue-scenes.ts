@@ -1067,6 +1067,62 @@ export function buildWhiskerCells(): JourneyScene {
   ]);
 }
 
+/** The pancreas: lobules of acini that secrete into ducts, with an islet of hormone cells among them. */
+export function buildPancreasBlock(): JourneyScene {
+  const rng = random(19750802), group = new THREE.Group();
+  group.add(body(0.99, '#e6c8a2'));
+  const ISLET = { x: 0.1, y: 0.04, r: 0.13 };
+  const acini: Placement[] = [], lumens: Placement[] = [], islet: Placement[] = [], vessels: THREE.Vector3[][] = [], ducts: THREE.Vector3[][] = [];
+  for (const point of packed(0.49, 0.042, 0.012, rng)) {
+    if (Math.hypot(point.x - ISLET.x, point.y - ISLET.y) < ISLET.r + 0.012) continue;
+    acini.push(disc(point.x, point.y, 0.019, 0.019, FACE, shade('#d8a878', 0.9 + rng() * 0.2)));
+    lumens.push(disc(point.x, point.y, 0.0035, 0.0035, FACE + 0.002));
+  }
+  for (const point of packed(ISLET.r, 0.013, 0.004, rng)) if (Math.hypot(point.x, point.y) < ISLET.r) islet.push(disc(ISLET.x + point.x, ISLET.y + point.y, 0.0058, 0.0058, FACE + 0.001, shade(Math.hypot(point.x, point.y) > ISLET.r * 0.78 ? '#c98a9a' : '#e6c15a', 0.92 + rng() * 0.16)));
+  for (let k = 0; k < 5; k++) { const angle = k * 1.257 + 0.4; vessels.push([V(ISLET.x + Math.cos(angle) * 0.2, ISLET.y + Math.sin(angle) * 0.2, FACE + 0.003), V(ISLET.x + Math.cos(angle) * 0.09, ISLET.y + Math.sin(angle) * 0.09, FACE + 0.003), V(ISLET.x + Math.cos(angle + 1.2) * 0.05, ISLET.y + Math.sin(angle + 1.2) * 0.05, FACE + 0.003)]); }
+  ducts.push([V(-0.5, -0.3, FACE + 0.003), V(-0.24, -0.26, FACE + 0.003), V(-0.1, -0.34, FACE + 0.003), V(0.2, -0.3, FACE + 0.003), V(0.5, -0.38, FACE + 0.003)]);
+  discs(group, acini, '#ffffff', 1);
+  discs(group, lumens, '#f3e4cf', 0);
+  discs(group, [disc(ISLET.x, ISLET.y, ISLET.r + 0.008, ISLET.r + 0.008, FACE)], '#ecd6b4', 4);
+  discs(group, islet, '#ffffff', 0);
+  lines(group, vessels, 0.004, '#b8404a', 4);
+  lines(group, ducts, 0.012, '#f3e4cf', 6);
+  const focus = V(ISLET.x, ISLET.y, 0.51);
+  return finish(group, V(0, 0, 0.2), focus, [
+    { text: 'An islet', at: focus },
+    { text: 'Acini that secrete into ducts', at: V(-0.28, 0.2, 0.51) },
+    { text: 'A duct', at: V(-0.1, -0.34, 0.51) },
+    { text: 'Capillary', at: V(ISLET.x + Math.cos(0.4) * 0.17, ISLET.y + Math.sin(0.4) * 0.17, 0.51) },
+  ]);
+}
+
+/** An islet: beta cells packed round capillaries, with other hormone cells at its edge. */
+export function buildPancreasCells(): JourneyScene {
+  const rng = random(19750803), group = new THREE.Group();
+  group.add(body(2.4, '#ecdcc2', 1.2));
+  const cells: Placement[] = [], nuclei: Placement[] = [], granules: Placement[] = [];
+  for (const point of packed(1.25, 0.18, 0.03, rng)) {
+    const edge = Math.hypot(point.x + 0.7, point.y - 0.5) < 0.42;
+    cells.push(disc(point.x, point.y, 0.086, 0.078, FACE, shade(edge ? '#c98a9a' : '#e0bd7a', 0.94 + rng() * 0.1)));
+    nuclei.push(disc(point.x, point.y, 0.036, 0.034, FACE + 0.002));
+    for (let k = 0; k < 14; k++) { const angle = rng() * 6.28, reach = 0.046 + rng() * 0.028; granules.push({ position: V(point.x + Math.cos(angle) * reach, point.y + Math.sin(angle) * reach * 0.9, FACE + 0.002), scale: uniform(0.0052), color: shade(edge ? '#7a3f4e' : '#7a5a2a', 0.9 + rng() * 0.2) }); }
+  }
+  discs(group, cells, '#ffffff', 2);
+  discs(group, nuclei, NUCLEUS_COLOUR, 2);
+  discs(group, granules, '#ffffff', 0);
+  const capillary = [V(-1.2, -0.42, FACE + 0.003), V(-0.5, -0.3, FACE + 0.003), V(0.05, -0.36, FACE + 0.003), V(0.6, -0.24, FACE + 0.003), V(1.2, -0.3, FACE + 0.003)];
+  lines(group, [capillary, [V(0.05, -0.36, FACE + 0.003), V(0.3, 0.1, FACE + 0.003), V(0.26, 0.5, FACE + 0.003), V(0.42, 1.2, FACE + 0.003)]], 0.032, '#c8605a', 8);
+  const nearest = nuclei.reduce((best, item) => Math.hypot(item.position.x, item.position.y) < Math.hypot(best.position.x, best.position.y) ? item : best);
+  const focus = nearest.position.clone().setZ(FACE + 0.004);
+  const wayAt = granules.reduce((best, item) => item.position.distanceTo(focus) < best.position.distanceTo(focus) ? item : best).position;
+  return finish(group, V(0, 0, 0.2), focus, [
+    { text: 'Nucleus of a beta cell', at: focus },
+    { text: 'Insulin granules', at: wayAt.clone().setZ(FACE + 0.004) },
+    { text: 'Capillary', at: capillary[3] },
+    { text: 'Another kind of hormone cell', at: V(-0.7, 0.5, FACE + 0.003) },
+  ]);
+}
+
 export const MORE_TISSUE_BUILDERS: Readonly<Record<string, () => JourneyScene>> = Object.freeze({
   'cartilage-block': buildCartilageBlock, 'cartilage-cells': buildCartilageCells,
   'tendon-block': buildTendonBlock, 'tendon-cells': buildTendonCells,
@@ -1087,4 +1143,5 @@ export const MORE_TISSUE_BUILDERS: Readonly<Record<string, () => JourneyScene>> 
   'blood-block': buildBloodBlock, 'blood-cells': buildBloodCells,
   'cochlea-block': buildCochleaBlock, 'cochlea-cells': buildCochleaCells,
   'whisker-block': buildWhiskerBlock, 'whisker-cells': buildWhiskerCells,
+  'pancreas-block': buildPancreasBlock, 'pancreas-cells': buildPancreasCells,
 });

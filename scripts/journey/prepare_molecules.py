@@ -280,6 +280,18 @@ MOLECULES = {
         ],
         "focus": {"chainOnly": "P"},
     },
+    "insulin": {
+        "entry": "4INS", "file": "4INS-assembly3.cif", "sha256": "39cac815963fd3acad3bd0402565d8453258fc9a2f3e76cf554b81f182c2ba39", "assembly": True,
+        "title": "The structure of 2Zn pig insulin crystals at 1.5 angstroms resolution", "method": "X-ray diffraction", "resolutionAngstrom": 1.5, "organisms": "Sus scrofa",
+        "citation": "Baker EN, Blundell TL, Cutfield JF, et al. The structure of 2Zn pig insulin crystals at 1.5 A resolution. Philos Trans R Soc Lond B Biol Sci 1988;319(1195):369-456. doi:10.1098/rstb.1988.0058",
+        "note": "Insulin of the pig, as a hexamer from the third assembly of the entry, of twelve chains. It is not of the mouse.",
+        "groups": [
+            {"name": "Zinc", "colour": "#8c8ca8", "comps": ["ZN"], "label": "Zinc"},
+            {"name": "A chains", "colour": "#c9a57f", "chains": ["A", "C"], "palette": True, "label": "An A chain"},
+            {"name": "B chains", "colour": "#7fa3c9", "chains": ["B", "D"], "palette": True, "label": "A B chain"},
+        ],
+        "focus": {"comp": "ZN", "chain": "B", "any": True},
+    },
     "immunoproteasome": {
         "entry": "3UNH", "file": "3UNH.cif", "sha256": "2467ca41e7f9ed31f3df39a74a83404d68e7f4a88798c5f8001ddce7a67af447",
         "title": "Mouse 20S immunoproteasome", "method": "X-ray diffraction", "resolutionAngstrom": 3.2, "organisms": "Mus musculus",

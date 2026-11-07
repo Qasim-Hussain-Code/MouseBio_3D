@@ -14,7 +14,7 @@ import { ORGANELLE_BUILDERS, withWays } from '../src/viewer/organelle-scenes';
 const atlas = JSON.parse(await readFile(new URL('../public/atlas-living/atlas.json', import.meta.url), 'utf8')) as Atlas;
 const TISSUE_BUILDERS = { ...FIRST_BUILDERS, ...MORE_TISSUE_BUILDERS, ...DEEP_BUILDERS, ...ORGANELLE_BUILDERS };
 const hemoglobin = JSON.parse(await readFile(new URL('../public/scale-journey/hemoglobin-3hrw.json', import.meta.url), 'utf8'));
-const TISSUES: readonly JourneyTissue[] = ['cochlea', 'whisker', 'muscle', 'nerve', 'artery', 'vein', 'bone', 'fat', 'liver', 'kidney', 'lung', 'gut', 'heart', 'brain', 'cartilage', 'tendon', 'membrane', 'gland', 'endocrine', 'thyroid', 'lymphoid', 'colon', 'stomach', 'urothelium', 'airway', 'retina', 'cornea', 'lens', 'tooth', 'testis', 'blood'];
+const TISSUES: readonly JourneyTissue[] = ['cochlea', 'whisker', 'pancreas', 'muscle', 'nerve', 'artery', 'vein', 'bone', 'fat', 'liver', 'kidney', 'lung', 'gut', 'heart', 'brain', 'cartilage', 'tendon', 'membrane', 'gland', 'endocrine', 'thyroid', 'lymphoid', 'colon', 'stomach', 'urothelium', 'airway', 'retina', 'cornea', 'lens', 'tooth', 'testis', 'blood'];
 const TAILS = JOURNEY_TAILS;
 const moleculeFile = async (key: string) => JSON.parse(await readFile(new URL(`../public/scale-journey/molecule-${key}.json`, import.meta.url), 'utf8')) as MoleculeData;
 
@@ -165,7 +165,7 @@ test('a structure goes on to the tissue it is mostly made of', () => {
     'small-intestine': 'gut', 'heart-lv': 'heart', cerebrum: 'brain', cerebellum: 'brain',
     colon: 'colon', caecum: 'colon', spleen: 'lymphoid', thymus: 'lymphoid', bladder: 'urothelium', 'heart-valves': 'heart', 'brain-ventricles': 'brain', trachea: 'airway', 'tracheal-rings': 'cartilage',
     'inner-ears': 'cochlea', 'middle-ears': 'bone', 'whisker-follicles': 'whisker', vibrissae: 'whisker', 'dural-venous-sinuses': 'vein', 'meningeal-lymphatics': 'vein', 'bone-vomer': 'bone',
-    'calcaneal-tendons': 'tendon', peritoneum: 'membrane', pancreas: 'gland', thyroid: 'thyroid', adrenals: 'endocrine', retinas: 'retina', corneas: 'cornea', lenses: 'lens', incisors: 'tooth', 'testis-left': 'testis', veins: 'blood', 'stomach-pyloric': 'stomach', diaphragm: 'muscle', 'spinal-cord': 'brain',
+    'calcaneal-tendons': 'tendon', peritoneum: 'membrane', pancreas: 'pancreas', 'pancreatic-ducts': 'gland', thyroid: 'thyroid', adrenals: 'endocrine', retinas: 'retina', corneas: 'cornea', lenses: 'lens', incisors: 'tooth', 'testis-left': 'testis', veins: 'blood', 'stomach-pyloric': 'stomach', diaphragm: 'muscle', 'spinal-cord': 'brain',
   };
   for (const [id, tissue] of Object.entries(expected)) assert.equal(of(id), tissue, id);
   const unrouted = atlas.structures.filter((structure) => !journeyTissueOf(structure)).map((structure) => structure.id);
@@ -205,7 +205,7 @@ test('from the cells of each tissue there is a way to a molecule of its own, and
     const scene = withWays(id, build());
     assert.ok(scene.branches?.some((branch) => branch.tail === own), `${tissue}: ${id} has the way to ${own}`);
   }
-  for (const [tissue, way] of [['whisker', 'touch'], ['cochlea', 'tiplink'], ['thyroid', 'thyroglobulin'], ['testis', 'ribosome'], ['gland', 'ribosome'], ['urothelium', 'junction'], ['membrane', 'junction'], ['tooth', 'collagen'], ['muscle', 'sarcomere'], ['heart', 'sarcomere'], ['nerve', 'axon'], ['artery', 'blood'], ['bone', 'collagen'], ['tendon', 'collagen'], ['brain', 'synapse'], ['retina', 'disc'], ['lens', 'crystallin'], ['kidney', 'water'], ['lung', 'surfactant'], ['stomach', 'pump'], ['airway', 'cilium'], ['fat', 'droplet'], ['lymphoid', 'antibody'], ['liver', 'secretion'], ['colon', 'microbiota'], ['skin', 'keratin']] as const) assert.equal(ownWayOf(tissue), way, tissue);
+  for (const [tissue, way] of [['pancreas', 'insulin'], ['whisker', 'touch'], ['cochlea', 'tiplink'], ['thyroid', 'thyroglobulin'], ['testis', 'ribosome'], ['gland', 'ribosome'], ['urothelium', 'junction'], ['membrane', 'junction'], ['tooth', 'collagen'], ['muscle', 'sarcomere'], ['heart', 'sarcomere'], ['nerve', 'axon'], ['artery', 'blood'], ['bone', 'collagen'], ['tendon', 'collagen'], ['brain', 'synapse'], ['retina', 'disc'], ['lens', 'crystallin'], ['kidney', 'water'], ['lung', 'surfactant'], ['stomach', 'pump'], ['airway', 'cilium'], ['fat', 'droplet'], ['lymphoid', 'antibody'], ['liver', 'secretion'], ['colon', 'microbiota'], ['skin', 'keratin']] as const) assert.equal(ownWayOf(tissue), way, tissue);
 });
 
 test('every way on that is added lies in its scene', () => {
@@ -254,7 +254,7 @@ test('each level of measured atoms has a valid file with a checked source, and s
     assert.ok(room.containsPoint(scene.focus), level.id);
     for (const label of scene.labels) assert.ok(room.containsPoint(label.at), level.id + ' ' + label.text);
   }
-  assert.equal(seen.size, 23);
+  assert.equal(seen.size, 24);
   // A molecule that is not of the mouse says so where it is shown.
   const caption = (tail: JourneyTail) => journeyLevels('muscle', tail).find((level) => level.moleculeView === 'whole')!.caption;
   assert.match(caption('sarcomere'), /rabbit/);
@@ -266,6 +266,7 @@ test('each level of measured atoms has a valid file with a checked source, and s
   assert.match(caption('pump'), /of the pig and not of the mouse/);
   assert.match(caption('keratin'), /of humans and not of the mouse/);
   assert.match(caption('thyroglobulin'), /of the cow and not of the mouse/);
+  assert.match(caption('insulin'), /of the pig and not of the mouse/);
   assert.match(caption('importer'), /no claim is made that this species is in this mouse/);
   for (const tail of ['mitochondrion', 'synapse', 'antibody', 'droplet', 'crystallin', 'secretion', 'surfactant', 'ribosome', 'junction', 'proteasome', 'tiplink', 'touch', 'mhc'] as const) assert.match(caption(tail), /mouse/, tail);
 });
