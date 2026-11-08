@@ -176,6 +176,8 @@ export function bodyCoat(surface: Surface, marks: CoatLandmarks): CoatAttributes
     }
     // Hair turns pale towards the paws.
     coat[i] = value * (1 - towardsPaw) + 0.1 * towardsPaw;
+    // The pale hair of the belly is shorter than that of the back, and lies close, so that the outline of the belly stays smooth.
+    fur[4 * i + 3] *= 1 - 0.3 * smooth(0, 0.3, value);
   }
   // Colour, length and direction change smoothly over the skin, however sharply the skin itself folds, so that a fold does not draw a line in the coat.
   const near = neighboursOf(surface);

@@ -1,0 +1,56 @@
+/* The page behind the information button: plain, white and quiet, because it is read rather than worked in. */
+.methods-dialog{max-width:820px;width:calc(100% - 32px);height:calc(100dvh - 48px);max-height:none;padding:18px 26px 22px;color:#26302b;background:#fff;border:1px solid #d9dfdc;border-radius:10px;box-shadow:0 24px 70px #10231d40}
+.methods-dialog[open]{display:flex;flex-direction:column}
+.methods-dialog::backdrop{background:#1a242033;backdrop-filter:none}
+.methods-dialog .dialog-header{flex:none;margin-bottom:0;position:absolute;top:12px;right:14px}
+.sources-page{display:flex;flex-direction:column;flex:1;min-height:0}
+.sources-page h2{flex:none;margin:0 44px 10px 0;font-size:21px;font-weight:650;letter-spacing:-.01em;color:#1f2925}
+.sources-tabs{flex:none;display:flex;flex-wrap:wrap;gap:2px;margin-bottom:10px;border-bottom:1px solid #e3e8e5}
+.sources-tabs button{padding:6px 11px;font-size:12.5px;color:#4b5a53;background:none;border:0;border-bottom:2px solid transparent;cursor:pointer}
+.sources-tabs button:hover{color:#1f2925}
+.sources-tabs button[aria-selected="true"]{color:#1f4f43;font-weight:600;border-bottom-color:#2f6f5e}
+.sources-page>[role="tabpanel"]{flex:1;min-height:0;overflow-y:auto;padding-right:8px;scrollbar-width:thin}
+.methods-dialog .sources-page p,.methods-dialog .sources-page li{margin:8px 0;font-size:12.5px;line-height:1.6;color:#35423c}
+.methods-dialog .sources-page h3{margin:18px 0 4px;font-size:13px;font-weight:650;color:#1f2925}
+.methods-dialog .sources-page ul,.methods-dialog .sources-page ol{padding-left:18px}
+.sources-page a{color:#1f6e5a;overflow-wrap:anywhere}
+.sources-share{margin:12px 0 4px}
+.sources-share__bar{display:flex;height:9px;gap:2px;overflow:hidden;border-radius:5px}
+.sources-share__bar span{min-width:3px}
+.is-source{background:#2f6f5e}.is-traced{background:#6da08f}.is-simulated{background:#d9a35d}
+.sources-share__list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:9px 0 0}
+.sources-share__list dt{font-size:12.5px;font-weight:500;color:#1f2925}
+.sources-share__list dt strong{font-size:17px;font-weight:650}
+.sources-share__list i{display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:50%}
+.methods-dialog .sources-page .sources-share__list p{margin:3px 0 0;font-size:11.5px;line-height:1.5;color:#55635c}
+.sources-specimen{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 14px;margin:8px 0;font-size:12.5px}
+.sources-specimen dt{color:#66746d}
+.sources-specimen dd{margin:0;color:#26302b}
+.sources-filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 4px}
+.sources-search{flex:1 1 200px;min-width:0;padding:6px 10px;font-size:12.5px;color:#26302b;background:#fff;border:1px solid #d5dcd9;border-radius:7px}
+.sources-choice{display:flex;flex-wrap:wrap;gap:3px}
+.sources-choice button{padding:4px 9px;font-size:11.5px;color:#35423c;background:#fff;border:1px solid #d5dcd9;border-radius:14px;cursor:pointer}
+.sources-choice button[aria-pressed="true"]{color:#fff;background:#2f6f5e;border-color:#2f6f5e}
+.methods-dialog .sources-page .sources-count{margin:4px 0;font-size:11px;color:#66746d}
+.methods-dialog .sources-page .sources-rows{margin:0;padding:0;list-style:none}
+.methods-dialog .sources-page .sources-rows>li{margin:0;border-bottom:1px solid #eef1ef}
+.sources-rows summary{display:flex;align-items:baseline;gap:10px;padding:6px 2px;font-size:12.5px;color:#1f2925;cursor:pointer}
+.sources-rows summary span{flex:1;min-width:0}
+.sources-rows summary em{flex:none;padding:0 7px;font-size:10.5px;font-style:normal;line-height:1.6;color:#4b5a53;background:#f1f4f2;border-radius:9px}
+.sources-rows summary em.is-source,.sources-rows summary em.is-measured-elsewhere{color:#fff;background:#2f6f5e}
+.sources-rows summary em.is-traced,.sources-rows summary em.is-calculated{color:#123a30;background:#c4dcd3}
+.sources-rows summary em.is-simulated{color:#6b4414;background:#f6e3c6}
+.sources-rows details>:not(summary){margin-left:2px}
+.methods-dialog .sources-page .sources-basis{margin:6px 0 10px;padding-left:16px}
+.methods-dialog .sources-page .sources-basis li{margin:4px 0;font-size:11.5px;line-height:1.5}
+.sources-note{display:block;margin-top:2px;font-size:11px;line-height:1.5;color:#8a5a2c}
+.methods-dialog .sources-page .sources-works li{margin:10px 0;font-size:12px;line-height:1.5}
+.sources-works summary{margin-top:2px;font-size:11px;color:#55635c;cursor:pointer}
+.methods-dialog .sources-page .sources-works details p{margin:3px 0;font-size:11px;color:#55635c}
+.methods-dialog .sources-page .sources-steps li{margin:2px 0;font-size:11.5px}
+.methods-dialog .sources-none{font-size:11.5px;color:#66746d}
+@media(max-width:720px){
+  .methods-dialog{width:calc(100% - 12px);height:calc(100dvh - 12px);padding:14px 14px 16px;border-radius:8px}
+  .sources-share__list{grid-template-columns:1fr;gap:8px}
+  .sources-rows summary{flex-wrap:wrap;gap:3px 8px}
+}

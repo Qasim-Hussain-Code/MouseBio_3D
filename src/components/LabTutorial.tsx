@@ -15,7 +15,7 @@ export interface LabTutorialProps {
   readonly onStop: () => void;
   readonly onClose: () => void;
   /** Press a button that a step offers. */
-  readonly onAct: (does: 'perfuse') => void;
+  readonly onAct: (does: 'perfuse' | 'drape') => void;
 }
 
 /** The procedures that can be followed, for the moment the bench is first opened. */
@@ -114,6 +114,6 @@ export function LabTutorial({ exercise, facts, demonstrating, shown, onStep, onS
       <button type="button" disabled={index === exercise.steps.length - 1 || demonstrating} onClick={() => setIndex(index + 1)}>Next</button>
       {canRead && <button type="button" aria-pressed={reading} title="Read each step aloud, with a voice on this device" onClick={() => setReading(!reading)}>Read aloud</button>}
     </div>
-    <a className="lab-source" href={`https://doi.org/${exercise.source.doi}`} target="_blank" rel="noreferrer">After {exercise.source.citation}</a>
+    <p className="lab-source">After <a href={`https://doi.org/${exercise.source.doi}`} target="_blank" rel="noreferrer">{exercise.source.citation}</a>{(exercise.also ?? []).map((also) => <span key={also.doi}>, with <a href={`https://doi.org/${also.doi}`} target="_blank" rel="noreferrer">{also.citation}</a></span>)}</p>
   </section>;
 }

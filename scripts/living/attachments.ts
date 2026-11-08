@@ -139,6 +139,36 @@ function digitalRoutes(frame: PawFrame, digitList: readonly Digit[], from: numbe
   };
 }
 
+/** On the back of the fore paw, the dorsal metacarpal arteries fan out from the wrist, where the collateral radial artery comes down the forearm, after Cook figure 108. */
+function forepawDorsalArteries(frame: PawFrame, digitList: readonly Digit[]): Surface[] {
+  const start = inPaw(frame, -13, -2, 12.5);
+  return digitList.map((digit) => {
+    const across = dot(sub(digit.base, frame.origin), frame.lateral);
+    return route([start, inPaw(frame, 2, across * 0.45, 12), inPaw(frame, 14, across * 0.85, 10.5), add(digit.base, scale(frame.up, 3))], 0.42, 0.25, 5);
+  });
+}
+
+/**
+ * The vessels of the hind foot after Cook figures 103 and 104: a lateral and a medial marginal vein along the borders of the foot and up the shank, dorsal metatarsal veins from the digits to the lateral one,
+ * a medial tarsal artery and vein on the back of the tarsus, and veins on the sole to the pads between the digits. Their courses are estimates from the figures.
+ */
+function hindpawVessels(frame: PawFrame, digitList: readonly Digit[], ankle: Vec3): { arteries: Surface[]; veins: Surface[] } {
+  const shank = (across: number): Vec3 => add([ankle[0], ankle[1] + 6, ankle[2] + 22], scale(frame.lateral, across));
+  const lateral = [inPaw(frame, 60, 11.5, 8), inPaw(frame, 42, 10.5, 9), inPaw(frame, 22, 9, 9.5), inPaw(frame, 2, 7.8, 10.5), inPaw(frame, -10, 7, 12.5), shank(8.5)];
+  const medial = [inPaw(frame, 58, -11.5, 8), inPaw(frame, 38, -10.5, 9), inPaw(frame, 18, -9, 9.5), inPaw(frame, -2, -7.8, 10.5), inPaw(frame, -10, -7, 12.5), shank(-8.5)];
+  const metatarsal = digitList.slice(1, 4).map((digit) => {
+    const across = dot(sub(digit.base, frame.origin), frame.lateral);
+    return [add(digit.base, scale(frame.up, 3.2)), inPaw(frame, 50, across * 0.8, 13.5), inPaw(frame, 34, 6 + across * 0.25, 13), inPaw(frame, 24, 9, 9.8)];
+  });
+  const tarsalArtery = [inPaw(frame, -12, -3, 14), inPaw(frame, 8, -3.5, 14.5), inPaw(frame, 30, -4, 13.5)];
+  const tarsalVein = tarsalArtery.map((point) => add(point, scale(frame.lateral, 1.4)));
+  const pads = ([[62, -9], [66, -2], [66, 4.5], [60, 10]] as const).map(([along, across]) => [inPaw(frame, 44, -10, 3), inPaw(frame, (44 + along) / 2, (across - 10) / 2, 2), inPaw(frame, along, across, 1.6)]);
+  return {
+    arteries: [route(tarsalArtery, 0.45, 0.3, 5)],
+    veins: [route(lateral, 0.75, 0.5, 6), route(medial, 0.6, 0.4, 6), ...metatarsal.map((points) => route(points, 0.35, 0.45, 5)), route(tarsalVein, 0.4, 0.3, 5), ...pads.map((points) => route(points, 0.4, 0.25, 5))],
+  };
+}
+
 /** The back of the fore paw and four digits with a small pollex, after Cook figure 6. */
 function forepaw(wrist: Vec3, side: -1 | 1, ground: number): { skin: Surface; claws: Surface[]; routes: ReturnType<typeof digitalRoutes> } {
   // Spacing and lengths follow the digit bones in the CT of the scanned paw, which lay palm down as this one does.
@@ -160,7 +190,8 @@ function forepaw(wrist: Vec3, side: -1 | 1, ground: number): { skin: Surface; cl
   });
   const claws = digitList.map((digit) => clawOn(digit.tip, unit(sub(digit.tip, digit.knuckle)), frame.up, 2.4, 11));
   claws.push(sphere(inPaw(frame, 20, -18, 3), [1.8, 2.2, 0.7], 8, 12));
-  return { skin, claws, routes: digitalRoutes(frame, digitList, -6) };
+  const routes = digitalRoutes(frame, digitList, -6);
+  return { skin, claws, routes: { ...routes, arteries: [...routes.arteries, ...forepawDorsalArteries(frame, digitList)] } };
 }
 
 /** The hind paw is long and narrow with five digits, after Cook figure 7. The heel sits under the ankle. */
@@ -196,7 +227,7 @@ function hindpaw(ankle: Vec3, side: -1 | 1, ground: number): { skin: Surface; cl
       return shafts;
     }),
   ];
-  return { skin, claws: digitList.map((digit) => clawOn(digit.tip, unit(sub(digit.tip, digit.knuckle)), frame.up, 2.6, 13)), bones, heel: inPaw(frame, -20, 0, 8), routes: digitalRoutes(frame, digitList, -10) };
+  return { skin, claws: digitList.map((digit) => clawOn(digit.tip, unit(sub(digit.tip, digit.knuckle)), frame.up, 2.6, 13)), bones, heel: inPaw(frame, -20, 0, 8), routes: (() => { const routes = digitalRoutes(frame, digitList, -10), vessels = hindpawVessels(frame, digitList, ankle); return { ...routes, arteries: [...routes.arteries, ...vessels.arteries], veins: vessels.veins }; })() };
 }
 
 /** A claw curving down from the digit tip. */
@@ -465,11 +496,29 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
 
   // Whisker groups, after Cook figure 5. Mystacial rows lie on the side of the snout and sweep backwards and out.
   const rng = random(19650607);
+  // A whisker grows from the skin, and its follicle lies under it: a place planned beside the snout is brought in to where the body begins, a little under its surface.
+  const inBody = (p: Vec3) => {
+    const x = Math.round(p[0]), y = Math.round(p[1]), z = Math.round(p[2]), grid = context.grid;
+    return x >= 0 && y >= 0 && z >= 0 && x < grid.nx && y < grid.ny && z < grid.nz && context.labels[voxelIndex(grid, x, y, z)] !== 0;
+  };
+  const onSnout = (planned: Vec3, side: -1 | 1): Vec3 => {
+    for (let lift = 0; lift <= 14; lift += 2) {
+      const start: Vec3 = [planned[0], planned[1], planned[2] + lift];
+      // Out to where the body ends, or in to where it begins.
+      if (inBody(start)) {
+        let x = start[0];
+        while (inBody([x + side, start[1], start[2]]) && Math.abs(x - tip[0]) < 90) x += side;
+        return [x - side * 1.5, start[1], start[2]];
+      }
+      for (let x = start[0]; Math.abs(x - tip[0]) > 3; x -= side * 0.5) if (inBody([x, start[1], start[2]])) return [x - side * 1.5, start[1], start[2]];
+    }
+    return planned;
+  };
   const whiskers: Surface[] = [], follicles: Surface[] = [];
   for (const side of [-1, 1] as const) {
     for (let row = 0; row < 5; row++) for (let column = 0; column < 7; column++) {
       if ((row === 0 || row === 4) && column > 4) continue;
-      const root: Vec3 = [tip[0] + side * (15 + column * 3.4 + row * 1.5), tip[1] + 22 + column * 9, tip[2] + 7 - row * 5.2];
+      const root = onSnout([tip[0] + side * (15 + column * 3.4 + row * 1.5), tip[1] + 22 + column * 9, tip[2] + 7 - row * 5.2], side);
       // Upper rows fan upwards and lower rows downwards, and all curve back along the face, as in figure 5.
       const spreadUp = (2 - row) * 0.34 + (rng() - 0.5) * 0.08;
       // The head is pitched in the stance, so they are lifted to fan about the horizontal.
@@ -624,8 +673,15 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
     for (const lid of [0, Math.PI]) for (let i = 0; i < 8; i++) {
       const phi = lid + (-0.85 + 1.7 * i / 7);
       const direction = (theta: number): Vec3 => add(scale(out, Math.cos(theta)), add(scale(up, Math.sin(theta) * Math.cos(phi)), scale(across, Math.sin(theta) * Math.sin(phi))));
-      const points = [0.75, 0.95, 1.15, 1.35].map((theta): Vec3 => add(centre, scale(direction(theta), eyeRadius * 1.09)));
-      glands.push(tube(points, [0.4, 0.55, 0.55, 0.4], 5));
+      // Each lies in the lid beyond the edge of the opening, between the globe and the skin, a little under the skin wherever there is room for it.
+      const rim = Math.asin(Math.min(0.99, Math.hypot(0.92 * Math.sin(phi), 0.7 * Math.cos(phi)))) + 0.2;
+      const points = [0, 1, 2, 3].map((k): Vec3 => {
+        const way = direction(rim + 0.13 * k);
+        let out = eyeRadius * 1.02;
+        while (out < eyeRadius * 1.4 && labelAt(...add(centre, scale(way, out))) !== 0) out += 0.25;
+        return add(centre, scale(way, Math.min(eyeRadius * 1.16, Math.max(eyeRadius * 0.99, out - 2.6))));
+      });
+      glands.push(tube(points, [0.35, 0.45, 0.45, 0.35], 5));
     }
     return glands;
   };

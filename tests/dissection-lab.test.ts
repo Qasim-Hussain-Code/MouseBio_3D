@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { canBeGrasped, canBeParted, canBeReflected, channelOfTier, cutReach, cutRefusal, describeAction, drawnBack, LAB_NOTICE, LAB_TOOLS, labRecord, labTool, ORGANS_TO_SPARE, type LabAction, type LabFacts } from '../src/domain/dissection-lab';
+import { boundTogether, canBeGrasped, canBeParted, canBeReflected, channelOfTier, cutReach, cutRefusal, describeAction, drawnBack, LAB_NOTICE, LAB_TOOLS, labRecord, labTool, ORGANS_TO_SPARE, type LabAction, type LabFacts } from '../src/domain/dissection-lab';
 import { demonstrationOf, evaluateExercise, LAB_EXERCISES, nextStepOf, type DemoPlace, type LabExercise } from '../src/domain/lab-exercises';
 import { DISSECTION_TIERS, dissectionTier } from '../src/domain/dissection';
 import { CUT_CHANNELS } from '../src/domain/cut-field';
@@ -244,4 +244,61 @@ test('a needle is described by how deep it went and where its tip lies', () => {
   const nameOf = (id: string) => id.replace('living:', '');
   assert.equal(describeAction(needle(['skin', 'caecum'], ['skin', 'caecum'], { depthMm: 6.2 }), nameOf), 'Needle 6.2 mm deep: tip in caecum');
   assert.equal(describeAction(needle(['skin'], ['skin'], { depthMm: 3 }), nameOf), 'Needle 3.0 mm deep: tip in no structure');
+});
+
+test('opening and closing the abdomen asks for clipped and scrubbed skin first and ends with a closure of the whole cut', () => {
+  const item = exercise('open-close-abdomen');
+  const clipAt = item.steps.findIndex((step) => step.tool === 'clippers'), scrubAt = item.steps.findIndex((step) => step.tool === 'swab'), closeAt = item.steps.findIndex((step) => step.tool === 'suture');
+  assert.ok(clipAt > 0 && scrubAt > clipAt && closeAt === item.steps.length - 1, 'clip, scrub, and close last');
+  const clip = (lengthMm: number): LabAction => ({ kind: 'clip', tool: 'clippers', at: 1, structures: ['living:skin'], tier: 'skin', lengthMm });
+  const scrub: LabAction = { kind: 'scrub', tool: 'swab', at: 2, structures: ['living:skin'], tier: 'skin', lengthMm: 40 };
+  const suture = (lengthMm: number): LabAction => ({ kind: 'suture', tool: 'suture', at: 9, structures: ['living:skin'], tier: 'skin', lengthMm });
+  assert.equal(stepsDone('open-close-abdomen', facts([clip(10)]))[clipAt], false, 'one short pass does not clear the site');
+  assert.equal(stepsDone('open-close-abdomen', facts([clip(10), clip(10)]))[clipAt], true, 'passes add up');
+  assert.match(item.steps[clipAt].advice!(facts([clip(10)])) ?? '', /two centimetres/);
+  assert.equal(stepsDone('open-close-abdomen', facts([clip(20), scrub]))[scrubAt], true);
+  const drapeAt = item.steps.findIndex((step) => step.act?.does === 'drape');
+  assert.ok(drapeAt > scrubAt && drapeAt < closeAt, 'the drape goes on after the skin has been scrubbed');
+  assert.equal(stepsDone('open-close-abdomen', facts([clip(20), scrub]))[drapeAt], false);
+  assert.equal(stepsDone('open-close-abdomen', facts([clip(20), scrub, { kind: 'drape', tool: 'hand', at: 3, structures: ['living:skin'] }]))[drapeAt], true);
+  assert.equal(stepsDone('open-close-abdomen', facts([...openBelly, suture(8)]))[closeAt], false, 'part of the cut left open');
+  assert.equal(stepsDone('open-close-abdomen', facts([...openBelly, suture(8), suture(8)]))[closeAt], true);
+  assert.deepEqual(evaluateExercise(item, facts([{ ...skinCut, structures: ['living:small-intestine'], tier: 'organs' }])).errors, ['An organ was cut']);
+  assert.ok(item.also?.some((source) => source.doi === '10.3791/2586'), 'the preparation of the site follows a named guide');
+});
+
+test('drawing blood counts only when the syringe has been held in the heart until nearly full', () => {
+  const item = exercise('draw-heart-blood');
+  const drawAt = item.steps.length - 1, step = item.steps[drawAt];
+  assert.equal(step.tool, 'syringe');
+  assert.ok(step.guide?.kind === 'spot' && step.guide.draws && step.guide.stopsIn?.includes('living:left-heart-spaces'), 'the needle stops in the chamber and draws');
+  const drawn = (share: number | undefined): LabAction => ({ kind: 'inject', tool: 'syringe', at: 30, structures: ['living:heart-lv'], tipIn: ['living:left-heart-spaces'], depthMm: 1.7, drawnShare: share });
+  assert.equal(stepsDone('draw-heart-blood', facts([drawn(0.95)]))[drawAt], true);
+  assert.equal(stepsDone('draw-heart-blood', facts([drawn(0.4)]))[drawAt], false);
+  assert.match(step.advice!(facts([drawn(0.4)])) ?? '', /not yet full/);
+  assert.match(step.advice!(facts([drawn(0)])) ?? '', /did not reach/);
+  assert.equal(step.advice!(facts([drawn(0.9)])), null);
+});
+
+test('the brain comes out whole, with its parts, and the pituitary stays behind', () => {
+  const brain = boundTogether('living:cerebellum');
+  for (const part of ['cerebrum', 'cerebellum', 'medulla', 'olfactory', 'brain-midbrain']) assert.ok(brain.includes('living:' + part), part);
+  assert.equal(brain.includes('living:pituitary'), false);
+  assert.deepEqual(boundTogether('living:spleen'), ['living:spleen']);
+  const lift = exercise('expose-brain').steps.at(-1)!;
+  assert.equal(lift.done(facts([], [], ['cerebrum'])), true);
+});
+
+test('blood from the saphenous vein is taken from clipped skin, with the tip in the vein, and the place pressed afterwards', () => {
+  const item = exercise('draw-saphenous-blood');
+  assert.equal(item.group, 'Blood sampling');
+  const clipAt = item.steps.findIndex((step) => step.tool === 'clippers'), prickAt = item.steps.findIndex((step) => step.tool === 'syringe'), pressAt = item.steps.findIndex((step) => step.tool === 'swab');
+  assert.ok(clipAt > 0 && prickAt > clipAt && pressAt > prickAt);
+  const inVein: LabAction = { kind: 'inject', tool: 'syringe', at: 4, structures: ['living:skin'], tipIn: ['living:lateral-saphenous-veins'], depthMm: 0.8 };
+  const outside: LabAction = { ...inVein, tipIn: ['living:muscle-rest'], depthMm: 1.6 };
+  assert.equal(stepsDone('draw-saphenous-blood', facts([inVein]))[prickAt], true);
+  assert.equal(stepsDone('draw-saphenous-blood', facts([outside]))[prickAt], false);
+  assert.match(item.steps[prickAt].advice!(facts([outside])) ?? '', /outside the vein/);
+  assert.equal(stepsDone('draw-saphenous-blood', facts([inVein, { kind: 'swab', tool: 'swab', at: 6, structures: ['living:skin'] }]))[pressAt], true);
+  assert.deepEqual(evaluateExercise(item, facts([{ ...inVein, tipIn: ['living:bone-tibia-l'] }])).errors, ['The needle went into the bone']);
 });

@@ -106,8 +106,8 @@ test('a tutorial lists its steps, says what to do and why, and names its source'
   assert.ok(getByText(chosen.about));
   assert.ok(getByText(chosen.steps[0].how));
   assert.ok(container.querySelector('.lab-tutorial-why'));
-  assert.ok(getByText(`After ${chosen.source.citation}`));
-  assert.equal(container.querySelector('a.lab-source')?.getAttribute('href'), `https://doi.org/${chosen.source.doi}`);
+  assert.ok(container.querySelector(".lab-source")?.textContent?.startsWith(`After ${chosen.source.citation}`));
+  assert.equal(container.querySelector('.lab-source a')?.getAttribute('href'), `https://doi.org/${chosen.source.doi}`);
 });
 
 test('a step can be chosen, shown by the hands, and the whole can be watched', () => {
@@ -241,7 +241,7 @@ test('the chooser lists the procedures to choose from, by kind', () => {
   const chosen: string[] = [];
   let free = 0;
   const view = render(createElement(LabChooser, { onChoose: (id: string) => chosen.push(id), onFree: () => { free++; } }));
-  for (const heading of ['Necropsy', 'Surgery', 'Injection']) assert.ok(view.getByRole('heading', { name: heading }));
+  for (const heading of ['Necropsy', 'Surgery', 'Blood sampling', 'Injection']) assert.ok(view.getByRole('heading', { name: heading }));
   for (const exercise of LAB_EXERCISES) assert.ok(view.getByRole('button', { name: new RegExp(exercise.name) }), exercise.name);
   fireEvent.click(view.getByRole('button', { name: /Tie the femoral artery/ }));
   assert.deepEqual(chosen, ['femoral-ligation']);

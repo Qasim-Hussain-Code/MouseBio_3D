@@ -14,7 +14,7 @@ export type DemoPoint = readonly [LabLandmark, number, number, number?];
 export interface OnStructure { readonly of: string; readonly side: 1 | -1; readonly at: number; readonly aside?: number }
 export type DemoPlace = DemoPoint | OnStructure;
 
-export type LabViewName = 'belly' | 'close' | 'chest' | 'heart' | 'spleen' | 'kidney' | 'back' | 'left' | 'right' | 'left-close' | 'tail' | 'head' | 'left-thigh' | 'femoral';
+export type LabViewName = 'belly' | 'close' | 'chest' | 'heart' | 'spleen' | 'kidney' | 'back' | 'left' | 'right' | 'left-close' | 'tail' | 'head' | 'left-thigh' | 'femoral' | 'shank';
 export type FlapKind = 'skin' | 'wall' | 'chest' | 'skull';
 
 export type DemoStep =
@@ -32,14 +32,16 @@ export type DemoStep =
   /** Lift something out and put it in the dish. */
   | { readonly kind: 'take'; readonly id: string }
   /** Start the flow of a perfusion. */
-  | { readonly kind: 'perfuse' };
+  | { readonly kind: 'perfuse' }
+  /** Lay a drape with an opening over the animal. */
+  | { readonly kind: 'drape' };
 
 /** What is marked on the animal for a step. */
 export type LabGuide =
-  /** A line to cut along. */
-  | { readonly kind: 'line'; readonly points: readonly DemoPlace[] }
+  /** A line to cut along. The coat is parted along it, unless the hair is what is to be worked on. */
+  | { readonly kind: 'line'; readonly points: readonly DemoPlace[]; readonly keepCoat?: boolean }
   /** A place to go in at, whether the left hand lifts a fold of skin there first, at what angle to the surface the needle goes in, in degrees, along what it goes, how quickly, and what a steady hand stops in. */
-  | { readonly kind: 'spot'; readonly place: DemoPlace; readonly radiusMm: number; readonly tent?: boolean; readonly degrees?: number; readonly along?: string; readonly mmPerSecond?: number; readonly stopsIn?: readonly string[] }
+  | { readonly kind: 'spot'; readonly place: DemoPlace; readonly radiusMm: number; readonly tent?: boolean; readonly degrees?: number; readonly along?: string; readonly mmPerSecond?: number; readonly stopsIn?: readonly string[]; readonly draws?: boolean }
   /** The structure to find, which glows when it can be seen. */
   | { readonly kind: 'find'; readonly ids: readonly string[] }
   /** The edge of a cut to take hold of. */
@@ -60,7 +62,7 @@ export interface LabStep {
   readonly view?: LabViewName;
   readonly guide?: LabGuide;
   /** A button that does what the step asks, where no instrument does it. */
-  readonly act?: { readonly label: string; readonly does: 'perfuse' };
+  readonly act?: { readonly label: string; readonly does: 'perfuse' | 'drape' };
   /** What the hands do to show the step. */
   readonly show: readonly DemoStep[];
   readonly done: (facts: LabFacts) => boolean;
@@ -68,8 +70,8 @@ export interface LabStep {
   readonly advice?: (facts: LabFacts) => string | null;
 }
 
-export type LabGroup = 'Necropsy' | 'Surgery' | 'Injection';
-export const LAB_GROUPS: readonly LabGroup[] = ['Necropsy', 'Surgery', 'Injection'];
+export type LabGroup = 'Necropsy' | 'Surgery' | 'Blood sampling' | 'Injection';
+export const LAB_GROUPS: readonly LabGroup[] = ['Necropsy', 'Surgery', 'Blood sampling', 'Injection'];
 
 export interface LabExercise {
   readonly id: string;
@@ -78,6 +80,8 @@ export interface LabExercise {
   /** One or two sentences on what it is for and how it differs from the procedure it follows. */
   readonly about: string;
   readonly source: LabSource;
+  /** Other published works that its steps follow. */
+  readonly also?: readonly LabSource[];
   /** Where it begins. */
   readonly pose: LabPose;
   /** Whether the procedure it follows is done with the heart beating, under anaesthesia, or after death. */
@@ -93,6 +97,9 @@ const PARKINSON: LabSource = { citation: 'Parkinson et al. 2011, J Vis Exp (54):
 const NIIYAMA: LabSource = { citation: 'Niiyama et al. 2009, J Vis Exp (23):1035', doi: '10.3791/1035' };
 const GAGE: LabSource = { citation: 'Gage et al. 2012, J Vis Exp (65):3564', doi: '10.3791/3564' };
 const MACHHOLZ: LabSource = { citation: 'Machholz et al. 2012, J Vis Exp (67):2771', doi: '10.3791/2771' };
+const CARLSON: LabSource = { citation: 'Carlson and Chakkalakal 2011, PLoS One 6(9):e24212', doi: '10.1371/journal.pone.0024212' };
+const PRITCHETT: LabSource = { citation: 'Pritchett-Corning et al. 2011, J Vis Exp (47):2586', doi: '10.3791/2586' };
+const PARASURAMAN: LabSource = { citation: 'Parasuraman et al. 2010, J Pharmacol Pharmacother 1(2):87-93', doi: '10.4103/0976-500X.72350' };
 
 const wait = (seconds: number): DemoStep => ({ kind: 'wait', seconds });
 const SKIN_ONLY: readonly DissectionTierId[] = ['skin'];
@@ -264,6 +271,9 @@ const VENTRICLE_CUT: readonly OnStructure[] = [{ of: 'living:heart-lv', side: 1,
 const ATRIUM: OnStructure = { of: 'living:heart-ra', side: 1, at: 0.5 };
 const ATRIUM_CUT: readonly OnStructure[] = [{ of: 'living:heart-ra', side: 1, at: 0.3 }, { of: 'living:heart-ra', side: 1, at: 0.52 }];
 const TAIL_VEIN: OnStructure = { of: 'living:tail-lateral-veins', side: 1, at: 0.72 };
+/** On the lateral saphenous vein of the left hind leg, low on the shank, and the stretch of it that is clipped. */
+const SAPHENOUS: OnStructure = { of: 'living:lateral-saphenous-veins', side: 1, at: 0.74 };
+const SAPHENOUS_LINE: readonly OnStructure[] = [{ of: 'living:lateral-saphenous-veins', side: 1, at: 0.96 }, { of: 'living:lateral-saphenous-veins', side: 1, at: 0.5 }];
 
 const seenAny = (facts: LabFacts, ids: readonly string[]) => ids.some((id) => seen(facts, id));
 const FIND = (text: string, how: string, why: string, ids: readonly string[], least = 1, view: LabViewName = 'close'): LabStep => ({
@@ -283,6 +293,13 @@ const FLANK: DemoPoint = ['diaphragm', 10, 13, 9];
 
 /** Something in the chest counts as found only when the chest has been opened: it can show between the ribs before that. */
 const INSIDE_THE_CHEST = (step: LabStep): LabStep => ({ ...step, done: (facts) => drawnBack(facts, 'chest', 1) && step.done(facts) });
+
+/** The cut of Carlson and Chakkalakal: about two centimetres down the middle from just below the end of the breastbone. */
+const INCISION: readonly DemoPoint[] = [['diaphragm', 3, 0], ['diaphragm', 23, 0]];
+/** Passes of the clippers along the belly, over the line of the cut and to each side of it. */
+const CLIP_LINES: readonly (readonly DemoPoint[])[] = [-6, 0, 6].map((side): readonly DemoPoint[] => [['diaphragm', -1, side], ['diaphragm', 27, side]]);
+/** A swab going round and outwards from where the cut will be. */
+const SCRUB_SPIRAL: readonly DemoPoint[] = Array.from({ length: 34 }, (_, index): DemoPoint => { const share = index / 33, angle = share * 5 * Math.PI, reach = 1 + 8 * share; return ['diaphragm', 13 + reach * Math.cos(angle), reach * Math.sin(angle)]; });
 
 const COLLECT_NOTE = 'In the laboratory it would then be trimmed of fat, rinsed in normal saline, never in water, and placed in 10 percent neutral buffered formalin, at about twenty times its own volume.';
 
@@ -572,9 +589,160 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
         done: (facts) => drawnBack(facts, 'skull', 2),
         advice: adviceOnDrawing('skull', 2),
       },
-      FIND('See the brain', 'Point at it with the blunt probe, and its name appears.', 'From above, the two cerebral hemispheres lie in front, with the cerebellum behind them. In the laboratory the brain is lifted out from the olfactory lobes backwards, with curved forceps.', ['cerebrum'], 1, 'head'),
+      FIND('See the brain', 'Point at it with the blunt probe, and its name appears.', 'From above, the two cerebral hemispheres lie in front, with the cerebellum behind them.', ['cerebrum'], 1, 'head'),
+      {
+        text: 'Lift the brain out',
+        how: 'With the brain chosen, press Lift out. It comes away whole and goes to the dish.',
+        why: 'In the laboratory the brain is lifted out from the olfactory lobes backwards, with curved forceps. It is soft and easily damaged.',
+        care: 'The nerves and vessels that hold the brain in place are not modelled as cuts here, and it simply lifts away. In the animal they are freed as it comes up.',
+        see: 'The brain lies in the dish with its parts together, and the floor of the skull lies empty.',
+        tool: 'probe', view: 'head',
+        guide: { kind: 'find', ids: ['living:cerebrum'] },
+        show: [{ kind: 'take', id: 'living:cerebrum' }, wait(1.5)],
+        done: (facts) => facts.removed.has('living:cerebrum'),
+      },
     ],
     avoid: [{ text: 'The brain was cut', broken: (facts) => cutAnyOf(facts, ['cerebrum', 'cerebellum', 'striatum']) }],
+  },
+  {
+    id: 'open-close-abdomen', name: 'Open and close the abdomen', group: 'Surgery', source: CARLSON, also: [PRITCHETT], pose: 'on-back', alive: true,
+    about: 'A cut along the midline of the belly and its closure, as used to study healing in the mouse, under anaesthesia. The published method makes one cut through all the layers and closes them with one running suture. Here the skin and the wall are opened in two cuts, so that each can be seen. The needle, thread and loops are drawn and not modelled.',
+    steps: [
+      {
+        ...LIE_ON_BACK('The operation'),
+        how: 'Choose On its back. The published method anaesthetises the mouse with inhaled isoflurane first, which is not modelled here.',
+      },
+      {
+        text: 'Clip the hair',
+        how: 'Take the clippers and draw them along the belly, over the marked line and to each side of it, until the skin shows.',
+        why: 'The published method clips the hair of the ventral abdomen and then removes the rest with a depilatory. A general guide to rodent surgery asks for an area about three times the size of the cut (Pritchett-Corning et al. 2011).',
+        care: 'Go gently over the thin skin of the belly, and clear the loose hair away from the site.',
+        see: 'The hair comes away. Within the clipped band the skin is bare, as the depilatory of the method leaves it, and at its edge the hair is cut short.',
+        tool: 'clippers', view: 'close',
+        guide: { kind: 'line', points: CLIP_LINES[1], keepCoat: true },
+        show: [wait(0.5), ...CLIP_LINES.map((points): DemoStep => ({ kind: 'stroke', tool: 'clippers', tiers: SKIN_ONLY, points, mmPerSecond: 16 }))],
+        done: (facts) => facts.actions.filter((action) => action.kind === 'clip').reduce((sum, action) => sum + (action.lengthMm ?? 0), 0) >= 18,
+        advice: (facts) => facts.actions.some((action) => action.kind === 'clip') ? 'Go on along the line, until about two centimetres are clear.' : null,
+      },
+      {
+        text: 'Scrub the skin',
+        how: 'Take a swab. Begin in the middle of the clipped skin, where the cut will be, and work outwards in a spiral.',
+        why: 'The guide describes a circular pattern, beginning in the centre and spiralling outward, so that what is cleaned from the middle is not brought back to it. The published method used a medicated soap here.',
+        care: 'The guide also asks for the animal to be kept warm and for pain relief before the operation. These are not modelled here.',
+        see: 'The swab goes round the clipped skin. Here it changes nothing that can be seen.',
+        tool: 'swab', view: 'close',
+        guide: { kind: 'spot', place: ['diaphragm', 13, 0], radiusMm: 2 },
+        show: [{ kind: 'stroke', tool: 'swab', tiers: SKIN_ONLY, points: SCRUB_SPIRAL, mmPerSecond: 22 }],
+        done: (facts) => facts.actions.some((action) => action.kind === 'scrub' && (action.lengthMm ?? 0) >= 8),
+        advice: (facts) => facts.actions.some((action) => action.kind === 'scrub') ? 'Keep going round, a little further out each time.' : null,
+      },
+      {
+        text: 'Lay a drape over the animal',
+        how: 'Press Lay the drape. A sheet with an opening goes over the animal, and the clipped skin shows through the opening.',
+        why: 'The guide recommends a standard waterproof disposable paper drape, laid over the animal so that only the site of the cut is left open.',
+        care: 'Here the drape is a drawing and keeps nothing sterile. In the operating room it is handled only with sterile gloves.',
+        see: 'A pale blue sheet covers the animal and falls to the board, with the clipped belly in its opening.',
+        act: { label: 'Lay the drape', does: 'drape' },
+        view: 'close',
+        show: [{ kind: 'drape' }, wait(1)],
+        done: (facts) => facts.actions.some((action) => action.kind === 'drape'),
+      },
+      OPEN_SKIN(INCISION, 17, 'Take the scissors. Press where the line begins, just below the end of the breastbone, and draw down along the line for about two centimetres.'),
+      { ...DRAW_BACK_SKIN, how: 'Take the forceps. Press on the cut edge of the skin and draw it a little way outwards, within the opening of the drape. Do this on each side.', show: [{ kind: 'pull', flap: 'skin', side: 1, open: 0.62 }, { kind: 'pull', flap: 'skin', side: -1, open: 0.62 }] },
+      {
+        ...OPEN_WALL,
+        how: 'Take the scissors and cut along the same line, through the wall, along its white middle line.',
+        why: 'The published cut runs through the linea alba, from just below the xiphoid process downwards, and exposes the organs.',
+        guide: { kind: 'line', points: INCISION },
+        show: [{ kind: 'stroke', tool: 'scissors', tiers: WALL, points: INCISION, mmPerSecond: 7 }],
+        done: (facts) => midlineCut(facts, WALL, 14, 5),
+        advice: adviceOnMidline(WALL, 14, 5),
+      },
+      { ...DRAW_BACK_WALL, show: [{ kind: 'pull', flap: 'wall', side: 1, open: 0.62 }, { kind: 'pull', flap: 'wall', side: -1, open: 0.62 }] },
+      FIND('See what lies under the wall', 'Point at what lies in the opening with the blunt probe, and its name appears.', 'The cut lies over the liver at its upper end and over the coils of the intestine below that. The published method closes the cut at once, without doing anything to the organs.', ['liver-median', 'liver-left', 'liver-right', 'small-intestine'], 1),
+      {
+        text: 'Close it with a running suture',
+        how: 'Take the needle and suture, and draw along the cut from one end to the other. The edges come together as the needle passes, and each loop takes every layer, from the skin to the lining.',
+        why: 'The published method closes at once with a running 7-0 polypropylene suture, under magnification of 3.5 times, taking all the layers of the wall. The loops lie 1 mm apart and take 1 mm of each edge, which makes about 20 loops in a cut of 2 cm.',
+        care: 'In the animal the gut lies just under the needle. Lift each edge as the needle goes through, so that it takes no bowel.',
+        see: 'A row of slanted blue loops crosses the line, with a knot at each end, and the edges lie together. The published method applied no dressing and used no antibiotics. The guide asks for the wound to be watched for signs of infection afterwards.',
+        tool: 'suture', view: 'close',
+        guide: { kind: 'line', points: INCISION },
+        show: [{ kind: 'stroke', tool: 'suture', tiers: SKIN_ONLY, points: INCISION, mmPerSecond: 4.5 }, wait(1.2)],
+        done: (facts) => facts.actions.filter((action) => action.kind === 'suture').reduce((sum, action) => sum + (action.lengthMm ?? 0), 0) >= 14,
+        advice: (facts) => facts.actions.some((action) => action.kind === 'suture') ? 'Go on to the end of the cut, so that no part of it is left open.' : null,
+      },
+    ],
+    avoid: [{ text: 'An organ was cut', broken: (facts) => cutAnyOf(facts, ORGANS_TO_SPARE) }],
+  },
+  {
+    id: 'draw-saphenous-blood', name: 'Draw blood from the saphenous vein', group: 'Blood sampling', source: PARASURAMAN, pose: 'standing', alive: true,
+    about: 'Taking a small sample of blood from the lateral saphenous vein of a hind leg, which the published account does with aseptic precautions and the leg held still. The animal stands on the board here, and how it is held, the pressure above the knee and the capillary tube are not modelled.',
+    steps: [
+      {
+        text: 'Stand the animal and look at the hind leg',
+        how: 'Choose On its feet. The view turns to the outer side of the left hind leg.',
+        why: 'The lateral saphenous vein runs up the outer side of the shank, just under the skin.',
+        tool: 'hand', view: 'shank',
+        show: [{ kind: 'pose', pose: 'standing' }, wait(1.4)],
+        done: (facts) => facts.pose === 'standing',
+      },
+      {
+        text: 'Clip the hair over the vein',
+        how: 'Take the clippers and draw them along the marked line, up the back of the shank.',
+        why: 'The account shaves the back of the hind leg with an electric trimmer until the vein can be seen, and allows a hair removal cream instead.',
+        see: 'The coat comes away along the shank, and the skin over the vein is bare.',
+        tool: 'clippers', view: 'shank',
+        guide: { kind: 'line', points: SAPHENOUS_LINE, keepCoat: true },
+        show: [{ kind: 'stroke', tool: 'clippers', tiers: SKIN_ONLY, points: SAPHENOUS_LINE, mmPerSecond: 8 }],
+        done: (facts) => facts.actions.filter((action) => action.kind === 'clip').reduce((sum, action) => sum + (action.lengthMm ?? 0), 0) >= 5,
+        advice: (facts) => facts.actions.some((action) => action.kind === 'clip') ? 'Go on along the line, until the skin over the vein is bare.' : null,
+      },
+      {
+        text: 'Prick the vein',
+        how: 'Take the syringe, press on the mark and hold. The needle goes in shallow and stops in the vein. Let go, and a drop of blood comes up where it went in.',
+        why: 'The account immobilises the hind leg, presses gently above the knee so that the vein fills, punctures the vein with a 20G needle, and collects the blood with a capillary tube or with a syringe and needle.',
+        care: 'The vein is close under the skin, and the needle need not go deep. Here the leg does not move; in the animal it is held still.',
+        see: 'A drop of dark blood stands where the needle came out.',
+        tool: 'syringe', view: 'shank',
+        guide: { kind: 'spot', place: SAPHENOUS, radiusMm: 0.9, degrees: 20, along: 'living:lateral-saphenous-veins', mmPerSecond: 1.3, stopsIn: ['living:lateral-saphenous-veins'] },
+        show: [{ kind: 'touch', tool: 'syringe', ids: [], place: SAPHENOUS, depthMm: 2 }, wait(1.2)],
+        done: (facts) => needles(facts).some((action) => (action.tipIn ?? []).some((id) => /lateral-saphenous-veins$/.test(id))),
+        advice: adviceOnNeedle((action) => (action.tipIn ?? []).some((id) => /lateral-saphenous-veins$/.test(id)) ? null : (action.depthMm ?? 0) < 0.4 ? 'The needle has hardly gone in. Hold a little longer.' : 'The tip is outside the vein. Try again at the mark, with Steady hand on.'),
+      },
+      {
+        text: 'Collect the drop and press on the place',
+        how: 'Take the swab, and press on the drop of blood.',
+        why: 'The blood is collected as it comes up, and a little pressure then stops the bleeding, as the account does for a vein of the foot.',
+        tool: 'swab', view: 'shank',
+        guide: { kind: 'spot', place: SAPHENOUS, radiusMm: 0.9 },
+        show: [{ kind: 'touch', tool: 'swab', ids: [], place: SAPHENOUS }, wait(0.6)],
+        done: (facts) => facts.actions.some((action) => action.kind === 'swab'),
+      },
+    ],
+    avoid: [{ text: 'The needle went into the bone', broken: (facts) => needles(facts).some((action) => [...action.structures, ...(action.tipIn ?? [])].some((id) => /bone-(tibia|fibula)/.test(id))) }],
+  },
+  {
+    id: 'draw-heart-blood', name: 'Draw blood from the heart', group: 'Blood sampling', source: PARASURAMAN, also: [GAGE], pose: 'on-back', alive: true,
+    about: 'Taking a large sample of blood from the heart, as the last act of a study, under terminal anaesthesia. The published account allows it with or without opening the chest. Here the chest is opened first, after Gage et al., so that the ventricle can be seen. The account gives no position or angle for the needle, and those used here are chosen.',
+    steps: [
+      LIE_ON_BACK('The sampling'),
+      ...CHEST_OPENING,
+      FIND('Find the ventricles', 'Point at the heart with the blunt probe. The ventricles are its lower part, and the left ventricle lies on the animal\'s left, which is on your right when its head is up.', 'The account takes the blood from the heart, preferably from a ventricle.', ['heart-lv'], 1, 'heart'),
+      {
+        text: 'Draw blood slowly from the ventricle',
+        how: 'Take the syringe, press at the mark and hold. The needle goes into the ventricle and the syringe fills slowly. Keep holding until it is nearly full, then let go.',
+        why: 'The account gives a 19 to 25G needle with a 1 to 5 ml syringe, and says to draw slowly to avoid collapsing the heart. It estimates the blood volume of an adult at 55 to 70 ml per kg, which comes to about 1.5 to 2 ml in a mouse of 28 g, and it recommends this route only at the end of a study.',
+        care: 'During the collection the animal is under terminal anaesthesia. It is not woken afterwards.',
+        see: 'Dark blood rises in the barrel as the plunger comes back, and the heart goes on beating. How fast it fills is chosen for viewing.',
+        tool: 'syringe', view: 'heart',
+        guide: { kind: 'spot', place: VENTRICLE, radiusMm: 1, degrees: 55, mmPerSecond: 2, stopsIn: ['living:left-heart-spaces'], draws: true },
+        show: [{ kind: 'touch', tool: 'syringe', ids: ['living:heart-lv'], place: VENTRICLE }, wait(0.6)],
+        done: (facts) => needles(facts).some((action) => (action.drawnShare ?? 0) >= 0.8),
+        advice: adviceOnNeedle((action) => (action.drawnShare ?? 0) >= 0.8 ? null : (action.drawnShare ?? 0) > 0 ? 'The syringe is not yet full. Press at the mark again, and hold for longer.' : 'The needle did not reach the left ventricle. Press at the mark, and hold.'),
+      },
+    ],
+    avoid: [{ text: 'A lung was cut', broken: (facts) => cutAnyOf(facts, ['lung-left', 'lung-r-superior', 'lung-r-middle', 'lung-r-inferior', 'lung-r-postcaval']) }],
   },
   {
     id: 'inject-abdomen', name: 'Inject into the abdomen', group: 'Injection', source: MACHHOLZ, pose: 'on-back', alive: true,

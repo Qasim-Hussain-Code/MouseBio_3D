@@ -7,7 +7,7 @@ import type { DissectionTierId } from './dissection';
  */
 export const LAB_NOTICE = 'Practice on a simulated animal. The hands, instruments, bleeding and tissue behaviour are illustrative. Not a protocol, and no substitute for supervised training under an approved protocol.';
 
-export type LabToolId = 'hand' | 'scalpel' | 'scissors' | 'forceps' | 'probe' | 'bone-cutter' | 'ligature' | 'suture' | 'pin' | 'swab' | 'syringe';
+export type LabToolId = 'hand' | 'clippers' | 'scalpel' | 'scissors' | 'forceps' | 'probe' | 'bone-cutter' | 'ligature' | 'suture' | 'pin' | 'swab' | 'syringe';
 
 export interface LabTool {
   readonly id: LabToolId;
@@ -21,15 +21,16 @@ export interface LabTool {
 
 export const LAB_TOOLS: readonly LabTool[] = Object.freeze([
   { id: 'hand', name: 'Hand', hint: 'Turn the view. The right button does this with any instrument.', radius: 0, key: 'H' },
+  { id: 'clippers', name: 'Clippers', hint: 'Drag over the coat to clip the hair before a cut.', radius: 0.004, key: 'K' },
   { id: 'scalpel', name: 'Scalpel', hint: 'A fine cut through the layer it touches.', radius: 0.00024, key: 'S' },
   { id: 'scissors', name: 'Scissors', hint: 'A wider cut through the layer it touches.', radius: 0.00045, key: 'C' },
   { id: 'forceps', name: 'Forceps', hint: 'From the edge of a cut, draw the layer back. On an organ, vessel or nerve, take hold and move it.', radius: 0.0016, key: 'F' },
   { id: 'probe', name: 'Blunt probe', hint: 'Name what it touches. Drag through fat or a lining to part it without cutting.', radius: 0.001, key: 'P' },
   { id: 'bone-cutter', name: 'Bone cutters', hint: 'Cut through bone.', radius: 0.0008, key: 'B' },
   { id: 'ligature', name: 'Ligature', hint: 'Tie a vessel where it is touched. A tied vessel stops bleeding.', radius: 0, key: 'L' },
-  { id: 'suture', name: 'Needle and suture', hint: 'Drag along a cut in the skin to close it.', radius: 0.0022, key: 'N' },
+  { id: 'suture', name: 'Needle and suture', hint: 'Drag along a cut to close it, with the layers that lie open under it.', radius: 0.0022, key: 'N' },
   { id: 'pin', name: 'Pin', hint: 'Place a pin where it is touched.', radius: 0, key: 'I' },
-  { id: 'swab', name: 'Swab', hint: 'Clean away blood where it is touched.', radius: 0.003, key: 'W' },
+  { id: 'swab', name: 'Swab', hint: 'Clean away blood where it is touched, or drag to scrub the skin.', radius: 0.003, key: 'W' },
   { id: 'syringe', name: 'Syringe', hint: 'Hold to push the needle in, and let go. The record says what it passed through and where its tip lies.', radius: 0, key: 'Y' },
 ]);
 
@@ -69,7 +70,7 @@ export const canBeReflected = (tier: DissectionTierId) => tier === 'skin' || tie
 /** A probe parts what is loose. */
 export const canBeParted = (tier: DissectionTierId) => tier === 'fat' || tier === 'panniculus' || tier === 'lining';
 
-export type LabActionKind = 'cut' | 'reflect' | 'part' | 'bone' | 'remove' | 'move' | 'ligate' | 'suture' | 'pin' | 'swab' | 'inject' | 'perfuse' | 'cleared';
+export type LabActionKind = 'cut' | 'reflect' | 'part' | 'bone' | 'remove' | 'move' | 'ligate' | 'suture' | 'pin' | 'swab' | 'inject' | 'perfuse' | 'cleared' | 'clip' | 'scrub' | 'drape';
 export type LabSide = 'ventral' | 'dorsal' | 'side';
 
 export interface LabAction {
@@ -94,6 +95,8 @@ export interface LabAction {
   /** For a needle: where its tip came to lie, by identifier, and how deep it went. */
   readonly tipIn?: readonly string[];
   readonly depthMm?: number;
+  /** For a needle that draws: how full the syringe came to be, from 0 to 1. */
+  readonly drawnShare?: number;
   /** For a needle: millimetres towards the animal's left of the midline, and how far along the abdomen it went in, from 0 at the diaphragm to 1 at the sacrum. */
   readonly leftMm?: number;
   readonly abdomenShare?: number;
@@ -113,6 +116,10 @@ export interface LabFacts {
 }
 
 const living = (id: string) => 'living:' + id;
+
+/** What comes away whole when any part of it is lifted out: the brain, with the vessels on its surface. The pituitary stays in the floor of the skull. */
+const BRAIN_TOGETHER: readonly string[] = ['cerebrum', 'striatum', 'brain-forebrain', 'brain-thalamus', 'brain-hypothalamus', 'brain-hippocampus', 'brain-midbrain', 'brain-pons', 'cerebellum', 'medulla', 'olfactory', 'brain-ventricles', 'pineal', 'cerebral-arteries', 'cerebral-base'].map(living);
+export const boundTogether = (id: string): readonly string[] => BRAIN_TOGETHER.includes(id) ? BRAIN_TOGETHER : [id];
 export const cutThrough = (facts: LabFacts, id: string) => facts.actions.some((action) => (action.kind === 'cut' || action.kind === 'bone') && action.structures.includes(living(id)));
 export const cutAnyOf = (facts: LabFacts, ids: readonly string[]) => ids.some((id) => cutThrough(facts, id));
 
@@ -146,7 +153,7 @@ export type LabPose = 'standing' | 'on-back';
 export const needles = (facts: LabFacts) => facts.actions.filter((action) => action.kind === 'inject');
 export const inOrgan = (action: LabAction) => (action.tipIn ?? []).some((id) => /small-intestine|caecum|colon|stomach|liver|spleen|kidney|bladder|uterus|ovar|testis|pancreas/.test(id));
 
-const ACTION_WORDS: Readonly<Record<LabActionKind, string>> = Object.freeze({ cut: 'Cut', reflect: 'Drew back', part: 'Parted', bone: 'Cut through bone', remove: 'Lifted out', move: 'Moved aside', ligate: 'Tied', suture: 'Closed', pin: 'Pinned', swab: 'Cleaned', inject: 'Needle through', perfuse: 'Started the flow through', cleared: 'The blood has cleared from' });
+const ACTION_WORDS: Readonly<Record<LabActionKind, string>> = Object.freeze({ cut: 'Cut', reflect: 'Drew back', part: 'Parted', bone: 'Cut through bone', remove: 'Lifted out', move: 'Moved aside', ligate: 'Tied', suture: 'Closed', pin: 'Pinned', swab: 'Cleaned', inject: 'Needle through', perfuse: 'Started the flow through', cleared: 'The blood has cleared from', clip: 'Clipped the hair over', scrub: 'Scrubbed', drape: 'Laid a drape over' });
 
 /** One line of the record, in words. */
 export function describeAction(action: LabAction, nameOf: (id: string) => string): string {

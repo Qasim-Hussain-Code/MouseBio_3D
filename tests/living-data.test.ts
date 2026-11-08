@@ -130,7 +130,7 @@ test('every structure declares its evidence, its basis and, when simulated, says
     }
     if (structure.evidence === 'traced') assert.match(structure.description!, /[Tt]raced|isosurface|outer surface/, structure.id);
     if (structure.division) assert.match(structure.description!, /estimate/, structure.id);
-    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles|O'Connell|Fuller|Marques|Stuelsatz|Sakabe|Kochi|Rigaud|Shields|Oliviero|Dyment|Jilka|Sauter|Furness|Kimoto|Mauris|Ebara|Louveau|Carlson|Parkinson|Machholz|Kim BS|Norwood|Martinez-Abadias/, reference);
+    for (const reference of structure.basis!) assert.match(reference, /Cook|Hummel|Greene|Dogdas|Charles|O'Connell|Fuller|Marques|Stuelsatz|Sakabe|Kochi|Rigaud|Shields|Oliviero|Dyment|Jilka|Sauter|Furness|Kimoto|Mauris|Ebara|Louveau|Carlson|Parkinson|Machholz|Kim BS|Norwood|Martinez-Abadias|Reissig|Mughrabi|Olmstead|Wang Q|Jager|Trevizan|Sleigh|Duan|Ning|Zhong|Sakamoto/, reference);
   }
   assert.ok(counts.source >= 15 && counts.traced >= 5 && counts.simulated >= 30, JSON.stringify(counts));
 });

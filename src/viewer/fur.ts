@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createLifeMeshUniforms, FLAP_OVER, LIFE_DECLARATIONS, LIFE_MOVE, lifeUniforms, type LifeMeshUniforms } from './life-field';
+import { createLifeMeshUniforms, FLAP_OVER, FLAP_SLOTS, HINGE_STATIONS, LIFE_DECLARATIONS, LIFE_MOVE, lifeUniforms, type LifeMeshUniforms } from './life-field';
 import { CUT_SHARED } from './cut-uniforms';
 
 /** How many straight lengths of the coat can be parted at one time. */
@@ -93,14 +93,39 @@ uniform vec3 uBareA[${BARE_LINES}];
 uniform vec3 uBareB[${BARE_LINES}];
 uniform vec3 uBareOut[${BARE_LINES}];
 uniform float uBareWidth;
+uniform float uClipOn;
+uniform highp sampler3D uClipGrid;
 ${LIFE_DECLARATIONS}
 ${FLAP_OVER}
+// Skin that has been drawn back, and a narrow band beyond the fold, where the folded edge lies over the coat. A hair rooted there would stand up through the fold.
+bool mbNearFold(vec3 p, float margin) {
+  for (int i = 0; i < ${FLAP_SLOTS}; i++) {
+    if (float(i) >= uFlapCount) break;
+    vec4 mbShape = uFlapShape[i];
+    if (mbShape.w > 0.5 || mbShape.x <= 0.00001 || mbShape.z > 0.5) continue;
+    vec3 mbAB = uFlapB[i] - uFlapA[i], mbFromA = p - uFlapA[i];
+    float mbLength = length(mbAB);
+    float mbT = dot(mbFromA, mbAB) / max(mbLength * mbLength, 1e-12);
+    if (mbT <= -margin / mbLength || mbT >= 1.0 + margin / mbLength) continue;
+    float mbOutward = dot(mbFromA, uFlapOut[i]);
+    if (mbOutward < -0.0002) continue;
+    float mbAt = clamp(mbT, 0.0, 1.0) * ${HINGE_STATIONS - 1}.0;
+    int mbCell = min(int(mbAt), ${HINGE_STATIONS - 2});
+    vec4 mbHinge = mix(texelFetch(uFlapHinge, ivec2(mbCell, i), 0), texelFetch(uFlapHinge, ivec2(mbCell + 1, i), 0), mbAt - float(mbCell));
+    if (mbHinge.x <= 0.0 || mbOutward > mbHinge.x + margin) continue;
+    float mbLevel = mix(mbHinge.z, mbHinge.y, clamp(mbOutward / mbHinge.x, 0.0, 1.0)), mbHigh = dot(mbFromA, uFlapUp[i]);
+    if (mbHigh < mbLevel - 0.0032 - margin || mbHigh > mbLevel + 0.003 + margin) continue;
+    return true;
+  }
+  return false;
+}
 ${LIFE_MOVE}
 varying float vAlong;
 varying float vTone;
 varying float vVentral;
 varying float vDorsal;
 varying float vShort;
+varying float vFar;
 varying vec3 vTangent;
 varying vec3 vNormal;
 varying vec3 vView;
@@ -112,9 +137,17 @@ void main() {
   // Guard hairs are longer and fewer than the undercoat.
   float scale = aComb.w * (fract(aRandom * 3.77) > 0.9 ? 1.2 : 0.82 + 0.26 * tone);
   float reach = uLength * scale;
+  // Clipped hair leaves a short stubble. The edge is uneven, as the edge of clipped hair is.
+  if (uClipOn > 0.5) {
+    vec3 mbClipAt = (uCutToTexture * modelMatrix * vec4(aRoot, 1.0)).xyz;
+    // The published method removes what the clippers leave with a depilatory, so the skin within is bare, and only near the edge is the hair cut short.
+    float mbClipped = all(greaterThan(mbClipAt, vec3(0.0))) && all(lessThan(mbClipAt, vec3(1.0))) ? textureLod(uClipGrid, mbClipAt, 0.0).r : 0.0;
+    reach *= 1.0 - 0.9 * step(0.3 + 0.4 * tone, mbClipped);
+    if (mbClipped > 0.78) reach = 0.0;
+  }
   vec3 lean = normalize(aComb.xyz);
   // The hair leaves the skin at a steep angle and lies down along the coat towards its tip.
-  vec3 start = normalize(aNormal * 0.46 + lean * 0.88);
+  vec3 start = normalize(aNormal * 0.36 + lean * 0.93);
   vec3 end = normalize(aNormal * 0.03 + lean);
   // With the skin opened its inner side can be seen, and a hair root lying exactly on the surface would show through it.
   vec3 local = aRoot + aNormal * (uWinOn > 0.5 ? 0.00006 : 0.0) + reach * (start * t * (1.0 - 0.5 * t) + end * 0.5 * t * t);
@@ -128,7 +161,10 @@ void main() {
   vec3 toCamera = cameraPosition - world.xyz;
   float distanceToCamera = length(toCamera);
   vec3 across = normalize(cross(worldTangent, toCamera));
-  float width = max(uWidth, distanceToCamera * uPixel * 0.75) * pow(1.0 - t, 0.7);
+  float pixel = distanceToCamera * uPixel;
+  float width = max(uWidth, pixel * 0.75) * pow(1.0 - t, 0.7);
+  // How much narrower than a pixel the hair is.
+  vFar = 1.0 - smoothstep(0.5, 1.8, uWidth / max(pixel, 1e-7));
   world.xyz += across * side * width * 0.5;
   vAlong = t;
   vTone = tone;
@@ -160,8 +196,9 @@ void main() {
     float mbOutward = dot(mbFrom, uBareOut[i]);
     if (mbOutward > -0.007 && length(mbFrom - uBareOut[i] * mbOutward) < uBareWidth * (0.72 + 0.56 * fract(aRoot.x * 91173.0 + aRoot.y * 37411.0))) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
   }
+  if (reach <= 0.0) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
   // A hair on skin that has been drawn back lies under it, and is not drawn. Nor is one rooted in skin that has been cut away.
-  if (uCutOn > 0.5 && mbFlapOver(rootWorld, vec3(1.0, 0.0, 0.0))) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  if (uCutOn > 0.5 && mbNearFold(rootWorld, 0.0014)) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
   if (uCutOn > 0.5) {
     vec3 mbCutAt = (uCutToTexture * vec4(rootWorld, 1.0)).xyz;
     if (all(greaterThan(mbCutAt, vec3(0.0))) && all(lessThan(mbCutAt, vec3(1.0))) && textureLod(uCutSkin, mbCutAt, 0.0).r > 0.42) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -183,6 +220,7 @@ varying float vTone;
 varying float vVentral;
 varying float vDorsal;
 varying float vShort;
+varying float vFar;
 varying vec3 vTangent;
 varying vec3 vNormal;
 varying vec3 vView;
@@ -197,8 +235,12 @@ void main() {
   colour = mix(colour, uBand, vShort * 0.85);
   pale = mix(pale, uBelly, vShort);
   vec3 n = normalize(vNormal);
+  // Seen from far away the bands of one hair cannot be told apart, and the coat takes their mean colour. Up close each hair shows its bands.
+  vec3 meanBack = uRoot * 0.2 + uBand * 0.56 + uTip * 0.24;
+  colour = mix(colour, mix(meanBack, colour, 0.28 * smoothstep(0.1, 0.9, t)), vFar);
+  pale = mix(pale, uBelly * 0.97, vFar * 0.8);
   colour = mix(colour, pale, vVentral);
-  colour *= 0.84 + 0.32 * vTone;
+  colour *= 1.0 + (0.32 - 0.2 * vFar) * (vTone - 0.5);
   // Darker along the back and paler towards the flanks, as in the wild-type coat.
   colour *= mix(1.0, 0.8, vDorsal);
   // Light along a hair: strong across it and weak along it, with a soft highlight, in the manner of Kajiya and Kay.
@@ -227,6 +269,14 @@ const FUR_LIGHTS = Object.freeze({ uFurKey: { value: KEY_LIGHT.clone() }, uFurFi
 export function turnFurLights(turn: THREE.Quaternion) {
   FUR_LIGHTS.uFurKey.value.copy(KEY_LIGHT).applyQuaternion(turn);
   FUR_LIGHTS.uFurFill.value.copy(FILL_LIGHT).applyQuaternion(turn);
+}
+
+const FUR_CLIP = Object.freeze({ uClipOn: { value: 0 }, uClipGrid: { value: null as THREE.Data3DTexture | null } });
+
+/** Where the coat has been clipped, or null when it has not. */
+export function setFurClip(grid: THREE.Data3DTexture | null) {
+  FUR_CLIP.uClipGrid.value = grid;
+  FUR_CLIP.uClipOn.value = grid ? 1 : 0;
 }
 
 const FUR_BARE = Object.freeze({ uBareCount: { value: 0 }, uBareA: { value: Array.from({ length: BARE_LINES }, () => new THREE.Vector3()) }, uBareB: { value: Array.from({ length: BARE_LINES }, () => new THREE.Vector3()) }, uBareOut: { value: Array.from({ length: BARE_LINES }, () => new THREE.Vector3(0, 0, 1)) }, uBareWidth: { value: 0.0022 } });
@@ -308,9 +358,9 @@ export function scatterHairs(geometry: THREE.BufferGeometry, density: number = F
       normals[3 * written] = blend(normal, 'getX'); normals[3 * written + 1] = blend(normal, 'getY'); normals[3 * written + 2] = blend(normal, 'getZ');
       // Tufts and a little scatter in the combing direction keep the coat from looking brushed flat.
       const rx = roots[3 * written], ry = roots[3 * written + 1], rz = roots[3 * written + 2];
-      combs[4 * written] = blend(fur, 'getX') + 0.24 * tuft(rx, ry, rz, 0.7) + (rng() - 0.5) * 0.18;
-      combs[4 * written + 1] = blend(fur, 'getY') + 0.24 * tuft(rx, ry, rz, 2.1) + (rng() - 0.5) * 0.18;
-      combs[4 * written + 2] = blend(fur, 'getZ') + 0.24 * tuft(rx, ry, rz, 4.3) + (rng() - 0.5) * 0.18;
+      combs[4 * written] = blend(fur, 'getX') + 0.19 * tuft(rx, ry, rz, 0.7) + (rng() - 0.5) * 0.13;
+      combs[4 * written + 1] = blend(fur, 'getY') + 0.19 * tuft(rx, ry, rz, 2.1) + (rng() - 0.5) * 0.13;
+      combs[4 * written + 2] = blend(fur, 'getZ') + 0.19 * tuft(rx, ry, rz, 4.3) + (rng() - 0.5) * 0.13;
       combs[4 * written + 3] = blend(fur, 'getW') * (1 + 0.1 * tuft(rx, ry, rz, 5.2));
       coats[written] = coat ? blend(coat, 'getX') : 0;
       randoms[written] = rng();
@@ -365,7 +415,7 @@ export function createFur(skin: THREE.Mesh, options: FurOptions = {}): FurLayer 
     uLength: { value: FUR_DISPLAY.lengthMetres }, uWidth: { value: baseWidth as number }, uPixel: { value: 0.001 },
     uRoot: { value: new THREE.Color() }, uBand: { value: new THREE.Color() }, uTip: { value: new THREE.Color() }, uBelly: { value: new THREE.Color() },
     uWinOn: { value: 0 }, uWinA: { value: new THREE.Vector3() }, uWinB: { value: new THREE.Vector3() }, uWinN: { value: new THREE.Vector3(0, 0, 1) }, uWinDepth: { value: 0 }, uWinFront: { value: 0 }, uWinRadius: { value: 0 },
-    ...lifeUniforms(options.life ?? createLifeMeshUniforms()), ...FUR_LIGHTS, ...CUT_SHARED, ...FUR_BARE, uCutSkin: { value: null as THREE.Data3DTexture | null },
+    ...lifeUniforms(options.life ?? createLifeMeshUniforms()), ...FUR_LIGHTS, ...CUT_SHARED, ...FUR_BARE, ...FUR_CLIP, uCutSkin: { value: null as THREE.Data3DTexture | null },
   };
   const material = new THREE.ShaderMaterial({ vertexShader: VERTEX, fragmentShader: FRAGMENT, uniforms, side: THREE.DoubleSide, clipping: true });
   const mesh = new THREE.Mesh(geometry, material);

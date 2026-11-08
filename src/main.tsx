@@ -20,6 +20,7 @@ import './components/LifePanel.css';
 import './components/Minimal.css';
 import './components/Brand.css';
 import './components/LabPanel.css';
+import './components/SourcesPage.css';
 import './components/AllLayers.css';
 
 import './components/SourceSignalPanel.css';

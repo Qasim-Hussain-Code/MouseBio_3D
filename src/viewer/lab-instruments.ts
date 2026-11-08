@@ -15,6 +15,8 @@ export interface Instrument {
   readonly grip: GripKind;
   /** How far it is open or closed, from 0 to 1, for those that have jaws. */
   setOpen(open: number): void;
+  /** For a syringe drawing blood: how full it is, from 0 to 1. Null puts it back as it was, ready to inject. */
+  setDrawn?(share: number | null): void;
   holds(): GripTargets;
 }
 
@@ -161,6 +163,30 @@ function pin(): Instrument {
   return { group, grip: 'pinch', setOpen() {}, holds: () => ({ thumb: [0.0101, -0.001, 0.0245], index: [-0.0091, -0.002, 0.0225] }) };
 }
 
+/** Small electric clippers of the kind used on small animals, with a comb of fine teeth at the end. */
+function clippers(): Instrument {
+  const group = new THREE.Group(), steel = STEEL();
+  const shell = new THREE.MeshStandardMaterial({ color: '#dfe2df', roughness: 0.45 });
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.0135, 0.0024, 0.0045), steel);
+  head.position.z = 0.0028;
+  group.add(head);
+  for (let tooth = 0; tooth < 13; tooth++) {
+    const made = new THREE.Mesh(new THREE.BoxGeometry(0.00062, 0.0011, 0.0022), steel);
+    made.position.set(-0.0062 + tooth * 0.00103, 0, -0.00002);
+    group.add(made);
+  }
+  group.add(taper(V(0, 0, 0.0048), V(0, 0, 0.02), 0.0145, 0.019, 0.0105, shell));
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.0095, 0.082, 8, 18), shell);
+  body.rotation.x = Math.PI / 2;
+  body.position.z = 0.066;
+  body.scale.set(1, 1, 0.82);
+  group.add(body);
+  const button = new THREE.Mesh(new THREE.BoxGeometry(0.0042, 0.0014, 0.009), DARK());
+  button.position.set(0, -0.0078, 0.05);
+  group.add(button);
+  return { group, grip: 'pen', setOpen() {}, holds: () => penHolds(0.0095) };
+}
+
 function swab(): Instrument {
   const group = new THREE.Group();
   const cotton = new THREE.Mesh(new THREE.SphereGeometry(0.0022, 12, 10), new THREE.MeshStandardMaterial({ color: '#fbfaf6', roughness: 1 }));
@@ -184,23 +210,36 @@ function syringe(): Instrument {
   barrel.rotation.x = Math.PI / 2;
   barrel.position.z = 0.052;
   group.add(barrel);
-  const liquid = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.03, 16), new THREE.MeshPhysicalMaterial({ color: '#bfe0ea', roughness: 0.1, transparent: true, opacity: 0.7 }));
+  const liquidLook = new THREE.MeshPhysicalMaterial({ color: '#bfe0ea', roughness: 0.1, transparent: true, opacity: 0.7 });
+  const liquid = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.03, 16), liquidLook);
   liquid.rotation.x = Math.PI / 2;
   liquid.position.z = 0.038;
   group.add(liquid);
   const plunger = new THREE.Mesh(new THREE.CylinderGeometry(0.0031, 0.0031, 0.0028, 18), new THREE.MeshStandardMaterial({ color: '#32363a', roughness: 0.6 }));
   plunger.rotation.x = Math.PI / 2;
   plunger.position.z = 0.0545;
-  group.add(plunger);
+  const pulled = new THREE.Group();
+  group.add(pulled);
+  pulled.add(plunger);
   const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.0011, 0.0011, 0.05, 8), new THREE.MeshStandardMaterial({ color: '#eceeef', roughness: 0.5 }));
   rod.rotation.x = Math.PI / 2;
   rod.position.z = 0.0805;
-  group.add(rod);
+  pulled.add(rod);
   const flange = new THREE.Mesh(new THREE.CylinderGeometry(0.0062, 0.0062, 0.0012, 20), new THREE.MeshStandardMaterial({ color: '#eceeef', roughness: 0.5 }));
   flange.rotation.x = Math.PI / 2;
   flange.position.z = 0.0815;
-  group.add(flange);
-  return { group, grip: 'pen', setOpen() {}, holds: () => penHolds(0.0034) };
+  pulled.add(flange);
+  return {
+    group, grip: 'pen', setOpen() {}, holds: () => penHolds(0.0034),
+    setDrawn(share) {
+      const full = share ?? 1;
+      liquidLook.color.set(share === null ? '#bfe0ea' : '#5e0b12');
+      liquidLook.opacity = share === null ? 0.7 : 0.96;
+      liquid.scale.y = Math.max(full, 0.001);
+      liquid.position.z = 0.023 + 0.015 * full;
+      pulled.position.z = -0.03 * (1 - full);
+    },
+  };
 }
 
 function ligature(): Instrument {
@@ -212,6 +251,7 @@ function ligature(): Instrument {
 
 export function createInstrument(id: LabToolId): Instrument | null {
   switch (id) {
+    case 'clippers': return clippers();
     case 'scalpel': return scalpel();
     case 'scissors': return jaws(0.024, 0.08, 0.0046, true);
     case 'forceps': return forceps();

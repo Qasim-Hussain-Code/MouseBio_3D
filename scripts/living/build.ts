@@ -297,7 +297,14 @@ const ribLines = ribCourses(grid, bonePart);
 log('rib courses', ribLines.r.map((line) => line.length).join(','), ribLines.l.map((line) => line.length).join(','));
 const limbRoutes = buildLimbRoutes(landmarks);
 for (const part of Object.keys(limbRoutes)) LIMB_PARTS.add(part);
-const internal = { ...buildInternal(grid, labels, landmarks, ribLines), ...limbRoutes, ...buildInteriors(grid, labels, landmarks, { heart: HEART, stomach: STOMACH, kidneyLimitX: MIDDLE_X }, [190, 392, 88], [176, 372, 84]) };
+// The middle of each traced part of the gut, for the vessels that go to it.
+const gutMiddle = (value: number): Vec3 => {
+  const parts = gutParts();
+  let x = 0, y = 0, z = 0, count = 0;
+  for (let k = 0; k < grid.nz; k++) for (let j = 0; j < grid.ny; j++) for (let i = 0; i < grid.nx; i++) if (parts[voxelIndex(grid, i, j, k)] === value) { x += i; y += j; z += k; count++; }
+  return count ? [x / count, y / count, z / count] : [178, 640, 90];
+};
+const internal = { ...buildInternal(grid, labels, landmarks, ribLines, { caecum: gutMiddle(1), small: gutMiddle(3) }), ...limbRoutes, ...buildInteriors(grid, labels, landmarks, { heart: HEART, stomach: STOMACH, kidneyLimitX: MIDDLE_X }, [190, 392, 88], [176, 372, 84]) };
 log('internal');
 // Nothing simulated inside the body may reach far beyond the surface of the specimen, which would show through the skin. Vertices within half a millimetre are allowed, for openings at the surface.
 const nearBody = dilate(body, grid, 5);

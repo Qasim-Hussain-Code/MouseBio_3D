@@ -3,8 +3,9 @@
  *
  * The order of branching and the relations to muscles of the hind limb arteries follow the dissections of Kochi et al. (2013), in the
  * mouse, which also name the two large veins on the outer side of the thigh. The segments giving the sciatic nerve follow Rigaud et al.
- * (2008), in the mouse, and its division into three branches follows Shields et al. (2003), in the mouse. Other nerves and the fore limb follow
- * Greene (1935), which describes the rat. Radii and exact courses are estimates placed on the measured joints, and they are not measured.
+ * (2008), in the mouse, and its division into three branches follows Shields et al. (2003), in the mouse. The vessels of the fore limb and of the shank
+ * follow the plates of the mouse in Cook (1965), figures 97, 98, 100, 101 and 106 to 108. Radii and exact courses are estimates placed on the measured
+ * joints, and they are not measured.
  *
  * Each limb has its own frame, from the plane of its joints, because the limbs lay splayed in the scan: a point is given by how far along the
  * bone it lies, how far towards the middle of the body, and how far towards the front of the limb, in source voxels of 0.1 mm.
@@ -18,11 +19,12 @@ import type { Surface } from './surface-nets';
 export type LimbPart =
   | 'common-iliac-arteries' | 'internal-iliac-arteries' | 'external-iliac-arteries' | 'median-coccygeal-artery' | 'gluteal-arteries' | 'iliacofemoral-arteries'
   | 'pudendoepigastric-arteries' | 'femoral-arteries' | 'lateral-circumflex-femoral-arteries' | 'caudal-femoral-arteries' | 'deep-femoral-arteries' | 'obturator-arteries'
-  | 'saphenous-arteries' | 'popliteal-arteries' | 'tibial-arteries'
-  | 'common-iliac-veins' | 'femoral-veins' | 'saphenous-veins' | 'popliteal-veins' | 'lateral-saphenous-veins' | 'ischial-veins'
+  | 'saphenous-arteries' | 'popliteal-arteries' | 'posterior-tibial-arteries' | 'anterior-tibial-arteries' | 'sural-arteries'
+  | 'common-iliac-veins' | 'femoral-veins' | 'saphenous-veins' | 'popliteal-veins' | 'tibial-veins' | 'lateral-saphenous-veins' | 'ischial-veins'
   | 'lumbosacral-plexus' | 'sciatic-nerves' | 'tibial-nerves' | 'common-peroneal-nerves' | 'sural-nerves' | 'femoral-nerves' | 'saphenous-nerves' | 'obturator-nerves' | 'gluteal-nerves'
-  | 'subclavian-arteries' | 'axillary-arteries' | 'brachial-arteries' | 'forearm-arteries'
-  | 'subclavian-veins' | 'brachial-veins' | 'cephalic-veins'
+  | 'subclavian-arteries' | 'cervical-trunks' | 'costocervical-trunks' | 'thoraco-acromial-arteries' | 'axillary-arteries' | 'lateral-thoracic-arteries' | 'subscapular-arteries'
+  | 'profunda-brachii-arteries' | 'brachial-arteries' | 'ulnar-collateral-arteries' | 'radial-arteries' | 'median-arteries'
+  | 'subclavian-veins' | 'axillary-veins' | 'lateral-thoracic-veins' | 'basilic-veins' | 'median-veins' | 'cephalic-veins'
   | 'brachial-plexus' | 'musculocutaneous-nerves' | 'axillary-nerves' | 'radial-nerves' | 'median-nerves' | 'ulnar-nerves';
 
 type Side = 'R' | 'L';
@@ -172,13 +174,20 @@ export function buildLimbRoutes(lm: Landmarks): Record<LimbPart, Surface> {
       route([limb.upper(0.9, -14, -14), limb.upper(0.86, -18, 2), limb.upper(0.78, -14, 13)], 0.45, 0.28, 5),
     ];
   });
-  parts['tibial-arteries'] = both((side, sign) => {
+  // In the shank, after Cook figure 101: anterior and posterior tibial arteries from the popliteal artery, with an external and a superficial sural artery to the calf.
+  parts['posterior-tibial-arteries'] = both((side, sign) => {
     const { limb } = hipParts(side, sign);
-    const fossa = limb.lower(0.02, 0, -9);
+    return [route([limb.lower(0.02, 0, -9), limb.lower(0.3, 1, -6), limb.lower(0.72, 3, -4), between(limb.end, limb.beyond, 0.1)], 0.7, 0.35, 5)];
+  });
+  parts['anterior-tibial-arteries'] = both((side, sign) => {
+    const { limb } = hipParts(side, sign);
+    return [route([limb.lower(0.02, 0, -9), limb.lower(0.12, -3, 2), limb.lower(0.42, -3, 6), limb.lower(0.92, 0, 5), between(limb.end, limb.beyond, 0.28)], 0.6, 0.3, 5)];
+  });
+  parts['sural-arteries'] = both((side, sign) => {
+    const { limb } = hipParts(side, sign);
     return [
-      // Deep on the back of the shank, and through to the front between the tibia and the fibula.
-      route([fossa, limb.lower(0.3, 1, -6), limb.lower(0.72, 3, -4), between(limb.end, limb.beyond, 0.1)], 0.7, 0.35, 5),
-      route([fossa, limb.lower(0.12, -3, 2), limb.lower(0.42, -3, 6), limb.lower(0.92, 0, 5), between(limb.end, limb.beyond, 0.28)], 0.6, 0.3, 5),
+      route([limb.lower(0.02, 0, -9), limb.lower(0.08, -8, -12), limb.lower(0.3, -12, -11)], 0.5, 0.25, 5),
+      route([limb.lower(0.02, 0, -9), limb.lower(0.1, 3, -13), limb.lower(0.34, 4, -13)], 0.45, 0.22, 5),
     ];
   });
 
@@ -195,7 +204,14 @@ export function buildLimbRoutes(lm: Landmarks): Record<LimbPart, Surface> {
   });
   parts['popliteal-veins'] = both((side, sign) => {
     const { limb } = hipParts(side, sign);
-    return [route([limb.upper(0.74, 19, -2), limb.upper(0.84, 8, -11), limb.upper(0.96, 2, -14), limb.lower(0.02, 2, -12), limb.lower(0.3, 3, -9), limb.lower(0.72, 5, -6)], 1.2, 0.5, 5)];
+    return [route([limb.upper(0.74, 19, -2), limb.upper(0.84, 8, -11), limb.upper(0.96, 2, -14), limb.lower(0.02, 2, -12)], 1.2, 0.95, 5)];
+  });
+  parts['tibial-veins'] = both((side, sign) => {
+    const { limb } = hipParts(side, sign);
+    return [
+      route([limb.lower(0.02, 2, -12), limb.lower(0.3, 3, -9), limb.lower(0.72, 5, -6)], 0.9, 0.5, 5),
+      route([limb.lower(0.02, 2, -12), limb.lower(0.12, -1, 2), limb.lower(0.42, -1, 7), limb.lower(0.92, 2, 6)], 0.7, 0.35, 5),
+    ];
   });
   parts['lateral-saphenous-veins'] = both((side, sign) => {
     const { limb } = hipParts(side, sign);
@@ -257,7 +273,7 @@ export function buildLimbRoutes(lm: Landmarks): Record<LimbPart, Surface> {
     return [route([sciaticStart(side, sign), limb.upper(0.04, -12, -7), limb.upper(0.14, -15, -4)], 0.6, 0.35, 5), route([sciaticStart(side, sign), limb.upper(0.06, -12, -20), limb.upper(0.18, -16, -24)], 0.6, 0.35, 5)];
   });
 
-  // Fore limb, after Greene (1935). The left subclavian artery leaves the arch and the right comes from the innominate artery, as in the plates of Cook (1965).
+  // Vessels of the fore limb, with their names and order of branching from the plates of Cook (1965). The left subclavian artery leaves the arch and the right comes from the innominate artery. Figure 97 gives the branches of the subclavian and axillary arteries.
   const INNOMINATE: Vec3 = [176, 336, 74];
   const LEFT_SUBCLAVIAN: Vec3 = [203, 358, 84];
   const JUNCTION: Record<Side, Vec3> = { R: [146, 336, 74], L: [216, 336, 74] };
@@ -267,43 +283,89 @@ export function buildLimbRoutes(lm: Landmarks): Record<LimbPart, Surface> {
     const from = side === 'R' ? INNOMINATE : LEFT_SUBCLAVIAN;
     return [route([from, add(from, [sign * 22, -8, 6]), add(from, [sign * 40, -22, 16]), add(axilla(limb), [-sign * 10, 6, -6])], 1.9, 1.5, 6)];
   });
+  // Branches leave the subclavian artery together, after the common carotid artery on the right.
+  const subclavianBranches = (side: Side, sign: number) => add(side === 'R' ? INNOMINATE : LEFT_SUBCLAVIAN, [sign * 22, -8, 6]);
+  parts['cervical-trunks'] = both((side, sign) => {
+    const from = subclavianBranches(side, sign);
+    return [
+      route([from, add(from, [sign * 4, -22, 8]), add(from, [sign * 9, -46, 16])], 0.8, 0.4, 5),
+      // The superficial cervical artery.
+      route([add(from, [sign * 4, -22, 8]), add(from, [sign * 15, -34, 2]), add(from, [sign * 24, -44, 0])], 0.5, 0.25, 5),
+    ];
+  });
+  parts['costocervical-trunks'] = both((side, sign) => {
+    const from = subclavianBranches(side, sign);
+    return [route([from, add(from, [sign * 3, 6, 14]), add(from, [sign * 2, 14, 22])], 0.7, 0.4, 5)];
+  });
+  parts['thoraco-acromial-arteries'] = both((side, sign) => {
+    const from = subclavianBranches(side, sign);
+    return [route([from, add(from, [sign * 12, 8, -10]), add(from, [sign * 26, 12, -14])], 0.6, 0.3, 5)];
+  });
   parts['axillary-arteries'] = both((side, sign) => {
     const limb = foreFrame(side);
-    return [
-      route([add(axilla(limb), [-sign * 10, 6, -6]), axilla(limb), limb.upper(0.22, 14, -2)], 1.5, 1.25, 6),
-      // Branches towards the wall of the chest and round the top of the humerus.
-      route([axilla(limb), add(axilla(limb), [-sign * 8, 26, -8]), add(axilla(limb), [-sign * 6, 52, -6])], 0.7, 0.35, 5),
-      route([limb.upper(0.14, 14, -2), limb.upper(0.16, 2, 12), limb.upper(0.18, -11, 4)], 0.6, 0.35, 5),
-    ];
+    return [route([add(axilla(limb), [-sign * 10, 6, -6]), axilla(limb), limb.upper(0.22, 14, -2)], 1.5, 1.25, 6)];
+  });
+  // Figures 106 and 107.
+  parts['lateral-thoracic-arteries'] = both((side, sign) => {
+    const limb = foreFrame(side);
+    return [route([axilla(limb), add(axilla(limb), [-sign * 8, 26, -8]), add(axilla(limb), [-sign * 6, 52, -6])], 0.7, 0.35, 5)];
+  });
+  parts['subscapular-arteries'] = both((side, sign) => {
+    const limb = foreFrame(side);
+    return [route([limb.upper(0.08, 14, -3), add(axilla(limb), [0, 22, 14]), add(axilla(limb), [sign * 2, 42, 26])], 0.9, 0.4, 5)];
+  });
+  parts['profunda-brachii-arteries'] = both((side) => {
+    const limb = foreFrame(side);
+    return [route([limb.upper(0.18, 14, -2), limb.upper(0.26, 6, -10), limb.upper(0.46, -6, -11), limb.upper(0.7, -10, -6)], 0.8, 0.35, 5)];
   });
   parts['brachial-arteries'] = both((side) => {
     const limb = foreFrame(side);
     return [route([limb.upper(0.22, 14, -2), limb.upper(0.55, 12, 1), limb.upper(0.92, 10, 3), limb.lower(0.05, 7, 5)], 1.25, 0.9, 5)];
   });
-  parts['forearm-arteries'] = both((side) => {
+  parts['ulnar-collateral-arteries'] = both((side) => {
     const limb = foreFrame(side);
-    return [
-      route([limb.lower(0.05, 7, 5), limb.lower(0.4, 5, 2), limb.lower(0.85, 3, 2), between(limb.end, limb.beyond, 0.2)], 0.8, 0.4, 5),
-      route([limb.lower(0.05, 7, 5), limb.lower(0.3, -3, 4), limb.lower(0.86, -4, 2)], 0.55, 0.3, 5),
-    ];
+    return [route([limb.upper(0.5, 12, 1), limb.upper(0.62, 14, -6), limb.upper(0.82, 13, -9), limb.lower(0.06, 9, -8)], 0.6, 0.3, 5)];
+  });
+  // The radial artery crosses near the elbow to the cephalic vein, and runs beside it as the artery collateralis radialis of figure 108 to the back of the paw.
+  parts['radial-arteries'] = both((side) => {
+    const limb = foreFrame(side);
+    return [route([limb.upper(0.9, 10, 3), limb.upper(0.98, 0, 8), limb.lower(0.1, -6, 8), limb.lower(0.45, -7, 6), limb.lower(0.86, -6, 3), between(limb.end, limb.beyond, 0.16)], 0.5, 0.25, 5)];
+  });
+  parts['median-arteries'] = both((side) => {
+    const limb = foreFrame(side);
+    return [route([limb.lower(0.05, 7, 5), limb.lower(0.4, 5, 2), limb.lower(0.85, 3, 2), between(limb.end, limb.beyond, 0.2)], 0.8, 0.4, 5)];
   });
   parts['subclavian-veins'] = both((side, sign) => {
     const limb = foreFrame(side);
-    return [route([JUNCTION[side], add(JUNCTION[side], [sign * 18, -18, 2]), add(axilla(limb), [-sign * 9, 9, -10]), limb.upper(0.22, 16, -5)], 2.2, 1.7, 6)];
+    return [route([JUNCTION[side], add(JUNCTION[side], [sign * 18, -18, 2]), add(axilla(limb), [-sign * 9, 9, -10])], 2.2, 1.9, 6)];
   });
-  parts['brachial-veins'] = both((side) => {
+  // The veins of figures 98, 100, 106 and 107.
+  parts['axillary-veins'] = both((side, sign) => {
     const limb = foreFrame(side);
-    return [route([limb.upper(0.22, 16, -5), limb.upper(0.55, 14, -2), limb.upper(0.92, 12, 0), limb.lower(0.3, 7, -1), limb.lower(0.85, 5, -1)], 1.4, 0.45, 5)];
+    return [route([add(axilla(limb), [-sign * 9, 9, -10]), limb.upper(0.06, 16, -6), limb.upper(0.22, 16, -5)], 1.9, 1.5, 6)];
   });
+  parts['lateral-thoracic-veins'] = both((side, sign) => {
+    const limb = foreFrame(side);
+    return [route([add(axilla(limb), [-sign * 9, 9, -10]), add(axilla(limb), [-sign * 10, 28, -11]), add(axilla(limb), [-sign * 8, 54, -9])], 0.9, 0.4, 5)];
+  });
+  parts['basilic-veins'] = both((side) => {
+    const limb = foreFrame(side);
+    return [route([limb.upper(0.22, 16, -5), limb.upper(0.55, 14, -2), limb.upper(0.92, 12, 0), limb.lower(0.06, 8, 2)], 1.4, 0.7, 5)];
+  });
+  parts['median-veins'] = both((side) => {
+    const limb = foreFrame(side);
+    return [route([limb.lower(0.06, 8, 2), limb.lower(0.4, 6, 0), limb.lower(0.85, 5, -1)], 0.7, 0.4, 5)];
+  });
+  // Close under the skin of the forearm, over the shoulder, and into the external jugular vein in the neck, as in figure 100.
   parts['cephalic-veins'] = both((side) => {
     const limb = foreFrame(side);
-    // Close under the skin on the outer side of the limb.
-    return [route([limb.lower(0.85, -7, 4), limb.lower(0.3, -8, 7), limb.upper(0.9, -7, 11), limb.upper(0.45, -7, 12), limb.upper(0.1, 2, 15), limb.upper(0.04, 13, 2)], 0.45, 0.95, 5)];
+    return [route([limb.lower(0.85, -7, 4), limb.lower(0.3, -8, 7), limb.upper(0.9, -7, 11), limb.upper(0.45, -7, 12), limb.upper(0.1, 2, 15), side === 'R' ? [137, 318, 65] : [225, 318, 65]], 0.45, 0.95, 5)];
   });
   const plexusAt = (side: Side, sign: number) => add(axilla(foreFrame(side)), [-sign * 12, -2, 6]);
   parts['brachial-plexus'] = both((side, sign) => {
     const gather = plexusAt(side, sign);
-    return [318, 328, 338, 348, 358].map((y) => route([[s(y).x, y, s(y).canalZ], [s(y).x + sign * 22, y + 4, s(y).canalZ - 10], gather], 0.9, 1, 5));
+    // The fifth cervical to the first thoracic nerves, as Zhong et al. (2022) find them in the mouse, on the levels of the spinal nerves.
+    return [310, 319, 330, 340, 352].map((y) => route([[s(y).x, y, s(y).canalZ], [s(y).x + sign * 22, y + 4, s(y).canalZ - 10], gather], 0.9, 1, 5));
   });
   parts['musculocutaneous-nerves'] = both((side, sign) => {
     const limb = foreFrame(side);

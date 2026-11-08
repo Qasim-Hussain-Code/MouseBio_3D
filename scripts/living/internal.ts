@@ -68,21 +68,23 @@ function limbRoute(joints: readonly Vec3[], offset: Vec3, r0: number, r1: number
 
 export type InternalPart =
   | 'aorta' | 'innominate-artery' | 'common-carotid-arteries' | 'internal-carotid-arteries' | 'external-carotid-arteries' | 'coronary-arteries'
-  | 'coeliac-arteries' | 'superior-mesenteric-artery' | 'renal-artery-stems' | 'testicular-arteries' | 'inferior-mesenteric-artery'
-  | 'caudal-vena-cava' | 'superior-venae-cavae' | 'external-jugular-veins' | 'internal-jugular-veins' | 'azygos-vein' | 'portal-vein' | 'renal-vein-stems' | 'hepatic-vein-stems'
-  | 'spinal-cord' | 'cervical-nerves' | 'thoracic-nerves' | 'lumbar-nerves' | 'sacral-nerves' | 'vagus-nerves' | 'phrenic-nerves'
+  | 'coeliac-arteries' | 'common-hepatic-artery' | 'gastric-arteries' | 'lienal-arteries' | 'lieno-pancreatic-artery' | 'superior-pancreaticoduodenal-artery'
+  | 'superior-mesenteric-artery' | 'jejunal-ileal-arteries' | 'inferior-pancreaticoduodenal-artery' | 'ileocolic-artery' | 'renal-artery-stems' | 'suprarenal-arteries' | 'testicular-arteries' | 'inferior-mesenteric-artery' | 'inferior-vesical-arteries' | 'superficial-temporal-arteries'
+  | 'caudal-vena-cava' | 'superior-venae-cavae' | 'external-jugular-veins' | 'anterior-jugular-veins' | 'posterior-facial-veins' | 'superficial-temporal-veins' | 'anterior-facial-veins' | 'internal-jugular-veins' | 'azygos-vein'
+  | 'portal-vein' | 'superior-mesenteric-vein' | 'jejunal-ileal-veins' | 'ileocolic-vein' | 'inferior-mesenteric-vein' | 'lienal-vein' | 'gastric-vein' | 'pancreaticoduodenal-veins' | 'renal-vein-stems' | 'suprarenal-veins' | 'inferior-phrenic-veins' | 'testicular-veins' | 'hypogastric-veins' | 'hepatic-vein-stems'
+  | 'spinal-cord' | 'cervical-nerves' | 'thoracic-nerves' | 'lumbar-nerves' | 'sacral-nerves' | 'vagus-nerves' | 'recurrent-laryngeal-nerves' | 'phrenic-nerves'
   | 'optic-nerves' | 'trigeminal-roots' | 'ophthalmic-nerves' | 'maxillary-nerves' | 'mandibular-nerves' | 'facial-nerves'
   | 'olfactory-nerves' | 'oculomotor-nerves' | 'trochlear-nerves' | 'abducens-nerves' | 'vestibulocochlear-nerves' | 'glossopharyngeal-nerves' | 'accessory-nerves' | 'hypoglossal-nerves'
   | 'cervical-lymph-nodes' | 'axillary-lymph-nodes' | 'brachial-lymph-nodes' | 'inguinal-lymph-nodes' | 'sciatic-lymph-nodes' | 'mediastinal-lymph-nodes' | 'pyloric-lymph-nodes' | 'renal-lymph-nodes' | 'lumbar-lymph-nodes' | 'mesenteric-lymph-node' | 'caudal-lymph-node'
   | 'trachea' | 'diaphragm' | 'oesophagus' | 'tongue' | 'submandibular-glands' | 'sublingual-glands' | 'parotid-glands' | 'nasal-cavities' | 'turbinals' | 'soft-palate' | 'pharynx' | 'gall-bladder'
   | 'ureters' | 'male-ducts' | 'seminal-vesicles' | 'prostate' | 'preputial-glands' | 'penis'
   | 'thyroid' | 'thymus' | 'pituitary' | 'lymph-vessels' | 'cerebral-base'
-  | 'incisors' | 'molars' | 'root-ganglia' | 'sympathetic-trunks' | 'inner-ears'
+  | 'incisors' | 'molars' | 'root-ganglia' | 'sympathetic-trunks' | 'coeliac-ganglia' | 'inner-ears'
   | 'intervertebral-discs' | 'xiphoid-cartilage' | 'intercostal-arteries' | 'intercostal-veins'
   | 'middle-ears' | 'pineal' | 'parathyroids' | 'mammary-arteries' | 'mammary-veins'
   | 'larynx' | 'tracheal-rings' | 'bile-ducts' | 'pancreatic-ducts' | 'brown-fat' | 'accessory-glands' | 'brain-ventricles';
 
-export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, ribLines: RibLines): Record<InternalPart, Surface> {
+export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, ribLines: RibLines, gut: { readonly caecum: Vec3; readonly small: Vec3 }): Record<InternalPart, Surface> {
   const s = (y: number) => lm.spineAt(y);
   // Superficial structures are held under the surface of the specimen: a point moves towards a place inside the body until it lies the given depth within the labels.
   const inBody = (p: Vec3) => {
@@ -99,6 +101,18 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, rib
   };
   const aortaAt = (y: number): Vec3 => [s(y).x + 7, y, s(y).ventralZ - 8];
   const cavaAt = (y: number): Vec3 => [s(y).x - 9, y, s(y).ventralZ - 9];
+  // Where a line from inside an organ of the source labels leaves it, so that a vessel runs on the organ and not through it.
+  const onLabel = (label: number, from: Vec3, way: Vec3): Vec3 => {
+    const step = unit(way);
+    let last = from;
+    for (let t = 1; t < 200; t++) {
+      const q = add(from, scale(step, t));
+      const x = Math.round(q[0]), y = Math.round(q[1]), z = Math.round(q[2]);
+      if (x < 0 || y < 0 || z < 0 || x >= grid.nx || y >= grid.ny || z >= grid.nz) break;
+      if (labels[voxelIndex(grid, x, y, z)] === label) last = q;
+    }
+    return last;
+  };
   const kidneyR = lm.label(19, 'low'), kidneyL = lm.label(19, 'high');
   const testisR = lm.label(14, 'low'), testisL = lm.label(14, 'high');
   const bladder = lm.label(13), stomach = lm.label(15), spleen = lm.label(16);
@@ -127,15 +141,38 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, rib
     const middle: Vec3 = [178, 615, 90];
     return [middle, add(middle, [Math.sin(angle) * 42, 18 + Math.cos(angle) * 34, -12 + index * 2]), add(middle, [Math.sin(angle) * 82, 22 + Math.cos(angle) * 62, -26 + index * 3])];
   };
-  const coeliacArteries = mergeSurfaces([
-    route([coeliac, add(coeliac, [2, 8, -22]), [194, 515, 108]], 2.1, 1.5, 6),
-    route([[194, 515, 108], [185, 500, 98], [165, 500, 80]], 1.3, 0.8, 6),
-    route([[194, 515, 108], [222, 530, 118], lm.label(16).centroid], 1.3, 0.8, 6),
-    route([[194, 515, 108], [212, 520, 104], stomach.centroid], 1.0, 0.7, 6),
+  // The branches of the coeliac artery are those of Cook figures 79 and 80. Their names and order follow the plates, and their courses are estimates placed on the organs.
+  const coeliacDivision: Vec3 = [194, 515, 108];
+  const coeliacArteries = route([coeliac, add(coeliac, [2, 8, -22]), coeliacDivision], 2.1, 1.5, 6);
+  const commonHepaticArtery = route([coeliacDivision, [185, 500, 98], [165, 500, 80]], 1.3, 0.8, 6);
+  const superiorPancreaticoduodenal = route([[176, 500, 90], [160, 515, 88], [150, 540, 96], [146, 560, 100]], 0.8, 0.4, 5);
+  // A gastric artery branching over the near face of the stomach.
+  const stomachFace = (x: number, y: number) => onLabel(15, stomach.centroid, [x, y, -1]);
+  const gastricArteries = mergeSurfaces([
+    route([coeliacDivision, [212, 520, 104], stomachFace(-0.5, -0.2)], 1, 0.7, 6),
+    route([stomachFace(-0.5, -0.2), stomachFace(-0.1, -0.3), stomachFace(0.4, -0.4)], 0.6, 0.3, 5),
+    route([stomachFace(-0.5, -0.2), stomachFace(-0.1, 0.1), stomachFace(0.4, 0.2)], 0.6, 0.3, 5),
+    route([stomachFace(-0.5, -0.2), stomachFace(-0.2, 0.5), stomachFace(0.2, 0.7)], 0.5, 0.25, 5),
   ]);
-  const superiorMesenteric = mergeSurfaces([
-    route([sma, add(sma, [-2, 22, -28]), [178, 615, 90]], 2.3, 1.7, 6),
-    ...[0, 1, 2, 3, 4, 5].map((index) => route(fan(index), 1.1, 0.4, 5)),
+  const spleenHilum = onLabel(16, spleen.centroid, [-1, 0, -0.3]);
+  const lienalArteries = mergeSurfaces([
+    route([coeliacDivision, [222, 530, 118], spleenHilum], 1.3, 0.8, 6),
+    // The lieno-gastric branch, to the far side of the stomach.
+    route([[222, 530, 118], [228, 520, 112], stomachFace(0.8, 0.1)], 0.6, 0.3, 5),
+  ]);
+  const pancreas = lm.label(17);
+  const lienoPancreatic = route([coeliacDivision, [204, 535, 116], add(pancreas.centroid, [8, -6, 4]), add(spleenHilum, [-6, 22, 4])], 0.9, 0.45, 5);
+  const superiorMesenteric = route([sma, add(sma, [-2, 22, -28]), [178, 615, 90]], 2.3, 1.7, 6);
+  const jejunalIleal = mergeSurfaces([0, 1, 2, 3, 4, 5].map((index) => route(fan(index), 1.1, 0.4, 5)));
+  const inferiorPancreaticoduodenal = route([add(sma, [-2, 22, -28]), [156, 575, 96], [144, 590, 100]], 0.8, 0.4, 5);
+  const ileocolic = route([[178, 615, 90], add([178, 615, 90], scale(unit(add(gut.caecum, [-178, -615, -90])), 40)), gut.caecum], 1, 0.5, 5);
+  // After Cook figures 110 and 112: a superior suprarenal artery from the aorta, and an inferior from the renal artery.
+  const adrenalR = lm.label(20, 'low'), adrenalL = lm.label(20, 'high');
+  const suprarenalArteries = mergeSurfaces([
+    route([aortaAt(560), add(adrenalL.centroid, [-5, 0, 0])], 0.5, 0.3, 5),
+    route([add(kidneyL.centroid, [-24, -6, -3]), add(adrenalL.centroid, [-3, 4, 0])], 0.45, 0.28, 5),
+    route([aortaAt(555), add(adrenalR.centroid, [5, 0, 0])], 0.5, 0.3, 5),
+    route([add(kidneyR.centroid, [24, -6, -3]), add(adrenalR.centroid, [3, 4, 0])], 0.45, 0.28, 5),
   ]);
   const renalArteryStems = mergeSurfaces([
     route([aortaAt(585), [150, 590, s(590).ventralZ - 12], add(kidneyR.centroid, [16, 0, -3])], 1.9, 1.3, 6),
@@ -159,11 +196,40 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, rib
     route([junctionL, under([234, 300, 56], [212, 300, 66], 3), under([248, 250, 44], [212, 250, 66], 3), under([244, 215, 40], [212, 215, 58], 3)], 2.6, 1.3, 6),
   ]);
   const internalJugulars = mergeSurfaces([route([junctionR, [160, 300, 66], [157, 262, 78]], 1.5, 1.1, 6), route([junctionL, [202, 300, 66], [205, 262, 78]], 1.5, 1.1, 6)]);
-  const portalVein = mergeSurfaces([
-    route([[178, 625, 88], [180, 590, 96], [186, 545, 104], [176, 510, 104]], 2.6, 2.8),
-    ...[0, 1, 2, 3].map((index) => route(fan(index * 1.6).map((p) => add(p, [3, 4, -2])), 1.2, 0.5, 5)),
-    route([[186, 545, 104], [224, 555, 122], spleen.centroid], 1.3, 0.9, 6),
+  // The hepatic portal system of Cook figures 81 to 83.
+  const portalVein = route([[180, 590, 96], [186, 545, 104], [176, 510, 104]], 2.7, 2.8);
+  const superiorMesentericVein = route([[178, 625, 88], [180, 590, 96]], 2.4, 2.6);
+  const jejunalIlealVeins = mergeSurfaces([0, 1, 2, 3].map((index) => route(fan(index * 1.6).map((p) => add(p, [3, 4, -2])), 1.2, 0.5, 5)));
+  const ileocolicVein = route([[179, 618, 88], add([180, 618, 88], scale(unit(add(gut.caecum, [-178, -615, -90])), 40)), add(gut.caecum, [2, -2, -1])], 1.1, 0.55, 5);
+  const inferiorMesentericVein = route([[180, 592, 94], [184, 640, 92], [184, 710, 92], [183, 770, 94]], 1.2, 0.6, 5);
+  const lienalVein = route([[186, 545, 104], [224, 555, 122], add(spleenHilum, [-1, 2, -1])], 1.4, 0.9, 6);
+  const gastricVein = mergeSurfaces([
+    route([[186, 540, 104], [206, 526, 104], stomachFace(-0.4, -0.05)], 0.9, 0.6, 5),
+    route([stomachFace(-0.4, -0.05), stomachFace(0, 0.25), stomachFace(0.45, 0.35)], 0.55, 0.28, 5),
   ]);
+  const pancreaticoduodenalVeins = mergeSurfaces([
+    route([[180, 520, 104], [162, 520, 94], [152, 545, 98]], 0.7, 0.35, 5),
+    route([[181, 585, 97], [158, 580, 98], [146, 593, 102]], 0.7, 0.35, 5),
+  ]);
+  const suprarenalVeins = mergeSurfaces([
+    route([add(adrenalL.centroid, [-3, 5, 0]), add(kidneyL.centroid, [-26, -4, -5])], 0.45, 0.35, 5),
+    route([add(adrenalR.centroid, [3, 5, 0]), cavaAt(575)], 0.45, 0.4, 5),
+  ]);
+  // The inferior phrenic vein of Cook figure 112 joins the left suprarenal vein, and comes down from the diaphragm.
+  const inferiorPhrenicVeins = route([[M + 14, 470, s(470).ventralZ - 24], [M + 16, 510, s(510).ventralZ - 14], add(adrenalL.centroid, [-3, -2, 0])], 0.4, 0.5, 5);
+  // The spermatic veins of Cook figures 115 and 116, beside their arteries.
+  const testicularVeins = mergeSurfaces([
+    route([cavaAt(660), [165, 702, 88], [147, 760, 60], add(testisR.centroid, [2, -3, 2])], 0.7, 0.8, 5),
+    route([add(kidneyL.centroid, [-22, 4, -6]), [197, 660, 92], [200, 695, 90], [214, 730, 64], add(testisL.centroid, [-2, -3, 2])], 0.7, 0.8, 5),
+  ]);
+  // Where the iliac vessels divide on each side, as in the routes of the limbs. The vessels of the pelvis are those of Cook figures 115 and 116.
+  const pelvis = (sign: number): Vec3 => [aortaAt(735)[0] + sign * 26, 762, aortaAt(735)[2] - 4];
+  const hypogastricVeins = mergeSurfaces([-1, 1].flatMap((sign) => [
+    route([add(pelvis(sign), [sign * 3, 2, -6]), add(pelvis(sign), [-sign * 6, 24, 2]), add(pelvis(sign), [-sign * 10, 44, 6])], 1.3, 0.6, 5),
+    // The vesical veins, to the side of the bladder.
+    route([add(pelvis(sign), [-sign * 6, 24, 2]), onLabel(13, bladder.centroid, [sign, -0.3, 0.2])], 0.5, 0.3, 5),
+  ]));
+  const inferiorVesicalArteries = mergeSurfaces([-1, 1].map((sign) => route([add(pelvis(sign), [-sign * 3, 16, 10]), add(pelvis(sign), [-sign * 9, 26, 5]), onLabel(13, bladder.centroid, [sign, -0.1, 0.4])], 0.5, 0.25, 5)));
   const renalVeinStems = mergeSurfaces([
     route([add(kidneyR.centroid, [16, 3, -4]), [150, 598, s(590).ventralZ - 14], cavaAt(592)], 1.6, 2, 6),
     route([add(kidneyL.centroid, [-16, 3, -4]), [205, 606, s(600).ventralZ - 16], cavaAt(598)], 1.6, 2, 6),
@@ -180,10 +246,17 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, rib
     cordRadii.push((5 + 2.6 * cervical + 2.2 * lumbar) * taper);
   }
   const spinalCord = tube(cordPoints, cordRadii, 10);
-  // Seven cervical, thirteen thoracic, six lumbar and four sacral levels, from the vertebral formula in Hummel et al.
-  const levels: { y: number; kind: 'c' | 't' | 'l' | 's' }[] = [];
-  const spread = (from: number, to: number, count: number, kind: 'c' | 't' | 'l' | 's') => { for (let i = 0; i < count; i++) levels.push({ y: from + (to - from) * (i + 0.5) / count, kind }); };
-  spread(295, 345, 8, 'c'); spread(345, 590, 13, 't'); spread(590, 720, 6, 'l'); spread(720, 800, 4, 's');
+  // Eight cervical, thirteen thoracic, six lumbar and four sacral pairs, as Sleigh et al. (2020) count them in the mouse, with each ganglion level with a disc. The first cervical pair leaves above the atlas, and the others at the lower end of the vertebra before them, on the vertebrae measured in the CT.
+  const kindOf = (id: string): 'c' | 't' | 'l' | 's' | null => id.startsWith('ca') ? null : id[0] === 'c' ? 'c' : id[0] === 't' ? 't' : id[0] === 'l' ? 'l' : 's';
+  const levels: { y: number; kind: 'c' | 't' | 'l' | 's'; id: string }[] = [
+    { y: VERTEBRAE[0].from, kind: 'c', id: 'c1' },
+    ...VERTEBRAE.flatMap((vertebra, index) => {
+      const kind = kindOf(vertebra.id);
+      if (!kind) return [];
+      const name = kind === 'c' ? `c${index + 2}` : vertebra.id;
+      return [{ y: vertebra.to, kind, id: name }];
+    }),
+  ];
   const nerves: Record<'c' | 't' | 'l' | 's', Surface[]> = { c: [], t: [], l: [], s: [] };
   for (const level of levels) for (const side of [-1, 1] as const) {
     const sample = s(level.y);
@@ -196,10 +269,64 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, rib
     const x = side === 'R' ? 160 : 202, sign = side === 'R' ? -1 : 1;
     const main = route([[M + sign * 16, 262, 108], [x, 262, 80], [x + sign * -2, 300, 72], [x + sign * -6, 345, 74], [M + sign * 10, 400, 100], [M + sign * 8, 460, 128], [200 + sign * 6, 505, 132]], 0.8, 0.5, 5);
     const phrenic = route([[s(325).x + sign * 20, 325, 96], [x + sign * 6, 345, 78], [M + sign * 42, 400, 60], [M + sign * 44, 440, 70]], 0.5, 0.35, 5);
-    return { main, phrenic };
+    // Back under the arch of the aorta on the left, as in Cook figure 91, and under the subclavian artery on the right, then forward beside the trachea to the larynx. The course on the right is an estimate.
+    const laryngeal = side === 'L'
+      ? route([[x + 4, 345, 74], [198, 372, 92], [186, 362, 92], [183, 320, 78], [183, 270, 72]], 0.35, 0.28, 5)
+      : route([[x + 2, 322, 72], [150, 334, 80], [170, 322, 80], [175, 290, 74], [177, 262, 72]], 0.35, 0.28, 5);
+    return { main, phrenic, laryngeal };
   };
   const eyes = [lm.label(3, 'low'), lm.label(3, 'high')];
   const chiasm: Vec3 = [189, 198, 92];
+  // Points of the face are read off Cook figure 85 by where they lie between the eye and the end of the external jugular vein, and held just under the skin.
+  const JUGULAR_END: Record<'R' | 'L', Vec3> = { R: under([118, 215, 40], [150, 215, 58], 3), L: under([244, 215, 40], [212, 215, 58], 3) };
+  const faceAt = (side: 'R' | 'L', px: number, py: number): Vec3 => {
+    const eye = eyes[side === 'R' ? 0 : 1].centroid, jugular = JUGULAR_END[side], sign = side === 'R' ? -1 : 1;
+    const y = eye[1] + (px - 600) * (jugular[1] - eye[1]) / (305 - 600), z = eye[2] + (py - 180) * (jugular[2] - eye[2]) / (305 - 180);
+    // Out from inside the head to where it ends. Coming in from outside would first meet the fore limb, which lies beside the head in the source images.
+    for (let k = 0; k <= 12; k++) {
+      const held = z + (eye[2] - z) * k / 12;
+      let last = -1, gap = 0;
+      for (let far = 16; far <= 84; far += 0.5) {
+        if (inBody([189 + sign * far, y, held])) { last = far; gap = 0; }
+        else if (last >= 0 && ++gap >= 8) break;
+      }
+      if (last >= 0) return [189 + sign * Math.max(16, last - 2), y, held];
+    }
+    return [189 + sign * 30, y, eye[2]];
+  };
+  // A vein of the face stays under the skin all along, so its course is found every few pixels of the figure and then smoothed. Between far apart points it would cut across the hollows of the head.
+  const alongFace = (side: 'R' | 'L', points: readonly (readonly [number, number])[]): Vec3[] => {
+    const held: Vec3[] = [];
+    points.forEach(([px, py], index) => {
+      if (index === 0) { held.push(faceAt(side, px, py)); return; }
+      const [qx, qy] = points[index - 1], count = Math.max(1, Math.ceil(Math.hypot(px - qx, py - qy) / 12));
+      for (let k = 1; k <= count; k++) held.push(faceAt(side, qx + (px - qx) * k / count, qy + (py - qy) * k / count));
+    });
+    return held.map((point, i) => i === 0 || i === held.length - 1 ? point : scale(add(add(held[i - 1], held[i + 1]), scale(point, 2)), 0.25));
+  };
+  const onFace = (side: 'R' | 'L', points: readonly (readonly [number, number])[], r0: number, r1: number) => route(alongFace(side, points), r0, r1, 5);
+  const posteriorFacialVeins = mergeSurfaces((['R', 'L'] as const).map((side) => route([JUGULAR_END[side], ...alongFace(side, [[340, 265], [370, 235]])], 1.8, 1.4, 6)));
+  const superficialTemporalVeins = mergeSurfaces((['R', 'L'] as const).flatMap((side) => [
+    onFace(side, [[370, 235], [420, 228], [470, 218]], 1.3, 1),
+    // Its branches: anterior auricular, masseteric, middle temporal, inferior palpebral and transverse facial.
+    onFace(side, [[370, 235], [335, 222]], 0.5, 0.3),
+    onFace(side, [[345, 280], [385, 296]], 0.45, 0.25),
+    onFace(side, [[470, 218], [520, 178], [595, 150]], 0.8, 0.5),
+    onFace(side, [[470, 218], [560, 222], [618, 216]], 0.55, 0.3),
+    onFace(side, [[472, 225], [560, 236], [632, 262]], 0.6, 0.45),
+  ]));
+  const anteriorFacialVeins = mergeSurfaces((['R', 'L'] as const).flatMap((side) => [
+    route([JUGULAR_END[side], ...alongFace(side, [[405, 350], [500, 345], [560, 322], [632, 262]])], 1.5, 0.8, 6),
+    // The cutaneous and supraorbital veins.
+    onFace(side, [[555, 325], [585, 365]], 0.5, 0.3),
+    onFace(side, [[632, 262], [690, 195], [675, 180]], 0.6, 0.4),
+  ]));
+  const superficialTemporalArteries = mergeSurfaces((['R', 'L'] as const).map((side) => route([side === 'R' ? [132, 205, 52] : [238, 205, 52], ...alongFace(side, [[372, 242], [430, 236], [480, 226], [560, 242]])], 0.7, 0.35, 5)));
+  // The anterior jugular veins of Cook figures 98 and 100, from the external jugular veins forward under the skin of the throat.
+  const anteriorJugularVeins = mergeSurfaces([-1, 1].map((sign) => {
+    const start: Vec3 = [189 + sign * 44, 320, 62];
+    return route([start, under([189 + sign * 24, 290, 10], [189 + sign * 24, 290, 80], 3), under([189 + sign * 17, 262, 10], [189 + sign * 17, 262, 80], 3), under([189 + sign * 14, 238, 10], [189 + sign * 14, 238, 80], 3)], 0.9, 0.5, 5);
+  }));
   const opticNerves = mergeSurfaces([route([eyes[0].centroid, [172, 175, 96], chiasm], 0.9, 0.9, 6), route([eyes[1].centroid, [206, 175, 96], chiasm], 0.9, 0.9, 6), route([chiasm, [189, 215, 95]], 1, 0.9, 6)]);
   const HEAD = 189;
   const eachSide = (make: (sign: number) => Surface) => mergeSurfaces([-1, 1].map(make));
@@ -361,16 +488,31 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, rib
     blob([SKULL + sign * 18, y, 56], [wide, long, 4.4], 8, 10), blob([SKULL + sign * 18, y, 43], [wide, long, 4.4], 8, 10),
   ])));
   // A ganglion on each dorsal root, at the levels used for the spinal nerves.
+  // Sleigh et al. (2020) find the lumbar ganglia growing from the first to the fourth, which is the largest. How much is an estimate.
+  const GANGLION_SIZE: Readonly<Record<string, number>> = { l1: 0.85, l2: 0.95, l3: 1.1, l4: 1.3, l5: 1.1, l6: 0.95 };
   const ganglia = mergeSurfaces(levels.flatMap((level) => [-1, 1].map((side) => {
-    const sample = s(level.y);
-    return blob([sample.x + side * 12, level.y + 2, sample.canalZ - 4], [2.2, 2.6, 2.2], 6, 8);
+    const sample = s(level.y), size = GANGLION_SIZE[level.id] ?? 1;
+    return blob([sample.x + side * 12, level.y, sample.canalZ - 4], [2.2 * size, 2.6 * size, 2.2 * size], 6, 8);
   })));
   // Beaded chains beside the column, under the vertebral bodies.
   const sympathetic = mergeSurfaces([-1, 1].flatMap((side) => {
-    const line = [300, 380, 460, 540, 620, 700, 780].map((y): Vec3 => [s(y).x + side * 11, y, s(y).ventralZ - 3]);
-    const beads = levels.map((level): Surface => blob([s(level.y).x + side * 11, level.y, s(level.y).ventralZ - 3], [1.1, 1.5, 1.1], 5, 6));
-    return [route(line, 0.4, 0.4, 4), ...beads];
+    const superior: Vec3 = [189 + side * 26, 258, 84];
+    const line: Vec3[] = [superior, ...[300, 340, 380, 460, 540, 620, 700, 780].map((y): Vec3 => [s(y).x + side * 11, y, s(y).ventralZ - 3])];
+    // A ganglion at each level from the thorax back. The neck has only the superior cervical ganglion, at the carotid bifurcation as Ning et al. (2022) find it, and the stellate ganglion, between the seventh cervical and first thoracic vertebrae as Duan et al. (2024) place it.
+    const beads = levels.filter((level) => level.kind !== 'c' && level.id !== 't1').map((level): Surface => blob([s(level.y).x + side * 11, level.y, s(level.y).ventralZ - 3], [1.1, 1.5, 1.1], 5, 6));
+    return [route(line, 0.4, 0.4, 4), ...beads, blob(superior, [1.5, 3.4, 1.5], 6, 8), blob([s(340).x + side * 11, 340, s(340).ventralZ - 3], [2.2, 2.8, 1.6], 6, 8)];
   }));
+  // Attached to the coeliac and superior mesenteric arteries, with the splanchnic ganglia medial to the kidneys, as Trevizan-Bau et al. (2024) describe. Their sizes are estimates.
+  const coeliacGanglia = mergeSurfaces([
+    blob(add(coeliac, [-4, 6, -16]), [3.2, 2.4, 1.8], 6, 8),
+    blob(add(coeliac, [8, 6, -16]), [3.2, 2.4, 1.8], 6, 8),
+    blob(add(sma, [-1, 8, -12]), [2.8, 2.2, 1.6], 6, 8),
+    blob(add(kidneyL.centroid, [-26, -22, -2]), [1.8, 2.6, 1.6], 6, 8),
+    blob(add(kidneyR.centroid, [26, -22, -2]), [1.8, 2.6, 1.6], 6, 8),
+    // The splanchnic nerves, from the sympathetic trunk through the diaphragm.
+    route([[s(480).x + 11, 480, s(480).ventralZ - 3], [s(520).x + 16, 520, s(520).ventralZ - 8], add(kidneyL.centroid, [-26, -22, -2]), add(coeliac, [8, 6, -16])], 0.4, 0.4, 4),
+    route([[s(480).x - 11, 480, s(480).ventralZ - 3], [s(520).x - 16, 520, s(520).ventralZ - 8], add(kidneyR.centroid, [26, -22, -2]), add(coeliac, [-4, 6, -16])], 0.4, 0.4, 4),
+  ]);
   // Inside each tympanic bulla: an ear canal from the external auditory meatus seen in the CT, a tympanic membrane, and a chain of three ossicles to the cochlea. Their sizes are estimates.
   const middleEar = (sign: -1 | 1): Surface[] => {
     const HEAD = 189.5;
@@ -481,13 +623,17 @@ export function buildInternal(grid: Grid, labels: Uint8Array, lm: Landmarks, rib
     larynx, 'tracheal-rings': trachealRings, 'bile-ducts': bileDucts, 'pancreatic-ducts': pancreaticDucts, 'brown-fat': brownFat, 'accessory-glands': accessoryGlands, 'brain-ventricles': ventricles,     'intervertebral-discs': mergeSurfaces(discs),
     'xiphoid-cartilage': mergeSurfaces([blob([181, 512, 37], [14, 15, 1.6], 10, 16), route([[181, 498, 38], [181, 503, 37.5]], 2.4, 2.8, 8)]),
     'intercostal-arteries': intercostalArteries, 'intercostal-veins': intercostalVeins,
-    incisors, molars, 'root-ganglia': ganglia, 'sympathetic-trunks': sympathetic, 'inner-ears': mergeSurfaces([...innerEar(-1), ...innerEar(1)]),
+    incisors, molars, 'root-ganglia': ganglia, 'sympathetic-trunks': sympathetic, 'coeliac-ganglia': coeliacGanglia, 'inner-ears': mergeSurfaces([...innerEar(-1), ...innerEar(1)]),
     'lymph-vessels': lymphVessels, 'cerebral-base': cerebralBase,
     aorta, 'innominate-artery': innominateArtery, 'common-carotid-arteries': commonCarotids, 'internal-carotid-arteries': internalCarotids, 'external-carotid-arteries': externalCarotids, 'coronary-arteries': coronary,
-    'coeliac-arteries': coeliacArteries, 'superior-mesenteric-artery': superiorMesenteric, 'renal-artery-stems': renalArteryStems, 'testicular-arteries': testicularArteries, 'inferior-mesenteric-artery': inferiorMesenteric,
-    'caudal-vena-cava': caudalVenaCava, 'superior-venae-cavae': superiorVenaeCavae, 'external-jugular-veins': externalJugulars, 'internal-jugular-veins': internalJugulars, 'azygos-vein': azygos, 'portal-vein': portalVein, 'renal-vein-stems': renalVeinStems, 'hepatic-vein-stems': hepaticVeinStems,
+    'coeliac-arteries': coeliacArteries, 'common-hepatic-artery': commonHepaticArtery, 'gastric-arteries': gastricArteries, 'lienal-arteries': lienalArteries, 'lieno-pancreatic-artery': lienoPancreatic, 'superior-pancreaticoduodenal-artery': superiorPancreaticoduodenal,
+    'superior-mesenteric-artery': superiorMesenteric, 'jejunal-ileal-arteries': jejunalIleal, 'inferior-pancreaticoduodenal-artery': inferiorPancreaticoduodenal, 'ileocolic-artery': ileocolic, 'suprarenal-arteries': suprarenalArteries, 'inferior-vesical-arteries': inferiorVesicalArteries, 'superficial-temporal-arteries': superficialTemporalArteries,
+    'renal-artery-stems': renalArteryStems, 'testicular-arteries': testicularArteries, 'inferior-mesenteric-artery': inferiorMesenteric,
+    'caudal-vena-cava': caudalVenaCava, 'superior-venae-cavae': superiorVenaeCavae, 'external-jugular-veins': externalJugulars, 'internal-jugular-veins': internalJugulars, 'azygos-vein': azygos, 'anterior-jugular-veins': anteriorJugularVeins, 'posterior-facial-veins': posteriorFacialVeins, 'superficial-temporal-veins': superficialTemporalVeins, 'anterior-facial-veins': anteriorFacialVeins,
+    'portal-vein': portalVein, 'superior-mesenteric-vein': superiorMesentericVein, 'jejunal-ileal-veins': jejunalIlealVeins, 'ileocolic-vein': ileocolicVein, 'inferior-mesenteric-vein': inferiorMesentericVein, 'lienal-vein': lienalVein, 'gastric-vein': gastricVein, 'pancreaticoduodenal-veins': pancreaticoduodenalVeins, 'suprarenal-veins': suprarenalVeins, 'inferior-phrenic-veins': inferiorPhrenicVeins, 'testicular-veins': testicularVeins, 'hypogastric-veins': hypogastricVeins,
+    'renal-vein-stems': renalVeinStems, 'hepatic-vein-stems': hepaticVeinStems,
     'spinal-cord': spinalCord, 'cervical-nerves': mergeSurfaces(nerves.c), 'thoracic-nerves': mergeSurfaces(nerves.t), 'lumbar-nerves': mergeSurfaces(nerves.l), 'sacral-nerves': mergeSurfaces(nerves.s),
-    'vagus-nerves': mergeSurfaces([vagus('R').main, vagus('L').main]), 'phrenic-nerves': mergeSurfaces([vagus('R').phrenic, vagus('L').phrenic]),
+    'vagus-nerves': mergeSurfaces([vagus('R').main, vagus('L').main]), 'phrenic-nerves': mergeSurfaces([vagus('R').phrenic, vagus('L').phrenic]), 'recurrent-laryngeal-nerves': mergeSurfaces([vagus('R').laryngeal, vagus('L').laryngeal]),
     'optic-nerves': opticNerves, 'trigeminal-roots': trigeminalRoots, 'ophthalmic-nerves': ophthalmicNerves, 'maxillary-nerves': maxillaryNerves, 'mandibular-nerves': mandibularNerves, 'facial-nerves': facialNerves,
     'olfactory-nerves': olfactoryNerves, 'oculomotor-nerves': oculomotorNerves, 'trochlear-nerves': trochlearNerves, 'abducens-nerves': abducensNerves, 'vestibulocochlear-nerves': vestibulocochlearNerves, 'glossopharyngeal-nerves': glossopharyngealNerves, 'accessory-nerves': accessoryNerves, 'hypoglossal-nerves': hypoglossalNerves,
     trachea, diaphragm: buildDiaphragm(grid, labels), oesophagus, tongue, 'submandibular-glands': submandibular, 'sublingual-glands': sublingual, 'parotid-glands': parotid, 'nasal-cavities': nasalCavities, turbinals, 'soft-palate': softPalate, pharynx, 'gall-bladder': gallBladder,

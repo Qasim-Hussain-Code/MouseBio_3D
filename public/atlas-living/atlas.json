@@ -3904,7 +3904,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#d9bcb6",
-   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand, and the names are those of the Allen reference atlas of the mouse brain (Wang et al. 2020, doi:10.1016/j.cell.2020.04.007). Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
@@ -3938,7 +3938,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#d6b7b3",
-   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand, and the names are those of the Allen reference atlas of the mouse brain (Wang et al. 2020, doi:10.1016/j.cell.2020.04.007). Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
@@ -3973,7 +3973,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#d3b1ad",
-   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand, and the names are those of the Allen reference atlas of the mouse brain (Wang et al. 2020, doi:10.1016/j.cell.2020.04.007). Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
@@ -4007,7 +4007,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#dcc2bb",
-   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand, and the names are those of the Allen reference atlas of the mouse brain (Wang et al. 2020, doi:10.1016/j.cell.2020.04.007). Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
@@ -4041,7 +4041,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#d1aca7",
-   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand, and the names are those of the Allen reference atlas of the mouse brain (Wang et al. 2020, doi:10.1016/j.cell.2020.04.007). Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
@@ -4075,7 +4075,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#d5b5ae",
-   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand after Greene, which describes the rat. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Part of the source label \"rest of the brain\" of the Digimouse image. The source label \"rest of the brain\" holds all of these parts together; their boundaries are estimated from seeds placed by hand, and the names are those of the Allen reference atlas of the mouse brain (Wang et al. 2020, doi:10.1016/j.cell.2020.04.007). Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003",
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
@@ -6555,7 +6555,7 @@
    "sourceLabel": "none, traced from the source images",
    "evidence": "traced",
    "scale": "organ",
-   "color": "#ecdcae",
+   "color": "#f3ebd3",
    "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Tissue of low CT density or pale colour, such as the fat pads around the testes and under the skin. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
@@ -7188,7 +7188,7 @@
   },
   {
    "id": "living:coeliac-arteries",
-   "name": "Coeliac artery with hepatic, splenic and gastric branches",
+   "name": "Coeliac artery",
    "systems": [
     "cardiovascular",
     "arterial-venous"
@@ -7197,15 +7197,48 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#c8333a",
-   "description": "Simulated. The first of the abdominal branches in the order given by Hummel et al. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. The first of the abdominal branches in the order given by Hummel et al., dividing as in Cook figures 79 and 80. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
     "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
    ],
    "meshNode": "living:coeliac-arteries",
    "geometry": {
-    "vertices": 566,
-    "triangles": 1116,
+    "vertices": 128,
+    "triangles": 252,
+    "boundsMeters": [
+     [
+      0.018381347879767418,
+      0.051386408507823944,
+      0.01071626041084528
+     ],
+     [
+      0.019547544419765472,
+      0.05348934978246689,
+      0.016005616635084152
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:common-hepatic-artery",
+   "name": "Hepatic artery",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the coeliac artery to the liver, as in Cook figures 77, 79 and 80. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:common-hepatic-artery",
+   "geometry": {
+    "vertices": 104,
+    "triangles": 204,
     "boundsMeters": [
      [
       0.016450228169560432,
@@ -7213,16 +7246,16 @@
       0.007942594587802887
      ],
      [
-      0.026516275480389595,
-      0.05658615753054619,
-      0.016005616635084152
+      0.0195107813924551,
+      0.05157363414764404,
+      0.010915652848780155
      ]
     ]
    }
   },
   {
-   "id": "living:superior-mesenteric-artery",
-   "name": "Superior mesenteric artery and its fan",
+   "id": "living:gastric-arteries",
+   "name": "Gastric artery",
    "systems": [
     "cardiovascular",
     "arterial-venous"
@@ -7231,25 +7264,355 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#c8333a",
-   "description": "Simulated. The second of the abdominal branches, fanning out in the mesentery of the gut. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the coeliac artery, branching over the stomach, as in Cook figures 79 and 80. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:gastric-arteries",
+   "geometry": {
+    "vertices": 334,
+    "triangles": 652,
+    "boundsMeters": [
+     [
+      0.019373511895537376,
+      0.05140300840139389,
+      0.007632168475538492
+     ],
+     [
+      0.026286059990525246,
+      0.05640682950615883,
+      0.01088541280478239
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lienal-arteries",
+   "name": "Lienal and lieno-gastric arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the coeliac artery to the spleen, with a branch to the far side of the stomach, as in Cook figures 79 and 80. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:lienal-arteries",
+   "geometry": {
+    "vertices": 337,
+    "triangles": 666,
+    "boundsMeters": [
+     [
+      0.019337888807058334,
+      0.05138297751545906,
+      0.008205479942262173
+     ],
+     [
+      0.027646761387586594,
+      0.05658615753054619,
+      0.013382060453295708
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lieno-pancreatic-artery",
+   "name": "Lieno-pancreatic artery",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the coeliac artery along the pancreas towards the spleen, as in Cook figures 79 and 80. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:lieno-pancreatic-artery",
+   "geometry": {
+    "vertices": 187,
+    "triangles": 370,
+    "boundsMeters": [
+     [
+      0.01932108961045742,
+      0.051465630531311035,
+      0.01072309073060751
+     ],
+     [
+      0.02609460987150669,
+      0.05865412577986717,
+      0.014310256578028202
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:superior-pancreaticoduodenal-artery",
+   "name": "Superior pancreatico-duodenal artery",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. To the pancreas and the first part of the duodenum, as in Cook figures 79 and 80. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:superior-pancreaticoduodenal-artery",
+   "geometry": {
+    "vertices": 132,
+    "triangles": 260,
+    "boundsMeters": [
+     [
+      0.01456091646105051,
+      0.049939390271902084,
+      0.008709819987416267
+     ],
+     [
+      0.01765127293765545,
+      0.05588146299123764,
+      0.010193036869168282
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:superior-mesenteric-artery",
+   "name": "Superior mesenteric artery",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. The second of the abdominal branches, into the mesentery of the gut. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
     "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
    ],
    "meshNode": "living:superior-mesenteric-artery",
    "geometry": {
-    "vertices": 1179,
-    "triangles": 2330,
+    "vertices": 212,
+    "triangles": 420,
+    "boundsMeters": [
+     [
+      0.01763380691409111,
+      0.0543208010494709,
+      0.009380031377077103
+     ],
+     [
+      0.018793202936649323,
+      0.06043745577335358,
+      0.016035309061408043
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:jejunal-ileal-arteries",
+   "name": "Jejunal and ileal arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. Branches of the superior mesenteric artery fanning out to the small intestine, as in Cook figures 79 and 83. They are not drawn one for one, because the coils of the gut cannot be followed in the source images. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:jejunal-ileal-arteries",
+   "geometry": {
+    "vertices": 967,
+    "triangles": 1910,
     "boundsMeters": [
      [
       0.010473519563674927,
-      0.0543208010494709,
+      0.06026909127831459,
       0.005489306524395943
      ],
      [
       0.025126073509454727,
       0.0657866895198822,
-      0.016035309061408043
+      0.009602377191185951
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:inferior-pancreaticoduodenal-artery",
+   "name": "Inferior pancreatico-duodenal artery",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the superior mesenteric artery towards the duodenum, as in Cook figure 79. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:inferior-pancreaticoduodenal-artery",
+   "geometry": {
+    "vertices": 122,
+    "triangles": 240,
+    "boundsMeters": [
+     [
+      0.01436636969447136,
+      0.056525152176618576,
+      0.009745066985487938
+     ],
+     [
+      0.018424436450004578,
+      0.05848762392997742,
+      0.013344989158213139
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:ileocolic-artery",
+   "name": "Ileocolic artery",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the superior mesenteric artery towards the caecum, as in Cook figures 79 and 83. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:ileocolic-artery",
+   "geometry": {
+    "vertices": 137,
+    "triangles": 270,
+    "boundsMeters": [
+     [
+      0.017768023535609245,
+      0.06026292219758034,
+      0.008279526606202126
+     ],
+     [
+      0.024832479655742645,
+      0.061801593750715256,
+      0.009577937424182892
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:suprarenal-arteries",
+   "name": "Superior and inferior suprarenal arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. To the adrenal glands, from the aorta and from the renal arteries, as in Cook figures 110 and 112. Cook draws them on the left, and the right is taken to match. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:suprarenal-arteries",
+   "geometry": {
+    "vertices": 263,
+    "triangles": 510,
+    "boundsMeters": [
+     [
+      0.013716847635805607,
+      0.05447431653738022,
+      0.014670010656118393
+     ],
+     [
+      0.020553968846797943,
+      0.05983051285147667,
+      0.016046689823269844
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:inferior-vesical-arteries",
+   "name": "Inferior vesical arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the internal iliac artery to the bladder, as in Cook figures 115 and 116. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:inferior-vesical-arteries",
+   "geometry": {
+    "vertices": 414,
+    "triangles": 820,
+    "boundsMeters": [
+     [
+      0.013315776363015175,
+      0.06553547084331512,
+      0.005563867744058371
+     ],
+     [
+      0.021020930260419846,
+      0.07593045383691788,
+      0.006544287782162428
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:superficial-temporal-arteries",
+   "name": "Superficial temporal arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. Along the side of the head under the eye, beside the vein of that name, as in Cook figures 84 and 85. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:superficial-temporal-arteries",
+   "geometry": {
+    "vertices": 449,
+    "triangles": 890,
+    "boundsMeters": [
+     [
+      0.011743522249162197,
+      0.01545327715575695,
+      0.007724408060312271
+     ],
+     [
+      0.02572771906852722,
+      0.01952550746500492,
+      0.011778838001191616
      ]
     ]
    }
@@ -7820,8 +8183,8 @@
    }
   },
   {
-   "id": "living:tibial-arteries",
-   "name": "Tibial arteries",
+   "id": "living:posterior-tibial-arteries",
+   "name": "Posterior tibial arteries",
    "systems": [
     "cardiovascular",
     "arterial-venous"
@@ -7830,14 +8193,47 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#c8333a",
-   "description": "Simulated. The continuation of the popliteal artery in the shank, deep at the back and through to the front. Kochi et al. do not describe this part, so it follows the rat. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the popliteal artery, deep down the back of the shank, as in Cook figure 101. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:tibial-arteries",
+   "meshNode": "living:posterior-tibial-arteries",
    "geometry": {
-    "vertices": 1138,
-    "triangles": 2260,
+    "vertices": 554,
+    "triangles": 1100,
+    "boundsMeters": [
+     [
+      0.007664151024073362,
+      0.06418883055448532,
+      -0.005523395724594593
+     ],
+     [
+      0.028702495619654655,
+      0.07649584114551544,
+      0.003750807838514447
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:anterior-tibial-arteries",
+   "name": "Anterior tibial arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the popliteal artery through to the front of the shank, as in Cook figure 101. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:anterior-tibial-arteries",
+   "geometry": {
+    "vertices": 584,
+    "triangles": 1160,
     "boundsMeters": [
      [
       0.00710461288690567,
@@ -7846,8 +8242,41 @@
      ],
      [
       0.028946319594979286,
-      0.07649584114551544,
-      0.003750807838514447
+      0.07612548023462296,
+      0.0037425013724714518
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:sural-arteries",
+   "name": "External and superficial sural arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the popliteal artery to the calf, as in Cook figure 101. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:sural-arteries",
+   "geometry": {
+    "vertices": 378,
+    "triangles": 740,
+    "boundsMeters": [
+     [
+      0.008233352564275265,
+      0.06420516967773438,
+      0.00037318302202038467
+     ],
+     [
+      0.028877804055809975,
+      0.07032594829797745,
+      0.004039128310978413
      ]
     ]
    }
@@ -7968,18 +8397,18 @@
    ],
    "meshNode": "living:popliteal-veins",
    "geometry": {
-    "vertices": 584,
-    "triangles": 1160,
+    "vertices": 204,
+    "triangles": 400,
     "boundsMeters": [
      [
-      0.008158572018146515,
-      0.06398045271635056,
-      -0.0030349406879395247
+      0.008159829303622246,
+      0.06415262073278427,
+      0.001940080663189292
      ],
      [
-      0.02829936146736145,
-      0.07299632579088211,
-      0.0037850281223654747
+      0.027964703738689423,
+      0.06675419211387634,
+      0.003769103204831481
      ]
     ]
    }
@@ -8355,10 +8784,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#c8333a",
-   "description": "Simulated. The right from the innominate artery and the left from the arch of the aorta, out over the first rib. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. The right from the innominate artery and the left from the arch of the aorta, on towards the armpit, as in Cook figures 90 and 97. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
    "meshNode": "living:subclavian-arteries",
    "geometry": {
@@ -8379,6 +8807,105 @@
    }
   },
   {
+   "id": "living:cervical-trunks",
+   "name": "Cervical trunks and superficial cervical arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the subclavian artery up towards the neck, as in Cook figure 97. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:cervical-trunks",
+   "geometry": {
+    "vertices": 308,
+    "triangles": 600,
+    "boundsMeters": [
+     [
+      0.012995072640478611,
+      0.027951672673225403,
+      0.007923242636024952
+     ],
+     [
+      0.02398979850113392,
+      0.03503017500042915,
+      0.010617881081998348
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:costocervical-trunks",
+   "name": "Costocervical trunks",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. A short branch of the subclavian artery, as in Cook figures 91 and 97. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:costocervical-trunks",
+   "geometry": {
+    "vertices": 114,
+    "triangles": 220,
+    "boundsMeters": [
+     [
+      0.015049095265567303,
+      0.03273307532072067,
+      0.007966131903231144
+     ],
+     [
+      0.022851794958114624,
+      0.036425817757844925,
+      0.011230177246034145
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:thoraco-acromial-arteries",
+   "name": "Thoraco-acromial arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. A branch of the subclavian artery, as in Cook figure 97. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:thoraco-acromial-arteries",
+   "geometry": {
+    "vertices": 134,
+    "triangles": 260,
+    "boundsMeters": [
+     [
+      0.01339637115597725,
+      0.03274191915988922,
+      0.006764618679881096
+     ],
+     [
+      0.02471969649195671,
+      0.036353014409542084,
+      0.009046375751495361
+     ]
+    ]
+   }
+  },
+  {
    "id": "living:axillary-arteries",
    "name": "Axillary arteries",
    "systems": [
@@ -8389,24 +8916,123 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#c8333a",
-   "description": "Simulated. The continuation of the subclavian artery in the armpit, with branches towards the wall of the chest and round the top of the humerus. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. The continuation of the subclavian artery in the armpit, as in Cook figures 97 and 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
    "meshNode": "living:axillary-arteries",
    "geometry": {
-    "vertices": 496,
-    "triangles": 968,
+    "vertices": 148,
+    "triangles": 288,
     "boundsMeters": [
      [
-      0.010737992823123932,
-      0.029219046235084534,
+      0.012826495803892612,
+      0.029459970071911812,
       0.008084028027951717
      ],
      [
-      0.026341307908296585,
+      0.024266794323921204,
+      0.031093304976820946,
+      0.010110612027347088
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lateral-thoracic-arteries",
+   "name": "Lateral thoracic arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the axillary artery down the side of the chest, as in Cook figure 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:lateral-thoracic-arteries",
+   "geometry": {
+    "vertices": 204,
+    "triangles": 400,
+    "boundsMeters": [
+     [
+      0.0133258868008852,
+      0.02956009842455387,
+      0.008303775452077389
+     ],
+     [
+      0.02386169694364071,
       0.03533126413822174,
-      0.010312298312783241
+      0.010042564012110233
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:subscapular-arteries",
+   "name": "Subscapular arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the axillary artery towards the back, as in Cook figures 106 and 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:subscapular-arteries",
+   "geometry": {
+    "vertices": 189,
+    "triangles": 370,
+    "boundsMeters": [
+     [
+      0.013078822754323483,
+      0.029675066471099854,
+      0.008838409557938576
+     ],
+     [
+      0.024152575060725212,
+      0.034345842897892,
+      0.01257635373622179
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:profunda-brachii-arteries",
+   "name": "Profunda brachii arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. A deep branch high in the upper fore limb, as in Cook figures 106 and 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:profunda-brachii-arteries",
+   "geometry": {
+    "vertices": 229,
+    "triangles": 450,
+    "boundsMeters": [
+     [
+      0.010605772025883198,
+      0.030211633071303368,
+      0.006765198428183794
+     ],
+     [
+      0.02654549479484558,
+      0.035145122557878494,
+      0.009879114106297493
      ]
     ]
    }
@@ -8422,9 +9048,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#c8333a",
-   "description": "Simulated. Along the inner side of the upper fore limb to the elbow, beside the median nerve. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. Along the inner side of the upper fore limb to the elbow, as in Cook figures 97, 106 and 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
    "meshNode": "living:brachial-arteries",
    "geometry": {
@@ -8445,8 +9071,8 @@
    }
   },
   {
-   "id": "living:forearm-arteries",
-   "name": "Arteries of the forearm",
+   "id": "living:ulnar-collateral-arteries",
+   "name": "Ulnar collateral arteries",
    "systems": [
     "cardiovascular",
     "arterial-venous"
@@ -8455,14 +9081,80 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#c8333a",
-   "description": "Simulated. The continuation of the brachial artery beyond the elbow. They are not divided into named arteries here, because no source for the mouse was checked. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the brachial artery towards the back of the elbow, as in Cook figures 106 and 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:forearm-arteries",
+   "meshNode": "living:ulnar-collateral-arteries",
    "geometry": {
-    "vertices": 828,
-    "triangles": 1640,
+    "vertices": 234,
+    "triangles": 460,
+    "boundsMeters": [
+     [
+      0.01085454598069191,
+      0.03248871862888336,
+      0.0027698164340108633
+     ],
+     [
+      0.026381274685263634,
+      0.03717134892940521,
+      0.007699405774474144
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:radial-arteries",
+   "name": "Radial arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. From the brachial artery near the elbow, across to the cephalic vein, and beside it along the forearm as the artery collateralis radialis, as in Cook figures 107 and 108. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:radial-arteries",
+   "geometry": {
+    "vertices": 524,
+    "triangles": 1040,
+    "boundsMeters": [
+     [
+      0.010468337684869766,
+      0.027888048440217972,
+      -0.00649213558062911
+     ],
+     [
+      0.026821790263056755,
+      0.03647932410240173,
+      0.0052911690436303616
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:median-arteries",
+   "name": "Median arteries",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#c8333a",
+   "description": "Simulated. The continuation of the brachial artery through the forearm towards the palm, as in Cook figure 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:median-arteries",
+   "geometry": {
+    "vertices": 464,
+    "triangles": 920,
     "boundsMeters": [
      [
       0.01072489470243454,
@@ -8470,7 +9162,7 @@
       -0.006571549456566572
      ],
      [
-      0.026636449620127678,
+      0.02646838128566742,
       0.036270622164011,
       0.004787365440279245
      ]
@@ -8479,7 +9171,7 @@
   },
   {
    "id": "living:subclavian-veins",
-   "name": "Subclavian and axillary veins",
+   "name": "Subclavian veins",
    "systems": [
     "cardiovascular",
     "arterial-venous"
@@ -8488,32 +9180,31 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#3f5a9a",
-   "description": "Simulated. From the armpit to the junction with the jugular vein, beside their arteries. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the armpit to the junction with the jugular veins, as in Cook figures 90 and 98. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
    "meshNode": "living:subclavian-veins",
    "geometry": {
-    "vertices": 286,
-    "triangles": 564,
+    "vertices": 202,
+    "triangles": 396,
     "boundsMeters": [
      [
-      0.013050961308181286,
-      0.03015921637415886,
+      0.013460950925946236,
+      0.03033757023513317,
       0.007194275502115488
      ],
      [
-      0.024018511176109314,
+      0.023083655163645744,
       0.03375773876905441,
-      0.00925678014755249
+      0.009132361970841885
      ]
     ]
    }
   },
   {
-   "id": "living:brachial-veins",
-   "name": "Brachial veins",
+   "id": "living:axillary-veins",
+   "name": "Axillary veins",
    "systems": [
     "cardiovascular",
     "arterial-venous"
@@ -8522,24 +9213,123 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#3f5a9a",
-   "description": "Simulated. Beside the brachial artery and on into the forearm. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. In the armpit beside the axillary artery, as in Cook figures 98, 100 and 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
-   "meshNode": "living:brachial-veins",
+   "meshNode": "living:axillary-veins",
    "geometry": {
-    "vertices": 594,
-    "triangles": 1180,
+    "vertices": 142,
+    "triangles": 276,
     "boundsMeters": [
      [
-      0.011072574183344841,
-      0.0302323829382658,
-      -0.004767830483615398
+      0.013018096797168255,
+      0.0297874603420496,
+      0.007993741892278194
      ],
      [
-      0.02618957869708538,
-      0.03653020039200783,
+      0.024063684046268463,
+      0.03134152665734291,
+      0.009962733834981918
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lateral-thoracic-veins",
+   "name": "Lateral thoracic veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Down the side of the chest, into the axillary vein, as in Cook figures 98, 100 and 106. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:lateral-thoracic-veins",
+   "geometry": {
+    "vertices": 174,
+    "triangles": 340,
+    "boundsMeters": [
+     [
+      0.014085143804550171,
+      0.030465606600046158,
+      0.007997570559382439
+     ],
+     [
+      0.023083942010998726,
+      0.035530466586351395,
+      0.009138054214417934
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:basilic-veins",
+   "name": "Basilic veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Beside the brachial artery on the inner side of the upper fore limb, as in Cook figures 98, 106 and 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:basilic-veins",
+   "geometry": {
+    "vertices": 274,
+    "triangles": 540,
+    "boundsMeters": [
+     [
+      0.011419168673455715,
+      0.03061777912080288,
+      0.003383815288543701
+     ],
+     [
+      0.026057543233036995,
+      0.03672747686505318,
       0.00920118484646082
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:median-veins",
+   "name": "Median veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Beside the median artery in the forearm, as in Cook figure 107. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:median-veins",
+   "geometry": {
+    "vertices": 344,
+    "triangles": 680,
+    "boundsMeters": [
+     [
+      0.011148812249302864,
+      0.03023700788617134,
+      -0.004764705430716276
+     ],
+     [
+      0.026182809844613075,
+      0.03641938045620918,
+      0.004435522481799126
      ]
     ]
    }
@@ -8555,24 +9345,24 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#3f5a9a",
-   "description": "Simulated. Close under the skin on the outer side of the fore limb, and on to the armpit. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the back of the paw along the forearm, close under the skin, over the shoulder and into the external jugular vein in the neck, as in Cook figures 100, 107 and 108. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
    "meshNode": "living:cephalic-veins",
    "geometry": {
-    "vertices": 649,
-    "triangles": 1290,
+    "vertices": 764,
+    "triangles": 1520,
     "boundsMeters": [
      [
-      0.010120310820639133,
-      0.028239760547876358,
+      0.01012270338833332,
+      0.028402142226696014,
       -0.004008057061582804
      ],
      [
-      0.02698601596057415,
-      0.035411905497312546,
-      0.01013316959142685
+      0.026982955634593964,
+      0.03540929779410362,
+      0.009759469889104366
      ]
     ]
    }
@@ -8587,24 +9377,24 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. Roots from the lower neck and first thoracic levels joining at the shoulder. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. The fifth cervical to the first thoracic nerves, as Zhong et al. name them in the mouse, joining at the shoulder. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Zhong K, Huang Y, Zilundu PLM, Wang Y, Zhou Y, Yu G, Fu R, Chung SK, Tang Y, Cheng X, Zhou L. Motor neuron survival is associated with reduced neuroinflammation and increased autophagy after brachial plexus avulsion injury in aldose reductase-deficient mice. J Neuroinflammation. 2022;19(1):271. doi:10.1186/s12974-022-02632-6"
    ],
    "meshNode": "living:brachial-plexus",
    "geometry": {
-    "vertices": 1380,
-    "triangles": 2720,
+    "vertices": 1260,
+    "triangles": 2480,
     "boundsMeters": [
      [
-      0.014430583454668522,
-      0.029334476217627525,
-      0.009303141385316849
+      0.014431917108595371,
+      0.029324710369110107,
+      0.009294558316469193
      ],
      [
-      0.022803016006946564,
-      0.036671023815870285,
-      0.010735055431723595
+      0.022802896797657013,
+      0.03603110462427139,
+      0.010977148078382015
      ]
     ]
    }
@@ -8715,8 +9505,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the plexus beside the brachial artery, then down the middle of the forearm to the palm. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the brachial plexus to the elbow, and on to the finger flexors, as Jager et al. describe in the mouse. Its place beside the brachial artery and in the forearm follows the description of the rat. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
+    "Jager SB, Ronchi G, Vaegter CB, Geuna S. The mouse median nerve experimental model in regenerative research. Biomed Res Int. 2014;2014:701682. doi:10.1155/2014/701682",
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
    "meshNode": "living:median-nerves",
@@ -8872,6 +9663,138 @@
    }
   },
   {
+   "id": "living:anterior-jugular-veins",
+   "name": "Anterior jugular veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the external jugular veins forward under the skin of the throat, as in Cook figures 98 and 100. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:anterior-jugular-veins",
+   "geometry": {
+    "vertices": 344,
+    "triangles": 680,
+    "boundsMeters": [
+     [
+      0.014423605054616928,
+      0.022078827023506165,
+      0.004306660499423742
+     ],
+     [
+      0.02337012253701687,
+      0.032061465084552765,
+      0.006278240587562323
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:posterior-facial-veins",
+   "name": "Posterior facial veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the end of the external jugular vein up behind the jaw, as in Cook figure 85. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:posterior-facial-veins",
+   "geometry": {
+    "vertices": 208,
+    "triangles": 408,
+    "boundsMeters": [
+     [
+      0.011710211634635925,
+      0.01935882493853569,
+      0.006383365485817194
+     ],
+     [
+      0.02572553977370262,
+      0.02025156468153,
+      0.0107107637450099
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:superficial-temporal-veins",
+   "name": "Superficial temporal veins and their branches",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Along the side of the head towards the eye, with the anterior auricular, masseteric, middle temporal, inferior palpebral and transverse facial veins, as in Cook figures 84 and 85. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:superficial-temporal-veins",
+   "geometry": {
+    "vertices": 1264,
+    "triangles": 2480,
+    "boundsMeters": [
+     [
+      0.011620847508311272,
+      0.013647329993546009,
+      0.007303345482796431
+     ],
+     [
+      0.025828324258327484,
+      0.020532842725515366,
+      0.01593460701406002
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:anterior-facial-veins",
+   "name": "Anterior facial veins with the cutaneous and supraorbital veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Along the lower jaw to the snout, and up in front of the eye, as in Cook figures 84, 85 and 100. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:anterior-facial-veins",
+   "geometry": {
+    "vertices": 1060,
+    "triangles": 2096,
+    "boundsMeters": [
+     [
+      0.013157601468265057,
+      0.013307057321071625,
+      0.005208758637309074
+     ],
+     [
+      0.02463766373693943,
+      0.020196881145238876,
+      0.015058091841638088
+     ]
+    ]
+   }
+  },
+  {
    "id": "living:internal-jugular-veins",
    "name": "Internal jugular veins",
    "systems": [
@@ -8941,7 +9864,7 @@
   },
   {
    "id": "living:portal-vein",
-   "name": "Hepatic portal vein with mesenteric and splenic tributaries",
+   "name": "Hepatic portal vein",
    "systems": [
     "cardiovascular",
     "arterial-venous"
@@ -8950,25 +9873,388 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#3f5a9a",
-   "description": "Simulated. Draining the gut and spleen to the liver. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. Formed by the veins of the gut, spleen and stomach, and running to the liver, as in Cook figures 81 to 83. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
     "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
    ],
    "meshNode": "living:portal-vein",
    "geometry": {
-    "vertices": 1169,
-    "triangles": 2314,
+    "vertices": 242,
+    "triangles": 480,
+    "boundsMeters": [
+     [
+      0.01735282689332962,
+      0.05091993510723114,
+      0.009796899743378162
+     ],
+     [
+      0.018861521035432816,
+      0.058504655957221985,
+      0.010715052485466003
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:superior-mesenteric-vein",
+   "name": "Superior mesenteric vein",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the mesentery to the hepatic portal vein, as in Cook figures 82 and 83. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:superior-mesenteric-vein",
+   "geometry": {
+    "vertices": 106,
+    "triangles": 208,
+    "boundsMeters": [
+     [
+      0.017576104030013084,
+      0.058366142213344574,
+      0.009021722711622715
+     ],
+     [
+      0.018242554739117622,
+      0.061134498566389084,
+      0.010286333039402962
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:jejunal-ileal-veins",
+   "name": "Jejunal and ileal veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the small intestine to the superior mesenteric vein, as in Cook figures 82 and 83. They are not drawn one for one, because the coils of the gut cannot be followed in the source images. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:jejunal-ileal-veins",
+   "geometry": {
+    "vertices": 643,
+    "triangles": 1270,
     "boundsMeters": [
      [
       0.010768874548375607,
-      0.05092112720012665,
+      0.0605323426425457,
       0.0051574064418673515
      ],
      [
-      0.026495113968849182,
+      0.025078170001506805,
       0.06593179702758789,
-      0.01339558232575655
+      0.00939173437654972
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:ileocolic-vein",
+   "name": "Ileocolic vein",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the caecum to the superior mesenteric vein, as in Cook figure 83. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:ileocolic-vein",
+   "geometry": {
+    "vertices": 132,
+    "triangles": 260,
+    "boundsMeters": [
+     [
+      0.01786496303975582,
+      0.06044990196824074,
+      0.008207247592508793
+     ],
+     [
+      0.025027237832546234,
+      0.061642467975616455,
+      0.009373525157570839
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:inferior-mesenteric-vein",
+   "name": "Inferior mesenteric vein",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the rectum to the hepatic portal vein, as in Cook figures 82 and 83. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:inferior-mesenteric-vein",
+   "geometry": {
+    "vertices": 317,
+    "triangles": 630,
+    "boundsMeters": [
+     [
+      0.017902813851833344,
+      0.058563053607940674,
+      0.004673128481954336
+     ],
+     [
+      0.018529137596488,
+      0.0730099007487297,
+      0.009975748136639595
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:lienal-vein",
+   "name": "Lienal vein",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the spleen to the hepatic portal vein, as in Cook figures 81 and 82. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:lienal-vein",
+   "geometry": {
+    "vertices": 188,
+    "triangles": 372,
+    "boundsMeters": [
+     [
+      0.018533773720264435,
+      0.05434957146644592,
+      0.010313491337001324
+     ],
+     [
+      0.026397041976451874,
+      0.05679064989089966,
+      0.01331764180213213
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:gastric-vein",
+   "name": "Gastric vein",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the stomach to the hepatic portal vein, as in Cook figure 82. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:gastric-vein",
+   "geometry": {
+    "vertices": 194,
+    "triangles": 380,
+    "boundsMeters": [
+     [
+      0.018546348437666893,
+      0.052524592727422714,
+      0.007452576421201229
+     ],
+     [
+      0.026608016341924667,
+      0.05519866198301315,
+      0.010603746399283409
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:pancreaticoduodenal-veins",
+   "name": "Superior and inferior pancreatico-duodenal veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the pancreas and duodenum to the hepatic portal vein, as in Cook figures 82 and 83. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:pancreaticoduodenal-veins",
+   "geometry": {
+    "vertices": 174,
+    "triangles": 340,
+    "boundsMeters": [
+     [
+      0.014571696519851685,
+      0.05175894871354103,
+      0.009332448244094849
+     ],
+     [
+      0.018116338178515434,
+      0.05875245854258537,
+      0.010690887458622456
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:suprarenal-veins",
+   "name": "Suprarenal veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the adrenal glands, on the left to the renal vein and on the right to the inferior vena cava, as in Cook figures 111 and 112. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:suprarenal-veins",
+   "geometry": {
+    "vertices": 154,
+    "triangles": 300,
+    "boundsMeters": [
+     [
+      0.014637524262070656,
+      0.05497146025300026,
+      0.014938157983124256
+     ],
+     [
+      0.020345870405435562,
+      0.05999234691262245,
+      0.016074253246188164
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:inferior-phrenic-veins",
+   "name": "Inferior phrenic vein",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the diaphragm to the left suprarenal vein, as in Cook figure 112. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:inferior-phrenic-veins",
+   "geometry": {
+    "vertices": 167,
+    "triangles": 330,
+    "boundsMeters": [
+     [
+      0.01864263229072094,
+      0.04698120057582855,
+      0.012399712577462196
+     ],
+     [
+      0.019775278866291046,
+      0.0551941879093647,
+      0.015362340956926346
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:testicular-veins",
+   "name": "Internal spermatic veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. Beside the testicular arteries, on the right to the inferior vena cava as in Cook figure 115. The left is taken to the left renal vein, which Cook does not show in the plates read for this. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:testicular-veins",
+   "geometry": {
+    "vertices": 619,
+    "triangles": 1230,
+    "boundsMeters": [
+     [
+      0.014581955038011074,
+      0.0606689453125,
+      -0.0017902498366311193
+     ],
+     [
+      0.021818529814481735,
+      0.0741000697016716,
+      0.014895852655172348
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:hypogastric-veins",
+   "name": "Hypogastric and vesical veins",
+   "systems": [
+    "cardiovascular",
+    "arterial-venous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#3f5a9a",
+   "description": "Simulated. From the pelvis to the common iliac vein, with veins from the bladder, as in Cook figures 115 and 116. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:hypogastric-veins",
+   "geometry": {
+    "vertices": 558,
+    "triangles": 1100,
+    "boundsMeters": [
+     [
+      0.013160559348762035,
+      0.0648261234164238,
+      0.004937784746289253
+     ],
+     [
+      0.021677246317267418,
+      0.07706557214260101,
+      0.005736539140343666
      ]
     ]
    }
@@ -9084,10 +10370,10 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. Paired nerves of the neck, counted from the vertebral formula in Hummel et al. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. Eight pairs, as Sleigh et al. count them in the mouse, leaving at the levels of the vertebrae measured in the CT. Their courses beyond the column are estimates. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Sleigh JN, West SJ, Schiavo G. A video protocol for rapid dissection of mouse dorsal root ganglia from defined spinal levels. BMC Res Notes. 2020;13:302. doi:10.1186/s13104-020-05147-6",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
    ],
    "meshNode": "living:cervical-nerves",
    "geometry": {
@@ -9095,14 +10381,14 @@
     "triangles": 3200,
     "boundsMeters": [
      [
-      0.014590822160243988,
-      0.029758697375655174,
+      0.014594042673707008,
+      0.0270647332072258,
       0.00777478888630867
      ],
      [
-      0.021486258134245872,
-      0.03641485050320625,
-      0.011433337815105915
+      0.02148529887199402,
+      0.03622734919190407,
+      0.012703953310847282
      ]
     ]
    }
@@ -9117,25 +10403,25 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. Paired nerves of the chest, running round the wall between the ribs, counted from the vertebral formula in Hummel et al. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. Thirteen pairs, as Sleigh et al. count them in the mouse, leaving at the levels of the vertebrae measured in the CT and running round the wall between the ribs. Their courses beyond the column are estimates. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Sleigh JN, West SJ, Schiavo G. A video protocol for rapid dissection of mouse dorsal root ganglia from defined spinal levels. BMC Res Notes. 2020;13:302. doi:10.1186/s13104-020-05147-6",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
    ],
    "meshNode": "living:thoracic-nerves",
    "geometry": {
-    "vertices": 4917,
-    "triangles": 9730,
+    "vertices": 4872,
+    "triangles": 9640,
     "boundsMeters": [
      [
-      0.00964068528264761,
-      0.035359401255846024,
-      0.0042854961939156055
+      0.009649488143622875,
+      0.03511708974838257,
+      0.004259689711034298
      ],
      [
-      0.02633805014193058,
-      0.05971643701195717,
-      0.018476257100701332
+      0.026344362646341324,
+      0.0552847646176815,
+      0.01844855584204197
      ]
     ]
    }
@@ -9150,10 +10436,10 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. Paired nerves of the loin, counted from the vertebral formula in Hummel et al. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. Six pairs, within the five or six that Sleigh et al. find in the mouse, leaving at the levels of the vertebrae measured in the CT. Their courses beyond the column are estimates. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Sleigh JN, West SJ, Schiavo G. A video protocol for rapid dissection of mouse dorsal root ganglia from defined spinal levels. BMC Res Notes. 2020;13:302. doi:10.1186/s13104-020-05147-6",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
    ],
    "meshNode": "living:lumbar-nerves",
    "geometry": {
@@ -9161,14 +10447,14 @@
     "triangles": 2520,
     "boundsMeters": [
      [
-      0.013708580285310745,
-      0.06011085957288742,
-      0.008099989965558052
+      0.013650394044816494,
+      0.05554008111357689,
+      0.008689723908901215
      ],
      [
-      0.02225169539451599,
-      0.07028240710496902,
-      0.017788296565413475
+      0.022252529859542847,
+      0.06954275071620941,
+      0.018452484160661697
      ]
     ]
    }
@@ -9183,10 +10469,10 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. Paired nerves of the sacrum, counted from the vertebral formula in Hummel et al. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. Four pairs, as Sleigh et al. count them in the mouse, leaving at the levels of the vertebrae measured in the CT. Their courses beyond the column are estimates. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Sleigh JN, West SJ, Schiavo G. A video protocol for rapid dissection of mouse dorsal root ganglia from defined spinal levels. BMC Res Notes. 2020;13:302. doi:10.1186/s13104-020-05147-6",
+    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
    ],
    "meshNode": "living:sacral-nerves",
    "geometry": {
@@ -9194,14 +10480,14 @@
     "triangles": 1680,
     "boundsMeters": [
      [
-      0.01369662769138813,
-      0.07102113962173462,
-      0.0042257653549313545
+      0.013693933375179768,
+      0.07092978805303574,
+      0.0031777352560311556
      ],
      [
-      0.022208837792277336,
-      0.07740579545497894,
-      0.010453034192323685
+      0.02221156470477581,
+      0.07880005985498428,
+      0.010493707843124866
      ]
     ]
    }
@@ -9216,10 +10502,11 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the base of the skull beside the carotid artery and oesophagus to the stomach. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the base of the skull beside the carotid artery, in the carotid sheath as Mughrabi et al. describe in the mouse, and on beside the oesophagus to the stomach, as Reissig et al. describe in the mouse fetus. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Mughrabi IT, Hickman J, Jayaprakash N, Thompson D, Ahmed U, Papadoyannis ES, Chang YC, Abbas A, Datta-Chaudhuri T, Chang EH, Zanos TP, Lee SC, Froemke RC, Tracey KJ, Welle C, Al-Abed Y, Zanos S. Development and characterization of a chronic implant mouse model for vagus nerve stimulation. eLife. 2021;10:e61270. doi:10.7554/eLife.61270",
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:vagus-nerves",
    "geometry": {
@@ -9240,6 +10527,38 @@
    }
   },
   {
+   "id": "living:recurrent-laryngeal-nerves",
+   "name": "Recurrent laryngeal nerves",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#e9d98f",
+   "description": "Simulated. Branches of the vagus nerve, back under the arch of the aorta on the left, as in Cook figure 91, and forward beside the trachea to the larynx. The course on the right is an estimate. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
+   ],
+   "meshNode": "living:recurrent-laryngeal-nerves",
+   "geometry": {
+    "vertices": 444,
+    "triangles": 880,
+    "boundsMeters": [
+     [
+      0.014977705664932728,
+      0.025281334295868874,
+      0.007168113719671965
+     ],
+     [
+      0.02062855288386345,
+      0.037316568195819855,
+      0.00943269394338131
+     ]
+    ]
+   }
+  },
+  {
    "id": "living:phrenic-nerves",
    "name": "Phrenic nerves",
    "systems": [
@@ -9249,10 +10568,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the neck through the chest to the diaphragm. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the neck through the chest to the diaphragm, as in Cook figures 51, 52, 90 and 91. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
    "meshNode": "living:phrenic-nerves",
    "geometry": {
@@ -9282,9 +10600,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From each eye to their crossing under the brain. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From each eye to their crossing under the brain, as Reissig et al. describe in the mouse fetus. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:optic-nerves",
    "geometry": {
@@ -9314,9 +10632,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. Where the trigeminal nerve leaves the brain stem and forms its ganglion. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. Where the trigeminal nerve leaves the brain stem beside the pons and forms its ganglion, as Reissig et al. describe in the mouse fetus. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:trigeminal-roots",
    "geometry": {
@@ -9346,9 +10664,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. The first division of the trigeminal nerve, towards the eye and the front of the head. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. The first division of the trigeminal nerve, towards the eye and the front of the head, as Reissig et al. describe in the mouse fetus. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:ophthalmic-nerves",
    "geometry": {
@@ -9378,9 +10696,10 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. The second division of the trigeminal nerve, under the eye to the whisker pad. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. The second division of the trigeminal nerve, as Reissig et al. describe in the mouse fetus, under the eye to the whisker pad. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days.",
+    "Ebara S, Kumamoto K, Matsuura T, Mazurkiewicz JE, Rice FL. Similarities and differences in the innervation of mystacial vibrissal follicle-sinus complexes in the rat and cat: a confocal microscopic study. J Comp Neurol 2002;449(2):103-19. doi:10.1002/cne.10277"
    ],
    "meshNode": "living:maxillary-nerves",
    "geometry": {
@@ -9410,9 +10729,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. The third division of the trigeminal nerve, to the jaw. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. The third division of the trigeminal nerve, to the jaw, as Reissig et al. describe in the mouse fetus. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:mandibular-nerves",
    "geometry": {
@@ -9442,9 +10761,10 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the brain stem round the ear to the muscles of the face. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the brain stem round the ear to the muscles of the face. Olmstead et al. describe it in the adult mouse leaving the skull at the stylomastoid foramen, behind the cartilage of the ear canal, and dividing into temporal, zygomatic, buccal and marginal mandibular branches. Those branches are simplified here. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days.",
+    "Olmstead DN, Mesnard-Hoaglin NA, Batka RJ, Haulcomb MM, Miller WM, Jones KJ. Facial nerve axotomy in mice: a model to study motoneuron response to injury. J Vis Exp. 2015;(96):52382. doi:10.3791/52382"
    ],
    "meshNode": "living:facial-nerves",
    "geometry": {
@@ -9901,7 +11221,7 @@
    "sourceLabel": "none, simulated",
    "evidence": "simulated",
    "scale": "organ",
-   "color": "#8fa35a",
+   "color": "#76884c",
    "description": "Simulated. On the ventral side of the source liver label, after Cook figure 61. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
@@ -10522,9 +11842,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#cfe0e6",
-   "description": "Simulated. Lateral, third and fourth ventricles with the cerebral aqueduct, placed on the source brain labels after the description of the rat. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. Lateral, third and fourth ventricles with the cerebral aqueduct, as the Allen reference atlas of the mouse brain names them, placed by estimate on the source brain labels. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Wang Q, Ding SL, Li Y, Royall J, Feng D, Lesnar P, Graddis N, Naeemi M, Facer B, Ho A, Dolbeare T, Blanchard B, Dee N, Wakeman W, Hirokawa KE, Szafer A, Sunkin SM, Oh SW, Bernard A, Phillips JW, Hawrylycz M, Koch C, Zeng H, Harris JA, Ng L. The Allen Mouse Brain Common Coordinate Framework: a 3D reference atlas. Cell. 2020;181(4):936-953.e20. doi:10.1016/j.cell.2020.04.007"
    ],
    "meshNode": "living:brain-ventricles",
    "geometry": {
@@ -10554,9 +11874,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the nose to the olfactory bulb, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the nose through the cribriform plate to the olfactory bulb, as Reissig et al. describe in the mouse fetus, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:olfactory-nerves",
    "geometry": {
@@ -10586,9 +11906,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the midbrain to the muscles of the eye, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the midbrain to the muscles of the eye, as Reissig et al. describe in the mouse fetus, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:oculomotor-nerves",
    "geometry": {
@@ -10618,9 +11938,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the back of the midbrain to a muscle of the eye, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the back of the midbrain to the superior oblique muscle of the eye, as Reissig et al. describe in the mouse fetus, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:trochlear-nerves",
    "geometry": {
@@ -10650,9 +11970,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the brain stem to a muscle of the eye, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the brain stem to the lateral rectus muscle of the eye, as Reissig et al. describe in the mouse fetus, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:abducens-nerves",
    "geometry": {
@@ -10682,9 +12002,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the brain stem to the inner ear, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the brain stem to the inner ear, as Reissig et al. describe in the mouse fetus, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:vestibulocochlear-nerves",
    "geometry": {
@@ -10714,9 +12034,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the brain stem to the throat, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the brain stem towards the throat and the root of the tongue, as Reissig et al. describe in the mouse fetus, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:glossopharyngeal-nerves",
    "geometry": {
@@ -10746,9 +12066,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the brain stem down the neck to the sternomastoid and trapezius, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the brain stem down the neck to the sternomastoid and trapezius, as Reissig et al. describe in the mouse fetus, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:accessory-nerves",
    "geometry": {
@@ -10778,9 +12098,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e9d98f",
-   "description": "Simulated. From the brain stem to the tongue, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. From the brain stem to the tongue, as Reissig et al. describe in the mouse fetus, simplified. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Reissig LF, Geyer SH, Winkler V, Preineder E, Prin F, Wilson R, Galli A, Tudor C, White JK, Mohun TJ, Weninger WJ. Detailed characterizations of cranial nerve anatomy in E14.5 mouse embryos/fetuses and their use as reference for diagnosing subtle, but potentially lethal malformations in mutants. Front Cell Dev Biol. 2022;10:1006620. doi:10.3389/fcell.2022.1006620. This describes the fetus at 14.5 days."
    ],
    "meshNode": "living:hypoglossal-nerves",
    "geometry": {
@@ -10907,10 +12227,10 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e8dcc2",
-   "description": "Simulated. An ear canal from the external auditory meatus seen in the CT, a tympanic membrane in the tympanic bulla and a chain of three ossicles towards the cochlea. Cook figures 12 and 13 show the meatus and bulla; the middle ear itself follows the description of the rat, and its small bones are not resolved in this CT. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. An ear canal from the external auditory meatus seen in the CT, a tympanic membrane in the tympanic bulla and a chain of three ossicles towards the cochlea. Cook figures 12 and 13 show the meatus and bulla, and Sakamoto et al. describe in the mouse the chain of bones from the tympanic membrane to the inner ear, which are not resolved in this CT. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Sakamoto A, Kuroda Y, Kanzaki S, Matsuo K. Dissection of the auditory bulla in postnatal mice: isolation of the middle ear bones and histological analysis. J Vis Exp. 2017;(119):55054. doi:10.3791/55054"
    ],
    "meshNode": "living:middle-ears",
    "geometry": {
@@ -11736,10 +13056,9 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#e2cf8a",
-   "description": "Simulated. A ganglion on each dorsal root, at the levels of the spinal nerves. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. A ganglion on each dorsal root, level with a disc beside the spinal canal, as Sleigh et al. describe in the mouse, among which the fourth lumbar is the largest. How much larger is an estimate. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Hummel KP, Richardson FL, Fekete E. Anatomy. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/",
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Sleigh JN, West SJ, Schiavo G. A video protocol for rapid dissection of mouse dorsal root ganglia from defined spinal levels. BMC Res Notes. 2020;13:302. doi:10.1186/s13104-020-05147-6"
    ],
    "meshNode": "living:root-ganglia",
    "geometry": {
@@ -11747,14 +13066,14 @@
     "triangles": 4960,
     "boundsMeters": [
      [
-      0.016448168084025383,
-      0.029752008616924286,
-      0.006843166891485453
+      0.016456972807645798,
+      0.026806039735674858,
+      0.005876484327018261
      ],
      [
-      0.019543113186955452,
-      0.07669045031070709,
-      0.018234867602586746
+      0.019545428454875946,
+      0.07790201157331467,
+      0.018197419121861458
      ]
     ]
    }
@@ -11769,24 +13088,57 @@
    "evidence": "simulated",
    "scale": "organ",
    "color": "#dcc87e",
-   "description": "Simulated. Beaded chains beside the vertebral column. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Simulated. Beaded chains beside the vertebral column, with the superior cervical ganglion at the carotid bifurcation, as Ning et al. find it in the mouse, and the stellate ganglion between the seventh cervical and first thoracic vertebrae, as Duan et al. place it in the mouse. The trunks between them, and the size of each ganglion, are estimates. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Ning Y, Noebels JL, Aiba I. Emx1-Cre is expressed in peripheral autonomic ganglia that regulate central cardiorespiratory functions. eNeuro. 2022;9(5):ENEURO.0093-22.2022. doi:10.1523/ENEURO.0093-22.2022",
+    "Duan Q, Zhou Y, Zhi J, Liu Q, Xu J, Yang D. Establishment of stellate ganglion block in mice. Eur J Med Res. 2024;29:220. doi:10.1186/s40001-024-01815-6"
    ],
    "meshNode": "living:sympathetic-trunks",
    "geometry": {
-    "vertices": 3976,
-    "triangles": 5712,
+    "vertices": 3608,
+    "triangles": 5440,
     "boundsMeters": [
      [
-      0.016663553193211555,
-      0.029542209580540657,
-      0.005309246946126223
+      0.01614999957382679,
+      0.02488047629594803,
+      0.004214066546410322
      ],
      [
-      0.01932772994041443,
-      0.07561381161212921,
-      0.01651967689394951
+      0.021649999544024467,
+      0.07698708772659302,
+      0.016555162146687508
+     ]
+    ]
+   }
+  },
+  {
+   "id": "living:coeliac-ganglia",
+   "name": "Coeliac and superior mesenteric ganglia, and splanchnic ganglia and nerves",
+   "systems": [
+    "nervous"
+   ],
+   "sourceLabel": "none, simulated",
+   "evidence": "simulated",
+   "scale": "organ",
+   "color": "#dcc87e",
+   "description": "Simulated. Attached to the coeliac and superior mesenteric arteries, with splanchnic ganglia medial to the kidneys and splanchnic nerves through the diaphragm, as Trevizan-Bau et al. describe in the mouse. Their sizes are estimates. The course, size and shape are estimates placed on landmarks of this specimen, and they are not measured. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "basis": [
+    "Trevizan-Bau P, Ringuet MT, Stebbing MJ, McAllen RM, Furness JB, Mueller SN. Protocol for the isolation of the mouse sympathetic splanchnic-celiac-superior mesenteric ganglion complex. STAR Protoc. 2024;5(2):103036. doi:10.1016/j.xpro.2024.103036"
+   ],
+   "meshNode": "living:coeliac-ganglia",
+   "geometry": {
+    "vertices": 759,
+    "triangles": 1280,
+    "boundsMeters": [
+     [
+      0.013773705810308456,
+      0.047990113496780396,
+      0.01413612999022007
+     ],
+     [
+      0.020493468269705772,
+      0.05853559449315071,
+      0.015903573483228683
      ]
     ]
    }
@@ -12415,12 +13767,12 @@
     "triangles": 11400,
     "boundsMeters": [
      [
-      0.004736820235848427,
-      0.004695819690823555,
+      0.005577076226472855,
+      0.004750947002321482,
       -0.0016868520760908723
      ],
      [
-      0.0342077761888504,
+      0.032841429114341736,
       0.028399856761097908,
       0.021062597632408142
      ]
@@ -12742,15 +14094,15 @@
    "scale": "organ",
    "color": "#c8333a",
    "exterior": true,
-   "description": "Simulated. One along each digit from the middle of the paw, on the side of the sole. These are simple courses, and they are not divided into named arteries. Not measured from this specimen.",
+   "description": "Simulated. A digital artery along each digit on the side of the sole or palm, as Cook figure 104 shows on the hind foot; dorsal metacarpal arteries fanning out over the back of each fore paw from the wrist, where the collateral radial artery reaches it, after Cook figure 108; and a medial tarsal artery on the back of each hind foot, after Cook figure 103. The courses are estimates from the figures. Not measured from this specimen.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse.",
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/",
     "Kochi T, Imai Y, Takeda A, Watanabe Y, Mori S, Tachi M, Kodama T. Characterization of the arterial anatomy of the murine hindlimb: functional role in the design and understanding of ischemia models. PLoS One 2013;8(12):e84047. doi:10.1371/journal.pone.0084047"
    ],
    "meshNode": "living:paw-arteries",
    "geometry": {
-    "vertices": 3046,
-    "triangles": 6020,
+    "vertices": 3886,
+    "triangles": 7660,
     "boundsMeters": [
      [
       0.004739279393106699,
@@ -12759,8 +14111,8 @@
      ],
      [
       0.03155331686139107,
-      0.07767482846975327,
-      -0.005213949363678694
+      0.07784833014011383,
+      -0.004375081043690443
      ]
     ]
    }
@@ -12777,24 +14129,24 @@
    "scale": "organ",
    "color": "#3f5a9a",
    "exterior": true,
-   "description": "Simulated. One along each digit from the middle of the paw, beside the artery. These are simple courses. Not measured from this specimen.",
+   "description": "Simulated. On each hind foot, after Cook figures 103 to 105: the lateral marginal vein along the outer border and up the shank, the medial marginal vein along the inner border, dorsal metatarsal veins from the digits to the lateral one, a medial tarsal vein beside its artery, and veins on the sole to the pads between the digits. On each fore paw, a vein along each digit on the side of the palm, as a simple course, because the figures read show none there. The courses are estimates from the figures. Not measured from this specimen.",
    "basis": [
-    "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
+    "Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/"
    ],
    "meshNode": "living:paw-veins",
    "geometry": {
-    "vertices": 3046,
-    "triangles": 6020,
+    "vertices": 3020,
+    "triangles": 5928,
     "boundsMeters": [
      [
-      0.004632805939763784,
+      0.005906380247324705,
       0.022092822939157486,
-      -0.0065079499036073685
+      -0.006364988163113594
      ],
      [
-      0.03166055679321289,
-      0.07771438360214233,
-      -0.005207893904298544
+      0.03039051778614521,
+      0.07786719501018524,
+      -0.003186949994415045
      ]
     ]
    }
@@ -13089,14 +14441,14 @@
     "triangles": 1280,
     "boundsMeters": [
      [
-      0.012593819759786129,
-      0.014204180799424648,
-      0.01316104270517826
+      0.012861388735473156,
+      0.014252707362174988,
+      0.013020260259509087
      ],
      [
-      0.026132330298423767,
-      0.01737525500357151,
-      0.01686733216047287
+      0.02586226537823677,
+      0.017476119101047516,
+      0.01670755073428154
      ]
     ]
    }
@@ -13123,12 +14475,12 @@
     "triangles": 2976,
     "boundsMeters": [
      [
-      0.015152238309383392,
-      0.0043883295729756355,
+      0.01580055244266987,
+      0.004394936375319958,
       0.007307830732315779
      ],
      [
-      0.02314731292426586,
+      0.022516828030347824,
       0.010330341756343842,
       0.010357796214520931
      ]
@@ -13341,10 +14693,10 @@
   }
  ],
  "statistics": {
-  "structures": 393,
-  "triangles": 2310620,
-  "glbBytes": 50489104,
-  "glbSha256": "c63da8c236322a2334d4a0cec1d94ae66200994efcff4896cbd184409b2153e3",
+  "structures": 434,
+  "triangles": 2331092,
+  "glbBytes": 50891580,
+  "glbSha256": "c89537579e95bd5868f1c6db50b239cee8d90b31afbbb9c31c1373a3d501b77f",
   "sourceVoxelSpacingMm": [
    0.1,
    0.1,

@@ -2,6 +2,7 @@ import type { LabToolId } from '../domain/dissection-lab';
 
 const PATHS: Readonly<Record<LabToolId, React.ReactNode>> = {
   hand: <path d="M8 13V6a1.5 1.5 0 0 1 3 0v5m0-1V4.5a1.5 1.5 0 0 1 3 0V11m0-5.5a1.5 1.5 0 0 1 3 0V12m0-3.5a1.5 1.5 0 0 1 3 0V15c0 3.5-2.5 6-6 6h-1.2c-2 0-3.3-.8-4.4-2.4L4.2 14a1.5 1.5 0 0 1 2.3-1.8L8 13.8" />,
+  clippers: <><rect x="8" y="8.5" width="8" height="12.5" rx="3.2" /><path d="M7 8.5h10" /><path d="M8 8.5V5M10 8.5V5M12 8.5V5M14 8.5V5M16 8.5V5" /><path d="M12 13v3" /></>,
   scalpel: <><path d="m4 20 8.5-8.5" /><path d="m12.5 11.5 2-2 5.5-5.5c.5 2.5-.7 6-3.2 8.2-1.3 1.2-2.7 1.5-4.3-.7Z" /></>,
   scissors: <><circle cx="6" cy="18" r="2.6" /><circle cx="6" cy="6" r="2.6" /><path d="M8.2 7.5 20 17M8.2 16.5 20 7" /></>,
   forceps: <><path d="M12 3 9.8 12 12 21" /><path d="M12 3l2.2 9L12 21" /><path d="M10.6 8.5h2.8" /></>,

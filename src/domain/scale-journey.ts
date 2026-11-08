@@ -583,6 +583,13 @@ export function journeyLevels(tissue: JourneyTissue = 'skin', tail: JourneyTail 
   return [...(tissue === 'skin' ? JOURNEY_LEVELS.slice(0, SHARED_FROM) : ROUTES[tissue].levels), ...TAILS[tail]];
 }
 
+/** Every level of every way down, once each, for the list of sources. */
+export function everyJourneyLevel(): readonly JourneyLevel[] {
+  const levels = new Map<string, JourneyLevel>();
+  for (const level of [...JOURNEY_LEVELS, ...Object.values(ROUTES).flatMap((route) => route.levels), ...Object.values(TAILS).flat()]) if (!levels.has(level.id)) levels.set(level.id, level);
+  return [...levels.values()];
+}
+
 /** Every way down that has a level of its own, for checks. */
 export const JOURNEY_TAILS: readonly JourneyTail[] = Object.freeze(['nucleus', ...Object.keys(TAILS)] as JourneyTail[]);
 
@@ -624,7 +631,7 @@ export function journeyTissueOf(structure: { readonly id: string; readonly name:
   if (has('skeletal')) return 'bone';
   if (has('muscular') && !has('respiratory')) return 'muscle';
   if (/-veins?$|venae|vena-cava|vein-stems|portal-vein|portal-branches/.test(id)) return 'vein';
-  if (/-arter(y|ies)$|aorta|artery-stems|cerebral-base|tail-vessels/.test(id)) return 'artery';
+  if (/-arter(y|ies)$|aorta|artery-stems|cerebral-base|tail-vessels|^(cervical|costocervical)-trunks$/.test(id)) return 'artery';
   if (has('nervous') && /nerves?$|plexus|roots|sympathetic|ganglia/.test(id)) return 'nerve';
   if (/^liver-/.test(id)) return 'liver';
   if (/^kidney-|^renal-medullae$/.test(id)) return 'kidney';

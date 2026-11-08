@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { BONE_ONLY, canBeGrasped, canBeParted, canBeReflected, channelOfTier, cutReach, cutRefusal, labTool, type LabAction, type LabActionKind, type LabFacts, type LabPose, type LabSide, type LabToolId } from '../domain/dissection-lab';
+import { BONE_ONLY, boundTogether, canBeGrasped, canBeParted, canBeReflected, channelOfTier, cutReach, cutRefusal, labTool, type LabAction, type LabActionKind, type LabFacts, type LabPose, type LabSide, type LabToolId } from '../domain/dissection-lab';
 import { LAB_EXERCISES, type DemoPlace, type DemoStep, type FlapKind, type LabGuide, type LabViewName, type OnStructure } from '../domain/lab-exercises';
 import type { CutPoint } from '../domain/cut-field';
 import type { DissectionTierId } from '../domain/dissection';
@@ -10,7 +10,8 @@ import { createHand } from './lab-hands';
 import { createInstrument, disposeInstrument, type Instrument } from './lab-instruments';
 import { createLabPick, type LabHit, type LabPickEntry } from './lab-pick';
 import { createSkinEdge } from './lab-skin-edge';
-import { partFur, type PartedLine } from './fur';
+import { partFur, setFurClip, type PartedLine } from './fur';
+import { createClipGrid } from './lab-clip';
 import { createFlapSheet, createSurfaceProbe, flapLook, type FlapSheet } from './lab-flap-sheet';
 import { FLAP_SLOTS, LIFE_KIND, LIFE_SHARED } from './life-field';
 import { surfaceShadingOf, type SurfaceShadingUniforms } from './surface-shading';
@@ -92,6 +93,8 @@ export interface LabSession {
   stopDemonstration(): void;
   /** Start the flow of a perfusion, if the needle and the way out are ready. */
   perfuse(): void;
+  /** Lay a paper drape with an opening over the animal on its back. */
+  drape(): void;
   /** What to mark on the animal, and whether a stroke keeps to a marked line. */
   setGuide(guide: LabGuide | null): void;
   setSteady(on: boolean): void;
@@ -141,6 +144,7 @@ interface Step {
   readonly sweeps: Sweep[];
   readonly objects: THREE.Object3D[];
   took?: string;
+  tookWith?: readonly string[];
   moved?: { id: string; before: THREE.Vector3 };
   tied?: string;
   cleaned?: BloodSpot[];
@@ -150,6 +154,10 @@ interface Step {
   /** The flow of a perfusion began here. */
   perfused?: boolean;
   drewFlap?: { flap: Flap; before: number };
+  /** Flaps that a suture brought back together, and how far they had been drawn. */
+  closed?: { flap: Flap; before: number }[];
+  /** Where the clippers went, and how wide. */
+  clipped?: { from: CutPoint; to: CutPoint }[];
 }
 
 interface Stroke {
@@ -181,6 +189,10 @@ interface Stroke {
   readonly objects: THREE.Object3D[];
   bled: boolean;
   joinedFlaps?: Flap[];
+  closed?: { flap: Flap; before: number }[];
+  /** The way the suture has gone, at rest. */
+  seam?: THREE.Vector3[];
+  clipped?: { from: CutPoint; to: CutPoint }[];
 }
 
 const LONGEST_STEP = 0.012, SMALLEST_STEP = 0.00012, MOST_MOVED = 0.03, SPLAY = 1, BONE_UNDER = 0.007, MOVE_LIFT = 0.0012, SNAP_PIXELS = 34;
@@ -190,8 +202,12 @@ const toPoint = (vector: THREE.Vector3): CutPoint => [vector.x, vector.y, vector
 const FLAP_TYPE: Readonly<Record<FlapKind, number>> = { skin: 0, wall: 1, chest: 2, skull: 3 };
 /** How long the tissues take to clear in a perfusion here. In an animal it takes minutes. */
 const PERFUSION_SECONDS = 40;
+/** How long a syringe takes to fill from the heart here. */
+const DRAW_SECONDS = 7;
+/** How deep a needle that draws blood goes at most, in metres. */
+const DRAW_DEEPEST = 0.006;
 /** How far from what it looks at each view stands. Close views are near enough to work in, and leave the hands in view. */
-const VIEW_REACH: Readonly<Record<LabViewName, number>> = { belly: 0.34, back: 0.34, left: 0.3, right: 0.3, 'left-close': 0.15, tail: 0.085, heart: 0.075, spleen: 0.11, kidney: 0.075, close: 0.135, chest: 0.11, 'left-thigh': 0.09, femoral: 0.05, head: 0.1 };
+const VIEW_REACH: Readonly<Record<LabViewName, number>> = { belly: 0.34, back: 0.34, left: 0.3, right: 0.3, 'left-close': 0.15, tail: 0.085, heart: 0.075, spleen: 0.11, kidney: 0.075, close: 0.135, chest: 0.11, 'left-thigh': 0.09, femoral: 0.05, head: 0.1, shank: 0.07 };
 /** How far a hind leg is drawn out for surgery on its inner side, in radians, on top of how it lies. Chosen so that the inner side of the thigh faces the view. */
 const LEG_TAPED_DOWN = 0.95;
 /** How far a lid of bone turns when it has been lifted right back, in radians: the front of the rib cage goes over towards the head, and a leaf of the skull lies out to the side. */
@@ -203,8 +219,22 @@ const LID_CHANNELS = [channelOfTier('skeleton'), channelOfTier('outer-muscle'), 
 const BLOOD_GEOMETRY = new THREE.SphereGeometry(1, 16, 10);
 const BLOOD_COLOUR = new THREE.Color('#6e0d10'), BLOOD_WASHED = new THREE.Color('#d8a9a4');
 const BLOOD_MATERIAL = new THREE.MeshPhysicalMaterial({ color: BLOOD_COLOUR, roughness: 0.28, clearcoat: 0.45, clearcoatRoughness: 0.3 });
-const STITCH_GEOMETRY = new THREE.CylinderGeometry(0.00005, 0.00005, 0.0017, 5);
-const STITCH_MATERIAL = new THREE.MeshStandardMaterial({ color: '#223a8a', roughness: 0.7 });
+/** A loop of a running suture as it shows on the surface, and the knot at each end. The stitch interval and bite are those of Carlson and Chakkalakal 2011: 1 mm and 1 mm. */
+const STITCH_SPACING = 0.001, STITCH_SLANT = 0.5;
+const STITCH_GEOMETRY = new THREE.CylinderGeometry(0.00004, 0.00004, 0.0023, 5);
+const KNOT_GEOMETRY = new THREE.SphereGeometry(0.00013, 8, 6);
+const SUTURE_CHANNELS = ['skin', 'fat', 'outer-muscle', 'inner-muscle', 'lining'].map((tier) => channelOfTier(tier as DissectionTierId));
+/** Thread lies on the skin, which rises and falls a little as the animal breathes. It is drawn a fraction of a millimetre towards the eye, so that it stays on top of the skin it lies on. */
+const onTop = (material: THREE.Material) => {
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
+  mvPosition.xyz += normalize(-mvPosition.xyz) * 0.00035;
+  gl_Position = projectionMatrix * mvPosition;`);
+  };
+  return material;
+};
+const STITCH_MATERIAL = onTop(new THREE.MeshStandardMaterial({ color: '#223a8a', roughness: 0.7 }));
+const SEAM_MATERIAL = onTop(new THREE.MeshStandardMaterial({ color: '#a3605a', roughness: 0.8 }));
 const GUIDE_MATERIAL = new THREE.MeshBasicMaterial({ color: '#19c79a', transparent: true, opacity: 0.95, depthTest: false });
 const GUIDE_DOT = new THREE.SphereGeometry(0.00034, 10, 8);
 
@@ -249,6 +279,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
   const skin = meshes.get(skinId)! as THREE.Mesh;
   const box = new THREE.Box3().setFromObject(skin).expandByScalar(0.003);
   const volume = createCutVolume(renderer, box);
+  const clip = createClipGrid(volume.field.shape);
   const pick = createLabPick();
   const started = performance.now();
   const secondsNow = () => (performance.now() - started) / 1000;
@@ -345,9 +376,9 @@ export function createLabSession(options: LabSessionOptions): LabSession {
   const benchPoint = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z).applyMatrix4(bench.matrixWorld);
   placeBench();
 
-  const TRAY_TOOLS: readonly LabToolId[] = ['scalpel', 'scissors', 'forceps', 'probe', 'bone-cutter', 'ligature', 'suture', 'pin', 'swab', 'syringe'];
+  const TRAY_TOOLS: readonly LabToolId[] = ['clippers', 'scalpel', 'scissors', 'forceps', 'probe', 'bone-cutter', 'ligature', 'suture', 'pin', 'swab', 'syringe'];
   const trayCopies = new Map<LabToolId, THREE.Object3D>();
-  const trayPlace = (id: LabToolId) => new THREE.Vector3(-0.082 + 0.0182 * TRAY_TOOLS.indexOf(id), trayY - 0.027, 0.0016);
+  const trayPlace = (id: LabToolId) => new THREE.Vector3(-0.09 + 0.0172 * TRAY_TOOLS.indexOf(id), trayY - 0.027, 0.0016);
   TRAY_TOOLS.forEach((id) => {
     const copy = createInstrument(id)!;
     copy.group.position.copy(trayPlace(id));
@@ -393,8 +424,8 @@ export function createLabSession(options: LabSessionOptions): LabSession {
   let splay = 0, splayGoal = SPLAY, steady = true, steadyWanted = true;
   const legGoals = [0, 0, 0, 0];
   let swap: { t: number; next: LabToolId; done: boolean } | null = null;
-  let carry: { id: string; from: THREE.Vector3; to: THREE.Vector3; t: number; step: Step } | null = null;
-  let needle: { entry: THREE.Vector3; entryAtRest: THREE.Vector3; way: THREE.Vector3; wayAtRest: THREE.Vector3; depth: number; firstId: string; side: LabSide; out: number; spare: number; speed: number; stopsIn: THREE.Mesh[]; stopped: boolean; running: number } | null = null;
+  let carry: { id: string; with: readonly string[]; from: THREE.Vector3; to: THREE.Vector3; t: number; step: Step } | null = null;
+  let needle: { draws: boolean; drawn: number; dry?: boolean; entry: THREE.Vector3; entryAtRest: THREE.Vector3; way: THREE.Vector3; wayAtRest: THREE.Vector3; depth: number; firstId: string; side: LabSide; out: number; spare: number; speed: number; stopsIn: THREE.Mesh[]; stopped: boolean; running: number } | null = null;
   const openings: { sweeps: Sweep[]; from: number; to: number; t: number }[] = [];
   // Where each tip is, and where it is going.
   const rightTip = new THREE.Vector3(), rightGoal = new THREE.Vector3(), leftTip = new THREE.Vector3(), leftGoal = new THREE.Vector3();
@@ -542,7 +573,8 @@ export function createLabSession(options: LabSessionOptions): LabSession {
 
   const beginStroke = (hit: LabHit, kind: LabActionKind, radius: number, restore = false) => {
     const tier = tierOf(hit.id);
-    const reach = kind === 'suture' ? { channels: [0], depth: 0 } : cutReach(tool, tier);
+    // A running suture takes every layer that lies open, from the skin to the peritoneum. Clippers and a swab work on the surface and change nothing in the grid of cuts.
+    const reach = kind === 'suture' ? { channels: SUTURE_CHANNELS, depth: 0.0032 } : kind === 'clip' || kind === 'scrub' ? { channels: [channelOfTier('skin')], depth: 0 } : cutReach(tool, tier);
     const sweeps: Sweep[] = [];
     const rest = toPoint(hit.rest);
     for (const channel of reach.channels) for (const share of reach.depth > 0.003 ? [0, 0.25, 0.5, 0.75, 1] : reach.depth > 0 ? [0, 0.5, 1] : [0]) {
@@ -554,12 +586,17 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     const openTo = kind === 'cut' ? (tool === 'scissors' ? Math.max(radius * 2.6, 0.0011) : Math.max(radius * 3, 0.0008)) : radius;
     stroke = { kind, tool, tier, filter, radius, openTo, restore, sweeps, live: [...sweeps], pointerX: pointer.x, pointerY: pointer.y, structures: new Set([hit.id]), length: 0, aside: 0, from: Infinity, to: -Infinity, heights: 0, asides: 0, samples: 0, lastGrasp: 0, lastNow: hit.now.clone(), restLine: [], normals: new THREE.Vector3(), objects: [], bled: false };
     sampleOf(stroke, hit);
-    if (kind !== 'suture') for (const sweep of sweeps) volume.sweep(sweep.channel, sweep.points[0], sweep.points[0], radius, restore);
+    if (kind !== 'suture' && kind !== 'clip' && kind !== 'scrub') for (const sweep of sweeps) volume.sweep(sweep.channel, sweep.points[0], sweep.points[0], radius, restore);
+    if (kind === 'clip') { stroke.clipped = [{ from: rest, to: rest }]; clip.sweep(rest, rest, radius); clip.flush(); setFurClip(clip.texture); }
     bleedIfCut(hit);
     if ((kind === 'cut' || kind === 'bone') && !grasp) takeHold(hit, filter);
     if (history.every((step) => step.sweeps.length === 0) && !flaps.length) options.onChange();
-    // Stitching brings the edges of the skin back together.
-    if (kind === 'suture') for (const flap of flaps) if (flap.kind === 'skin') flap.goal = 0;
+    // Stitching brings the edges of what is open here back together.
+    if (kind === 'suture') {
+      stroke.seam = [];
+      stroke.closed = flapsOpenNear(hit.rest).map((flap) => ({ flap, before: flap.goal }));
+      for (const { flap } of stroke.closed) flap.goal = 0;
+    }
     changed = true;
   };
 
@@ -596,22 +633,20 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       s.length += gap;
       for (const sweep of s.live) {
         const end = sweep.points[sweep.points.length - 1], next = nextOf(sweep);
-        volume.sweep(sweep.channel, end, next, s.radius, s.restore);
+        if (s.kind !== 'clip' && s.kind !== 'scrub') volume.sweep(sweep.channel, end, next, s.radius, s.restore);
         sweep.points.push(next);
       }
     } else {
       // The stroke goes on from there as a new line.
-      s.live = s.live.map((sweep) => { const next = nextOf(sweep), fresh: Sweep = { ...sweep, points: [next] }; volume.sweep(sweep.channel, next, next, s.radius, s.restore); s.sweeps.push(fresh); return fresh; });
+      s.live = s.live.map((sweep) => { const next = nextOf(sweep), fresh: Sweep = { ...sweep, points: [next] }; if (s.kind !== 'clip' && s.kind !== 'scrub') volume.sweep(sweep.channel, next, next, s.radius, s.restore); s.sweeps.push(fresh); return fresh; });
     }
-    if (s.kind === 'suture' && whole) {
-      // A stitch across the line, every so often.
-      if (Math.floor(s.length / 0.0016) > Math.floor((s.length - gap) / 0.0016)) {
-        const across = new THREE.Vector3().crossVectors(hit.now.clone().sub(s.lastNow).normalize(), hit.normal).normalize();
-        const stitch = new THREE.Mesh(STITCH_GEOMETRY, STITCH_MATERIAL);
-        stitch.position.copy(hit.now).addScaledVector(hit.normal, 0.00012);
-        stitch.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), across);
-        addTo(stitch, s);
-      }
+    // The way the needle has gone, at rest. The loops are drawn on the skin once the edges have come together, because while the skin is still drawn back the needle may be passing through the wall under it.
+    if (s.kind === 'suture' && whole) s.seam?.push(hit.rest.clone());
+    if (s.kind === 'clip' && whole) {
+      const from = s.clipped![s.clipped!.length - 1].to;
+      s.clipped!.push({ from, to: rest });
+      clip.sweep(from, rest, s.radius);
+      clip.flush();
     }
     cutPhase += gap * 1100;
     if (tool === 'scissors' || tool === 'bone-cutter') {
@@ -807,7 +842,8 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     edgeStale = true;
     if (s.kind === 'cut' && s.tier === 'skin' && guideLine.length >= 2) { partedLines.push(linePart()); if (partedLines.length > 4) partedLines.shift(); }
     const action: LabAction = { kind: s.kind, tool: s.tool, at: secondsNow(), structures: [...s.structures], tier: s.tier, lengthMm: s.length * 1000, asideMm: s.aside, side: sideOf(s), fromMm: s.from, toMm: s.to, bled: s.bled || undefined };
-    history.push({ action, sweeps: s.sweeps, objects: s.objects, madeFlaps: made.length ? made : undefined, joinedFlaps: s.joinedFlaps });
+    history.push({ action, sweeps: s.kind === 'clip' || s.kind === 'scrub' ? [] : s.sweeps, objects: s.objects, madeFlaps: made.length ? made : undefined, joinedFlaps: s.joinedFlaps, closed: s.closed, clipped: s.clipped });
+    if (s.kind === 'suture' && s.seam && s.seam.length >= 2) seamsToDraw.push({ path: s.seam, step: history[history.length - 1], closing: (s.closed ?? []).map(({ flap }) => flap), due: clock + 0.5 });
     if (s.kind === 'bone') {
       const lids = (s.from + s.to) / 2 < body()[0] * 1000 - 2 ? makeSkullLids(s) : [makeChestLid()].filter((lid): lid is Flap => !!lid);
       if (lids.length) history[history.length - 1].madeFlaps = [...(history[history.length - 1].madeFlaps ?? []), ...lids];
@@ -822,6 +858,132 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       if (volume.field.sample(channel, [rest.x + dx * reach, rest.y + dy * reach, rest.z + dz * reach]) > 0.45) return true;
     }
     return false;
+  };
+
+  /** The flaps of skin or wall that lie open near a place. */
+  const flapsOpenNear = (rest: THREE.Vector3) => flaps.filter((flap) => {
+    if (!flap.sheet) return false;
+    const line = flap.b.clone().sub(flap.a), t = Math.max(0, Math.min(1, rest.clone().sub(flap.a).dot(line) / line.dot(line)));
+    return flap.a.clone().addScaledVector(line, t).distanceTo(rest) < 0.012;
+  });
+  /**
+   * A paper drape with an opening, over the animal on its back. Each point of the sheet lies a little above the skin, or on the board beside the animal, and the sheet is then evened out so that it falls from the body to the board.
+   * The coat under it is not drawn, as it would be pressed flat and hidden. It is a drawing: it keeps nothing clean and does not move.
+   */
+  const DRAPE_MATERIAL = new THREE.MeshStandardMaterial({ color: '#8fb3cf', roughness: 0.94, side: THREE.DoubleSide });
+  const layDrape = (): Step => {
+    const centre = place(['diaphragm', 0, 0]);
+    const from = -15, to = 41, half = 25;
+    const open = (u: number, v: number) => u > 0 && u < 26.5 && Math.abs(v) < 9.5;
+    const nu = to - from, nv = 2 * half, top = Math.min(...corners.map((corner) => corner.dot(dorsal))) - 0.01, board = backLevel - 0.0007;
+    const ray = new THREE.Raycaster();
+    ray.far = 0.1;
+    const bases: THREE.Vector3[] = [], floor: number[] = [], skinAt: (THREE.Vector3 | null)[] = [];
+    for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) {
+      const base = centre.clone().addScaledVector(axis, (from + i) / 1000).addScaledVector(lateral, toLeft * (j - half) / 1000);
+      ray.set(base.clone().addScaledVector(dorsal, top - base.dot(dorsal)), dorsal);
+      const hit = ray.intersectObject(skin, false)[0];
+      bases.push(base);
+      skinAt.push(hit ? hit.point.clone() : null);
+      // The legs of an animal on its back are laid out, and the skin of the groin goes with them, so the sheet lies over the skin as it lies now.
+      floor.push(hit ? Math.min(board, Math.min(hit.point.dot(dorsal), nowOf(hit.point).dot(dorsal)) - 0.0007) : board);
+    }
+    const at = (i: number, j: number) => Math.max(0, Math.min(nv, j)) * (nu + 1) + Math.max(0, Math.min(nu, i));
+    // Between two points a flat piece of sheet would cut through a curved flank, so each point is kept as high as the skin round it.
+    for (let round = 0; round < 2; round++) {
+      const before = [...floor];
+      for (let index = 0; index < floor.length; index++) {
+        const i = index % (nu + 1), j = Math.floor(index / (nu + 1));
+        for (const [di, dj] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1], [-1, 1], [1, -1]]) floor[index] = Math.min(floor[index], before[at(i + di, j + dj)]);
+      }
+    }
+    // A sheet does not follow every hollow: it is evened out, and never lies under the skin or the board.
+    let heights = [...floor];
+    for (let round = 0; round < 12; round++) {
+      heights = heights.map((value, index) => {
+        const i = index % (nu + 1), j = Math.floor(index / (nu + 1));
+        const mean = (value * 2 + heights[at(i - 1, j)] + heights[at(i + 1, j)] + heights[at(i, j - 1)] + heights[at(i, j + 1)]) / 6;
+        return Math.min(floor[index], mean);
+      });
+    }
+    const positions: number[] = [], indices: number[] = [];
+    bases.forEach((base, index) => { const point = base.clone().addScaledVector(dorsal, heights[index] - base.dot(dorsal)); positions.push(point.x, point.y, point.z); });
+    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) {
+      if (open(from + i + 0.5, j - half + 0.5)) continue;
+      const a = at(i, j), b = at(i + 1, j), c = at(i, j + 1), d = at(i + 1, j + 1);
+      indices.push(a, b, d, a, d, c);
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    const sheet = new THREE.Mesh(geometry, DRAPE_MATERIAL);
+    sheet.receiveShadow = true;
+    sheet.name = 'drape';
+    const step: Step = { action: { kind: 'drape', tool: 'hand', at: secondsNow(), structures: [skinId] }, sweeps: [], objects: [], clipped: [] };
+    addTo(sheet, step);
+    // The coat under the sheet is hidden, along rows over the skin outside the opening, and down the flanks, where the sheet falls to the board.
+    const hide = (a: CutPoint, b: CutPoint) => { step.clipped!.push({ from: a, to: b }); clip.sweep(a, b, 0.0016); };
+    for (let j = 0; j <= nv; j += 2) for (let i = 1; i <= nu; i++) {
+      const p = skinAt[at(i - 1, j)], q = skinAt[at(i, j)];
+      if (!p || !q || open(from + i - 0.5, j - half)) continue;
+      hide(toPoint(p), toPoint(q));
+    }
+    for (let i = 0; i <= nu; i++) for (let j = 0; j <= nv; j++) {
+      const here = skinAt[at(i, j)];
+      if (!here || (skinAt[at(i, j - 1)] && skinAt[at(i, j + 1)])) continue;
+      for (let down = 0; down < 4; down++) hide(toPoint(here.clone().addScaledVector(dorsal, down * 0.002)), toPoint(here.clone().addScaledVector(dorsal, (down + 1) * 0.002)));
+    }
+    return step;
+  };
+
+  /** Sutures whose loops are still to be drawn, once the edges have come together. */
+  const seamsToDraw: { path: THREE.Vector3[]; step: Step; closing: Flap[]; due: number }[] = [];
+  /** The skin as it is drawn over a place at rest, where it can be seen from the eye, and otherwise its surface at rest. */
+  const skinSeenOver = (rest: THREE.Vector3): { now: THREE.Vector3; normal: THREE.Vector3 } => {
+    const view = size(), seen = nowOf(rest).project(camera), x = (seen.x + 1) / 2 * view.x, y = (1 - seen.y) / 2 * view.y;
+    if (x >= 0 && y >= 0 && x < view.x && y < view.y && seen.z < 1) {
+      const wasX = pointer.x, wasY = pointer.y;
+      pointer.x = x; pointer.y = y;
+      const hit = pickAt((id) => id === skinId, true);
+      pointer.x = wasX; pointer.y = wasY;
+      if (hit && hit.rest.distanceTo(rest) < 0.004) return { now: hit.now.clone(), normal: hit.normal.clone() };
+    }
+    const top = surfaceOver(rest), normal = top?.face ? top.face.normal.clone().transformDirection(skin.matrixWorld) : toEye.clone();
+    return { now: nowOf(top?.point ?? rest).addScaledVector(normal, 0.0002), normal };
+  };
+  /** A running suture: a slanted loop across the line every millimetre, the seam between them and a knot at each end. */
+  const drawSeam = (path: readonly THREE.Vector3[], step: Step) => {
+    const stations: THREE.Vector3[] = [path[0].clone()];
+    let carried = 0;
+    for (let index = 1; index < path.length; index++) {
+      const from = path[index - 1], to = path[index], length = from.distanceTo(to);
+      if (length > LONGEST_STEP) continue;
+      let at = STITCH_SPACING - carried;
+      while (at <= length) { stations.push(from.clone().lerp(to, at / length)); at += STITCH_SPACING; }
+      carried = length - (at - STITCH_SPACING);
+    }
+    if (stations.length < 2) return;
+    const marks = stations.map(skinSeenOver);
+    let slant: THREE.Vector3 | null = null;
+    marks.forEach((mark, index) => {
+      const forward = marks[Math.min(marks.length - 1, index + 1)].now.clone().sub(marks[Math.max(0, index - 1)].now).normalize();
+      const across = new THREE.Vector3().crossVectors(forward, mark.normal).normalize();
+      // Whichever way the hand went along the cut, the loops slant the same way, as they do when the thread goes on from one to the next.
+      if (slant && across.dot(slant) < 0) across.negate();
+      slant ??= across.clone();
+      const stitch = new THREE.Mesh(STITCH_GEOMETRY, STITCH_MATERIAL);
+      stitch.position.copy(mark.now).addScaledVector(mark.normal, 0.0001);
+      stitch.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), across.addScaledVector(forward, STITCH_SLANT).normalize());
+      addTo(stitch, step);
+    });
+    const seam = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(marks.map((mark) => mark.now.clone().addScaledVector(mark.normal, 0.00004))), Math.min(240, marks.length * 3), 0.000032, 5), SEAM_MATERIAL);
+    addTo(seam, step);
+    for (const end of [marks[0], marks[marks.length - 1]]) {
+      const knot = new THREE.Mesh(KNOT_GEOMETRY, STITCH_MATERIAL);
+      knot.position.copy(end.now).addScaledVector(end.normal, 0.00012);
+      addTo(knot, step);
+    }
   };
 
   /** The flap that a press at this place takes hold of: one of the kind of layer pressed on, or the nearest drawn edge. */
@@ -913,9 +1075,18 @@ export function createLabSession(options: LabSessionOptions): LabSession {
         changed = true;
         break;
       }
-      case 'suture':
-        if (volume.field.sample(0, toPoint(hit.rest)) < 0.05 && !nearAnEdge(hit.rest, 0) && !flaps.some((flap) => flap.kind === 'skin')) { options.onRefused('There is no cut in the skin here to close.'); return; }
-        beginStroke(hit, 'suture', radius, true);
+      case 'suture': {
+        // The needle goes in at the skin, though the place pressed may lie deeper, seen through the opening.
+        const outer = pickAt((id) => tierOf(id) === 'skin', true) ?? hit;
+        const under = outer.rest.clone().addScaledVector(outer.restNormal, -0.0015);
+        if (!flapsOpenNear(outer.rest).length && !SUTURE_CHANNELS.some((channel) => volume.field.sample(channel, toPoint(outer.rest)) >= 0.05 || nearAnEdge(outer.rest, channel) || nearAnEdge(under, channel))) { options.onRefused('There is no cut here to close.'); return; }
+        rightGoal.copy(outer.now);
+        beginStroke(outer, 'suture', radius, true);
+        break;
+      }
+      case 'clippers':
+        if (tier !== 'skin') { options.onRefused('Clippers are for the coat.'); return; }
+        beginStroke(hit, 'clip', radius);
         break;
       case 'pin': {
         const made = createInstrument('pin')!;
@@ -950,11 +1121,13 @@ export function createLabSession(options: LabSessionOptions): LabSession {
         // The needle goes in at its own angle to the surface; at rest the surface may lie a different way, on a limb that has been turned.
         let wayAtRest = way.clone().applyQuaternion(new THREE.Quaternion().setFromUnitVectors(hit.normal, hit.restNormal));
         // Into a muscle under the mark, a hand goes for the body of the muscle that it can feel, and not by the small folds of the skin at the tip.
-        const body = asked?.degrees === 90 && asked.stopsIn?.length ? middleNear(asked.stopsIn, hit.rest, 0.006) : null;
+        // A needle that draws blood goes for the chamber, which the hand knows to lie under the mark.
+        const body = (asked?.degrees === 90 || asked?.draws) && asked.stopsIn?.length ? middleNear(asked.stopsIn, hit.rest, asked.draws ? 0.009 : 0.006) : null;
         if (body) { way = nowOf(body).sub(hit.now).normalize(); wayAtRest = body.sub(hit.rest).normalize(); }
         const offset = hit.rest.clone().sub(origin);
         const height = offset.dot(dorsal), across = Math.abs(offset.dot(lateral));
-        needle = { entry: hit.now.clone(), entryAtRest: hit.rest.clone(), way, wayAtRest, depth: 0, firstId: hit.id, side: height > middleHeight + 0.002 ? 'dorsal' : height < middleHeight && across < halfWidth ? 'ventral' : 'side', out: 0, spare: 0, speed: (asked?.mmPerSecond ?? 4) / 1000, stopsIn: (asked?.stopsIn ?? []).flatMap((id) => { const mesh = meshes.get(id); return mesh instanceof THREE.Mesh ? [mesh] : []; }), stopped: false, running: 0 };
+        instrument?.setDrawn?.(asked?.draws ? 0 : null);
+        needle = { draws: !!asked?.draws, drawn: 0, entry: hit.now.clone(), entryAtRest: hit.rest.clone(), way, wayAtRest, depth: 0, firstId: hit.id, side: height > middleHeight + 0.002 ? 'dorsal' : height < middleHeight && across < halfWidth ? 'ventral' : 'side', out: 0, spare: 0, speed: (asked?.mmPerSecond ?? 4) / 1000, stopsIn: (asked?.stopsIn ?? []).flatMap((id) => { const mesh = meshes.get(id); return mesh instanceof THREE.Mesh ? [mesh] : []; }), stopped: false, running: 0 };
         // Forceps in the left hand lift a fold of the skin, and the needle goes in beside them. What lifts the skin leaves that much more room under it before the tip reaches anything else.
         if (asked?.tent) {
           takeHold(hit, (id) => tierOf(id) === 'skin' || tierOf(id) === 'fat' || tierOf(id) === 'panniculus');
@@ -967,7 +1140,12 @@ export function createLabSession(options: LabSessionOptions): LabSession {
         for (let index = spots.length - 1; index >= 0; index--) {
           if (spots[index].mesh.position.distanceTo(hit.now) < radius + spots[index].size) { spots[index].mesh.visible = false; cleaned.push(spots[index]); spots.splice(index, 1); }
         }
-        if (!cleaned.length) { options.onRefused('There is no blood here.'); return; }
+        // With no blood to clean, a swab scrubs the skin.
+        if (!cleaned.length) {
+          if (tier === 'skin') beginStroke(hit, 'scrub', radius);
+          else options.onRefused('There is no blood here.');
+          return;
+        }
         history.push({ action: { kind: 'swab', tool, at: secondsNow(), structures: [hit.id] }, sweeps: [], objects: [], cleaned });
         report();
         changed = true;
@@ -1037,7 +1215,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     const { passed, lying } = inspectNeedle(n.entryAtRest, n.wayAtRest, Math.max(Math.min(n.depth, 0.0004), n.depth - n.spare));
     const offset = n.entryAtRest.clone().sub(origin), [, diaphragm, , sacrum] = body();
     const along = offset.dot(axis);
-    const step: Step = { action: { kind: 'inject', tool: 'syringe', at: secondsNow(), structures: passed, tier: tierOf(n.firstId), tipIn: lying, depthMm: n.depth * 1000, leftMm: offset.dot(lateral) * toLeft * 1000, abdomenShare: (along - diaphragm) / (sacrum - diaphragm), side: n.side, asideMm: Math.abs(offset.dot(lateral)) * 1000, fromMm: along * 1000, toMm: along * 1000 }, sweeps: [], objects: [] };
+    const step: Step = { action: { kind: 'inject', tool: 'syringe', at: secondsNow(), structures: passed, tier: tierOf(n.firstId), tipIn: lying, depthMm: n.depth * 1000, drawnShare: n.draws ? n.drawn : undefined, leftMm: offset.dot(lateral) * toLeft * 1000, abdomenShare: (along - diaphragm) / (sacrum - diaphragm), side: n.side, asideMm: Math.abs(offset.dot(lateral)) * 1000, fromMm: along * 1000, toMm: along * 1000 }, sweeps: [], objects: [] };
     // It leaves a small mark where it went in.
     const dot = new THREE.Mesh(BLOOD_GEOMETRY, BLOOD_MATERIAL);
     dot.position.copy(n.entry);
@@ -1045,7 +1223,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     addTo(dot, step);
     history.push(step);
     // Taken out of a vein, the needle leaves a drop of blood, for the swab.
-    if (lying.some((id) => /tail-lateral-veins$/.test(id)) && options.circulating()) addBlood(n.entry, new THREE.Vector3().copy(toEye), 0.0007, 0.0006, step);
+    if (lying.some((id) => /tail-lateral-veins$|lateral-saphenous-veins$/.test(id)) && options.circulating()) addBlood(n.entry, new THREE.Vector3().copy(toEye), 0.0007, 0.0006, step);
     lookIn = 0.3;
     report();
   };
@@ -1158,12 +1336,12 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     BLOOD_MATERIAL.color.copy(BLOOD_COLOUR);
   };
 
-  const dishPlace = (id: string) => {
+  const dishPlace = (id: string, together: readonly string[] = [id]) => {
     let slot = dishSlots.get(id);
     if (slot === undefined) { slot = dishSlots.size; dishSlots.set(id, slot); }
     const angle = slot * 2.399963, reach = 0.0085 * Math.sqrt(slot);
-    const mesh = meshes.get(id)!;
-    const bounds = new THREE.Box3().setFromObject(mesh);
+    const bounds = new THREE.Box3();
+    for (const part of together) bounds.expandByObject(meshes.get(part)!);
     const height = bounds.getSize(new THREE.Vector3()).dot(new THREE.Vector3(Math.abs(dorsal.x), Math.abs(dorsal.y), Math.abs(dorsal.z)));
     return benchPoint(dishAt.x + Math.cos(angle) * reach, dishAt.y + Math.sin(angle) * reach, height / 2 + 0.0006).sub(bounds.getCenter(new THREE.Vector3()));
   };
@@ -1174,13 +1352,15 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       const spot = spots.findIndex((item) => item.mesh === object);
       if (spot >= 0) spots.splice(spot, 1);
       if (object instanceof THREE.Group) disposeInstrument(object);
-      else if (object instanceof THREE.Mesh && object.geometry !== BLOOD_GEOMETRY && object.geometry !== STITCH_GEOMETRY) object.geometry.dispose();
+      else if (object instanceof THREE.Mesh && object.geometry !== BLOOD_GEOMETRY && object.geometry !== STITCH_GEOMETRY && object.geometry !== KNOT_GEOMETRY) object.geometry.dispose();
     }
     if (step.took) {
-      taken.delete(step.took);
       dishSlots.delete(step.took);
-      const shading = shadingOf(step.took);
-      if (shading) { shading.uLifeShift.value.set(0, 0, 0); shading.uLifeTaken.value = 0; }
+      for (const part of step.tookWith ?? [step.took]) {
+        taken.delete(part);
+        const shading = shadingOf(part);
+        if (shading) { shading.uLifeShift.value.set(0, 0, 0); shading.uLifeTaken.value = 0; }
+      }
       options.onChange();
     }
     if (step.moved) shadingOf(step.moved.id)?.uLifeShift.value.copy(step.moved.before);
@@ -1188,6 +1368,13 @@ export function createLabSession(options: LabSessionOptions): LabSession {
     if (step.cleaned) for (const spot of step.cleaned) { spot.mesh.visible = true; spots.push(spot); }
     if (step.perfused) { endPerfusion(); options.onAlive(true); }
     if (step.drewFlap) step.drewFlap.flap.goal = step.drewFlap.before;
+    if (step.closed) for (const { flap, before } of step.closed) flap.goal = before;
+    if (step.clipped) {
+      clip.clear();
+      for (const other of history) for (const { from, to } of other.clipped ?? []) if (other !== step) clip.sweep(from, to, other.action.kind === 'drape' ? 0.0016 : labTool('clippers').radius);
+      clip.flush();
+      if (!clip.any()) setFurClip(null);
+    }
     if (step.madeFlaps) {
       for (const flap of step.madeFlaps) { const at = flaps.indexOf(flap); if (at >= 0) flaps.splice(at, 1); flap.sheet?.dispose(); flap.plate?.geometry.dispose(); }
       removeSheets(step.madeFlaps);
@@ -1371,7 +1558,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
             pressHere(step.ids.length ? (id) => named.has(id) : undefined);
             r.stage = 2; r.seconds = 0;
           }
-        } else if (step.depthMm ? (needle?.depth ?? 0) * 1000 >= step.depthMm || needle?.stopped || r.seconds > 8 || !needle : r.seconds >= 0.25) { liftOff(); advance(); }
+        } else if (needle?.draws ? needle.drawn >= 0.97 || !!needle.dry || r.seconds > 18 : step.depthMm ? (needle?.depth ?? 0) * 1000 >= step.depthMm || needle?.stopped || r.seconds > 8 || !needle : r.seconds >= 0.25) { liftOff(); advance(); }
         break;
       case 'move':
         if (r.stage === 0) { session.setTool('forceps'); r.stage = 1; r.seconds = 0; }
@@ -1393,6 +1580,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
         }
         break;
       case 'perfuse': session.perfuse(); advance(); break;
+      case 'drape': session.drape(); advance(); break;
       case 'check':
         // What was done is looked at. On a slow machine a hand can slip or a press find nothing, and a step that has not come out is done again before going on.
         if (step.done(factsNow())) { r.moved = false; advance(); break; }
@@ -1468,7 +1656,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       }
       // The fur is parted along the line.
       const parted = [...partedLines];
-      if (guideLine.length >= 2) parted.push(linePart());
+      if (guideLine.length >= 2 && !guide.keepCoat) parted.push(linePart());
       partFur(parted.slice(-4));
     } else if (guide.kind === 'spot') {
       const point = place(guide.place), at = skinOver(point);
@@ -1508,7 +1696,7 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       pose = next;
       splayGoal = next === 'on-back' ? SPLAY : 0;
       placeBench();
-      for (const id of taken) shadingOf(id)?.uLifeShift.value.copy(dishPlace(id));
+      for (const step of history) if (step.took && taken.has(step.took)) { const together = step.tookWith ?? [step.took], place = dishPlace(step.took, together); for (const part of together) shadingOf(part)?.uLifeShift.value.copy(place); }
       changed = true;
       lookIn = 1.4;
       report();
@@ -1542,6 +1730,10 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       } else if (view === 'kidney') {
         target.copy(nowOf(onStructure('living:kidney-right', 1, 0.5)));
         fromAbove(0.1);
+      } else if (view === 'shank') {
+        // From the outer side of the left hind leg, a little behind it and above, where the lateral saphenous vein runs up the shank.
+        target.copy(nowOf(onStructure('living:lateral-saphenous-veins', 1, 0.74)));
+        position.copy(target).addScaledVector(lateral, toLeft * reach * 0.82).addScaledVector(above, reach * 0.46).addScaledVector(axis, reach * 0.3);
       } else if (view === 'tail') {
         // From the side of the tail on which the vein to be used lies, a little behind the place.
         target.copy(nowOf(onStructure('living:tail-lateral-veins', 1, 0.72)));
@@ -1564,11 +1756,12 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       if (taken.has(id) || id === skinId || carry) return;
       const shading = shadingOf(id), mesh = meshes.get(id);
       if (!shading || !mesh) return;
-      const step: Step = { action: { kind: 'remove', tool: 'forceps', at: secondsNow(), structures: [id], tier: tierOf(id) }, sweeps: [], objects: [], took: id };
-      taken.add(id);
-      shading.uLifeTaken.value = 1;
+      // Some things come away whole, with all their parts together.
+      const together = boundTogether(id).filter((part) => !taken.has(part) && shadingOf(part) && meshes.get(part));
+      const step: Step = { action: { kind: 'remove', tool: 'forceps', at: secondsNow(), structures: together, tier: tierOf(id) }, sweeps: [], objects: [], took: id, tookWith: together };
+      for (const part of together) { taken.add(part); shadingOf(part)!.uLifeTaken.value = 1; }
       history.push(step);
-      carry = { id, from: shading.uLifeShift.value.clone(), to: dishPlace(id), t: 0, step };
+      carry = { id, with: together, from: shading.uLifeShift.value.clone(), to: dishPlace(id, together), t: 0, step };
       if ((swap?.next ?? tool) !== 'forceps') session.setTool('forceps');
       rightOpen = 0.12;
       options.onChange();
@@ -1639,6 +1832,17 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       options.onHover(null);
       report();
     },
+    drape() {
+      if (history.some((step) => step.action.kind === 'drape')) return;
+      if (pose !== 'on-back') { options.onRefused('Lay the animal on its back first.'); return; }
+      const step = layDrape();
+      history.push(step);
+      clip.flush();
+      setFurClip(clip.texture);
+      lookIn = 0.3;
+      report();
+      changed = true;
+    },
     perfuse() {
       if (perfusion) return;
       if (!history.some((step) => step.action.kind === 'inject')) { options.onRefused('First the needle goes into the left ventricle.'); return; }
@@ -1677,6 +1881,12 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       reading();
       viewMoved = camera.position.distanceToSquared(viewWas) > 1e-10;
       viewWas.copy(camera.position);
+      // A suture is drawn on the skin once its edges have come together.
+      for (const wanted of [...seamsToDraw]) {
+        if (clock < wanted.due || (wanted.closing.some((flap) => flap.open > 0.03) && clock < wanted.due + 3)) continue;
+        seamsToDraw.splice(seamsToDraw.indexOf(wanted), 1);
+        if (history.includes(wanted.step)) { drawSeam(wanted.path, wanted.step); now = true; }
+      }
       // The blood spreads slowly until it has found its size.
       for (const spot of spots) {
         if (spot.size < spot.most) {
@@ -1742,10 +1952,9 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       if (carry) {
         // The right hand lifts it out and carries it over, in an arc.
         carry.t = Math.min(1, carry.t + delta / 1.8);
-        const shading = shadingOf(carry.id);
         const ease = carry.t * carry.t * (3 - 2 * carry.t);
         const shift = carry.from.clone().lerp(carry.to, ease).addScaledVector(benchNormal(), 0.03 * Math.sin(Math.PI * ease));
-        shading?.uLifeShift.value.copy(shift);
+        for (const part of carry.with) shadingOf(part)?.uLifeShift.value.copy(shift);
         const bounds = new THREE.Box3().setFromObject(meshes.get(carry.id)!);
         rightGoal.copy(bounds.getCenter(new THREE.Vector3())).add(shift);
         overBody = true;
@@ -1811,13 +2020,17 @@ export function createLabSession(options: LabSessionOptions): LabSession {
           if (!needle.stopped) needle.depth = Math.min(0.016, needle.depth + needle.speed * moment);
           rightGoal.copy(needle.entry).addScaledVector(needle.way, needle.depth);
           // A steady hand stops once the tip lies in what it was going for.
-          if ((steadyWanted || robot) && !needle.stopped && needle.stopsIn.length && needle.depth > 0.0003) {
+          if ((steadyWanted || robot || needle.draws) && !needle.stopped && needle.stopsIn.length && needle.depth > 0.0003) {
             const tip = needle.entryAtRest.clone().addScaledVector(needle.wayAtRest, needle.depth);
             surfaceRay.set(tip, new THREE.Vector3(0.31, 0.57, 0.76).normalize());
             surfaceRay.far = Infinity;
             needle.stopped = needle.stopsIn.some((mesh) => surfaceRay.intersectObject(mesh, false).length % 2 === 1);
           }
           // In the vein, the fluid runs up it, and the vein blanches along its length.
+          // Drawn slowly, as the method asks. How fast it fills is chosen for viewing.
+          // A needle that draws goes no further than this, whether or not it has found blood.
+          if (needle.draws && !needle.stopped && needle.depth >= DRAW_DEEPEST) { needle.stopped = true; needle.dry = true; }
+          if (needle.draws && needle.stopped && !needle.dry) { needle.drawn = Math.min(1, needle.drawn + moment / DRAW_SECONDS); instrument?.setDrawn?.(needle.drawn); changed = true; }
           if (needle.stopped && needle.stopsIn.some((mesh) => mesh === meshes.get('living:tail-lateral-veins'))) {
             needle.running = Math.min(1, needle.running + moment / 1.4);
             showBlanch(needle, needle.running);
@@ -1928,6 +2141,8 @@ export function createLabSession(options: LabSessionOptions): LabSession {
       LIFE_SHARED.uFlapCount.value = 0;
       CUT_SHARED.uLidsOpen.value = 0;
       partFur([]);
+      setFurClip(null);
+      clip.dispose();
       CUT_SHARED.uCutOn.value = 0;
       delete element.dataset.lab;
       rightHand.dispose(); leftHand.dispose();
