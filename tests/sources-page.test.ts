@@ -111,3 +111,11 @@ test('the works, deep levels, procedures and licences each have a page', () => {
   fireEvent.click(view.getByRole('tab', { name: 'Licences' }));
   assert.ok(view.getByRole('link', { name: 'CC BY-SA 4.0' }));
 });
+
+test('opened from the details of a structure, the page goes straight to that structure', () => {
+  const view = render(createElement(SourcesPage, { atlas: living, summary, focus: 'Femoral arteries' }));
+  assert.equal(view.getByRole('tab', { name: 'Structures' }).getAttribute('aria-selected'), 'true');
+  assert.equal((view.getByRole('searchbox', { name: 'Search structures' }) as HTMLInputElement).value, 'Femoral arteries');
+  assert.ok(view.getByText('Femoral arteries'));
+  assert.ok(Number(view.getByRole('status').textContent!.split(' ')[0]) < 10);
+});

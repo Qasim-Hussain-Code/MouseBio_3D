@@ -76,6 +76,10 @@ Forty-one simulated vessels and nerves are added from Cook's plates and from wor
 
 At the bench, clippers clear the coat, a swab scrubs the skin, and the needle and suture close every open layer with a running suture. Three procedures are added, opening and closing the abdomen under a drape, drawing blood from the heart and drawing blood from the lateral saphenous vein, and exposing the brain ends with lifting it out. The coat is no longer drawn standing up along the fold of a reflected flap.
 
+## A steadier demonstration and a finer eye
+
+The demonstration of finding the organs of a necropsy now exposes the right kidney more, after it had stayed hidden in some runs in a wide window. The margin of the eyelids is finer and the cornea clearer, and the details of a structure link its works and its entry on the page of sources.
+
 ## Verification and remaining work
 
 Most tissues now have a way from their cells to a measured molecule of their own, through two simulated levels, and **Play** takes it. Twenty-four Protein Data Bank entries supply the atoms, eleven of them not wholly of the mouse, and each such level says so. The walk bends its legs at a middle joint. Tokens of blood and nerve are drawn only in the vessels and nerves that are shown. See [the zoom below the layers](scale-journey.md#a-molecule-for-each-tissue).

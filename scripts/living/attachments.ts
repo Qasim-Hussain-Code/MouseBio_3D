@@ -70,7 +70,7 @@ function eyelid(centre: Vec3, outward: Vec3, radius: number): Surface {
     const a = Math.cos(angle) * radius * 0.92, b = Math.sin(angle) * radius * 0.7 * (1 - 0.28 * Math.cos(angle) ** 2);
     const height = Math.sqrt(Math.max(0, radius * radius - a * a - b * b));
     points.push(add(add(add(centre, scale(along, a)), scale(across, b)), scale(outward, height)));
-    radii.push(1.25);
+    radii.push(0.85);
   }
   return tube(points, radii, 8);
 }

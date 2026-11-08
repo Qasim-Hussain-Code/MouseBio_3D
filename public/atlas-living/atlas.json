@@ -13329,14 +13329,14 @@
     "triangles": 1568,
     "boundsMeters": [
      [
-      0.01264361385256052,
-      0.01421323698014021,
-      0.013874940574169159
+      0.012683388777077198,
+      0.014253202825784683,
+      0.013914672657847404
      ],
      [
-      0.026082834228873253,
-      0.017433736473321915,
-      0.016745030879974365
+      0.026043154299259186,
+      0.0173942893743515,
+      0.016706867143511772
      ]
     ]
    }
@@ -13389,7 +13389,7 @@
    "basis": [
     "Fuller JL, Wimer RE. Neural, sensory, and motor functions. In: Green EL, ed. Biology of the Laboratory Mouse. 2nd ed. McGraw-Hill, 1966; web edition at https://www.informatics.jax.org/greenbook/"
    ],
-   "defaultOpacity": 0.18,
+   "defaultOpacity": 0.07,
    "meshNode": "living:corneas",
    "geometry": {
     "vertices": 754,
@@ -14696,7 +14696,7 @@
   "structures": 434,
   "triangles": 2331092,
   "glbBytes": 50891580,
-  "glbSha256": "c89537579e95bd5868f1c6db50b239cee8d90b31afbbb9c31c1373a3d501b77f",
+  "glbSha256": "28f094fee00e7bb3cb4a2e9ebaa2b972555cf60ee750efe24897f3c5052a3966",
   "sourceVoxelSpacingMm": [
    0.1,
    0.1,

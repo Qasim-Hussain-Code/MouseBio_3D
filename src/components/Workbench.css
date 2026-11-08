@@ -87,6 +87,8 @@
 .evidence-filter label{display:inline-flex;align-items:center;gap:5px;font-size:11px}
 .evidence-filter small{color:#6b7671}
 .evidence-basis{margin:6px 0 0;padding-left:16px;font-size:11px;line-height:1.45;color:#55615b}
+.evidence-basis a{color:inherit;overflow-wrap:anywhere}
+.evidence-more{display:block;margin-top:6px;padding:0;font-size:11px;color:#1f6e5a;background:none;border:0;text-decoration:underline;cursor:pointer}
 .evidence-note-simulated{border-left:3px solid #d99a55;padding-left:10px}
 .evidence-note-traced{border-left:3px solid #7f8dc4;padding-left:10px}
 .constructed-label{color:#8a4b12}

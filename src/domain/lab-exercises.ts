@@ -326,7 +326,7 @@ export const LAB_EXERCISES: readonly LabExercise[] = Object.freeze([
       FIND('Find the liver', 'It lies in the top of the abdomen, under the diaphragm.', 'It has several lobes, and is the largest organ here. In this male the bladder is also large, and lies low in the middle.', ['liver-median', 'liver-left', 'liver-right']),
       {
         ...FIND('Find a kidney', 'Move the intestine aside with the forceps, part the fat over the back wall with the blunt probe, and look to one side of the spine.', 'The kidneys lie behind the peritoneum, and the right lies a little nearer the head than the left.', ['kidney-right', 'kidney-left'], 1, 'kidney'),
-        show: [{ kind: 'move', ids: ['living:small-intestine'], along: 0, side: 12 }, ...[0, 2.2, -2.2].map((aside): DemoStep => ({ kind: 'stroke', tool: 'probe', tiers: ['fat'], points: [{ of: 'living:kidney-right', side: 1, at: 0.15, aside }, { of: 'living:kidney-right', side: 1, at: 0.9, aside }], mmPerSecond: 6 })), wait(1.2)],
+        show: [{ kind: 'move', ids: ['living:small-intestine'], along: 0, side: 15 }, ...[0, 2.2, -2.2, 4.2].map((aside): DemoStep => ({ kind: 'stroke', tool: 'probe', tiers: ['fat'], points: [{ of: 'living:kidney-right', side: 1, at: 0.15, aside }, { of: 'living:kidney-right', side: 1, at: 0.9, aside }], mmPerSecond: 6 })), wait(1.2)],
       },
       {
         ...FIND('Find the spleen', 'Move the intestine back across, and look over towards the animal\'s left, beside the stomach.', 'It is a long, narrow, dark red organ, curving along the outer side of the stomach.', ['spleen'], 1, 'spleen'),

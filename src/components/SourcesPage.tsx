@@ -43,8 +43,8 @@ function EvidenceShare({ rows }: { readonly rows: readonly StructureRow[] }) {
   </div>;
 }
 
-function StructuresTab({ rows }: { readonly rows: readonly StructureRow[] }) {
-  const [words, setWords] = useState('');
+function StructuresTab({ rows, focus }: { readonly rows: readonly StructureRow[]; readonly focus?: string | null }) {
+  const [words, setWords] = useState(focus ?? '');
   const [kind, setKind] = useState<StructureEvidence | 'all'>('all');
   const counts = evidenceCounts(rows);
   const shown = rows.filter((row) => (kind === 'all' || row.evidence === kind) && matchesSearch(words, row.name, row.description));
@@ -118,8 +118,9 @@ function ProceduresTab() {
 }
 
 /** The page behind the information button. The working views stay free of it, so everything they leave unsaid is said here. */
-export function SourcesPage({ atlas, summary }: { readonly atlas: Atlas; readonly summary: SourcesSummary }) {
-  const [tab, setTab] = useState<SourcesTab>('brief');
+/** Opened from the details of a structure, the page goes straight to it among the structures. */
+export function SourcesPage({ atlas, summary, focus }: { readonly atlas: Atlas; readonly summary: SourcesSummary; readonly focus?: string | null }) {
+  const [tab, setTab] = useState<SourcesTab>(focus ? 'structures' : 'brief');
   const rows = useMemo(() => structureRows(atlas.structures), [atlas.structures]);
   return <div className="sources-page">
     <h2>Sources and evidence</h2>
@@ -144,7 +145,7 @@ export function SourcesPage({ atlas, summary }: { readonly atlas: Atlas; readonl
       <p className="privacy-method">Imported research files stay in memory on this device, and reloading clears them. No analytics, remote data service or automatic upload is used.</p>
     </div>}
 
-    {tab === 'structures' && <div role="tabpanel" aria-label="Structures"><StructuresTab rows={rows} /></div>}
+    {tab === 'structures' && <div role="tabpanel" aria-label="Structures"><StructuresTab rows={rows} focus={focus} /></div>}
     {tab === 'works' && <div role="tabpanel" aria-label="Works cited"><WorksTab rows={rows} /></div>}
     {tab === 'levels' && <div role="tabpanel" aria-label="Deep levels"><LevelsTab /></div>}
     {tab === 'procedures' && <div role="tabpanel" aria-label="Procedures"><ProceduresTab /></div>}
