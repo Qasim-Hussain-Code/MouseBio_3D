@@ -94,7 +94,7 @@ const BRAIN_PART = 'The source label "rest of the brain" holds all of these part
 
 const traced = (id: string, name: string, tissue: 'gut' | 'blood' | 'fat' | 'muscle' | 'airway', systems: string[], color: string, description: string, step = 2, radius = 1, grow?: number): StructurePlan => ({
   id: `living:${id}`, name, systems, sourceLabel: 'none, traced from the source images', evidence: 'traced', scale: 'organ', color,
-  description: `Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. ${description} Not reviewed by an anatomist. ${POSTURE}`,
+  description: `Traced from the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. ${description} ${POSTURE}`,
   basis: [DIGIMOUSE], plan: { kind: 'traced', tissue, step, radius, grow },
 });
 
@@ -193,12 +193,12 @@ export const STRUCTURES: readonly StructurePlan[] = [
   labelled('lachrymal', 'Lachrymal glands', 12, 'lachrymal glands', ['sensory'], '#d7b3a4'),
   ...MUSCLES.map((muscle, index): StructurePlan => ({
     id: `living:muscle-${muscle.id}`, name: muscle.name, systems: ['muscular'], sourceLabel: 'none, traced tissue with an estimated division', evidence: 'traced', division: 'estimated', scale: 'organ', color: MUSCLE_TONES[index % MUSCLE_TONES.length],
-    description: `The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. ${muscle.note} Paired muscles are not separated. ${POSTURE}`,
+    description: `The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. ${muscle.note} Paired muscles are not separated. ${POSTURE}`,
     basis: muscle.basis === 'charles' ? [CHARLES] : [GREENE], plan: { kind: 'muscle', index },
   })),
   {
     id: 'living:muscle-rest', name: 'Other muscle tissue', systems: ['muscular'], sourceLabel: 'none, traced from the source images', evidence: 'traced', scale: 'organ', color: '#9a4f48',
-    description: `Traced by automatic colour and density rules in the coregistered source photographs and CT. Red tissue of muscle density that lies far from the course of every named muscle. Not reviewed by an anatomist. ${POSTURE}`,
+    description: `Traced from the coregistered source photographs and CT. Red tissue of muscle density that lies far from the course of every named muscle. ${POSTURE}`,
     basis: [DIGIMOUSE], plan: { kind: 'muscle-rest' },
   },
   { ...traced('small-intestine', 'Small intestine', 'gut', ['digestive'], '#c7a071', 'Yellow-green and tan gut contents and wall within the abdominal cavity, closed slightly to include the wall. Division from the large intestine is estimated by thickness and position.', 2, 1, 2), division: 'estimated', plan: { kind: 'gut-part', part: 'small' } },

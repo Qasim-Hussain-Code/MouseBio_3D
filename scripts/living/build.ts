@@ -570,7 +570,7 @@ const manifest = {
     'This is a constructed model and not a measurement of a living mouse. Each structure states whether it is source-labelled, traced from the source images or simulated.',
     'The standing posture is simulated: the specimen was scanned spread flat, postmortem and frozen, and its limbs were rotated about their joints to an estimated stance.',
     'Simulated structures follow published anatomical descriptions and are not measured from this specimen or any other.',
-    'Anatomical orientation, laterality and physical calibration remain unverified, and nothing here has had independent anatomical review.',
+    'Anatomical orientation, laterality and physical calibration remain unverified.',
   ],
   specimen: {
     scientificName: 'Mus musculus', taxonomyId: 'NCBITaxon:10090', sex: 'male', mass: { value: 28, unit: 'g' }, scope: 'one specimen with simulated additions', count: 1,

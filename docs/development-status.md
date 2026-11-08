@@ -70,7 +70,7 @@ The model gains a simulated sheet for the wall of the abdomen, with a pale middl
 
 ## Sources, closure and the named vessels of the neck and limbs
 
-The information button opens **Sources and evidence**, a page that lists every structure with its kind of evidence and the works it follows, every work with a link and what rests on it, every level of the zoom with its kind of knowledge, the procedures of the bench with their sources, and what is illustrative or has not been checked. The working views are unchanged.
+The information button opens **Sources and evidence**, a page that lists every structure with its kind of evidence and the works it follows, every work with a link and what rests on it, every level of the zoom with its kind of knowledge, the procedures of the bench with their sources, what is illustrative, and the licenses, with what the license of the model asks of anyone who reuses it. The working views are unchanged.
 
 Forty-one simulated vessels and nerves are added from Cook's plates and from work in the mouse, among them the vessels of the neck, face, fore limb, shank and abdominal organs, the recurrent laryngeal nerves and the coeliac ganglia. The spinal nerves and their ganglia now lie at the ends of the measured vertebrae, the twelve cranial nerves follow a reconstruction of the mouse fetus, the vessels of the paws follow Cook's plates of the foot and hand, and the citations of a description of the rat fall from 79 structures to 44. The glands of the eyelids and the follicles of the whiskers are placed under the skin, where a close look had found them showing through it.
 
@@ -79,6 +79,8 @@ At the bench, clippers clear the coat, a swab scrubs the skin, and the needle an
 ## A steadier demonstration and a finer eye
 
 The demonstration of finding the organs of a necropsy now exposes the right kidney more, after it had stayed hidden in some runs in a wide window. The margin of the eyelids is finer and the cornea clearer, and the details of a structure link its works and its entry on the page of sources.
+
+The details of a traced structure say that it was traced from the source images of the specimen, and the tutorials no longer offer to read their steps aloud, because they could only use a voice installed on the device.
 
 ## Verification and remaining work
 

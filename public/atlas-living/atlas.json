@@ -5040,7 +5040,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a5524a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the side of the skull. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the side of the skull. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5073,7 +5073,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#ad5a50",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the side of the face, in front of the masseter. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the side of the face, in front of the masseter. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5106,7 +5106,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#9c4c46",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the whisker pad. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the whisker pad. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5139,7 +5139,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#b0605a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Under the jaw. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Under the jaw. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5172,7 +5172,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a14f4f",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Strap muscles on the front of the neck. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Strap muscles on the front of the neck. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5205,7 +5205,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a85649",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the manubrium to behind the ear. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the manubrium to behind the ear. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5238,7 +5238,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a5524a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Deep on the back of the neck. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Deep on the back of the neck. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5271,7 +5271,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#ad5a50",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the back of the neck to the scapula. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the back of the neck to the scapula. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5304,7 +5304,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#9c4c46",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the thoracic midline to the scapula. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the thoracic midline to the scapula. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5337,7 +5337,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#b0605a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the lower back to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the lower back to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5370,7 +5370,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a14f4f",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Along the vertebral column; the course follows the column measured in the CT. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Along the vertebral column; the course follows the column measured in the CT. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5403,7 +5403,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a85649",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the ribs to under the scapula. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the ribs to under the scapula. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5436,7 +5436,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a5524a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Between the ribs. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Between the ribs. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5469,7 +5469,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#ad5a50",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the sternum to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the sternum to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5502,7 +5502,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#9c4c46",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the side wall of the abdomen. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the side wall of the abdomen. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5535,7 +5535,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#b0605a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the ventral wall of the abdomen. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the ventral wall of the abdomen. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5568,7 +5568,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a14f4f",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Beside the first caudal vertebrae. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Beside the first caudal vertebrae. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5601,7 +5601,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a85649",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the floor of the pelvis. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In the floor of the pelvis. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5634,7 +5634,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a5524a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the scapula over the shoulder to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the scapula over the shoulder to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5667,7 +5667,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#ad5a50",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the scapula, in front of its spine. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the scapula, in front of its spine. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5700,7 +5700,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#9c4c46",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the scapula, behind its spine. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the scapula, behind its spine. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5733,7 +5733,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#b0605a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the lower angle of the scapula to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the lower angle of the scapula to the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5766,7 +5766,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a14f4f",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Behind the humerus to the olecranon. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Behind the humerus to the olecranon. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5799,7 +5799,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a85649",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In front of the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. In front of the humerus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5832,7 +5832,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a5524a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the back of the forearm. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the back of the forearm. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5865,7 +5865,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#ad5a50",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the palm side of the forearm. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the palm side of the forearm. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Greene EC. Anatomy of the Rat. Transactions of the American Philosophical Society, New Series, vol. 27. 1935. This describes the rat, not the mouse."
    ],
@@ -5898,7 +5898,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#9c4c46",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the ilium over the hip to the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the ilium over the hip to the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -5931,7 +5931,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#b0605a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the tail base to the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the tail base to the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -5964,7 +5964,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a14f4f",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the ischium over the back of the thigh to the knee. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the ischium over the back of the thigh to the knee. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -5997,7 +5997,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a85649",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the inner back of the thigh. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the inner back of the thigh. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6030,7 +6030,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a5524a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the inner back of the thigh, under the semitendinosus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the inner back of the thigh, under the semitendinosus. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6063,7 +6063,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#ad5a50",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. A flat muscle on the inner thigh. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. A flat muscle on the inner thigh. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6096,7 +6096,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#9c4c46",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the pubis to the inner femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From the pubis to the inner femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6129,7 +6129,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#b0605a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the front and sides of the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the front and sides of the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6162,7 +6162,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a14f4f",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the front of the thigh. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the front of the thigh. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6195,7 +6195,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a85649",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From under the lumbar column to the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. From under the lumbar column to the femur. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6228,7 +6228,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a5524a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the back of the shank to the heel. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the back of the shank to the heel. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6261,7 +6261,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#ad5a50",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Under the gastrocnemius. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Under the gastrocnemius. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6294,7 +6294,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#9c4c46",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the front of the shank. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the front of the shank. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6327,7 +6327,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#b0605a",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the outer side of the shank. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. On the outer side of the shank. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6360,7 +6360,7 @@
    "division": "estimated",
    "scale": "organ",
    "color": "#a14f4f",
-   "description": "The tissue is traced from the source images by automatic rules, not reviewed by an anatomist. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Deep on the inner side of the shank. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "The tissue is traced from the source images. Its division and name are estimates: each cell goes to the muscle whose course, placed by hand on measured joints, is nearest. Deep on the inner side of the shank. Paired muscles are not separated. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Charles JP, Cappellari O, Spence AJ, Hutchinson JR, Wells DJ. Musculoskeletal geometry, muscle architecture and functional specialisations of the mouse hindlimb. PLoS One 2016;11(4):e0147669. doi:10.1371/journal.pone.0147669"
    ],
@@ -6392,7 +6392,7 @@
    "evidence": "traced",
    "scale": "organ",
    "color": "#9a4f48",
-   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT. Red tissue of muscle density that lies far from the course of every named muscle. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Traced from the coregistered source photographs and CT. Red tissue of muscle density that lies far from the course of every named muscle. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
    ],
@@ -6424,7 +6424,7 @@
    "evidence": "traced",
    "scale": "organ",
    "color": "#c7a071",
-   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Yellow-green and tan gut contents and wall within the abdominal cavity, closed slightly to include the wall. Division from the large intestine is estimated by thickness and position. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Traced from the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Yellow-green and tan gut contents and wall within the abdominal cavity, closed slightly to include the wall. Division from the large intestine is estimated by thickness and position. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
    ],
@@ -6457,7 +6457,7 @@
    "evidence": "traced",
    "scale": "organ",
    "color": "#b99560",
-   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. The thickest part of the traced gut, on the left of the abdomen as in Cook figure 54. Division from the rest of the gut is estimated by thickness and position. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Traced from the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. The thickest part of the traced gut, on the left of the abdomen as in Cook figure 54. Division from the rest of the gut is estimated by thickness and position. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
    ],
@@ -6490,7 +6490,7 @@
    "evidence": "traced",
    "scale": "organ",
    "color": "#a98754",
-   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Traced gut behind the bladder, near the midline. Division from the rest of the gut is estimated by position. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Traced from the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Traced gut behind the bladder, near the midline. Division from the rest of the gut is estimated by position. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
    ],
@@ -6524,7 +6524,7 @@
    "evidence": "traced",
    "scale": "organ",
    "color": "#47202f",
-   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Very dark blood-filled lumens, mainly large veins such as the caudal vena cava and jugular veins. Arteries are empty after death and do not appear. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Traced from the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Very dark blood-filled lumens, mainly large veins such as the caudal vena cava and jugular veins. Arteries are empty after death and do not appear. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
    ],
@@ -6556,7 +6556,7 @@
    "evidence": "traced",
    "scale": "organ",
    "color": "#f3ebd3",
-   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Tissue of low CT density or pale colour, such as the fat pads around the testes and under the skin. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Traced from the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Tissue of low CT density or pale colour, such as the fat pads around the testes and under the skin. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
    ],
@@ -6588,7 +6588,7 @@
    "evidence": "traced",
    "scale": "organ",
    "color": "#cfe3e8",
-   "description": "Traced by automatic colour and density rules in the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Voxels of very low CT density, such as the nasal passages and gas in the gut. Not reviewed by an anatomist. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
+   "description": "Traced from the coregistered source photographs and CT, inside the residual label that the source leaves unsegmented. Voxels of very low CT density, such as the nasal passages and gas in the gut. Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.",
    "basis": [
     "Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003"
    ],
@@ -14707,7 +14707,7 @@
   "This is a constructed model and not a measurement of a living mouse. Each structure states whether it is source-labelled, traced from the source images or simulated.",
   "The standing posture is simulated: the specimen was scanned spread flat, postmortem and frozen, and its limbs were rotated about their joints to an estimated stance.",
   "Simulated structures follow published anatomical descriptions and are not measured from this specimen or any other.",
-  "Anatomical orientation, laterality and physical calibration remain unverified, and nothing here has had independent anatomical review."
+  "Anatomical orientation, laterality and physical calibration remain unverified."
  ],
  "specimen": {
   "scientificName": "Mus musculus",

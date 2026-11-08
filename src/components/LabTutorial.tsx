@@ -33,26 +33,11 @@ export function LabChooser({ onChoose, onFree }: { readonly onChoose: (id: strin
   </section>;
 }
 
-/** A local voice only, so that nothing of what is read leaves the device. */
-function speak(text: string) {
-  const speech = window.speechSynthesis;
-  if (!speech) return;
-  speech.cancel();
-  const voice = speech.getVoices().find((item) => item.localService && item.lang.startsWith('en')) ?? null;
-  if (!voice) return;
-  const line = new SpeechSynthesisUtterance(text);
-  line.voice = voice;
-  line.rate = 1;
-  speech.speak(line);
-}
-
 /** One procedure, step by step, beside the animal. It follows what is done: a step that has been done is ticked, and the card goes on to the next. */
 export function LabTutorial({ exercise, facts, demonstrating, shown, onStep, onShow, onWatchAll, onStop, onClose, onAct }: LabTutorialProps) {
   const result = useMemo(() => evaluateExercise(exercise, facts ?? { actions: [], seen: new Set(), removed: new Set(), ligated: new Set() }), [exercise, facts]);
   const [index, setIndex] = useState(0);
   const [folded, setFolded] = useState(false);
-  const [reading, setReading] = useState(false);
-  const canRead = typeof window.speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined';
   const doneBefore = useRef(result.steps);
   // Back to the start when the exercise changes.
   useEffect(() => { setIndex(0); doneBefore.current = []; }, [exercise]);
@@ -77,10 +62,6 @@ export function LabTutorial({ exercise, facts, demonstrating, shown, onStep, onS
   const step = exercise.steps[index] ?? exercise.steps[0];
   const advice = facts && !demonstrating && !result.steps[index] ? step.advice?.(facts) ?? null : null;
   const instruments = useMemo(() => LAB_TOOLS.filter((tool) => tool.id !== 'hand' && exercise.steps.some((item) => item.tool === tool.id)).map((tool) => tool.name.toLowerCase()).join(', '), [exercise]);
-  useEffect(() => {
-    if (reading && !demonstrating) speak([step.text, step.how, step.why, step.care].filter(Boolean).join('. '));
-    return () => { window.speechSynthesis?.cancel(); };
-  }, [reading, step, demonstrating]);
   if (folded) return <button type="button" className="lab-tutorial-fold" onClick={() => setFolded(false)}>Step {index + 1} of {exercise.steps.length}: {step.text}</button>;
   return <section className="lab-tutorial" aria-label={`Tutorial: ${exercise.name}`}>
     <header>
@@ -112,7 +93,6 @@ export function LabTutorial({ exercise, facts, demonstrating, shown, onStep, onS
     <div className="lab-row lab-tutorial-actions">
       <button type="button" disabled={index === 0 || demonstrating} onClick={() => setIndex(index - 1)}>Back</button>
       <button type="button" disabled={index === exercise.steps.length - 1 || demonstrating} onClick={() => setIndex(index + 1)}>Next</button>
-      {canRead && <button type="button" aria-pressed={reading} title="Read each step aloud, with a voice on this device" onClick={() => setReading(!reading)}>Read aloud</button>}
     </div>
     <p className="lab-source">After <a href={`https://doi.org/${exercise.source.doi}`} target="_blank" rel="noreferrer">{exercise.source.citation}</a>{(exercise.also ?? []).map((also) => <span key={also.doi}>, with <a href={`https://doi.org/${also.doi}`} target="_blank" rel="noreferrer">{also.citation}</a></span>)}</p>
   </section>;

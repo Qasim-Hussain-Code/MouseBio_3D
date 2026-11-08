@@ -292,6 +292,14 @@ A headless Chrome session with software WebGL, on the production build, drew the
 
 Not executed: any run on a graphics card, and any review by an anatomist or structural biologist. A pancreas opened by **Play** goes to an islet although most of the gland is acini, and it can go by ribosomes if that way is chosen.
 
+## Plainer notes of evidence and the license in words v0.41.1
+
+This section records checks executed on 2026-11-08 for the changes described in [the release notes](releases/v0.41.1.md). The JavaScript and simulated DOM suite, 651 tests in all, passed, including tests that the page of sources writes out the license of the model with what it asks, shows no empty field of attribution, and lists every work it cites once. The first run of the suite was stopped by its limit of memory before it ended, and it passed when it was run again one test file at a time. The distribution, publication and release suites passed, and the model was built again from the raw volumes and came out byte for byte the same as the model in the tree.
+
+Headless Chrome on the graphics chip of the working machine opened the production build of this version at 1280 by 860 CSS pixels. It showed the version 0.41.1, the line under the view naming the kind of model alone, the details of a traced bone saying that it was traced from the source images, the license of the model written out with what it asks and no field shown as unknown, no list of checks not made, the procedures described as no replacement for supervised training or an approved animal protocol, and a tutorial card with no button to read aloud.
+
+Not executed: any run on a separate graphics card or on another machine. The other limits of the section below still apply.
+
 ## The kidney found in every demonstration, a finer eye and sources from the details v0.41.0
 
 This section records checks executed on 2026-11-08 for the changes described in [the release notes](releases/v0.41.0.md). The JavaScript and simulated DOM suite, 651 tests in all, adds a test that the page of sources opened from the details of a structure goes straight to that structure. The model was built again from the raw volumes, and it came out byte for byte the same as the model in the tree.

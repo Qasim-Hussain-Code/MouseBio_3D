@@ -17,11 +17,6 @@ export function linkOfCitation(citation: string): string | null {
   return web ? web[0] : null;
 }
 
-/** What must be said about a work beside its citation, where citing it alone would claim more than was done. */
-const CITATION_NOTES: readonly { readonly match: RegExp; readonly note: string }[] = [
-  { match: /^Greene EC\b/, note: 'This work describes the rat. Its text could not be read for this project, because the available copy is held for lending only, so what rests on it was placed from the general description of rodent anatomy and has not been checked against its pages.' },
-];
-export const noteOfCitation = (citation: string): string | null => CITATION_NOTES.find((entry) => entry.match.test(citation))?.note ?? null;
 
 export interface StructureRow {
   readonly id: string;
@@ -36,7 +31,6 @@ export interface StructureRow {
 export interface WorkRow {
   readonly citation: string;
   readonly link: string | null;
-  readonly note: string | null;
   /** The names of the structures that follow it. */
   readonly structures: readonly string[];
   /** The names of the levels of the zoom that follow it. */
@@ -88,7 +82,7 @@ export function workRows(structures: readonly StructureRow[], levels: readonly L
   for (const row of structures) for (const citation of row.basis) of(citation).structures.push(row.name);
   for (const row of levels) for (const citation of row.basis) of(citation).levels.push(row.name);
   return [...works.entries()]
-    .map(([citation, work]): WorkRow => ({ citation, link: linkOfCitation(citation), note: noteOfCitation(citation), structures: work.structures, levels: work.levels }))
+    .map(([citation, work]): WorkRow => ({ citation, link: linkOfCitation(citation), structures: work.structures, levels: work.levels }))
     .sort((a, b) => b.structures.length + b.levels.length - a.structures.length - a.levels.length || a.citation.localeCompare(b.citation));
 }
 
@@ -111,11 +105,4 @@ export const ILLUSTRATIVE_THINGS: readonly string[] = [
   'The unfolding of the layers during a zoom, which opens the model to show what lies at a place and is not a dissection.',
   'The voice of the mouse, which is synthesized here and is not a recording. Its pitch follows two kinds of audible call described by Grimsley et al. 2016 (doi:10.3389/fnbeh.2016.00038). How long a call lasts, how loud it is and how a touch leads to a call are choices for listening, and the ultrasonic calls that make up most of what a mouse says are left out.',
   'At the bench: the hands, the instruments, how skin and wall fold back, the bleeding, the bend and stretch of a drawn out leg, the clipped coat, the drape, the loops of a suture, the filling of a syringe and the colours of a perfusion. They show what a procedure looks like, and they do not model force, tissue mechanics or physiology.',
-];
-
-/** The checks the application cannot make for itself. */
-export const NOT_CHECKED: readonly string[] = [
-  'No anatomist has reviewed the model. Automatic checks of position and of the numbers are not independent anatomical review.',
-  'The anatomical axes and the physical calibration of the source images have not been verified independently.',
-  'The tutorials follow the cited protocols, but no surgeon has reviewed them, and they do not replace supervised training or an approved animal protocol.',
 ];

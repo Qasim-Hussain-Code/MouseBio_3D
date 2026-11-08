@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { after, afterEach, test } from 'node:test';
 import { Window } from 'happy-dom';
-import { evidenceCounts, levelRows, linkOfCitation, matchesSearch, noteOfCitation, structureRows, workRows } from '../src/domain/sources-index';
+import { evidenceCounts, levelRows, linkOfCitation, matchesSearch, structureRows, workRows } from '../src/domain/sources-index';
 import { everyJourneyLevel, journeyLevels, JOURNEY_TAILS, type JourneyTissue } from '../src/domain/scale-journey';
 import type { Atlas } from '../src/domain/types';
 
@@ -28,16 +28,14 @@ test('every structure of the living mouse is listed under one kind of evidence w
   for (const row of simulated) assert.match(row.label, /^Simulated/, row.name);
 });
 
-test('every work cited can be followed or says why not, and none is listed twice', () => {
+test('every work cited can be followed by a link or is a book or a data entry, and none is listed twice', () => {
   const works = workRows(structureRows(living.structures), levelRows());
   assert.equal(new Set(works.map((work) => work.citation)).size, works.length);
   for (const work of works) {
     assert.ok(work.structures.length + work.levels.length > 0, work.citation);
-    if (work.link === null) assert.ok(work.note !== null || /Transactions|Protein Data Bank|Academic Press|Wiley|Press/.test(work.citation), `No way to follow: ${work.citation}`);
+    if (work.link === null) assert.ok(/Transactions|Protein Data Bank|Academic Press|Wiley|Press/.test(work.citation), `No way to follow: ${work.citation}`);
     if (work.link) assert.doesNotThrow(() => new URL(work.link!), work.citation);
   }
-  const rat = works.find((work) => work.citation.startsWith('Greene EC'));
-  if (rat) assert.match(noteOfCitation(rat.citation)!, /could not be read/);
 });
 
 test('the deep levels are all listed, each with its kind of knowledge and what it follows', () => {
@@ -71,7 +69,7 @@ after(() => dom.close());
 
 const summary = {
   specimen: { description: 'A specimen', scientificName: 'Mus musculus', sex: 'male', strain: 'A strain', age: 'Unknown', mass: 'Unknown', scope: 'One animal' },
-  source: { citationLabel: 'A citation', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', attribution: 'Attribution words.' },
+  source: { citationLabel: 'A citation', license: 'CC-BY-SA-4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', attribution: 'Attribution words.' },
   sourceLink: 'https://doi.org/10.1088/0031-9155/52/3/003',
 };
 const open = () => render(createElement(SourcesPage, { atlas: living, summary }));
@@ -110,6 +108,8 @@ test('the works, deep levels, procedures and licences each have a page', () => {
   assert.ok(view.getByText('Tie the femoral artery'));
   fireEvent.click(view.getByRole('tab', { name: 'Licences' }));
   assert.ok(view.getByRole('link', { name: 'CC BY-SA 4.0' }));
+  assert.ok(view.getByText(/must keep the same license/));
+  assert.equal(view.container.textContent!.includes('Unknown'), false);
 });
 
 test('opened from the details of a structure, the page goes straight to that structure', () => {

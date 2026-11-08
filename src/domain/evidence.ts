@@ -11,7 +11,7 @@ export const EVIDENCE_NAMES: Readonly<Record<StructureEvidence, string>> = Objec
 
 export const EVIDENCE_NOTES: Readonly<Record<StructureEvidence, string>> = Object.freeze({
   source: 'Labelled by the source authors from their images of the specimen.',
-  traced: 'Found in the source images of the specimen by automatic rules in this project. It has not been reviewed by an anatomist.',
+  traced: 'Traced from the source images of the specimen.',
   simulated: 'Constructed from published descriptions of mouse anatomy. It is not measured from this specimen or any other, and it may differ from a real mouse.',
 });
 

@@ -43,7 +43,6 @@
 .sources-rows details>:not(summary){margin-left:2px}
 .methods-dialog .sources-page .sources-basis{margin:6px 0 10px;padding-left:16px}
 .methods-dialog .sources-page .sources-basis li{margin:4px 0;font-size:11.5px;line-height:1.5}
-.sources-note{display:block;margin-top:2px;font-size:11px;line-height:1.5;color:#8a5a2c}
 .methods-dialog .sources-page .sources-works li{margin:10px 0;font-size:12px;line-height:1.5}
 .sources-works summary{margin-top:2px;font-size:11px;color:#55635c;cursor:pointer}
 .methods-dialog .sources-page .sources-works details p{margin:3px 0;font-size:11px;color:#55635c}
