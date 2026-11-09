@@ -1,0 +1,10 @@
+.load-progress{display:flex;flex-direction:column;align-items:center;gap:10px;width:min(260px,70vw)}
+.load-progress-track{position:relative;width:100%;height:4px;border-radius:2px;background:#648d7c26;overflow:hidden}
+.load-progress-fill{position:absolute;inset:0;border-radius:inherit;transform-origin:left center;background:linear-gradient(90deg,#90c2a4,#5f9d7f);transition:transform .25s linear}
+/* While the model is built the main thread is busy; a transform animation runs on the compositor and keeps moving. */
+.load-progress.building .load-progress-track::after{content:'';position:absolute;inset:0;width:40%;background:linear-gradient(90deg,#ffffff00,#ffffffb3,#ffffff00);transform:translateX(-100%);animation:load-progress-sweep 1.3s ease-in-out infinite;will-change:transform}
+.load-progress-label{margin:0;color:#4a5a57;font-size:12px;line-height:1.5}
+.load-progress-figures{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;min-height:1.4em;margin:0;color:#7a8986;font-size:10.5px;line-height:1.4;font-variant-numeric:tabular-nums}
+.load-progress-percent{color:#3d5a50;font-weight:600}
+@keyframes load-progress-sweep{to{transform:translateX(250%)}}
+@media (prefers-reduced-motion:reduce){.load-progress-fill{transition:none}.load-progress.building .load-progress-track::after{animation:none;display:none}}

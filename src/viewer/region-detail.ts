@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { Atlas } from '../domain/types';
 import { assertRegionDetailBinding, type RegionDetailAsset, type RegionDetailStatus } from './region-detail-registry';
-import { fetchBoundAnatomyBytes } from './asset-fetch';
+import { fetchBoundAnatomyBytes, type AssetFetchOptions } from './asset-fetch';
 export { buildRegionDetailAssets, isLocalGlbPath } from './region-detail-registry';
 export type { RegionDetailAsset, RegionDetailStatus } from './region-detail-registry';
 
@@ -43,8 +43,8 @@ export function inspectInternalGlb(bytes: ArrayBuffer): Record<string, unknown> 
 
 /** Bounded same-origin request with decoded byte and SHA-256 checks. No research data is sent. */
 export async function fetchBoundGlb(url: string, expectedBytes: number, expectedHash: string, signal: AbortSignal,
-  fetcher: typeof fetch = fetch): Promise<ArrayBuffer> {
-  const bytes = await fetchBoundAnatomyBytes(url, expectedBytes, expectedHash, signal, 'glb', fetcher);
+  fetcher: typeof fetch = fetch, options: AssetFetchOptions = {}): Promise<ArrayBuffer> {
+  const bytes = await fetchBoundAnatomyBytes(url, expectedBytes, expectedHash, signal, 'glb', fetcher, options);
   inspectInternalGlb(bytes);
   return bytes;
 }

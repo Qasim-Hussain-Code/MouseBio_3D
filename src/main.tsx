@@ -15,6 +15,7 @@ import './components/SelectionTools.css';
 import './components/SystemLayers.css';
 import './components/Workbench.css';
 import './components/ScaleJourney.css';
+import './components/LoadProgress.css';
 import './components/UnfoldGuide.css';
 import './components/LifePanel.css';
 import './components/Minimal.css';

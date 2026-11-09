@@ -1,9 +1,10 @@
 # A static site on Render: the application is built from this repository and served as plain files, with no server of its own.
+# build:host also stores the registered model files gzip-compressed; the application unpacks them and checks each against its registry.
 services:
   - type: web
     runtime: static
     name: mousebio-3d
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci && npm run build:host
     staticPublishPath: ./dist
     envVars:
       - key: NODE_VERSION

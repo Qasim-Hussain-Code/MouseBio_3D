@@ -104,6 +104,31 @@ class PrototypeTests(unittest.TestCase):
                 self.assertEqual(request(server,'/models/bondarenko-apical/LICENSE.md')[0],200)
 
 
+    def test_every_bundled_public_file_fits_the_launcher_bounds(self):
+        # The launcher refused its own bundle once the living registry passed the old 512 KiB bound; the real tree is held to the bounds.
+        public = Path(preview.__file__).resolve().parents[1] / "public"
+        files = [path for path in public.rglob("*") if path.is_file()]
+        self.assertTrue(files)
+        for path in files:
+            name = path.relative_to(public).as_posix()
+            metadata = name.endswith(("atlas.json", "detail-index.json", "LICENSE.md")) or name == preview.MODEL_MANIFEST
+            limit = preview.MAX_METADATA_BYTES if metadata else 2 * 1024 * 1024 if name == "THIRD_PARTY_NOTICES.txt" else preview.MAX_FILE_BYTES
+            self.assertLessEqual(path.stat().st_size, limit, name)
+        self.assertLessEqual(sum(path.stat().st_size for path in files), preview.MAX_TOTAL_BYTES)
+        self.assertLess(len(files), preview.MAX_FILES)
+
+    def test_hashed_module_chunk_named_after_its_package_is_served(self):
+        with fixture() as root:
+            chunk="assets/three.module-DrIYK1cE.js"
+            write(root,chunk,b"export const REVISION='186';\n")
+            with running(root) as server:
+                status,headers,body=request(server,'/'+chunk)
+                self.assertEqual(status,200);self.assertIn('javascript',headers['content-type'])
+            for name in ("assets/three.other-DrIYK1cE.js","assets/three.module.extra-DrIYK1cE.js"):
+                with fixture() as other:
+                    write(other,name,b"export{};\n")
+                    with self.assertRaisesRegex(preview.PreviewError, "unapproved_bundle_file"): preview.validate_bundle(other)
+
     def test_model_metadata_and_required_attribution_are_a_pair(self):
         for missing in ("manifest", "notice", "empty_notice", "unrelated_notice"):
             with self.subTest(missing=missing), fixture() as root:

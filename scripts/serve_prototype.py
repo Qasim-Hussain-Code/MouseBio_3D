@@ -25,8 +25,10 @@ from urllib.parse import urlsplit
 MAX_FILES = 256
 MAX_TOTAL_BYTES = 512 * 1024 * 1024
 MAX_FILE_BYTES = 80 * 1024 * 1024
-MAX_METADATA_BYTES = 512 * 1024
-ASSET_NAME = re.compile(r"assets/[A-Za-z0-9_-]+(?:\.worker)?-[A-Za-z0-9_-]{8,}\.(?:js|css)\Z")
+# The registry of the living mouse is about 0.6 MB (585,644 bytes in v0.42.0); the bound leaves room without unbounded reads.
+MAX_METADATA_BYTES = 2 * 1024 * 1024
+# Vite names chunks after their module, so three.js arrives as assets/three.module-<hash>.js.
+ASSET_NAME = re.compile(r"assets/[A-Za-z0-9_-]+(?:\.(?:worker|module))?-[A-Za-z0-9_-]{8,}\.(?:js|css)\Z")
 HASH = re.compile(r"[0-9a-f]{64}\Z")
 MODEL_MANIFEST = "models/bondarenko-apical/manifest.json"
 MODEL_NOTICE = "models/bondarenko-apical/LICENSE.md"

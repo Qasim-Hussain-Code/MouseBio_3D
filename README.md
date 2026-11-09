@@ -23,7 +23,7 @@ npm ci
 npm run dev
 ```
 
-Open the address that `npm run dev` prints. To build the static site, run `npm run build`; the result in `dist/` can be served by any static host, or locally with `python3 scripts/serve_prototype.py`.
+Open the address that `npm run dev` prints. To build the static site, run `npm run build`; the result in `dist/` can be served by any static host, or locally with `python3 scripts/serve_prototype.py`. For a static host, `npm run build:host` also stores the models gzip-compressed, about 58 % smaller in all; the app unpacks each one as it downloads and checks it against its registered checksum.
 
 ## Data formats
 
@@ -39,4 +39,4 @@ The living mouse is a constructed model of one male specimen in a simulated stan
 
 ## Licences
 
-The source code is MIT and the documentation CC BY 4.0. Models and metadata derived from Digimouse remain CC BY-SA 4.0, and the other datasets keep their own open licences (CC BY 4.0, CC BY 3.0, CC0 and Apache-2.0). [LICENSES.md](LICENSES.md) and the notices beside each dataset give the attribution. 
+The source code is MIT and the documentation CC BY 4.0. Models and metadata derived from Digimouse remain CC BY-SA 4.0, and the other datasets keep their own open licences (CC BY 4.0, CC BY 3.0, CC0 and Apache-2.0). [LICENSES.md](LICENSES.md) and the notices beside each dataset give the attribution.

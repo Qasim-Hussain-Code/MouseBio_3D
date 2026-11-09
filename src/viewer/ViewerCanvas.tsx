@@ -35,6 +35,9 @@ import { evaluateIllustrativePhysiology, physiologyProcessesForAtlas, type Atlas
 import { coveredBySkin, defaultStructureOpacity, OPAQUE_SKIN } from '../domain/reference-display';
 import { RegionDetailController, type RegionDetailAsset, type RegionDetailStatus } from './region-detail';
 import { loadAtlasScene } from './atlas-loader';
+import type { AssetTransferProgress } from './asset-fetch';
+import { describeTransfer } from '../domain/load-progress';
+import { LoadProgress } from '../components/LoadProgress';
 import type { LocalTraceAsset } from '../domain/local-trace';
 import { disposeRegion, prepareRegionMaterial, regionLabelCenter, linePickingThreshold, nearestClippedLineIntersection, type RenderRegion } from './region-objects';
 import { renderDiagnostics, type ViewerDiagnostics } from './viewer-diagnostics';
@@ -121,6 +124,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
   const engine = useRef<{ apply: () => void; setPose: (pose: CameraPose) => void; setDetail: () => void } | null>(null);
   const [status, setStatus] = useState('Loading reference geometry');
   const [failure, setFailure] = useState(false);
+  const [transfer, setTransfer] = useState<{ progress: AssetTransferProgress; elapsedMs: number } | null>(null);
   const [label, setLabel] = useState<{ x: number; y: number; name: string } | null>(null);
   const [labelSet, setLabelSet] = useState<{ labels: PlacedLabel[]; width: number; height: number }>({ labels: [], width: 0, height: 0 });
   const [hovered, setHovered] = useState<{ x: number; y: number; name: string } | null>(null);
@@ -133,7 +137,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
 
   useEffect(() => {
     if (!host.current) return;
-    setStatus('Loading reference geometry'); setFailure(false); setLabel(null); setLabelSet({ labels: [], width: 0, height: 0 });
+    setStatus('Loading reference geometry'); setFailure(false); setTransfer(null); setLabel(null); setLabelSet({ labels: [], width: 0, height: 0 });
     latest.current.onDetailStatus?.({ status: 'idle', structureId: null });
     onStatus?.('loading');
     const element = host.current;
@@ -1159,7 +1163,18 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       },
     };
     const sourceAbort = new AbortController();
-    void loadAtlasScene(atlas, sourceAbort.signal, fetch, localTrace).then(async (sourceScene) => {
+    // The bar is redrawn at most ten times a second; the last chunk is always shown, and the label then turns to building.
+    const transferStart = performance.now();
+    let transferShown = -Infinity;
+    const showTransfer = (progress: AssetTransferProgress) => {
+      if (disposed) return;
+      const now = performance.now(), complete = progress.assetBytes >= progress.assetTotal;
+      if (!complete && now - transferShown < 100) return;
+      if (transferShown === -Infinity || complete) setStatus(complete ? 'Building the model' : 'Downloading the model');
+      transferShown = now;
+      setTransfer({ progress, elapsedMs: now - transferStart });
+    };
+    void loadAtlasScene(atlas, sourceAbort.signal, fetch, localTrace, showTransfer).then(async (sourceScene) => {
       const gltf = { scene: sourceScene };
       if (disposed) {
         gltf.scene.traverse((object) => {
@@ -1609,7 +1624,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
   useEffect(() => { if (cameraPose) engine.current?.setPose(cameraPose); }, [cameraPose]);
   useLayoutEffect(() => { engine.current?.setDetail(); }, [detailAsset, settings.selected]);
   return <div className="viewer-canvas" ref={host}>
-    {status && <div className={`viewer-status ${failure ? 'error' : ''}`} role="status">{!failure && <span className="loading-ring" />}{status}</div>}
+    {status && <div className={`viewer-status ${failure ? 'error' : ''}`} role="status">{failure ? status : transfer ? <LoadProgress label={status} view={describeTransfer(transfer.progress, transfer.elapsedMs)} /> : <><span className="loading-ring" />{status}</>}</div>}
     {label && !status && <div className="model-label" style={{ left: label.x, top: label.y }}>{label.name}</div>}
     {labelSet.labels.length > 0 && !status && <>
       <svg className="label-leaders" width={labelSet.width} height={labelSet.height} aria-hidden="true">
