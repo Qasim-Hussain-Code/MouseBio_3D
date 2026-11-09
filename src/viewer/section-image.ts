@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { fetchBoundAnatomyBytes } from './asset-fetch';
+import { deployedPath } from '../domain/deployed-path';
 import { parseSectionImages, sectionLayer, sectionTextureSize, SECTION_IMAGES_URL, type Dimensions, type SectionImageId, type SectionImagesManifest } from '../domain/section-images';
 import type { Atlas } from '../domain/types';
 
@@ -8,7 +9,7 @@ export interface SectionVolume { readonly id: SectionImageId; readonly data: Uin
 /** Read one image layer and its label mask, then decode them off the page thread. The caller owns the result. */
 export async function loadSectionVolume(atlas: Atlas, id: SectionImageId, signal: AbortSignal, fetcher: typeof fetch = fetch): Promise<SectionVolume> {
   if (typeof Worker !== 'function') throw new Error('This browser cannot prepare the section images.');
-  const response = await fetcher(SECTION_IMAGES_URL, { signal, credentials: 'same-origin', redirect: 'error' });
+  const response = await fetcher(deployedPath(SECTION_IMAGES_URL), { signal, credentials: 'same-origin', redirect: 'error' });
   if (!response.ok) throw new Error('The section image manifest could not be read.');
   const parsed = parseSectionImages(await response.json(), atlas);
   if (!parsed.ok || !parsed.manifest) throw new Error(parsed.errors.join(' '));

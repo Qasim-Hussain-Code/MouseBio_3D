@@ -38,6 +38,7 @@ SOURCE_TYPES = {
     "docs": {".md", ".txt", ".json"},
     "data": {".json", ".txt", ".md", ".html"},
     "public": {".json", ".txt", ".md", ".html", ".css", ".svg"},
+    ".github": {".yml"},
 }
 WEB_TYPES = {".html", ".js", ".css", ".json", ".txt", ".md", ".svg"}
 PRIVATE_PARTS = {".git", ".tools", ".venv", ".npm-cache", "node_modules", "dist", ".publication",

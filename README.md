@@ -23,7 +23,7 @@ npm ci
 npm run dev
 ```
 
-Open the address that `npm run dev` prints. To build the static site, run `npm run build`; the result in `dist/` can be served by any static host, or locally with `python3 scripts/serve_prototype.py`. For a static host, `npm run build:host` also stores the models gzip-compressed, about 58 % smaller in all; the app unpacks each one as it downloads and checks it against its registered checksum.
+Open the address that `npm run dev` prints. To build the static site, run `npm run build`; the result in `dist/` can be served by any static host, or locally with `python3 scripts/serve_prototype.py`. For a static host, `npm run build:host` also stores the models gzip-compressed, about 58 % smaller in all; the app unpacks each one as it downloads and checks it against its registered checksum. Set `MOUSEBIO_BASE`, for example to `/MouseBio_3D/`, to serve the site from a subpath.
 
 ## Data formats
 

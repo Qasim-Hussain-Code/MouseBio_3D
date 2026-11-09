@@ -66,6 +66,7 @@ import { createPrototypeExample } from './domain/prototype-example';
 import { coverageRequests, resolveCoverageTarget, type AnatomyCoverageTopicId, type AnatomyCoverageRequest } from './domain/anatomy-coverage';
 import { smoothingOptionsFor, type SurfaceDisplay } from './domain/display-smoothing';
 import { displayColour, type ColourScheme } from './domain/tissue-palette';
+import { deployedPath, SITE_BASE } from './domain/deployed-path';
 
 const referenceCatalog = buildReferenceCatalog([...constructedCatalogData, ...referenceCatalogData]);
 const DEFAULT_REFERENCE_ID = 'mousebio-living-v1';
@@ -220,7 +221,7 @@ export default function App() {
     const requested = new URLSearchParams(window.location.search).get('reference') ?? DEFAULT_REFERENCE_ID;
     const reference = getReference(referenceCatalog.catalog, requested) ?? referenceCatalog.catalog[0];
     if (!referenceCatalog.ok || !reference) { setLoadError('The local reference catalog is invalid.'); return; }
-    fetch(reference.manifestUrl, { signal: abort.signal }).then((response) => {
+    fetch(deployedPath(reference.manifestUrl), { signal: abort.signal }).then((response) => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.json();
     }).then((loaded: Atlas) => {
@@ -496,7 +497,7 @@ export default function App() {
       if (id === atlas?.id && (coverageTopic || starterId)) loaded = atlas;
       else if (cachedTrace) loaded = cachedTrace.atlas;
       else {
-        const response = await fetch(next!.manifestUrl, { signal: abort.signal });
+        const response = await fetch(deployedPath(next!.manifestUrl), { signal: abort.signal });
         if (!response.ok) throw new Error('The selected reference could not be loaded.');
         loaded = await response.json() as Atlas;
         if (!validateReferenceAtlas(next!, loaded).ok) throw new Error('Reference binding mismatch.');
@@ -621,7 +622,7 @@ export default function App() {
   const labCard = !inLab ? null : labExercise ? <LabTutorial key={labExercise.id} exercise={labExercise} facts={labReport?.facts??null} demonstrating={!!labReport?.demonstrating} shown={labCaption} onStep={(index)=>{const step=labExercise.steps[index];const session=viewer.current?.lab();if(!step||!session)return;session.setGuide(step.guide??null);if(labReport?.demonstrating)return;if(step.tool)session.setTool(step.tool);if(step.view)viewer.current?.labView(step.view);}} onShow={(index)=>{const step=labExercise.steps[index];if(step){if(step.view)viewer.current?.labView(step.view);viewer.current?.lab()?.showStep(step.show,step.text,step.done);}}} onWatchAll={()=>{setLabPicked(null);viewer.current?.lab()?.demonstrate(labExercise.id);}} onStop={()=>viewer.current?.lab()?.stopDemonstration()} onClose={()=>chooseLabExercise('')} onAct={(does)=>{const session=viewer.current?.lab();if(does==='drape')session?.drape();else session?.perfuse();}}/> : labChooser ? <LabChooser onChoose={chooseLabExercise} onFree={()=>setLabChooser(false)}/> : null;
   return <div className={`app-shell workbench mode-${mode} ${inspectorOpen&&detailsAsked?'inspector-open':''} ${navigatorOpen?'navigator-open':''} ${picked?'picked':''} ${journeyOpen?'journey-open':''} ${inLab&&!labPanelOpen?'lab-panel-closed':''}`}>
     <header className="app-header">
-      <a className="brand" href="/" aria-label="MouseBio_3D home"><span className="brand-mark"><MouseMark height={54} /></span><span><strong>Mouse<span className="brand-bio">Bio</span><span className="brand-suffix">_3D</span></strong><small>DIGITAL MOUSE LABORATORY</small></span></a>
+      <a className="brand" href={SITE_BASE} aria-label="MouseBio_3D home"><span className="brand-mark"><MouseMark height={54} /></span><span><strong>Mouse<span className="brand-bio">Bio</span><span className="brand-suffix">_3D</span></strong><small>DIGITAL MOUSE LABORATORY</small></span></a>
       <nav className="mode-nav" aria-label="Exploration mode">{MODES.map((item) => <button key={item.id} className={mode === item.id ? 'active' : ''} aria-pressed={mode === item.id} onClick={() => { const wasLab = mode === 'dissection'; setMode(item.id); if (item.id === 'dissection') { if (!wasLab) void enterLab(); return; } if (wasLab && atlas) { setHidden([]); setOpacity(referenceOpacity(atlas)); setLabReport(null); setLabCaption(null); } if (item.id === 'comparative') setFineEnabled(false); if (item.id !== 'anatomical' && !wasLab) peelSkin(); }}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
       <div className="header-actions"><button className="secondary-button" onClick={()=>{setStartError('');setStartOpen(true);}}>Start here</button><span className="local-badge"><Icon name="lock" size={13} /> Local session</span><button className="icon-button" onClick={() => { setMethodsFocus(null); setMethods(true); }} title="Methods, sources and limitations" aria-label="Methods, sources and limitations"><Icon name="info" /></button></div>
     </header>

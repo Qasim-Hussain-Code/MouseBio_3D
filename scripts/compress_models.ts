@@ -62,7 +62,8 @@ export function compressModels(dist: string): CompressionRecord[] {
   // Only a finished bundle is changed; the tracked public/ directory never is.
   const index = path.join(root, 'index.html');
   if (!existsSync(index) || !existsSync(path.join(root, 'assets')) || path.basename(root) === 'public'
-      || !/src="\/assets\/[^"]+\.js"/.test(readFileSync(index, 'utf8'))) throw new Error('The target is not a built web bundle.');
+      // A build may be served under a subpath, as on GitHub Pages: src="/MouseBio_3D/assets/index-<hash>.js".
+      || !/src="(?:\/[A-Za-z0-9_.-]+)*\/assets\/[^"]+\.js"/.test(readFileSync(index, 'utf8'))) throw new Error('The target is not a built web bundle.');
   const records: CompressionRecord[] = [], unique = new Map<string, Binding>();
   for (const model of registeredModels(root)) {
     const earlier = unique.get(model.url);

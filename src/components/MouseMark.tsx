@@ -1,9 +1,10 @@
 import { useEffect, type CSSProperties } from 'react';
+import { deployedPath } from '../domain/deployed-path';
 
 /** The moving pictures of the mark: this mouse itself, whole, drawn from the living model with its coat. See public/atlas-living/LICENSE.md. */
 const FRAMES = 96, FRAME_WIDTH = 144, FRAME_HEIGHT = 96, SECONDS_PER_FRAME = 0.125;
 /** The icon of the browser tab has pictures of its own, seen from nearer the front so that the mouse fills the square. It changes slowly, because a tab is very small. */
-const TAB_SHEET = '/atlas-living/mouse-icon-moving.webp';
+const TAB_SHEET = deployedPath('/atlas-living/mouse-icon-moving.webp');
 const TAB_FRAMES = 32, TAB_CELL = 64, TAB_SIZE = 32, TAB_SECONDS_PER_FRAME = 0.5;
 
 /** The mark of MouseBio_3D: the whole mouse at ease, breathing, looking about, lifting its nose and taking two slow steps. Where motion is not wanted it keeps still. */

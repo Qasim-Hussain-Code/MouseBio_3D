@@ -11,6 +11,7 @@ import { DEEP_BUILDERS, HEMOGLOBIN_BUILDERS, isHemoglobinData, type HemoglobinDa
 import { buildMoleculeAtoms, buildMoleculeWhole, isMoleculeData, type MoleculeData } from '../viewer/molecule-scenes';
 import { ORGANELLE_BUILDERS, withWays } from '../viewer/organelle-scenes';
 import { lifeAt, rateLabel, type LifeSettings } from '../domain/living-simulation';
+import { deployedPath } from '../domain/deployed-path';
 
 const NUCLEOSOME_URL = '/scale-journey/nucleosome-5b1m.json';
 const HEMOGLOBIN_URL = '/scale-journey/hemoglobin-3hrw.json';
@@ -140,7 +141,7 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
     const askForMolecule = (key: string) => {
       if (moleculesAsked.has(key)) return;
       moleculesAsked.add(key);
-      fetch(moleculeUrl(key)).then((response) => {
+      fetch(deployedPath(moleculeUrl(key))).then((response) => {
         if (!response.ok) throw new Error('The measured structure could not be loaded.');
         return response.json();
       }).then((value: unknown) => {
@@ -155,7 +156,7 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
       if (hemoglobinAsked) return;
       hemoglobinAsked = true;
       setDataState('loading');
-      fetch(HEMOGLOBIN_URL).then((response) => {
+      fetch(deployedPath(HEMOGLOBIN_URL)).then((response) => {
         if (!response.ok) throw new Error('The measured structure could not be loaded.');
         return response.json();
       }).then((value: unknown) => {
@@ -166,7 +167,7 @@ export default function ScaleJourney({ onExit, tissue = 'skin', from, place, lif
         dirty.current = true;
       }).catch(() => { if (!disposed) setDataState('failed'); });
     };
-    fetch(NUCLEOSOME_URL).then((response) => {
+    fetch(deployedPath(NUCLEOSOME_URL)).then((response) => {
       if (!response.ok) throw new Error('The measured structure could not be loaded.');
       return response.json();
     }).then((value: unknown) => {

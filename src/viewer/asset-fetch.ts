@@ -1,3 +1,5 @@
+import { deployedPath } from '../domain/deployed-path';
+
 const MAX_BYTES = 80 * 1024 * 1024;
 type AssetExtension = 'glb' | 'ply' | 'txt' | 'json' | 'bin';
 /** Model files that a static host may store gzip-compressed; the registry always describes the unpacked bytes. */
@@ -38,7 +40,7 @@ export async function fetchBoundAnatomyBytes(url: string, expectedBytes: number,
   if (!isLocalAnatomyPath(url, extension) || !Number.isSafeInteger(expectedBytes) || expectedBytes < 28 || expectedBytes > MAX_BYTES
       || !/^[a-f0-9]{64}$/.test(expectedHash)) throw new Error('Invalid local anatomical asset binding.');
   if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-  const response = await fetcher(url, { signal, credentials: 'same-origin', redirect: 'error' });
+  const response = await fetcher(deployedPath(url), { signal, credentials: 'same-origin', redirect: 'error' });
   if (!response.ok || response.type === 'opaque' || !response.body) throw new Error('The local anatomical asset could not be read.');
   const transferTotal = declaredTransferSize(response);
   const network = response.body.getReader();

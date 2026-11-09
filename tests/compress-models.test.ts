@@ -90,6 +90,13 @@ test('one file registered with two different digests is refused', () => {
   assert.throws(() => compressModels(root), /two different registrations/);
 });
 
+test('a bundle built under a subpath, as for GitHub Pages, is recognized', () => {
+  const { root, living } = bundle();
+  writeFileSync(path.join(root, 'index.html'), '<script type="module" crossorigin src="/MouseBio_3D/assets/index-abc.js"></script>');
+  compressModels(root);
+  assert.ok(gunzipSync(readFileSync(path.join(root, 'atlas-living/living-mouse.glb'))).equals(living));
+});
+
 test('only a built bundle is changed, never the source folder', () => {
   const { root } = bundle();
   writeFileSync(path.join(root, 'index.html'), '<script type="module" src="/src/main.tsx"></script>');

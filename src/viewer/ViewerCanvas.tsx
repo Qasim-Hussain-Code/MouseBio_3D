@@ -37,6 +37,7 @@ import { RegionDetailController, type RegionDetailAsset, type RegionDetailStatus
 import { loadAtlasScene } from './atlas-loader';
 import type { AssetTransferProgress } from './asset-fetch';
 import { describeTransfer } from '../domain/load-progress';
+import { deployedPath } from '../domain/deployed-path';
 import { LoadProgress } from '../components/LoadProgress';
 import type { LocalTraceAsset } from '../domain/local-trace';
 import { disposeRegion, prepareRegionMaterial, regionLabelCenter, linePickingThreshold, nearestClippedLineIntersection, type RenderRegion } from './region-objects';
@@ -1296,7 +1297,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         }
         const heart = meshes.get('living:heart-lv');
         const sourceToWorld = gltf.scene.matrixWorld.clone();
-        void fetch(atlas.assetUrl.replace(/[^/]+$/, 'flow-paths.json'), { signal: sourceAbort.signal }).then((response) => response.ok ? response.json() : null).then((value: unknown) => {
+        void fetch(deployedPath(atlas.assetUrl.replace(/[^/]+$/, 'flow-paths.json')), { signal: sourceAbort.signal }).then((response) => response.ok ? response.json() : null).then((value: unknown) => {
           if (disposed || !isFlowPathFile(value) || !heart) return;
           const lines = flowLinesFrom(value, atlas, sourceToWorld, new THREE.Box3().setFromObject(heart).getCenter(new THREE.Vector3()));
           flow = createFlowTokens(lines);
