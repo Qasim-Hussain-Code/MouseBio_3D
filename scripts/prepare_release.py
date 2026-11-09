@@ -29,7 +29,7 @@ MAX_FILES = 5000
 MIN_FREE_RESERVE = 32 * 1024 * 1024
 ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 VERSION = re.compile(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?\Z")
-ROOT_FILES = {".gitattributes", ".gitignore", ".npmrc", "LICENSE", "LICENSES.md", "README.md",
+ROOT_FILES = {".gitattributes", ".gitignore", ".npmrc", "LICENSE", "LICENSES.md", "README.md", "render.yaml",
               "index.html", "package.json", "package-lock.json", "tsconfig.json", "vite.config.ts"}
 SOURCE_TYPES = {
     "src": {".ts", ".tsx", ".js", ".jsx", ".css", ".json", ".html", ".svg"},
