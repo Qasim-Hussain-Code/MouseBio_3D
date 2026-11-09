@@ -35,8 +35,8 @@ Everything runs in the browser. Imported files and observations stay in its memo
 
 ## Scientific scope
 
-The living mouse is a constructed model of one male specimen in a simulated standing posture. Simulated parts follow published descriptions, are marked as simulated wherever they appear and are not measurements. The anatomical axes and physical calibration of the sources are unverified. Below the tissue, the zoom shows representative levels, not data from the specimen. The tutorials are practice on a simulated animal and do not replace supervised training or an approved animal protocol. The [guide](docs/guide.md), the methods documents in [docs](docs) and the [acceptance records](docs/acceptance.md) give the details and the checks.
+The living mouse is a constructed model of one male specimen in a simulated standing posture. Simulated parts follow published descriptions, are marked as simulated wherever they appear and are not measurements. Below the tissue, the zoom shows representative levels, not data from the specimen. The tutorials are practice on a simulated animal and do not replace supervised training or an approved animal protocol. The [guide](docs/guide.md), the methods documents in [docs](docs) and the [acceptance records](docs/acceptance.md) give the details and the checks.
 
 ## Licences
 
-The source code is MIT and the documentation CC BY 4.0. Models and metadata derived from Digimouse remain CC BY-SA 4.0, and the other datasets keep their own open licences (CC BY 4.0, CC BY 3.0, CC0 and Apache-2.0). [LICENSES.md](LICENSES.md) and the notices beside each dataset give the attribution. MouseBio_3D is an independent project by Qasim Hussain and is not endorsed by the authors of its sources.
+The source code is MIT and the documentation CC BY 4.0. Models and metadata derived from Digimouse remain CC BY-SA 4.0, and the other datasets keep their own open licences (CC BY 4.0, CC BY 3.0, CC0 and Apache-2.0). [LICENSES.md](LICENSES.md) and the notices beside each dataset give the attribution. 
