@@ -62,7 +62,7 @@ const EBARA = 'Ebara S, Kumamoto K, Matsuura T, Mazurkiewicz JE, Rice FL. Simila
 const LOUVEAU = 'Louveau A, Smirnov I, Keyes TJ, et al. Structural and functional features of central nervous system lymphatic vessels. Nature 2015;523(7560):337-41. doi:10.1038/nature14432';
 const COOK = 'Cook MJ. The Anatomy of the Laboratory Mouse. Academic Press, 1965; web edition at https://www.informatics.jax.org/cookbook/';
 const DIGIMOUSE = 'Dogdas B, Stout D, Chatziioannou AF, Leahy RM. Digimouse: a 3D whole body mouse atlas from CT and cryosection data. Phys Med Biol 2007. doi:10.1088/0031-9155/52/3/003';
-const POSTURE = 'Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin or paws are drawn in under them.';
+const POSTURE = 'Moved to the simulated standing posture by rotating limb segments about joints read from the source CT. Soft parts that would then stand outside the simulated skin are drawn in under it.';
 
 const labelled = (id: string, name: string, label: number, sourceLabel: string, systems: string[], color: string, step?: number): StructurePlan => ({
   id: `living:${id}`, name, systems, sourceLabel, evidence: 'source', scale: 'organ', color,
@@ -198,7 +198,7 @@ export const STRUCTURES: readonly StructurePlan[] = [
   })),
   {
     id: 'living:muscle-rest', name: 'Other muscle tissue', systems: ['muscular'], sourceLabel: 'none, traced from the source images', evidence: 'traced', scale: 'organ', color: '#9a4f48',
-    description: `Traced from the coregistered source photographs and CT. Red tissue of muscle density that lies far from the course of every named muscle. ${POSTURE} The tissue of the scanned paws is left out, because the paws lay flattened in the scan and the sculpted paws cannot hold it in that shape.`,
+    description: `Traced from the coregistered source photographs and CT. Red tissue of muscle density that lies far from the course of every named muscle. ${POSTURE}`,
     basis: [DIGIMOUSE], plan: { kind: 'muscle-rest' },
   },
   { ...traced('small-intestine', 'Small intestine', 'gut', ['digestive'], '#c7a071', 'Yellow-green and tan gut contents and wall within the abdominal cavity, closed slightly to include the wall. Division from the large intestine is estimated by thickness and position.', 2, 1, 2), division: 'estimated', plan: { kind: 'gut-part', part: 'small' } },
@@ -436,8 +436,8 @@ export const STRUCTURES: readonly StructurePlan[] = [
   simulated('nose', 'Nose pad', 'nose', ['integumentary', 'respiratory'], '#d98a84', 'The bare rhinarium at the tip of the snout, with nostrils and a groove down its middle.'),
   simulated('lips', 'Mouth line', 'lips', ['integumentary', 'digestive'], '#2f2422', 'A dark line along the lip, on the side of the snout, as drawn in Cook figure 5. The source images do not separate the lips.'),
   simulated('vibrissae', 'Vibrissae', 'vibrissae', ['integumentary', 'sensory'], '#6a5a4c', 'The mystacial, superciliary, genal, submental and interramal whisker groups named by Cook, with counts and lengths chosen by eye.'),
-  simulated('forepaws', 'Fore paws', 'forepaws', ['integumentary'], '#eab2a4', 'Four digits and a pollex, with walking pads, after Cook. The digit bones from the CT lie partly outside it, by up to about 2 mm, because the paw is sculpted rather than fitted to them. The fine hair on the back of the paw is a display estimate.'),
-  simulated('hindpaws', 'Hind paws', 'hindpaws', ['integumentary'], '#eab2a4', 'Five digits with walking pads, after Cook, because the source images end at the hind feet. The ankle bones from the CT lie partly outside it, by up to about 1.8 mm, because the paw is sculpted rather than fitted to them. The fine hair on the back of the paw is a display estimate.'),
+  simulated('forepaws', 'Fore paws', 'forepaws', ['integumentary'], '#eab2a4', 'Four digits and a pollex, with walking pads, after Cook. Real digit bones from the CT lie inside. The fine hair on the back of the paw is a display estimate.'),
+  simulated('hindpaws', 'Hind paws', 'hindpaws', ['integumentary'], '#eab2a4', 'Five digits with walking pads, after Cook, because the source images end at the hind feet. The fine hair on the back of the paw is a display estimate.'),
   simulated('claws', 'Claws', 'claws', ['integumentary'], '#d9cdb9', 'Claws on the digits and a flattened nail on the pollex, after Cook.'),
   simulated('tail', 'Tail', 'tail', ['integumentary'], '#e3a896', 'A ringed tail continuing the short length of tail in the source images, with a length chosen to match the body as drawn by Cook. Its sparse hair is a display estimate.'),
   { ...simulated('tail-lateral-veins', 'Lateral tail veins', 'tail-lateral-veins', ['cardiovascular', 'arterial-venous'], '#7486ad', 'The two veins that run along the sides of the tail just under its skin, where Machholz et al. inject into them, drawn so that they show through it as they do in a pale tail. Their size and depth are estimates.'), exterior: true, basis: [MACHHOLZ] },

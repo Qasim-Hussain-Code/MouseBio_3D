@@ -95,9 +95,6 @@ function capsule(p: Vec3, a: Vec3, b: Vec3, ra: number, rb: number): number {
 }
 const smoothUnion = (a: number, b: number, k: number) => { const h = Math.max(0, Math.min(1, 0.5 + 0.5 * (a - b) / k)); return b + (a - b) * h + k * h * (1 - h); };
 
-/** The shape of a simulated paw, positive inside, in voxels of the source. */
-export type PawField = (p: Vec3) => number;
-
 /** The undersides of paws, where the walking pads lie, are darker. */
 const padTint = (ground: number) => (p: Vec3, n: Vec3): Vec3 => {
   const down = Math.max(0, -n[2]) * Math.max(0, 1 - (p[2] - ground) / 10);
@@ -172,13 +169,13 @@ function hindpawVessels(frame: PawFrame, digitList: readonly Digit[], ankle: Vec
   };
 }
 
-/** The sculpted shape of the fore paw, after Cook figure 6, with the frame and digits it is built on. */
-function forepawShape(wrist: Vec3, side: -1 | 1, ground: number): { frame: PawFrame; digitList: Digit[]; shape: PawField; box: readonly [Vec3, Vec3] } {
+/** The back of the fore paw and four digits with a small pollex, after Cook figure 6. */
+function forepaw(wrist: Vec3, side: -1 | 1, ground: number): { skin: Surface; claws: Surface[]; routes: ReturnType<typeof digitalRoutes> } {
   // Spacing and lengths follow the digit bones in the CT of the scanned paw, which lay palm down as this one does.
   const frame = pawFrame(wrist, side, ground, 0);
   const digitList = digits(frame, [[-15, 24, 28, -3], [-5, 26, 40, -1], [5, 26, 39, 1], [15, 22, 24, 3]]);
   const pollex = [inPaw(frame, 12, -19, 4), inPaw(frame, 17, -21, 3)] as const;
-  const shape: PawField = (p) => {
+  const skin = sculpt([add(frame.origin, [-45, -75, -14]), add(frame.origin, [45, 20, 18])], 1.2, (p) => {
     let value = capsule(p, inPaw(frame, -14, 0, 6), inPaw(frame, 0, 0, 5), 10, 10.5);
     value = smoothUnion(value, capsule(p, inPaw(frame, 0, -6, 4.5), inPaw(frame, 24, -9, 4), 10, 8.5), 3);
     value = smoothUnion(value, capsule(p, inPaw(frame, 0, 6, 4.5), inPaw(frame, 24, 9, 4), 10, 8.5), 3);
@@ -190,26 +187,19 @@ function forepawShape(wrist: Vec3, side: -1 | 1, ground: number): { frame: PawFr
     // Walking pads on the sole.
     for (const [along, across, r] of [[18, -10, 3.6], [20, 0, 3.4], [18, 10, 3.6], [6, -9, 3.8], [4, 7, 4.2]] as const) value = smoothUnion(value, r - length(sub(p, inPaw(frame, along, across, 0.2))), 1.2);
     return value;
-  };
-  return { frame, digitList, shape, box: [add(frame.origin, [-45, -75, -14]), add(frame.origin, [45, 20, 18])] };
-}
-
-/** The back of the fore paw and four digits with a small pollex. */
-function forepaw(wrist: Vec3, side: -1 | 1, ground: number): { skin: Surface; claws: Surface[]; routes: ReturnType<typeof digitalRoutes>; field: PawField } {
-  const { frame, digitList, shape: field, box } = forepawShape(wrist, side, ground);
-  const skin = sculpt(box, 1.2, field);
+  });
   const claws = digitList.map((digit) => clawOn(digit.tip, unit(sub(digit.tip, digit.knuckle)), frame.up, 2.4, 11));
   claws.push(sphere(inPaw(frame, 20, -18, 3), [1.8, 2.2, 0.7], 8, 12));
   const routes = digitalRoutes(frame, digitList, -6);
-  return { skin, claws, routes: { ...routes, arteries: [...routes.arteries, ...forepawDorsalArteries(frame, digitList)] }, field };
+  return { skin, claws, routes: { ...routes, arteries: [...routes.arteries, ...forepawDorsalArteries(frame, digitList)] } };
 }
 
-/** The sculpted shape of the hind paw, long and narrow with five digits, after Cook figure 7. The heel sits under the ankle. */
-function hindpawShape(ankle: Vec3, side: -1 | 1, ground: number): { frame: PawFrame; digitList: Digit[]; shape: PawField; box: readonly [Vec3, Vec3] } {
+/** The hind paw is long and narrow with five digits, after Cook figure 7. The heel sits under the ankle. */
+function hindpaw(ankle: Vec3, side: -1 | 1, ground: number): { skin: Surface; claws: Surface[]; bones: Surface[]; heel: Vec3; routes: ReturnType<typeof digitalRoutes> } {
   const frame = pawFrame(ankle, side, ground);
   frame.origin = [ankle[0], ankle[1], ground + 7];
   const digitList = digits(frame, [[-14, 62, 24, -7], [-6.5, 72, 34, -2], [0, 74, 37, 0], [6.5, 72, 34, 2], [14, 58, 28, 7]]);
-  const shape: PawField = (p) => {
+  const skin = sculpt([add(frame.origin, [-50, -125, -14]), add(frame.origin, [50, 35, 40])], 1.3, (p) => {
     let value = capsule(p, inPaw(frame, -18, 0, 8), inPaw(frame, 18, 0, 6), 9.5, 10);
     value = smoothUnion(value, capsule(p, inPaw(frame, 18, 0, 6), inPaw(frame, 66, 0, 5), 10, 13), 4);
     value = smoothUnion(value, capsule(p, inPaw(frame, 60, -7, 4.5), inPaw(frame, 72, -7, 4.5), 7, 6), 3);
@@ -222,14 +212,7 @@ function hindpawShape(ankle: Vec3, side: -1 | 1, ground: number): { frame: PawFr
     }
     for (const [along, across, r] of [[64, -10, 3.2], [68, -2, 3.2], [68, 5, 3.2], [62, 11, 3.2], [36, 6, 3.2], [28, -7, 3]] as const) value = smoothUnion(value, r - length(sub(p, inPaw(frame, along, across, 0.1))), 1.2);
     return value;
-  };
-  return { frame, digitList, shape, box: [add(frame.origin, [-50, -125, -14]), add(frame.origin, [50, 35, 40])] };
-}
-
-/** The hind paw, with its simulated bones beyond the scan. */
-function hindpaw(ankle: Vec3, side: -1 | 1, ground: number): { skin: Surface; claws: Surface[]; bones: Surface[]; heel: Vec3; routes: ReturnType<typeof digitalRoutes>; field: PawField } {
-  const { frame, digitList, shape: field, box } = hindpawShape(ankle, side, ground);
-  const skin = sculpt(box, 1.3, field);
+  });
   // Seven tarsals, five metatarsals and phalanges by the counts in Hummel et al., drawn as simple shafts.
   const bones: Surface[] = [
     tube([inPaw(frame, -20, 0, 8), inPaw(frame, -6, 0, 8), inPaw(frame, 8, 0, 8)], [3.6, 3.2, 3.4], 8),
@@ -244,7 +227,7 @@ function hindpaw(ankle: Vec3, side: -1 | 1, ground: number): { skin: Surface; cl
       return shafts;
     }),
   ];
-  return { skin, claws: digitList.map((digit) => clawOn(digit.tip, unit(sub(digit.tip, digit.knuckle)), frame.up, 2.6, 13)), bones, heel: inPaw(frame, -20, 0, 8), routes: (() => { const routes = digitalRoutes(frame, digitList, -10), vessels = hindpawVessels(frame, digitList, ankle); return { ...routes, arteries: [...routes.arteries, ...vessels.arteries], veins: vessels.veins }; })(), field };
+  return { skin, claws: digitList.map((digit) => clawOn(digit.tip, unit(sub(digit.tip, digit.knuckle)), frame.up, 2.6, 13)), bones, heel: inPaw(frame, -20, 0, 8), routes: (() => { const routes = digitalRoutes(frame, digitList, -10), vessels = hindpawVessels(frame, digitList, ankle); return { ...routes, arteries: [...routes.arteries, ...vessels.arteries], veins: vessels.veins }; })() };
 }
 
 /** A claw curving down from the digit tip. */
@@ -455,7 +438,7 @@ function eyePositions(context: Context): { left: Vec3; right: Vec3 } {
   return { left: mean(totals[0]), right: mean(totals[1]) };
 }
 
-export interface AttachmentResult { readonly parts: Record<AttachmentPart, Surface>; readonly eyes: readonly [Vec3, Vec3]; readonly earRoots: readonly [Vec3, Vec3]; readonly tip: Vec3; readonly mouth: readonly Vec3[]; readonly openings: readonly Vec3[]; readonly pawFields: readonly PawField[] }
+export interface AttachmentResult { readonly parts: Record<AttachmentPart, Surface>; readonly eyes: readonly [Vec3, Vec3]; readonly earRoots: readonly [Vec3, Vec3]; readonly tip: Vec3; readonly mouth: readonly Vec3[]; readonly openings: readonly Vec3[] }
 
 export function buildAttachments(posture: PostureField, context: Context): AttachmentResult {
   const { joints, groundZ } = posture.pose;
@@ -763,5 +746,5 @@ export function buildAttachments(posture: PostureField, context: Context): Attac
     'paw-veins': mergeSurfaces([foreR, foreL, hindR, hindL].flatMap((paw) => paw.routes.veins)),
     'paw-nerves': mergeSurfaces([foreR, foreL, hindR, hindL].flatMap((paw) => paw.routes.nerves)),
   };
-  return { parts, eyes: [applyRigid(head, eyeLeft), applyRigid(head, eyeRight)], earRoots: [applyRigid(head, earR), applyRigid(head, earL)], tip: applyRigid(head, tip), mouth: [...mouthSides[0], ...mouthSides[1]].map((point) => applyRigid(head, point)), openings: openingPoints, pawFields: [foreR.field, foreL.field, hindR.field, hindL.field] };
+  return { parts, eyes: [applyRigid(head, eyeLeft), applyRigid(head, eyeRight)], earRoots: [applyRigid(head, earR), applyRigid(head, earL)], tip: applyRigid(head, tip), mouth: [...mouthSides[0], ...mouthSides[1]].map((point) => applyRigid(head, point)), openings: openingPoints };
 }

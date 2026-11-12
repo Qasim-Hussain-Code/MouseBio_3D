@@ -4,7 +4,7 @@
     "title": "Living mouse: measured and simulated",
     "manifestUrl": "/atlas-living/atlas.json",
     "coordinateFrameId": "digimouse-living-stance-v1",
-    "assetSha256": "83469b3ff59ccd0b16e0d8984ef388a0319d3586aa1220ab454dd62207da0336",
+    "assetSha256": "28f094fee00e7bb3cb4a2e9ebaa2b972555cf60ee750efe24897f3c5052a3966",
     "coverage": {
       "regionCount": 434,
       "systems": [
