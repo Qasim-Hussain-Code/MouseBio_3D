@@ -21,7 +21,7 @@ import { writeGlb, type GlbSurface } from './glb';
 import { add, boneOfVoxel, cross, JOINTS, scale, unit, type Vec3 } from './rig';
 import { components, dilate, erode, voxelIndex, type Grid } from './volume';
 import type { Surface } from './surface-nets';
-import { buildAttachments } from './attachments';
+import { buildAttachments, type PawField } from './attachments';
 import { HEART, MIDDLE_X, STOMACH, STRUCTURES, type Plan } from './structures';
 import { TRACED, traceTissues } from './trace';
 import { buildInternal } from './internal';
@@ -338,6 +338,66 @@ function boneStance(index: number): Surface {
   return rigid ? deformRigid(scan, posture.pose.transforms[rigid]) : deformAxial(scan, posture);
 }
 /**
+ * Below the wrists and ankles the body is closed by the simulated paws. Soft tissue that the stance carries there must stay inside
+ * them: a thin vessel or nerve is drawn in just under the paw's surface, while traced tissue of the scanned paws, which lay flattened
+ * in the scan and cannot be fitted to the sculpted paws, is left out. Points inside the body or a limb are left where they are.
+ */
+const PAW_CLEARANCE = 1.5;
+/** Only points this near a paw, in voxels of the source, belong to it; 40 is 4 mm. */
+const PAW_REACH = 40;
+const PAW_LEVEL = (() => { const j = posture.pose.joints; return Math.max(j.wristR[2], j.wristL[2], j.ankleR[2], j.ankleL[2]) + 4; })();
+function insideBodyOrLimb(p: Vec3): boolean {
+  skinSurface();
+  const { grid: cells, origin, cell, inside } = skinField!;
+  const x = Math.floor((p[0] - origin[0]) / cell), y = Math.floor((p[1] - origin[1]) / cell), z = Math.floor((p[2] - origin[2]) / cell);
+  if (x >= 0 && y >= 0 && z >= 0 && x < cells.nx && y < cells.ny && z < cells.nz && inside[voxelIndex(cells, x, y, z)]) return true;
+  for (const limb of limbTubes) { const nearest = nearestOnTube(limb, p); if (nearest.distance <= nearest.radius) return true; }
+  return false;
+}
+/** The paw a point lies nearest to the inside of, and how far inside it is; negative outside. */
+function strongestPaw(p: Vec3): { field: PawField; value: number } {
+  let field = attachments.pawFields[0], value = -Infinity;
+  for (const candidate of attachments.pawFields) { const v = candidate(p); if (v > value) { value = v; field = candidate; } }
+  return { field, value };
+}
+/** A point outside every paw, moved along the shape's gradient to just inside the paw it is nearest. A point inside comes back unchanged. */
+function intoPaw(p: Vec3): Vec3 {
+  const { field, value } = strongestPaw(p);
+  if (value >= 0) return p;
+  let q = p;
+  for (let step = 0; step < 16; step++) {
+    const v = field(q);
+    if (v >= PAW_CLEARANCE) break;
+    const h = 0.5;
+    const g: Vec3 = [(field([q[0] + h, q[1], q[2]]) - field([q[0] - h, q[1], q[2]])) / (2 * h), (field([q[0], q[1] + h, q[2]]) - field([q[0], q[1] - h, q[2]])) / (2 * h),
+      (field([q[0], q[1], q[2] + h]) - field([q[0], q[1], q[2] - h])) / (2 * h)];
+    const g2 = g[0] * g[0] + g[1] * g[1] + g[2] * g[2];
+    if (g2 < 1e-6) break;
+    q = add(q, scale(g, (PAW_CLEARANCE - v + 0.1) / g2));
+  }
+  return q;
+}
+/** A surface without the triangles that touch any of the given vertices, with the vertices it no longer uses removed. */
+function withoutVertices(surface: Surface, drop: Uint8Array): Surface {
+  const kept: number[] = [];
+  for (let t = 0; t < surface.indices.length; t += 3) {
+    const a = surface.indices[t], b = surface.indices[t + 1], c = surface.indices[t + 2];
+    if (!drop[a] && !drop[b] && !drop[c]) kept.push(a, b, c);
+  }
+  const remap = new Int32Array(surface.positions.length / 3).fill(-1);
+  let count = 0;
+  for (const v of kept) if (remap[v] < 0) remap[v] = count++;
+  const positions = new Float32Array(count * 3);
+  const colors = surface.colors ? new Float32Array(count * 3) : undefined;
+  for (let v = 0; v < remap.length; v++) {
+    const to = remap[v];
+    if (to < 0) continue;
+    for (let k = 0; k < 3; k++) { positions[3 * to + k] = surface.positions[3 * v + k]; if (colors) colors[3 * to + k] = surface.colors![3 * v + k]; }
+  }
+  const indices = Uint32Array.from(kept, (v) => remap[v]);
+  return { ...surface, positions, indices, normals: vertexNormals(positions, indices), colors, lines: undefined };
+}
+/**
  * The scanned shanks and forearms lay pressed flat, so their traced muscles are wider than the slender simulated limbs. Their
  * outer parts are drawn in towards the middle of the limb until they lie under the skin, smoothly, so that muscles keep their order.
  * Bones are not moved, because they are measured and rigid.
@@ -373,19 +433,35 @@ const WALL_FROM = 452, WALL_TO = 752, WALL_DEPTH = 1.2;
 function keepUnderSkin(id: string, plan: Plan, surface: Surface): Surface {
   if (plan.kind === 'skin' || plan.kind === 'abdominal-wall' || plan.kind === 'attachment' || plan.kind === 'bone' || plan.kind === 'marrow' || plan.kind === 'patches' || plan.kind === 'net' || LEFT_WHERE_THEY_ARE.has(id)) return surface;
   skinSurface();
-  const j = posture.pose.joints;
-  const pawLevel = Math.max(j.wristR[2], j.wristL[2], j.ankleR[2], j.ankleL[2]) + 4;
   const positions = surface.positions.slice();
-  let moved = 0;
+  // Traced tissue of the scanned paws is left out, because the sculpted paws cannot hold it in its scanned shape.
+  const drop = plan.kind === 'muscle-rest' ? new Uint8Array(positions.length / 3) : null;
+  let moved = 0, intoPaws = 0, outside = 0, dropped = 0;
   for (let i = 0; i < positions.length; i += 3) {
-    if (positions[i + 2] < pawLevel) continue;
     const p: Vec3 = [positions[i], positions[i + 1], positions[i + 2]];
+    if (p[2] < PAW_LEVEL) {
+      // Below the wrists and ankles the paws close the body, so a point outside the body and the limbs belongs to a paw.
+      if (insideBodyOrLimb(p)) continue;
+      // Low parts of the body far from every paw, such as the tip of the penis between the hind limbs, are left where they are.
+      if (strongestPaw(p).value < -PAW_REACH) continue;
+      if (drop) { drop[i / 3] = 1; dropped++; continue; }
+      const q = intoPaw(p);
+      if (q !== p) { positions[i] = q[0]; positions[i + 1] = q[1]; positions[i + 2] = q[2]; moved++; intoPaws++; }
+      if (strongestPaw(q).value < -5) outside++;
+      continue;
+    }
     const q = underSkin(skinField!, p, UNDER_SKIN_CLEARANCE);
     if (q !== p) { positions[i] = q[0]; positions[i + 1] = q[1]; positions[i + 2] = q[2]; moved++; }
   }
-  if (!moved) return surface;
-  log('under skin', id, moved);
-  return { ...surface, positions, normals: vertexNormals(positions, surface.indices) };
+  // As for the interiors, a few points within half a millimetre are allowed; more than that stops the build.
+  if (outside > 0.001 * (positions.length / 3)) throw new Error(`${id} stands outside the paws: ${outside} of ${positions.length / 3} vertices`);
+  let result = moved ? { ...surface, positions, normals: vertexNormals(positions, surface.indices) } : surface;
+  if (moved) log('under skin', id, moved, intoPaws ? `of which ${intoPaws} into the paws` : '');
+  if (dropped) {
+    result = withoutVertices(result, drop!);
+    log('paw tissue left out', id, dropped, 'vertices', (surface.indices.length - result.indices.length) / 3, 'triangles');
+  }
+  return result;
 }
 const PRESSED_MUSCLES = new Set(['gastrocnemius', 'soleus', 'tibialis', 'peroneals', 'deep-flexors', 'forearm-extensors', 'forearm-flexors']);
 const musclePartition = partitionMuscles(grid, (i) => tissues[i] === TRACED.muscle, landmarks);
@@ -407,6 +483,21 @@ for (const structure of STRUCTURES) {
             : structure.plan.kind === 'abdominal-wall' ? abdominalWall() : build(structure.plan));
   if (!surface || !surface.indices.length) throw new Error(`No surface for ${structure.id}`);
   builtSurfaces.set(structure.id, surface);
+  // The paw bones are measured and the paws sculpted; how far the bones reach beyond the paws is recorded, not hidden.
+  if (structure.plan.kind === 'bone' && /^(manus|pes)-/.test(BONES[structure.plan.index].id)) {
+    const used = new Uint8Array(surface.positions.length / 3);
+    for (const v of surface.indices) used[v] = 1;
+    let beyond = 0, deepest = 0, drawn = 0;
+    for (let v = 0; v < used.length; v++) {
+      if (!used[v]) continue;
+      drawn++;
+      const p: Vec3 = [surface.positions[3 * v], surface.positions[3 * v + 1], surface.positions[3 * v + 2]];
+      if (p[2] >= PAW_LEVEL || insideBodyOrLimb(p)) continue;
+      const value = strongestPaw(p).value;
+      if (value < 0) { beyond++; deepest = Math.max(deepest, -value); }
+    }
+    log('paw bone beyond its paw', structure.id, beyond, 'of', drawn, 'vertices, up to', (deepest * METRES * 1000).toFixed(2), 'mm');
+  }
   const marks = { joints: posture.pose.joints, eyes: attachments.eyes, earRoots: attachments.earRoots, tip: attachments.tip, mouth: [...attachments.mouth, ...attachments.openings] };
   const hair = structure.plan.kind === 'skin' ? bodyCoat(surface, marks) : structure.plan.kind === 'attachment' ? shortCoat(structure.plan.part, surface, marks) : undefined;
   const fibre = structure.plan.kind === 'muscle' ? fibreOf(structure.plan.index, surface) : structure.plan.kind === 'abdominal-wall' ? wallFibre(surface) : undefined;

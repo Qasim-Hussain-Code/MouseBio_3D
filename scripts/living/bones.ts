@@ -196,8 +196,8 @@ export const BONES: readonly BoneDefinition[] = [
   SIDED('humerus-l', 'Left humerus', 'Moved as one rigid piece.', NEAREST, 'humerusL'),
   SIDED('forearm-r', 'Right radius and ulna', 'Moved as one rigid piece.', NEAREST, 'forearmR'),
   SIDED('forearm-l', 'Left radius and ulna', 'Moved as one rigid piece.', NEAREST, 'forearmL'),
-  SIDED('manus-r', 'Right fore paw bones', 'Carpals, metacarpals and phalanges, which the source label crops. Moved as one rigid piece.', NEAREST, 'manusR'),
-  SIDED('manus-l', 'Left fore paw bones', 'Carpals, metacarpals and phalanges, which the source label crops. Moved as one rigid piece.', NEAREST, 'manusL'),
+  SIDED('manus-r', 'Right fore paw bones', 'Carpals, metacarpals and phalanges, which the source label crops. Moved as one rigid piece. Parts lie outside the sculpted paw, by up to about 1.1 mm.', NEAREST, 'manusR'),
+  SIDED('manus-l', 'Left fore paw bones', 'Carpals, metacarpals and phalanges, which the source label crops. Moved as one rigid piece. Parts lie outside the sculpted paw, by up to about 2.1 mm.', NEAREST, 'manusL'),
   { id: 'os-penis', name: 'Os penis', note: 'A tapering bone under the skin of the ventral midline, which the source skeleton label leaves out. Hummel et al. describe a small bone in the penis.', division: BY_BOX, surface: OUTSIDE_LABEL },
   SIDED('coxa-r', 'Right os coxae', 'After Cook figures 37 and 38.', BY_SIDE),
   SIDED('coxa-l', 'Left os coxae', 'After Cook figures 37 and 38.', BY_SIDE),
@@ -207,8 +207,8 @@ export const BONES: readonly BoneDefinition[] = [
   SIDED('tibia-l', 'Left tibia', 'With the distal part where the fibula joins it. Moved as one rigid piece.', SHANK_DIVISION, 'tibiaL'),
   SIDED('fibula-r', 'Right fibula', 'The free part, which sections of the CT show apart from the tibia. Hummel et al. describe the two as separate for the proximal two thirds and fused along the distal third. Moved as one rigid piece.', SHANK_DIVISION, 'tibiaR'),
   SIDED('fibula-l', 'Left fibula', 'The free part, which sections of the CT show apart from the tibia. Hummel et al. describe the two as separate for the proximal two thirds and fused along the distal third. Moved as one rigid piece.', SHANK_DIVISION, 'tibiaL'),
-  SIDED('pes-r', 'Right ankle bones in the scan', 'The tarsal bones that lie in the CT. Moved as one rigid piece.', NEAREST, 'pesR'),
-  SIDED('pes-l', 'Left ankle bones in the scan', 'The tarsal bones that lie in the CT. Moved as one rigid piece.', NEAREST, 'pesL'),
+  SIDED('pes-r', 'Right ankle bones in the scan', 'The tarsal bones that lie in the CT. Moved as one rigid piece. Parts lie outside the sculpted paw, by up to about 1.8 mm.', NEAREST, 'pesR'),
+  SIDED('pes-l', 'Left ankle bones in the scan', 'The tarsal bones that lie in the CT. Moved as one rigid piece. Parts lie outside the sculpted paw, by up to about 0.8 mm.', NEAREST, 'pesL'),
 ];
 
 const indexOfBone = new Map(BONES.map((bone, index) => [bone.id, index + 1]));
