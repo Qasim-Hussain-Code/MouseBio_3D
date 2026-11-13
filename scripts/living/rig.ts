@@ -51,8 +51,11 @@ export const applyRigid = (t: RigidTransform, p: Vec3): Vec3 => add(t.target, ro
 export const BONE_IDS = ['trunk', 'humerusR', 'forearmR', 'manusR', 'humerusL', 'forearmL', 'manusL', 'femurR', 'tibiaR', 'pesR', 'femurL', 'tibiaL', 'pesL', 'head', 'pelvis'] as const;
 export type BoneId = (typeof BONE_IDS)[number];
 
-/** A limb segment for assigning bone: the segment from a to b, its capsule radius and the plane offset beyond a that it starts at. */
-export interface BoneSegment { readonly id: BoneId; readonly a: Vec3; readonly b: Vec3; readonly radius: number; readonly start: number }
+/**
+ * A limb segment for assigning bone: the segment from a to b, its capsule radius, the plane offset beyond a that it starts at, and
+ * how far past b it reaches, which is its radius where none is given.
+ */
+export interface BoneSegment { readonly id: BoneId; readonly a: Vec3; readonly b: Vec3; readonly radius: number; readonly start: number; readonly reach?: number }
 
 /** Joint positions in source voxels, snapped to CT bone by mean shift from hand-read projections. */
 export const JOINTS = {
@@ -70,11 +73,11 @@ export const BONE_SEGMENTS: readonly BoneSegment[] = [
   { id: 'forearmL', a: JOINTS.elbowL, b: JOINTS.wristL, radius: 18, start: -18 },
   { id: 'manusL', a: JOINTS.wristL, b: JOINTS.tipL, radius: 32, start: 4 },
   { id: 'femurR', a: JOINTS.hipR, b: JOINTS.kneeR, radius: 20, start: 16 },
-  { id: 'tibiaR', a: JOINTS.kneeR, b: JOINTS.ankleR, radius: 20, start: -10 },
-  { id: 'pesR', a: JOINTS.ankleR, b: JOINTS.toeR, radius: 34, start: -12 },
+  { id: 'tibiaR', a: JOINTS.kneeR, b: JOINTS.ankleR, radius: 20, start: -10, reach: 0 },
+  { id: 'pesR', a: JOINTS.ankleR, b: JOINTS.toeR, radius: 34, start: -34 },
   { id: 'femurL', a: JOINTS.hipL, b: JOINTS.kneeL, radius: 20, start: 16 },
-  { id: 'tibiaL', a: JOINTS.kneeL, b: JOINTS.ankleL, radius: 20, start: -10 },
-  { id: 'pesL', a: JOINTS.ankleL, b: JOINTS.toeL, radius: 34, start: -12 },
+  { id: 'tibiaL', a: JOINTS.kneeL, b: JOINTS.ankleL, radius: 20, start: -10, reach: 0 },
+  { id: 'pesL', a: JOINTS.ankleL, b: JOINTS.toeL, radius: 34, start: -34 },
 ];
 
 /**
@@ -103,7 +106,34 @@ function pitch(degrees: number): Quat {
 
 /** The chosen ground, 7.2 mm below the scanned table, so that the knee stays high against the flank and the ankle comes to lie under the hip. This is a choice, not a measurement. */
 export const GROUND_Z = -72;
-const WRIST_HEIGHT = 12, ANKLE_HEIGHT = 18;
+
+/**
+ * How the bones of each paw, which move as one piece, rest on the ground in the stance. This is a choice, not a measurement of a
+ * standing animal. Each fore paw is turned from its scanned orientation so that its bones lie as low and flat on the ground as they
+ * can, which brings its digits down to it. On the right the end of the radius and ulna reaches lower than the paw, so the wrist stands
+ * higher (PAW_DEPTH), and that paw is turned a further 3.6 degrees about the wrist, its digits down, until its bones also lie
+ * PAD_CLEARANCE above the ground; its whole turn from the scan is about 10 degrees, that of the left about 12. The CT does not show
+ * the separate bones of each ankle or which side of them is the sole, so they are turned so that their longest extent lies along the
+ * foot and their shortest upright, with their bulk below the ankle and further forward than back, as the tarsus lies. The turns were
+ * found from the voxels the build gives each paw, in pieces of at least 0.1 mm3, and the further turn from the drawn surfaces of the
+ * bones. Quaternions (x, y, z, w) of the whole turn from the scan.
+ */
+export const PAW_REST = {
+  manusR: [-0.0623185, -0.0606112, -0.0075081, 0.9961859],
+  manusL: [0.0967845, -0.0320602, 0.0031192, 0.994784],
+  pesR: [-0.4243269, 0.331793, -0.7761664, 0.3277587],
+  pesL: [-0.6523477, 0.320423, -0.5247403, 0.4431921],
+} as const satisfies Record<string, Quat>;
+/**
+ * How far the lowest bone of each limb lies below its wrist or ankle in the stance, in voxels, on the drawn surfaces of the bones: a bone
+ * of the paw, or on the right fore limb the end of the radius and ulna, which reaches about 0.4 mm lower than that paw lies at rest. Each
+ * wrist and ankle stands this far above PAD_CLEARANCE, and the build checks that the lowest bone of each limb, and of each paw, then
+ * lies PAD_CLEARANCE above the ground.
+ */
+export const PAW_DEPTH = { manusR: 6.79, manusL: 22.35, pesR: 24.86, pesL: 17.76 } as const;
+/** The room kept under the lowest bone of each limb for the pads, in voxels: 0.3 mm, an estimate. */
+export const PAD_CLEARANCE = 3;
+const unitQuat = (q: Quat): Quat => { const n = Math.hypot(q[0], q[1], q[2], q[3]); return [q[0] / n, q[1] / n, q[2] / n, q[3] / n]; };
 
 export interface StancePose {
   readonly transforms: Readonly<Record<BoneId, RigidTransform>>;
@@ -130,27 +160,27 @@ function limb(start: Vec3, middle: Vec3, end: Vec3, firstDirection: Vec3, second
   };
 }
 
-/** The distal segments keep their scanned orientation in the fore paw, which lay palm down, and are turned to point cranially in the hind paw. */
+/** The paws rest on the ground as PAW_REST describes, and each wrist and ankle stands at the height that leaves PAD_CLEARANCE under the lowest bone of its limb. */
 export function stancePose(): StancePose {
   const j = JOINTS;
   const pelvis: RigidTransform = { rotation: pitch(PELVIS_BEND.degrees), pivot: PELVIS_BEND.pivot, target: PELVIS_BEND.pivot };
   const head: RigidTransform = { rotation: pitch(HEAD_BEND.degrees), pivot: HEAD_BEND.pivot, target: HEAD_BEND.pivot };
-  const foreR = limb(j.shoulderR, j.elbowR, j.wristR, TARGETS.humerus, TARGETS.forearm, GROUND_Z + WRIST_HEIGHT);
-  const foreL = limb(j.shoulderL, j.elbowL, j.wristL, mirror(TARGETS.humerus), mirror(TARGETS.forearm), GROUND_Z + WRIST_HEIGHT);
-  const hindR = limb(j.hipR, j.kneeR, j.ankleR, TARGETS.femur, TARGETS.tibia, GROUND_Z + ANKLE_HEIGHT, applyRigid(pelvis, j.hipR));
-  const hindL = limb(j.hipL, j.kneeL, j.ankleL, mirror(TARGETS.femur), mirror(TARGETS.tibia), GROUND_Z + ANKLE_HEIGHT, applyRigid(pelvis, j.hipL));
-  const pesRotation = (ankle: Vec3, toe: Vec3, lateral: number) => rotationBetween(sub(toe, ankle), [lateral, -1, 0]);
+  const resting = (paw: keyof typeof PAW_DEPTH) => GROUND_Z + PAD_CLEARANCE + PAW_DEPTH[paw];
+  const foreR = limb(j.shoulderR, j.elbowR, j.wristR, TARGETS.humerus, TARGETS.forearm, resting('manusR'));
+  const foreL = limb(j.shoulderL, j.elbowL, j.wristL, mirror(TARGETS.humerus), mirror(TARGETS.forearm), resting('manusL'));
+  const hindR = limb(j.hipR, j.kneeR, j.ankleR, TARGETS.femur, TARGETS.tibia, resting('pesR'), applyRigid(pelvis, j.hipR));
+  const hindL = limb(j.hipL, j.kneeL, j.ankleL, mirror(TARGETS.femur), mirror(TARGETS.tibia), resting('pesL'), applyRigid(pelvis, j.hipL));
   const transforms: Record<BoneId, RigidTransform> = {
     trunk: { rotation: IDENTITY_QUAT, pivot: [0, 0, 0], target: [0, 0, 0] },
     head, pelvis,
     humerusR: foreR.first, forearmR: foreR.second,
-    manusR: { rotation: IDENTITY_QUAT, pivot: j.wristR, target: foreR.end },
+    manusR: { rotation: unitQuat(PAW_REST.manusR), pivot: j.wristR, target: foreR.end },
     humerusL: foreL.first, forearmL: foreL.second,
-    manusL: { rotation: IDENTITY_QUAT, pivot: j.wristL, target: foreL.end },
+    manusL: { rotation: unitQuat(PAW_REST.manusL), pivot: j.wristL, target: foreL.end },
     femurR: hindR.first, tibiaR: hindR.second,
-    pesR: { rotation: pesRotation(j.ankleR, j.toeR, -0.1), pivot: j.ankleR, target: hindR.end },
+    pesR: { rotation: unitQuat(PAW_REST.pesR), pivot: j.ankleR, target: hindR.end },
     femurL: hindL.first, tibiaL: hindL.second,
-    pesL: { rotation: pesRotation(j.ankleL, j.toeL, 0.1), pivot: j.ankleL, target: hindL.end },
+    pesL: { rotation: unitQuat(PAW_REST.pesL), pivot: j.ankleL, target: hindL.end },
   };
   const moved = (bone: BoneId, p: Vec3) => applyRigid(transforms[bone], p);
   const joints = {
@@ -162,13 +192,18 @@ export function stancePose(): StancePose {
   return { transforms, joints, groundZ: GROUND_Z };
 }
 
-/** Which limb segment a skeleton voxel belongs to, or the trunk. Nearest capsule wins among those it lies within. */
+/**
+ * Which limb segment a skeleton voxel belongs to, or the trunk. Nearest capsule wins among those it lies within. A shank ends at the
+ * plane through its ankle across its line, and a hind paw takes the bone within its radius of the ankle on every side: in the scan
+ * the left foot lies across the end of its shank, with the heel on one side of the ankle and the toes on the other, and the bone
+ * beyond that plane is bone of the foot.
+ */
 export function boneOfVoxel(p: Vec3): BoneId {
   let best: BoneId = 'trunk', bestDistance = Infinity;
   for (const segment of BONE_SEGMENTS) {
     const axis = sub(segment.b, segment.a), len = length(axis), direction = scale(axis, 1 / len);
     const along = dot(sub(p, segment.a), direction);
-    if (along < segment.start || along > len + segment.radius) continue;
+    if (along < segment.start || along > len + (segment.reach ?? segment.radius)) continue;
     const t = Math.max(0, Math.min(len, along));
     const distance = length(sub(p, add(segment.a, scale(direction, t))));
     if (distance < segment.radius && distance < bestDistance) { best = segment.id; bestDistance = distance; }

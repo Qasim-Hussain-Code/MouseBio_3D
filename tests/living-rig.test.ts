@@ -52,6 +52,11 @@ test('skeleton voxels are assigned to the limb segment around them and the trunk
   assert.equal(boneOfVoxel([72, 170, 30]), 'manusR');
   assert.equal(boneOfVoxel([80, 763, 78]), 'femurR');
   assert.equal(boneOfVoxel([300, 830, 45]), 'tibiaL');
+  assert.equal(boneOfVoxel([272.7, 894.8, 43.1]), 'tibiaL', 'the end of the left shank, 0.6 mm before the ankle');
+  assert.equal(boneOfVoxel([258, 905, 45]), 'pesL', 'the left heel, which lies beside the end of the shank and beyond the plane across it');
+  assert.equal(boneOfVoxel([290, 915, 43]), 'pesL', 'the left foot towards the toes');
+  assert.equal(boneOfVoxel([87.9, 894.5, 37]), 'tibiaR', 'the end of the right shank');
+  assert.equal(boneOfVoxel([93.3, 909.5, 36.7]), 'pesR', 'the right foot, in line with the shank');
   assert.equal(boneOfVoxel([178, 500, 175]), 'trunk', 'spine');
   assert.equal(boneOfVoxel([125, 295, 102]), 'trunk', 'the shoulder joint itself stays with the scapula');
   assert.equal(boneOfVoxel([120, 390, 136]), 'trunk', 'scapula');

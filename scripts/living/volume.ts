@@ -149,3 +149,58 @@ export function distanceInside(mask: Uint8Array, grid: Grid): Float32Array {
   for (let i = 0; i < distance.length; i++) distance[i] /= 3;
   return distance;
 }
+
+/**
+ * The voxels at or above `level` that are joined to a voxel of `seed` at or above it, through voxels at or above it that touch by a face,
+ * an edge or a corner.
+ */
+export function joinedAbove(seed: Uint8Array, values: Uint8Array, level: number, grid: Grid): Uint8Array {
+  const { nx, ny, nz } = grid;
+  const joined = new Uint8Array(seed.length);
+  let count = 0;
+  for (let i = 0; i < values.length; i++) if (values[i] >= level) count++;
+  const queue = new Int32Array(count);
+  let head = 0, tail = 0;
+  for (let i = 0; i < seed.length; i++) if (seed[i] && values[i] >= level) { joined[i] = 1; queue[tail++] = i; }
+  while (head < tail) {
+    const at = queue[head++];
+    const x = at % nx, rest = (at - x) / nx, y = rest % ny, z = (rest - y) / ny;
+    for (let dz = -1; dz <= 1; dz++) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const xx = x + dx, yy = y + dy, zz = z + dz;
+      if (xx < 0 || yy < 0 || zz < 0 || xx >= nx || yy >= ny || zz >= nz) continue;
+      const other = (zz * ny + yy) * nx + xx;
+      if (!joined[other] && values[other] >= level) { joined[other] = 1; queue[tail++] = other; }
+    }
+  }
+  return joined;
+}
+
+/**
+ * Where the corners of a face of the grid lie inside and outside a shape by turns, two sheets of the surface drawn from the field
+ * meet along an edge there, which no closed surface has. The two inside corners are put just outside, which parts the sheets and
+ * can make no tunnel. A point is inside where the field is at least `level`. Returns how many faces were changed.
+ */
+export function partSheets(field: Float32Array, grid: Grid, level = 0): number {
+  const { nx, ny, nz } = grid, sx = 1, sy = nx, sz = nx * ny, out = level - 1e-3;
+  let changed = 0, found = 0;
+  // A face by its corners in turn.
+  const face = (a: number, b: number, c: number, d: number) => {
+    const ia = field[a] >= level, ib = field[b] >= level;
+    if (ia === ib) return;
+    if (ia !== (field[c] >= level) || ib !== (field[d] >= level)) return;
+    if (ia) { field[a] = out; field[c] = out; } else { field[b] = out; field[d] = out; }
+    found++;
+  };
+  for (let round = 0; round < 32; round++) {
+    found = 0;
+    for (let z = 0; z < nz; z++) for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+      const at = (z * ny + y) * nx + x;
+      if (x + 1 < nx && y + 1 < ny) face(at, at + sx, at + sx + sy, at + sy);
+      if (x + 1 < nx && z + 1 < nz) face(at, at + sx, at + sx + sz, at + sz);
+      if (y + 1 < ny && z + 1 < nz) face(at, at + sy, at + sy + sz, at + sz);
+    }
+    changed += found;
+    if (!found) return changed;
+  }
+  throw new Error('The sheets of a drawn surface still meet along an edge after 32 rounds');
+}

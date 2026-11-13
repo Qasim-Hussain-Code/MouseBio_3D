@@ -8,10 +8,10 @@
  * measured bones in the stance, and is at least wide enough to hold most of them.
  */
 import { BONE_IDS, add, applyRigid, dot, length, scale, sub, type Vec3 } from './rig';
-import { weightsAt, type PostureField } from './posture';
+import { weightsAt, WITH_LIMB, type PostureField } from './posture';
 import { blendRigid, JOINTS, type RigidTransform } from './rig';
 import { surfaceNets, type Surface } from './surface-nets';
-import { components, dilate, erode, smoothField, voxelIndex, type Grid } from './volume';
+import { components, dilate, erode, partSheets, smoothField, voxelIndex, type Grid } from './volume';
 
 export interface ShankProfile { readonly knee: Vec3; readonly ankle: Vec3; readonly radii: readonly [number, number, number] }
 
@@ -75,8 +75,34 @@ const capsuleField = (p: Vec3, a: Vec3, b: Vec3, ra: number, rb: number) => {
   return ra + (rb - ra) * t - length(sub(p, add(a, scale(ab, t))));
 };
 
-/** For each cell of the stance grid outside the body, the nearest cell inside it, found outwards in steps. */
-export interface UnderSkin { readonly grid: Grid; readonly origin: Vec3; readonly cell: number; readonly inside: Uint8Array; readonly nearest: Int32Array }
+/**
+ * How far a cell lies inside the body, in cells, from the smoothed field of the body: negative outside. The field is a mask smoothed
+ * by three passes of a box three cells wide, so across a flat face of the body it takes these values at the centres of the cells,
+ * and its level of 0.5 lies on the face. Where the field is zero the body is more than three cells away.
+ */
+const FIELD_STEPS = [0, 1 / 27, 4 / 27, 10 / 27, 17 / 27, 23 / 27, 26 / 27, 1];
+export function depthInBody(value: number): number {
+  if (value <= 0) return -Infinity;
+  if (value >= 1) return 3.5;
+  let k = 1;
+  while (value > FIELD_STEPS[k]) k++;
+  return k - 4.5 + (value - FIELD_STEPS[k - 1]) / (FIELD_STEPS[k] - FIELD_STEPS[k - 1]);
+}
+
+/**
+ * Where a simulated limb meets the body, the tissue that was carried into the stance beside the limb that was taken away is ragged,
+ * and the grid of 0.3 mm drew the line where the two meet as a row of teeth. There the field is smoothed once more: wholly on the
+ * limb where the body is within 1.5 cells and on the body where it touches the limb, and less and less up to JOIN_REACH cells from
+ * the limb and 3.5 cells from the body. `body` and `limb` are the depths in each, in cells, negative outside.
+ */
+export const JOIN_REACH = 5, JOIN_SMOOTH = 2;
+export function joinShare(body: number, limb: number): number {
+  const ramp = (t: number) => { const v = Math.max(0, Math.min(1, t)); return v * v * (3 - 2 * v); };
+  return ramp((limb + JOIN_REACH) / JOIN_REACH) * ramp((body + 3.5) / 2);
+}
+
+/** The body on the stance grid: its smoothed field, whose level of 0.5 is the skin, the cells inside, and for each cell outside the nearest cell inside, found outwards in steps. */
+export interface UnderSkin { readonly grid: Grid; readonly origin: Vec3; readonly cell: number; readonly inside: Uint8Array; readonly nearest: Int32Array; readonly smooth: Float32Array }
 
 function nearestInside(inside: Uint8Array, grid: Grid, reach: number): Int32Array {
   const nearest = new Int32Array(inside.length).fill(-1);
@@ -100,22 +126,65 @@ function nearestInside(inside: Uint8Array, grid: Grid, reach: number): Int32Arra
   return nearest;
 }
 
-/** A point standing outside the body, moved to just under the skin at the nearest place. A point inside comes back unchanged. */
+/** The smoothed field of the body at a point, between the centres of its cells, where the skin is its level of 0.5. */
+function bodyValue(field: UnderSkin, p: Vec3): number {
+  const { grid, origin, cell, smooth } = field;
+  const fx = (p[0] - origin[0]) / cell - 0.5, fy = (p[1] - origin[1]) / cell - 0.5, fz = (p[2] - origin[2]) / cell - 0.5;
+  const x0 = Math.floor(fx), y0 = Math.floor(fy), z0 = Math.floor(fz), tx = fx - x0, ty = fy - y0, tz = fz - z0;
+  let value = 0;
+  for (let dz = 0; dz < 2; dz++) for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) {
+    const x = x0 + dx, y = y0 + dy, z = z0 + dz;
+    if (x < 0 || y < 0 || z < 0 || x >= grid.nx || y >= grid.ny || z >= grid.nz) continue;
+    value += (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty) * (dz ? tz : 1 - tz) * smooth[voxelIndex(grid, x, y, z)];
+  }
+  return value;
+}
+
+/**
+ * A point standing outside the body, moved to just under the skin. It goes up the slope of the smoothed field of the body, whose level
+ * of 0.5 is the skin, and then `clearance` further in, so that neighbouring points move alike and a surface keeps its order instead of
+ * gathering on one place. From further out than the slope reaches, it first goes straight towards the nearest cell inside the body.
+ * A point inside comes back unchanged, and so does one too far out to have a cell inside near it.
+ */
 export function underSkin(field: UnderSkin, p: Vec3, clearance: number): Vec3 {
+  if (bodyValue(field, p) >= 0.5) return p;
   const { grid, origin, cell } = field;
   const x = Math.floor((p[0] - origin[0]) / cell), y = Math.floor((p[1] - origin[1]) / cell), z = Math.floor((p[2] - origin[2]) / cell);
   if (x < 0 || y < 0 || z < 0 || x >= grid.nx || y >= grid.ny || z >= grid.nz) return p;
-  const at = voxelIndex(grid, x, y, z);
-  if (field.inside[at] || field.nearest[at] < 0) return p;
-  const seed = field.nearest[at], sx = seed % grid.nx, rest = (seed - sx) / grid.nx, sy = rest % grid.ny, sz = (rest - sy) / grid.ny;
-  const q: Vec3 = [origin[0] + (sx + 0.5) * cell, origin[1] + (sy + 0.5) * cell, origin[2] + (sz + 0.5) * cell];
-  const to = sub(q, p), span = length(to) || 1;
-  return add(q, scale(to, clearance / span));
+  const seed = field.nearest[voxelIndex(grid, x, y, z)];
+  if (seed < 0) return p;
+  const sx = seed % grid.nx, rest = (seed - sx) / grid.nx, sy = rest % grid.ny, sz = (rest - sy) / grid.ny;
+  const inner: Vec3 = [origin[0] + (sx + 0.5) * cell, origin[1] + (sy + 0.5) * cell, origin[2] + (sz + 0.5) * cell];
+  let q = p;
+  const SLOPE = 0.02;
+  if (bodyValue(field, q) < SLOPE) {
+    const to = sub(inner, p), steps = Math.max(1, Math.ceil(length(to) / (0.25 * cell)));
+    for (let k = 1; k <= steps && bodyValue(field, q) < SLOPE; k++) q = add(p, scale(to, k / steps));
+  }
+  const h = 0.5 * cell;
+  const slope = (at: Vec3): Vec3 => [
+    (bodyValue(field, [at[0] + h, at[1], at[2]]) - bodyValue(field, [at[0] - h, at[1], at[2]])) / (2 * h),
+    (bodyValue(field, [at[0], at[1] + h, at[2]]) - bodyValue(field, [at[0], at[1] - h, at[2]])) / (2 * h),
+    (bodyValue(field, [at[0], at[1], at[2] + h]) - bodyValue(field, [at[0], at[1], at[2] - h])) / (2 * h),
+  ];
+  let way: Vec3 | null = null;
+  for (let k = 0; k < 64; k++) {
+    const value = bodyValue(field, q), g = slope(q), size = length(g);
+    if (size < 1e-6) break;
+    way = scale(g, 1 / size);
+    if (value >= 0.5) break;
+    q = add(q, scale(way, Math.min(0.5 * cell, (0.5 - value) / size + 0.05 * cell)));
+  }
+  if (way && bodyValue(field, q) >= 0.5) return add(q, scale(way, clearance));
+  // Where the slope gives no way in, the point goes to the nearest cell inside, as far in as the clearance.
+  const to = sub(inner, p), span = length(to) || 1;
+  return add(inner, scale(to, clearance / span));
 }
 
 export function buildBodySurface(grid: Grid, body: Uint8Array, bone: Uint8Array, posture: PostureField): { surface: Surface; shanks: ShankProfile[]; tubes: LimbTube[]; under: UnderSkin } {
   const { pose, owner } = posture;
   const excluded = new Set(['tibiaR', 'tibiaL', 'pesR', 'pesL', 'manusR', 'manusL', 'forearmR', 'forearmL'].map((id) => BONE_IDS.indexOf(id as (typeof BONE_IDS)[number])));
+  const axial = new Set(['trunk', 'head', 'pelvis'].map((id) => BONE_IDS.indexOf(id as (typeof BONE_IDS)[number])));
   const cell = 3;
   const origin: Vec3 = [-30, -30, pose.groundZ - 20];
   const stance: Grid = { nx: Math.ceil((grid.nx + 60) / cell), ny: Math.ceil((grid.ny + 60) / cell), nz: Math.ceil((grid.nz + 60 - pose.groundZ) / cell) };
@@ -126,7 +195,8 @@ export function buildBodySurface(grid: Grid, body: Uint8Array, bone: Uint8Array,
     const at = voxelIndex(grid, x, y, z);
     if (!body[at] || excluded.has(owner[at])) continue;
     const p: Vec3 = [x, y, z];
-    weightsAt(posture, p, weights);
+    // Tissue that the trunk holds on the limb's side of a parting lay against a forearm or a paw, and is left out as they are.
+    if (weightsAt(posture, p, weights) === WITH_LIMB && axial.has(owner[at])) continue;
     moved.length = 0; factors.length = 0;
     for (let k = 0; k < weights.length; k++) if (weights[k] > 0.005) { moved.push(posture.transforms[k]); factors.push(weights[k]); }
     const q = moved.length === 1 && moved[0] === posture.transforms[0] ? p : blendRigid(moved, factors, p);
@@ -177,19 +247,26 @@ export function buildBodySurface(grid: Grid, body: Uint8Array, bone: Uint8Array,
     tube(shanks[0], 'tibiaR', JOINTS.kneeR, JOINTS.ankleR, [22, 20, 10], 7), tube(shanks[1], 'tibiaL', JOINTS.kneeL, JOINTS.ankleL, [22, 20, 10], 7),
     tube(forearms[0], 'forearmR', JOINTS.elbowR, JOINTS.wristR, [20, 15, 8], 6), tube(forearms[1], 'forearmL', JOINTS.elbowL, JOINTS.wristL, [20, 15, 8], 6),
   ];
+  const share = new Float32Array(smooth.length);
   for (let z = 0; z < stance.nz; z++) for (let y = 0; y < stance.ny; y++) for (let x = 0; x < stance.nx; x++) {
     const p: Vec3 = [origin[0] + (x + 0.5) * cell, origin[1] + (y + 0.5) * cell, origin[2] + (z + 0.5) * cell];
     let distance = -Infinity;
     for (const shape of tubes) for (let k = 0; k + 1 < shape.points.length; k++) {
       distance = Math.max(distance, capsuleField(p, shape.points[k], shape.points[k + 1], shape.radii[k], shape.radii[k + 1]));
     }
+    const at = voxelIndex(stance, x, y, z);
+    share[at] = joinShare(depthInBody(smooth[at]), distance / cell);
     if (distance < -cell) continue;
     const value = Math.max(0, Math.min(1, 0.5 + distance / (2 * cell)));
-    const at = voxelIndex(stance, x, y, z);
     if (value > smooth[at]) smooth[at] = value;
   }
+  // Where a limb meets the body the field is smoothed once more.
+  const softer = smoothField(smooth, stance, JOIN_SMOOTH);
+  for (let i = 0; i < smooth.length; i++) if (share[i]) smooth[i] += share[i] * (softer[i] - smooth[i]);
+  // Where two sheets of the skin would meet along an edge, as where a limb just touches the trunk, they are parted.
+  partSheets(smooth, stance, 0.5);
   const surface = surfaceNets(smooth, stance, 0.5, [origin[0] + 0.5 * cell, origin[1] + 0.5 * cell, origin[2] + 0.5 * cell], cell);
   const inside = new Uint8Array(smooth.length);
   for (let i = 0; i < smooth.length; i++) inside[i] = smooth[i] >= 0.5 ? 1 : 0;
-  return { surface, shanks, tubes, under: { grid: stance, origin, cell, inside, nearest: nearestInside(inside, stance, 24) } };
+  return { surface, shanks, tubes, under: { grid: stance, origin, cell, inside, nearest: nearestInside(inside, stance, 24), smooth } };
 }

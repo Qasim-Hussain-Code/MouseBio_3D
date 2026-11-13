@@ -176,7 +176,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     scene.environmentIntensity = 0.7;
     const hemisphere = new THREE.HemisphereLight('#dfe9ea', '#2b333a', 1.1);
     scene.add(hemisphere);
-    // The lights stand in the room, so they turn about the mouse as it turns on the floor.
+    // The lights turn with the view about the dorsal axis (turnLightsWithView below): the mouse is lit alike from every side, and as
+    // it turns on the floor the lights turn about it with the view.
     const lights = new THREE.Group();
     scene.add(lights);
     const key = new THREE.DirectionalLight('#fff4e4', 2.4);
@@ -370,7 +371,31 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
     // The mouse walks on the floor of the room. The model stays where it is and the camera, its target and the lights move the other way, so nothing in the model needs to know.
     let wander: WanderState = WANDER_START, walkHold = 0;
     let floor: { origin: THREE.Vector3; forward: THREE.Vector3; side: THREE.Vector3; up: THREE.Vector3; plane: THREE.Plane; body: THREE.Sphere } | null = null;
-    const stageTurn = new THREE.Quaternion(), frustum = new THREE.Frustum(), frustumMatrix = new THREE.Matrix4();
+    const frustum = new THREE.Frustum(), frustumMatrix = new THREE.Matrix4();
+    /**
+     * Turn the lights with the view about the dorsal axis. In the default view they stand as they are set, with the key light beyond
+     * the animal, so that the side towards the eye lies in soft shade and shows its form. Were the lights to stand still, the other
+     * side of the animal would be seen lit from the front, flat and with every unevenness of the coat picked out. A display choice.
+     */
+    const viewTurn = new THREE.Quaternion(), viewOffset = new THREE.Vector3(), viewHome = new THREE.Vector3(), viewCross = new THREE.Vector3();
+    const turnLightsWithView = () => {
+      let angle = 0;
+      const up = floor?.up ?? orbitUp;
+      if (posture) {
+        viewOffset.copy(camera.position).sub(controls.target);
+        viewOffset.addScaledVector(up, -viewOffset.dot(up));
+        viewHome.set(...posture.view);
+        viewHome.addScaledVector(up, -viewHome.dot(up));
+        // Seen from straight above or below the view has no side, and the lights stay as they were.
+        if (viewOffset.lengthSq() < 1e-12 || viewHome.lengthSq() < 1e-12) return;
+        angle = Math.atan2(up.dot(viewCross.crossVectors(viewHome, viewOffset)), viewHome.dot(viewOffset));
+      }
+      viewTurn.setFromAxisAngle(up, angle);
+      lights.quaternion.copy(viewTurn);
+      scene.environmentRotation.setFromQuaternion(viewTurn);
+      turnFurLights(viewTurn);
+      hemisphere.position.set(0, 1, 0).applyQuaternion(viewTurn);
+    };
     const floorOf = (point: THREE.Vector3): FloorPoint => { const offset = point.clone().sub(floor!.origin); return [offset.dot(floor!.forward), offset.dot(floor!.side)]; };
     /** Move the view for a change of the mouse's place on the floor. */
     const moveStage = (from: StagePose, to: StagePose) => {
@@ -384,10 +409,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
       carry(camera.position);
       carry(controls.target);
       syncing = true; controls.update(); syncing = false;
-      stageTurn.setFromAxisAngle(up, -to.heading);
-      lights.quaternion.copy(stageTurn);
-      scene.environmentRotation.setFromQuaternion(stageTurn);
-      turnFurLights(stageTurn);
+      turnLightsWithView();
       dirty = true;
     };
     /** Where a point of the view meets the floor, no further off than the mouse can be seen, as a point of the model. */
@@ -918,12 +940,8 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         if (shadow) shadow.group.visible = true;
         key.castShadow = false;
         renderer.shadowMap.enabled = false;
-        // The lights go back to the room.
-        hemisphere.position.set(0, 1, 0);
-        stageTurn.setFromAxisAngle(floor?.up ?? new THREE.Vector3(0, 1, 0), floor ? -wander.pose.heading : 0);
-        lights.quaternion.copy(stageTurn);
-        scene.environmentRotation.setFromQuaternion(stageTurn);
-        turnFurLights(stageTurn);
+        // The lights go back to turning with the view.
+        turnLightsWithView();
         latest.current.onLab?.({ kind: 'caption', text: null });
         camera.near = radius / 2000;
         camera.updateProjectionMatrix();
@@ -1542,6 +1560,7 @@ export function ViewerCanvas({ atlas, settings, onSelect, onReady, onStatus, han
         if (dirty) renderer.shadowMap.needsUpdate = true;
       }
       if (dirty && !document.hidden) {
+        if (!lab) turnLightsWithView();
         if (shadow && shadowDirty && !lab) {
           const sectionVisible = sectionPlane?.mesh.visible ?? false;
           const coatVisible = fur?.mesh.visible ?? false;

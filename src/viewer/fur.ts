@@ -265,7 +265,7 @@ void main() {
 const KEY_LIGHT = new THREE.Vector3(-0.34, 0.5, 0.8).normalize(), FILL_LIGHT = new THREE.Vector3(0.45, -0.3, 0.45).normalize();
 const FUR_LIGHTS = Object.freeze({ uFurKey: { value: KEY_LIGHT.clone() }, uFurFill: { value: FILL_LIGHT.clone() } });
 
-/** The lights stand in the room, so as the mouse turns on the floor they turn about it the other way, in the model's own coordinates. */
+/** The lights turn with the view about the dorsal axis, and with the eye at the bench; the turn is given in the model's own coordinates. */
 export function turnFurLights(turn: THREE.Quaternion) {
   FUR_LIGHTS.uFurKey.value.copy(KEY_LIGHT).applyQuaternion(turn);
   FUR_LIGHTS.uFurFill.value.copy(FILL_LIGHT).applyQuaternion(turn);

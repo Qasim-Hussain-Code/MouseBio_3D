@@ -122,11 +122,9 @@ export function bodyCoat(surface: Surface, marks: CoatLandmarks): CoatAttributes
   const middle = (marks.eyes[0][0] + marks.eyes[1][0]) / 2;
   const outline = bodyOutline(surface, middle);
   const thighs: readonly (readonly [Vec3, Vec3])[] = [[j.hipR, j.kneeR], [j.hipL, j.kneeL]];
-  const upper: readonly (readonly [Vec3, Vec3])[] = [[j.shoulderR, j.elbowR], [j.shoulderL, j.elbowL], ...thighs];
   const lower: readonly (readonly [Vec3, Vec3])[] = [[j.elbowR, j.wristR], [j.elbowL, j.wristL], [j.kneeR, j.ankleR], [j.kneeL, j.ankleL]];
   // Hair runs down a limb towards the paw, except on the thigh, where it goes on lying back and down as it does on the flank.
   const downLimbs: readonly (readonly [Vec3, Vec3])[] = [[j.shoulderR, j.elbowR], [j.shoulderL, j.elbowL], ...lower];
-  const arms: readonly (readonly [Vec3, Vec3])[] = [[j.shoulderR, j.elbowR], [j.shoulderL, j.elbowL], [j.elbowR, j.wristR], [j.elbowL, j.wristL]];
   const trust = new Float32Array(count);
   for (let i = 0; i < count; i++) {
     const p: Vec3 = [surface.positions[3 * i], surface.positions[3 * i + 1], surface.positions[3 * i + 2]];

@@ -67,6 +67,8 @@ export const LIFE_SHARED = Object.freeze({
   /** Sitting up: how far the trunk has come up about the hips, in radians, and the height of the hips under the origin. */
   uLifeRear: { value: 0 },
   uLifeRearAt: { value: 0 },
+  /** Sitting up: how far the back has rounded forwards about the spine, in radians. */
+  uLifeCurl: { value: 0 },
   /** How far the legs have been laid out to the sides, for an animal lying on its back, from 0 to 1. */
   uLifeSplay: { value: 0 },
   /** How much further a leg has been drawn out and taped down, for surgery on its inner side, in radians. */
@@ -210,11 +212,20 @@ bool mbFlap(vec3 p, out vec3 moved, out vec3 axis, out float turned) {
   }
   return false;
 }
-/** How much of sitting up reaches a point: all of it in front of the loin, none behind the hips, and none in the hind legs, which stay on the ground. */
+/**
+ * How much of sitting up reaches a point: all of it in front of the chest, none behind the hips, and none in the hind legs, which stay on the ground.
+ * The turn grows over the whole trunk, from the hips to the chest, so that the back bends evenly and the belly is not drawn out over a short length.
+ */
 float mbRearShare(vec3 p, float a) {
   if (uLifeRear == 0.0) return 0.0;
   float mbHind = max(mbLeg(p, uLifeHip[2], uLifeFoot[2]), mbLeg(p, uLifeHip[3], uLifeFoot[3]));
-  return (1.0 - smoothstep(uLifeBody.y, uLifeBody.w + 0.002, a)) * (1.0 - mbHind);
+  return (1.0 - smoothstep(uLifeBody.x, uLifeBody.w + 0.002, a)) * (1.0 - mbHind);
+}
+/** How much of the rounding of the back reaches a point: all of it at the neck, none behind the hips, and none in the hind legs. */
+float mbCurlShare(vec3 p, float a) {
+  if (uLifeCurl == 0.0) return 0.0;
+  float mbHind = max(mbLeg(p, uLifeHip[2], uLifeFoot[2]), mbLeg(p, uLifeHip[3], uLifeFoot[3]));
+  return (1.0 - smoothstep(0.0, uLifeBody.w, a)) * (1.0 - mbHind);
 }
 vec3 mbLifeMove(vec3 p, vec3 n) {
   if (uLifeOn < 0.5 || uLifeTaken > 0.5) return uLifeShift;
@@ -282,11 +293,17 @@ vec3 mbLifeMove(vec3 p, vec3 n) {
       d += mbTurn(mbLever, uLifeAxis, mbAngle) - mbLever;
     }
   }
-  // Sitting up carries the neck, about which the head turns.
+  // Sitting up to wash, the back rounds forwards about the spine at the middle of the body, and the trunk comes up about the hips. Both carry the neck, about which the head turns.
   vec3 mbNeckGone = vec3(0.0);
-  if (uLifeRear != 0.0) {
+  if (uLifeRear != 0.0 || uLifeCurl != 0.0) {
     vec3 mbPivot = uLifeBody.w * uLifeAxis + uLifeRearAt * uLifeDorsal;
-    mbNeckGone = mbTurn(-mbPivot, uLifeLateral, -uLifeRear) + mbPivot;
+    vec3 mbCurlPivot = uLifeBody.y * uLifeAxis + uLifeSpine.y * uLifeDorsal;
+    mbNeckGone = mbTurn(mbTurn(-mbCurlPivot, uLifeLateral, uLifeCurl) + mbCurlPivot - mbPivot, uLifeLateral, -uLifeRear) + mbPivot;
+    float mbCurl = mbCurlShare(p, a);
+    if (mbCurl > 0.0) {
+      vec3 mbFromCurl = q + d - mbCurlPivot;
+      d += mbTurn(mbFromCurl, uLifeLateral, uLifeCurl * mbCurl) - mbFromCurl;
+    }
     float mbRear = mbRearShare(p, a);
     if (mbRear > 0.0) {
       vec3 mbFromPivot = q + d - mbPivot;
@@ -313,8 +330,9 @@ vec3 mbLifeTurnVector(vec3 p, vec3 v) {
       if (mbAngle != 0.0) v = mbTurn(v, uLifeAxis, mbAngle * (1.0 - mbPaw));
     }
   }
-  float mbRear = mbRearShare(p, dot(q, uLifeAxis));
-  if (mbRear > 0.0) v = mbTurn(v, uLifeLateral, -uLifeRear * mbRear);
+  // Both turns of sitting up are about the same line across the body, so a direction turns by their sum.
+  float mbBack = uLifeCurl * mbCurlShare(p, dot(q, uLifeAxis)) - uLifeRear * mbRearShare(p, dot(q, uLifeAxis));
+  if (mbBack != 0.0) v = mbTurn(v, uLifeLateral, mbBack);
   float mbHead = mbHeadShare(dot(q, uLifeAxis), dot(q, uLifeDorsal));
   if (mbHead <= 0.0) return v;
   return mbTurn(mbTurn(v, uLifeDorsal, uLifeHeadYaw * mbHead), uLifeLateral, uLifeHeadNod * mbHead);

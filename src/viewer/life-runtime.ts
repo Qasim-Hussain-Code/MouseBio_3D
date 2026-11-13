@@ -23,8 +23,14 @@ export const LIFE_DISPLAY = Object.freeze({
   tail: 0.007,
   /** Length along the arteries of one cycle of the pulse, in metres. */
   pulseLength: 0.3,
-  /** Sitting up to wash: how far the trunk comes up, in radians, how far the head comes back down, how the fore legs are brought up to the face, how many strokes of the paws in a second, and how far the trunk sinks on to the hind legs, in metres. */
-  sitRise: 0.88, sitNod: 0.62, sitSwing: -0.16, sitBend: -0.82, washStrokes: 3.2, sitSink: 0.003,
+  /**
+   * Sitting up to wash: how far the trunk comes up about the hips and how far the back rounds forwards, in radians, how far the head comes back down,
+   * how the fore legs are brought up to the face, how many strokes of the paws in a second, and how far the trunk sinks on to the hind legs, in metres.
+   * A washing mouse sits with its back rounded, so the trunk comes up and the back curls forwards together, and neither the belly nor the back is drawn
+   * out much. With these turns of the trunk alone, the skin of the belly along the midline lengthens by about 4 percent and that of the back shortens by
+   * about 17 percent, against 17 and 10 percent when the trunk only came up; no edge of the skin stretches by more than about 35 percent, against 95.
+   */
+  sitRise: 1.05, sitCurl: 0.45, sitNod: 0.62, sitSwing: -0.16, sitBend: -0.82, washStrokes: 3.2, sitSink: 0.003,
 });
 
 export interface LifeBinding {
@@ -248,6 +254,7 @@ export function createLifeRuntime(atlas: Atlas, meshes: ReadonlyMap<string, THRE
         shared.uLifeWalk.value = Math.max(walkAmount, sit > 0 ? 1 : 0);
       } else shared.uLifeWalk.value = 0;
       shared.uLifeRear.value = settings.movement ? LIFE_DISPLAY.sitRise * sit : 0;
+      shared.uLifeCurl.value = settings.movement ? LIFE_DISPLAY.sitCurl * sit : 0;
       // A poke presses the surface for a moment, and the whole animal starts and settles.
       const shock = settings.movement && sincePoke < 1.6 ? Math.exp(-sincePoke * 3.2) : 0;
       shared.uLifeStart.value = shock > 0.004 ? 0.0024 * shock * Math.abs(Math.cos(sincePoke * 9)) : 0;

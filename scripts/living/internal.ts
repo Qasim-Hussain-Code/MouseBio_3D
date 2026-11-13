@@ -61,11 +61,6 @@ export function blob(centre: Vec3, radii: Vec3, rows = 12, columns = 18): Surfac
 
 const J = JOINTS;
 
-/** A route down a limb from joint to joint, offset a little from the bones. */
-function limbRoute(joints: readonly Vec3[], offset: Vec3, r0: number, r1: number, sides = 6): Surface {
-  return route(joints.map((joint) => add(joint, offset)), r0, r1, sides);
-}
-
 export type InternalPart =
   | 'aorta' | 'innominate-artery' | 'common-carotid-arteries' | 'internal-carotid-arteries' | 'external-carotid-arteries' | 'coronary-arteries'
   | 'coeliac-arteries' | 'common-hepatic-artery' | 'gastric-arteries' | 'lienal-arteries' | 'lieno-pancreatic-artery' | 'superior-pancreaticoduodenal-artery'

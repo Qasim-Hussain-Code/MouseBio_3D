@@ -60,6 +60,12 @@ function limbFrame(top: Vec3, middle: Vec3, bottom: Vec3, tip: Vec3, medialSign:
 const hindFrame = (side: Side) => limbFrame(JOINTS[`hip${side}`], JOINTS[`knee${side}`], JOINTS[`ankle${side}`], JOINTS[`toe${side}`], side === 'R' ? 1 : -1, false);
 const foreFrame = (side: Side) => limbFrame(JOINTS[`shoulder${side}`], JOINTS[`elbow${side}`], JOINTS[`wrist${side}`], JOINTS[`tip${side}`], side === 'R' ? -1 : 1, true);
 const between = (a: Vec3, b: Vec3, t: number): Vec3 => add(a, scale(sub(b, a), t));
+/**
+ * The vessels and nerves of the forearm end just past the wrist, a share of the way from the wrist to the tip of the paw, where those
+ * of the paw begin (attachments.ts). Further on they would leave the paw, whose bones rest on the ground in the stance and arch
+ * under the palm.
+ */
+const WRIST_END = 0.08;
 
 export function buildLimbRoutes(lm: Landmarks): Record<LimbPart, Surface> {
   const s = (y: number) => lm.spineAt(y);
@@ -329,11 +335,11 @@ export function buildLimbRoutes(lm: Landmarks): Record<LimbPart, Surface> {
   // The radial artery crosses near the elbow to the cephalic vein, and runs beside it as the artery collateralis radialis of figure 108 to the back of the paw.
   parts['radial-arteries'] = both((side) => {
     const limb = foreFrame(side);
-    return [route([limb.upper(0.9, 10, 3), limb.upper(0.98, 0, 8), limb.lower(0.1, -6, 8), limb.lower(0.45, -7, 6), limb.lower(0.86, -6, 3), between(limb.end, limb.beyond, 0.16)], 0.5, 0.25, 5)];
+    return [route([limb.upper(0.9, 10, 3), limb.upper(0.98, 0, 8), limb.lower(0.1, -6, 8), limb.lower(0.45, -7, 6), limb.lower(0.86, -6, 3), between(limb.end, limb.beyond, WRIST_END)], 0.5, 0.25, 5)];
   });
   parts['median-arteries'] = both((side) => {
     const limb = foreFrame(side);
-    return [route([limb.lower(0.05, 7, 5), limb.lower(0.4, 5, 2), limb.lower(0.85, 3, 2), between(limb.end, limb.beyond, 0.2)], 0.8, 0.4, 5)];
+    return [route([limb.lower(0.05, 7, 5), limb.lower(0.4, 5, 2), limb.lower(0.85, 3, 2), between(limb.end, limb.beyond, WRIST_END)], 0.8, 0.4, 5)];
   });
   parts['subclavian-veins'] = both((side, sign) => {
     const limb = foreFrame(side);
@@ -384,12 +390,12 @@ export function buildLimbRoutes(lm: Landmarks): Record<LimbPart, Surface> {
   parts['median-nerves'] = both((side, sign) => {
     const limb = foreFrame(side);
     // With the brachial artery, then down the middle of the forearm to the palm.
-    return [route([plexusAt(side, sign), limb.upper(0.22, 12, 0), limb.upper(0.55, 10, 3), limb.upper(0.92, 8, 5), limb.lower(0.1, 5, 6), limb.lower(0.55, 2, 3), limb.lower(0.95, 1, 1), between(limb.end, limb.beyond, 0.34)], 1, 0.35, 5)];
+    return [route([plexusAt(side, sign), limb.upper(0.22, 12, 0), limb.upper(0.55, 10, 3), limb.upper(0.92, 8, 5), limb.lower(0.1, 5, 6), limb.lower(0.55, 2, 3), limb.lower(0.95, 1, 1), between(limb.end, limb.beyond, WRIST_END)], 1, 0.35, 5)];
   });
   parts['ulnar-nerves'] = both((side, sign) => {
     const limb = foreFrame(side);
     // Behind the inner side of the elbow, then along the ulnar side of the forearm.
-    return [route([plexusAt(side, sign), limb.upper(0.22, 13, -4), limb.upper(0.6, 13, -7), limb.upper(0.96, 11, -7), limb.lower(0.12, 8, -6), limb.lower(0.55, 6, -4), limb.lower(0.95, 4, -2), between(limb.end, limb.beyond, 0.3)], 0.9, 0.35, 5)];
+    return [route([plexusAt(side, sign), limb.upper(0.22, 13, -4), limb.upper(0.6, 13, -7), limb.upper(0.96, 11, -7), limb.lower(0.12, 8, -6), limb.lower(0.55, 6, -4), limb.lower(0.95, 4, -2), between(limb.end, limb.beyond, WRIST_END)], 0.9, 0.35, 5)];
   });
   return parts as Record<LimbPart, Surface>;
 }

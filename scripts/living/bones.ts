@@ -6,7 +6,7 @@
  * - The CT shows no sutures, so the bones of the skull are divided by position, read off Cook (1965) figures 11 to 13.
  * All boundaries are therefore estimates. Names and counts follow Cook (1965) and Hummel et al. (1966).
  */
-import { dot, JOINTS, sub, type BoneId, type Vec3 } from './rig';
+import { boneOfVoxel, dot, JOINTS, sub, type BoneId, type Vec3 } from './rig';
 import type { Landmarks } from './landmarks';
 import type { Grid } from './volume';
 import { voxelIndex } from './volume';
@@ -45,6 +45,8 @@ const THROUGH_BONE = 'Its limits along the column are read from gaps in the CT b
 const RIB_DIVISION = 'It grows from seeds placed on this rib in the CT, each voxel going to the seed with the shortest path to it through bone, so its ends are estimates.';
 const BY_BOX = 'It is an isolated bright body in the CT, so its limits are those of that body, and its name is estimated from its shape and position.';
 const OUTSIDE_LABEL = 'An isosurface of the source CT in a part that the source skeleton label leaves out.';
+/** The limit at a wrist or ankle, where the CT does not show the joint space. */
+const AT_JOINT = 'Its limits are estimates, by the nearest course placed by hand on measured joints; at the wrist or ankle its bone goes with the limb segment that the posture moves it with, which carries the tissue round it, because the CT does not show the joint space there.';
 const SHANK_DIVISION = 'It grows from seeds placed on it in sections of the CT, each voxel going to the seed with the shortest path to it through bone, so its limits with the other bone of the shank are estimates.';
 const STERNUM_DIVISION = 'Its limits along the sternum are read from the places where the ribs meet it in the CT, so they are estimates.';
 
@@ -176,6 +178,9 @@ const SKULL_BONES: readonly { readonly id: string; readonly name: string; readon
 ];
 
 const SIDED = (id: string, name: string, note: string, division: string, rigid?: BoneId): BoneDefinition => ({ id, name, note, division, rigid });
+/** The bones of the paws from the CT, which the source labels crop, and how they rest on the ground in the stance (PAW_REST in rig.ts). */
+const PAW_BONE = 'Carpals, metacarpals and phalanges, which the source label crops, as the dense core of the scanned paw: at this resolution the CT does not separate the small bones from each other or wholly from the soft tissue round them. Moved as one rigid piece and turned so that it lies as low and flat on the ground as it can, 0.3 mm above it; the turn is a choice. Specks of under 0.1 mm3, which cannot be placed, are left out.';
+const PES_BONE = 'The bones of the ankle that lie in the CT before the scan ends at the hind foot, as one dense mass: the CT does not separate the tarsal bones or show which side of them is the sole. They are the bone beyond the plane through the ankle across the line of the shank, within 3.4 mm of the ankle, which on the left takes in the heel, lying beside the end of the shank in the scan. Moved as one rigid piece and turned so that its longest extent lies along the foot and its shortest upright, with its bulk below the ankle and further forward than back, as the tarsus lies; the turn is a choice.';
 const RIB_KIND = (rib: number) => rib <= 7 ? 'A true rib, which reaches the sternum, as in Cook figure 32.' : rib <= 10 ? 'A false rib, as in Cook figure 32.' : 'A floating rib, as in Cook figure 32.';
 
 export const BONES: readonly BoneDefinition[] = [
@@ -194,21 +199,21 @@ export const BONES: readonly BoneDefinition[] = [
   SIDED('scapula-l', 'Left scapula', 'After Cook figure 31.', BY_SIDE),
   SIDED('humerus-r', 'Right humerus', 'Moved as one rigid piece.', NEAREST, 'humerusR'),
   SIDED('humerus-l', 'Left humerus', 'Moved as one rigid piece.', NEAREST, 'humerusL'),
-  SIDED('forearm-r', 'Right radius and ulna', 'Moved as one rigid piece.', NEAREST, 'forearmR'),
-  SIDED('forearm-l', 'Left radius and ulna', 'Moved as one rigid piece.', NEAREST, 'forearmL'),
-  SIDED('manus-r', 'Right fore paw bones', 'Carpals, metacarpals and phalanges, which the source label crops. Moved as one rigid piece.', NEAREST, 'manusR'),
-  SIDED('manus-l', 'Left fore paw bones', 'Carpals, metacarpals and phalanges, which the source label crops. Moved as one rigid piece.', NEAREST, 'manusL'),
+  SIDED('forearm-r', 'Right radius and ulna', 'Moved as one rigid piece.', AT_JOINT, 'forearmR'),
+  SIDED('forearm-l', 'Left radius and ulna', 'Moved as one rigid piece.', AT_JOINT, 'forearmL'),
+  SIDED('manus-r', 'Right fore paw bones', `${PAW_BONE} Turned by about 10 degrees from the scan: the end of the radius and ulna reaches lower here than the paw, so the wrist stands higher and the paw is turned 3.6 degrees further about it, its digits down. Its digits lay bent in the scan.`, AT_JOINT, 'manusR'),
+  SIDED('manus-l', 'Left fore paw bones', `${PAW_BONE} Turned by about 12 degrees from the scan. Its digits lay straight in the scan, so it reaches further than the right. A bright piece beside its fifth digit, which no tissue joins to the paw, is the edge of an object beside the animal and is left out.`, AT_JOINT, 'manusL'),
   { id: 'os-penis', name: 'Os penis', note: 'A tapering bone under the skin of the ventral midline, which the source skeleton label leaves out. Hummel et al. describe a small bone in the penis.', division: BY_BOX, surface: OUTSIDE_LABEL },
   SIDED('coxa-r', 'Right os coxae', 'After Cook figures 37 and 38.', BY_SIDE),
   SIDED('coxa-l', 'Left os coxae', 'After Cook figures 37 and 38.', BY_SIDE),
   SIDED('femur-r', 'Right femur', 'Moved as one rigid piece.', NEAREST, 'femurR'),
   SIDED('femur-l', 'Left femur', 'Moved as one rigid piece.', NEAREST, 'femurL'),
-  SIDED('tibia-r', 'Right tibia', 'With the distal part where the fibula joins it. Moved as one rigid piece.', SHANK_DIVISION, 'tibiaR'),
-  SIDED('tibia-l', 'Left tibia', 'With the distal part where the fibula joins it. Moved as one rigid piece.', SHANK_DIVISION, 'tibiaL'),
+  SIDED('tibia-r', 'Right tibia', 'With the distal part where the fibula joins it. Moved as one rigid piece. The CT does not show the joint space at the ankle, so the tibia is taken to end at the plane through the ankle across its line, and the bone beyond that plane is taken for the foot.', SHANK_DIVISION, 'tibiaR'),
+  SIDED('tibia-l', 'Left tibia', 'With the distal part where the fibula joins it. Moved as one rigid piece. The CT does not show the joint space at the ankle, so the tibia is taken to end at the plane through the ankle across its line, and the bone beyond that plane is taken for the foot.', SHANK_DIVISION, 'tibiaL'),
   SIDED('fibula-r', 'Right fibula', 'The free part, which sections of the CT show apart from the tibia. Hummel et al. describe the two as separate for the proximal two thirds and fused along the distal third. Moved as one rigid piece.', SHANK_DIVISION, 'tibiaR'),
   SIDED('fibula-l', 'Left fibula', 'The free part, which sections of the CT show apart from the tibia. Hummel et al. describe the two as separate for the proximal two thirds and fused along the distal third. Moved as one rigid piece.', SHANK_DIVISION, 'tibiaL'),
-  SIDED('pes-r', 'Right ankle bones in the scan', 'The tarsal bones that lie in the CT. Moved as one rigid piece.', NEAREST, 'pesR'),
-  SIDED('pes-l', 'Left ankle bones in the scan', 'The tarsal bones that lie in the CT. Moved as one rigid piece.', NEAREST, 'pesL'),
+  SIDED('pes-r', 'Right ankle bones in the scan', PES_BONE, AT_JOINT, 'pesR'),
+  SIDED('pes-l', 'Left ankle bones in the scan', PES_BONE, AT_JOINT, 'pesL'),
 ];
 
 const indexOfBone = new Map(BONES.map((bone, index) => [bone.id, index + 1]));
@@ -265,6 +270,22 @@ const SHANK_SEEDS: Readonly<Record<string, readonly Vec3[]>> = {
   'fibula-l': [[298, 790, 59], [292, 805, 55], [289, 820, 52]],
 };
 
+/**
+ * The CT does not show the joint spaces at the wrists and ankles. There a voxel of bone goes with the limb segment that the posture
+ * moves it with, by the rule that carries the soft tissue round it (boneOfVoxel in rig.ts), so that a bone and its tissue move together
+ * and no end of a forearm or shank bone is carried away with the paw.
+ */
+const ACROSS_JOINT: Readonly<Record<string, Readonly<Partial<Record<BoneId, string>>>>> = {
+  'manus-r': { forearmR: 'forearm-r' }, 'forearm-r': { manusR: 'manus-r' },
+  'manus-l': { forearmL: 'forearm-l' }, 'forearm-l': { manusL: 'manus-l' },
+  'pes-r': { tibiaR: 'tibia-r' }, 'tibia-r': { pesR: 'pes-r' },
+  'pes-l': { tibiaL: 'tibia-l' }, 'tibia-l': { pesL: 'pes-l' },
+};
+export function acrossJoint(coarse: string, p: Vec3): string {
+  const across = ACROSS_JOINT[coarse];
+  return across ? across[boneOfVoxel(p)] ?? coarse : coarse;
+}
+
 const vertebraAt = (y: number) => VERTEBRAE.find((vertebra) => y < vertebra.to) ?? VERTEBRAE[VERTEBRAE.length - 1];
 const sternumAt = (y: number) => STERNUM_PARTS.find((item) => y < item.to) ?? STERNUM_PARTS[STERNUM_PARTS.length - 1];
 
@@ -307,7 +328,7 @@ export function partitionBones(grid: Grid, allowed: (index: number) => boolean, 
       const score = (dx * dx + dy * dy + dz * dz) / (segment.radius * segment.radius);
       if (score < bestScore) { bestScore = score; best = segment.bone; }
     }
-    const coarse = COARSE[best].id;
+    const coarse = acrossJoint(COARSE[best].id, [x, y, z]);
     if (AXIAL.has(coarse)) { axial.push(i); coarseOf.set(i, coarse); continue; }
     if (coarse === 'skull') out[i] = part(skullBoneAt(x, y, z));
     else if (SIDE_SPLIT[coarse]) out[i] = part(SIDE_SPLIT[coarse][x < (coarse === 'mandible' ? SKULL_MIDLINE : M) ? 0 : 1]);
@@ -376,7 +397,7 @@ export type RibLines = Readonly<Record<'r' | 'l', readonly (readonly Vec3[])[]>>
  * The result holds as much of the rib as is joined to that seed; a ventral segment that does not touch the dorsal segment in the CT is left out.
  */
 export function ribCourses(grid: Grid, parts: Uint8Array, spacing = 6): RibLines {
-  const { nx, ny, nz } = grid;
+  const { nx, ny } = grid;
   const members = new Map<number, number[]>();
   const wanted = new Set<number>();
   for (const side of ['r', 'l'] as const) RIB_SEEDS[side].forEach((_, rib) => { const value = part(`rib-${rib + 1}-${side}`); wanted.add(value); members.set(value, []); });
